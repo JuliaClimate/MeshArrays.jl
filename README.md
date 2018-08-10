@@ -1,6 +1,6 @@
 # GCMFaces
 
-This repository contains a first implementation of the `GCMFaces.jl` package. It served to introduce the GCMFaces.jl package at Juliacon-2018 (https://youtu.be/RDxAy_zSUvg). **However, it has only been tested in `v0.6` and is not ready for production use.**
+This repository contains a first implementation of the `GCMFaces.jl` package. **It has only been tested in `v0.6` and is not ready for production use** but served to introduce `GCMFaces.jl` at the [JuliaCon-2018](http://juliacon.org/2018/) conference. The corresponding presentation can be viewed [here](https://youtu.be/RDxAy_zSUvg).
 
 ### Install the package 
 
