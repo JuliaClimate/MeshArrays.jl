@@ -1,11 +1,12 @@
 
-#with default gridName argument:
+## GCMGridSpec function with default gridName argument:
 
 GCMGridSpec() = GCMGridSpec("LLC90")
 
-#with gridName argument:
+## GCMGridSpec function with gridName argument:
 
 function GCMGridSpec(gridName)
+
     global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;
 
 if gridName=="LLC90";
@@ -33,9 +34,11 @@ else;
   error("unknown gridName case");
 end;
 
-    "Grid has been defined."
+println("Grid has been defined.")
 
 end
+
+## GCMGridLoad function
 
 function GCMGridLoad()
 
@@ -48,7 +51,28 @@ function GCMGridLoad()
         @eval (($tmp2) = ($tmp1))
     end
 
-    "Grid has been loaded."
+    println("Grid has been loaded.")
 
 end
 
+function GCMGridOnes(grTp,nF,nP)
+
+    global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;
+    global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth;
+
+    grDir=""
+    grTopo=grTp
+    nFaces=nF
+    ioSize=[nP nP*nF];
+    facesSize=fill(nP,(nF,2));
+    ioPrec=Float32;
+
+    list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
+    for ii=1:length(list0);
+        tmp1=fill(1.,nP,nP*nF);
+        tmp1=convert2gcmfaces(tmp1);
+        tmp2=Symbol(list0[ii]);
+        @eval (($tmp2) = ($tmp1))
+    end
+
+end
