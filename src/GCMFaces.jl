@@ -1,31 +1,26 @@
-# GCMFaces.jl
-#
-#	First Draft Implementation
-#
-# gaelforget (https://github.com/gaelforget/gcmfaces_jl)
-# Julia 0.6.2
-# Created: 02.01.18
-# Last Edit: 02.01.18
-
-#Activate type definitions and methods
-
-__precompile__()
+## Module associated with the GCMFaces package
 
 module GCMFaces
 
-# the following is needed for embedded calls to e.g. heatmap in qwckplot
-using Plots
-# the following is needed for embedded calls to e.g. ncread in read_nctiles
-using NetCDF
+using Printf
 
 include("gcmfaces_type.jl");
+include("gcmfaces_grids.jl");
+include("gcmfaces_calc.jl");
 include("gcmfaces_exch.jl");
 include("gcmfaces_convert.jl");
-include("gcmfaces_plot.jl");
 include("gcmfaces_IO.jl");
-include("gcmfaces_grids.jl");
+include("gcmfaces_demo.jl");
 
-export gcmfaces, exchange, exch_T_N, convert2array, qwckplot
-export GCMGridSpec, GCMGridLoad, read_nctiles, read_bin
+export gcmfaces, exchange, gradient, smooth, mask
+export GCMGridSpec, GCMGridLoad, GCMGridOnes
+export demo1, demo2
+#The following functions rely on grid specs; currently via global vars.
+export read_bin, convert2array, convert2gcmfaces
+#The following exch_UV differs from normal exchange; incl. exch_UV_N.
+export exch_UV
+#The following codes add dependencies to Plots & NetCDF.
+#include("gcmfaces_plot.jl");
+#include("gcmfaces_nctiles.jl");
 
 end # module

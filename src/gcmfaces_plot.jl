@@ -1,16 +1,24 @@
-# gcmfaces_plot.jl
-#
-#	First Draft Implementation
-#
-# gaelforget (https://github.com/gaelforget/gcmfaces_jl)
-# Julia 0.6.2
-# Created: 02.01.18
-# Last Edit: 02.01.18
 
-##  Quick Plot In Array Format  ##
-function qwckplot(fld)
-    arr=convert2array(fld);
-    arr=permutedims(arr,[2 1]);
+using Plots, Dates; gr();
+
+export qwckplot
+
+##  qwckplot function
+#
+#examples:
+#  GCMGridLoad()
+#  qwckplot(GCMFaces.Depth)
+#  qwckplot(GCMFaces.Depth,"Ocean Bottom Depth")
+
+function qwckplot(fld::gcmfaces)
+    tmp1=Dates.now()
+    tmp1=Dates.format(tmp1, "yyyy-mm-dd HH:MM:SS")
+    qwckplot(fld,"Plotted at time "*tmp1)
+end
+
+function qwckplot(fld::gcmfaces,ttl::String)
+    arr=convert2array(fld)
+    arr=permutedims(arr,[2 1])
     #This uses Plots.jl:
-    p=heatmap(arr)
+    p=heatmap(arr,title=ttl)
 end

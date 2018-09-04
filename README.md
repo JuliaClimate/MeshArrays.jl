@@ -1,26 +1,22 @@
-# GCMFaces
+# GCMFaces.jl
 
-This repository contains a first implementation of the `GCMFaces.jl` package. **It has only been tested with `v0.6`-`v0.7` and is not ready for production use** but served to introduce `GCMFaces.jl` at the [JuliaCon-2018](http://juliacon.org/2018/) conference. The corresponding presentation can be viewed [here](https://youtu.be/RDxAy_zSUvg).
+This repository contains the `GCMFaces.jl` package introduced at the [JuliaCon-2018](http://juliacon.org/2018/) conference by [this presentation](https://youtu.be/RDxAy_zSUvg). The provided code has been tested with `julia v0.7 to  v1.0` but is still regarded as a **preliminary implementation**.
 
-### Install the package 
+### Installation And Usage
 
-The following should work in `v0.6`:
-
-`Pkg.clone("https://github.com/gaelforget/GCMFaces_jl.git")`
-
-### Jupyter Notebooks
-
-The notebooks used for [JuliaCon-2018](http://juliacon.org/2018/) are: 
-
-`src/demo_type.ipynb` and `src/demo_exch.ipynb`
+To activate `GCMFaces`  (e.g., by `using GCMFaces` at `julia`'s prompt), it first needs to be added to `julia` by executing the following command at the `pkg>` prompt: `add https://github.com/gaelforget/GCMFaces_jl#more_and_v07`
 
 
-### Pre-defined grids
+### Notebooks And Grids
 
-Pre-defined grids for use with the notebooks are available [here](http://mit.ecco-group.org/opendap/gforget/grid_examples/contents.html) and can or example be downloaded as follows:
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` available in [this repository](https://github.com/gaelforget/JuliaCon2018Notebooks.git) (`demo_type.ipynb` and `demo_exch.ipynb`) and on pre-defined grids available from [this site](http://mit.ecco-group.org/opendap/gforget/grid_examples/contents.html) that can, e.g., be downloaded as follows:
 
-`wget --recursive ftp://mit.ecco-group.org/gforget/grid_examples/GRID_CS32/`
-`wget --recursive ftp://mit.ecco-group.org/gforget/grid_examples/GRID_LLC90/`
+```
+setenv DemoGrids 'ftp://mit.ecco-group.org/gforget/grid_examples/'
+wget --recursive {$DemoGrids}/GRID_CS32/
+wget --recursive {$DemoGrids}/GRID_LLC90/
+mv mit.ecco-group.org/gforget/grid_examples/GRID_* .
+```
 
 
 
