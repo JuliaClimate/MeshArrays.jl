@@ -74,7 +74,7 @@ tmp00=max(tmp00,maximum(tmp0));
 nbt=ceil(1.1*2*tmp00^2);
 dt=1.;
 T=nbt*dt;
-println("nbt in smooth="*"$nbt")
+#println("nbt in smooth="*"$nbt")
 
 #diffusion operator:
 Kux=DXCsm*DXCsm/T/2;
