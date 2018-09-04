@@ -4,7 +4,7 @@ This repository contains the `GCMFaces.jl` package introduced at the [JuliaCon-2
 
 ### Installation And Usage
 
-To activate `GCMFaces`  (e.g., by `using GCMFaces` at `julia`'s prompt), it first needs to be added to `julia` by executing the following command at the `pkg>` prompt: `add https://github.com/gaelforget/GCMFaces_jl#more_and_v07`
+To activate `GCMFaces`  (e.g., by `using GCMFaces` at `julia`'s prompt), it first needs to be added to `julia` by executing the following command at the `pkg>` prompt: `add https://github.com/gaelforget/GCMFaces_jl`
 
 
 ### Notebooks And Grids
