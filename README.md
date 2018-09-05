@@ -25,7 +25,6 @@ mv mit.ecco-group.org/gforget/grid_examples/GRID_* .
 
 The [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git) also contains `demo_smooth.ipynb` which illustrates how the `smooth` function is used for CI testing purposes (without the `GRID_*` input listed above). 
 
+### Package Name
 
-
-
-
+GCM is an acronym that stands for General Circulation Model, or Global Climate Model, as discussed in [this wikipedia entry](https://en.wikipedia.org/wiki/General_circulation_model). The name for `GCMFaces.jl` derives from the `Matlab / Octave` package introduced in [Forget et al., 2015](http://www.geosci-model-dev.net/8/3071/2015/), `doi:10.5194/gmd-8-3071-2015` which inspired this `Julia` package.
