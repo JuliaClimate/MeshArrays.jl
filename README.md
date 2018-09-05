@@ -23,6 +23,7 @@ wget --recursive {$DemoGrids}/GRID_LLC90/
 mv mit.ecco-group.org/gforget/grid_examples/GRID_* .
 ```
 
+The [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git) also contains `demo_smooth.ipynb` which illustrates how the `smooth` function is used for CI testing purposes (without the `GRID_*` input listed above). 
 
 
 
