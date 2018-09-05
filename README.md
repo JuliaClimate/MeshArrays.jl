@@ -5,11 +5,11 @@
 [![codecov](https://codecov.io/gh/gaelforget/GCMFaces_jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gaelforget/GCMFaces_jl)
 [![Coverage Status](https://coveralls.io/repos/github/gaelforget/GCMFaces_jl/badge.svg?branch=master)](https://coveralls.io/github/gaelforget/GCMFaces_jl?branch=master)
 
-This repository contains the `GCMFaces.jl` package introduced at the [JuliaCon-2018](http://juliacon.org/2018/) conference by [this presentation](https://youtu.be/RDxAy_zSUvg). The provided code has been tested with `julia v0.7 to  v1.0` but is still regarded as a **preliminary implementation**.
+This repository contains the `GCMFaces.jl` package introduced at the [JuliaCon-2018](http://juliacon.org/2018/) conference by [this presentation](https://youtu.be/RDxAy_zSUvg). The code has passed a full test suite with `julia v0.7 to  v1.0` but is still regarded as a **preliminary implementation**.
 
 ### Installation And Usage
 
-To activate `GCMFaces`  (e.g., by `using GCMFaces` at `julia`'s prompt), it first needs to be added to `julia` by executing the following command at the `pkg>` prompt: `add https://github.com/gaelforget/GCMFaces_jl`
+To activate `GCMFaces`  (e.g., by `using GCMFaces` at `julia`'s prompt), it first needs to be added to `julia` by executing the following command at the `pkg>` prompt: `add https://github.com/gaelforget/GCMFaces.jl`
 
 
 ### Notebooks And Grids
