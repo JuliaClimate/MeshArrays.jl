@@ -1,9 +1,9 @@
 # GCMFaces.jl
 
 
-[![Travis Build Status](https://api.travis-ci.org/gaelforget/GCMFaces.jl.svg?branch=rename_pkg)](https://travis-ci.org/gaelforget/GCMFaces.jl)
-[![codecov](https://codecov.io/gh/gaelforget/GCMFaces_jl/branch/rename_pkg/graph/badge.svg)](https://codecov.io/gh/gaelforget/GCMFaces_jl)
-[![Coverage Status](https://coveralls.io/repos/github/gaelforget/GCMFaces_jl/badge.svg?branch=rename_pkg)](https://coveralls.io/github/gaelforget/GCMFaces_jl?branch=rename_pkg)
+[![Travis Build Status](https://api.travis-ci.org/gaelforget/GCMFaces.jl.svg?branch=master)](https://travis-ci.org/gaelforget/GCMFaces.jl)
+[![codecov](https://codecov.io/gh/gaelforget/GCMFaces.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gaelforget/GCMFaces.jl)
+[![Coverage Status](https://coveralls.io/repos/github/gaelforget/GCMFaces_jl/badge.svg?branch=master)](https://coveralls.io/github/gaelforget/GCMFaces_jl?branch=master)
 
 This repository contains the `MeshArrays.jl` package introduced at the [JuliaCon-2018](http://juliacon.org/2018/) conference by [this presentation](https://youtu.be/RDxAy_zSUvg). The code has passed a full test suite with `julia v0.7 to  v1.0` but is still regarded as a **preliminary implementation**.
 
