@@ -1,5 +1,5 @@
 
-## GCMFaces type definition + methods
+## MeshArrays type definition + methods
 
 abstract type abstractGcmfaces end
 
@@ -13,7 +13,7 @@ end
 
 function Base.show(io::IO, z::gcmfaces)
 
-#    @printf io " GCMFaces instance with \n"
+#    @printf io " MeshArrays instance with \n"
     printstyled(io, " gcmfaces array \n",color=:normal)
     printstyled(io, "  grid type   = ",color=:normal)
     printstyled(io, "$(z.grTopo)\n",color=:blue)
@@ -45,7 +45,7 @@ function gcmfaces(nFaces::Int,grTopo::String)
   gcmfaces(nFaces,grTopo,tmp1);
 end
 
-gcmfaces() = gcmfaces(GCMFaces.nFaces,GCMFaces.grTopo);
+gcmfaces() = gcmfaces(MeshArrays.nFaces,MeshArrays.grTopo);
 
 # basic operations
 

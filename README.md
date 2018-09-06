@@ -1,15 +1,15 @@
 # GCMFaces.jl
 
 
-[![Travis Build Status](https://api.travis-ci.org/gaelforget/GCMFaces_jl.svg?branch=master)](https://travis-ci.org/gaelforget/GCMFaces_jl)
-[![codecov](https://codecov.io/gh/gaelforget/GCMFaces_jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gaelforget/GCMFaces_jl)
+[![Travis Build Status](https://api.travis-ci.org/gaelforget/GCMFaces.jl.svg?branch=master)](https://travis-ci.org/gaelforget/GCMFaces.jl)
+[![codecov](https://codecov.io/gh/gaelforget/GCMFaces.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gaelforget/GCMFaces.jl)
 [![Coverage Status](https://coveralls.io/repos/github/gaelforget/GCMFaces_jl/badge.svg?branch=master)](https://coveralls.io/github/gaelforget/GCMFaces_jl?branch=master)
 
-This repository contains the `GCMFaces.jl` package introduced at the [JuliaCon-2018](http://juliacon.org/2018/) conference by [this presentation](https://youtu.be/RDxAy_zSUvg). The code has passed a full test suite with `julia v0.7 to  v1.0` but is still regarded as a **preliminary implementation**.
+This repository contains the `MeshArrays.jl` package introduced at the [JuliaCon-2018](http://juliacon.org/2018/) conference by [this presentation](https://youtu.be/RDxAy_zSUvg). The code has passed a full test suite with `julia v0.7 to  v1.0` but is still regarded as a **preliminary implementation**.
 
 ### Installation And Usage
 
-To activate `GCMFaces`  (e.g., by `using GCMFaces` at `julia`'s prompt), it first needs to be added to `julia` by executing the following command at the `pkg>` prompt: `add https://github.com/gaelforget/GCMFaces.jl`
+To activate `MeshArrays`  (e.g., by `using MeshArrays` at `julia`'s prompt), it first needs to be added to `julia` by executing the following command at the `pkg>` prompt: `add https://github.com/gaelforget/MeshArrays.jl`
 
 
 ### Notebooks And Grids
@@ -25,6 +25,6 @@ mv mit.ecco-group.org/gforget/grid_examples/GRID_* .
 
 The [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git) also contains `demo_smooth.ipynb` which illustrates how the `smooth` function is used for CI testing purposes (without the `GRID_*` input listed above). 
 
-### Package Name
+<!--- ### Package Name --->
 
-GCM is an acronym that stands for General Circulation Model, or Global Climate Model, as discussed in [this wikipedia entry](https://en.wikipedia.org/wiki/General_circulation_model). The name for `GCMFaces.jl` derives from the `Matlab / Octave` package introduced in [Forget et al., 2015](http://www.geosci-model-dev.net/8/3071/2015/), `doi:10.5194/gmd-8-3071-2015` which inspired this `Julia` package.
+<!--- GCM is an acronym that stands for General Circulation Model, or Global Climate Model, as discussed in [this wikipedia entry](https://en.wikipedia.org/wiki/General_circulation_model). The name for `GCMFaces.jl` derives from the `Matlab / Octave` package introduced in [Forget et al., 2015](http://www.geosci-model-dev.net/8/3071/2015/), `doi:10.5194/gmd-8-3071-2015` which inspired this `Julia` package. --->

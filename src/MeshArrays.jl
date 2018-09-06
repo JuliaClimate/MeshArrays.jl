@@ -1,6 +1,6 @@
-## Module associated with the GCMFaces package
+## Module associated with the MeshArrays package
 
-module GCMFaces
+module MeshArrays
 
 using Printf
 

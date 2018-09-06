@@ -12,7 +12,7 @@ export read_nctiles
 
 function read_nctiles(fileName,fldName);
 
-if ~(GCMFaces.grTopo=="llc");
+if ~(MeshArrays.grTopo=="llc");
   error("non-llc cases not implemented yet");
 end;
 
