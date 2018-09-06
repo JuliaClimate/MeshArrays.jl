@@ -1,4 +1,4 @@
-The GCMFaces.jl package is licensed under the MIT "Expat" License:
+The MeshArrays.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2018: gaelforget.
 >

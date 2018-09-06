@@ -8,12 +8,12 @@ function gradient(fld)
   for iFace=1:FLD.nFaces;
      tmpA=FLD.f[iFace][2:end-1,2:end-1];
      tmpB=FLD.f[iFace][1:end-2,2:end-1];
-#		 tmpC=GCMFaces.DXC.f[iFace];
+#		 tmpC=MeshArrays.DXC.f[iFace];
 #		 dFLDdx.f[iFace]=(tmpA-tmpB)./tmpC;
-     dFLDdx.f[iFace]=(tmpA-tmpB)./GCMFaces.DXC.f[iFace];
+     dFLDdx.f[iFace]=(tmpA-tmpB)./MeshArrays.DXC.f[iFace];
      tmpA=FLD.f[iFace][2:end-1,2:end-1];
      tmpB=FLD.f[iFace][2:end-1,1:end-2];
-     dFLDdy.f[iFace]=(tmpA-tmpB)./GCMFaces.DYC.f[iFace];
+     dFLDdy.f[iFace]=(tmpA-tmpB)./MeshArrays.DYC.f[iFace];
   end;
 
   return dFLDdx, dFLDdy
@@ -63,10 +63,10 @@ function smooth(fld::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces)
 msk=fill(1.,fld) + 0. * mask(fld,NaN);
 
 #Before scaling the diffusive operator ...
-tmp0=DXCsm/GCMFaces.DXC;
+tmp0=DXCsm/MeshArrays.DXC;
 tmp0=mask(msk*tmp0,0.);
 tmp00=maximum(tmp0);
-tmp0=DYCsm/GCMFaces.DYC;
+tmp0=DYCsm/MeshArrays.DYC;
 tmp0=mask(msk*tmp0,0.);
 tmp00=max(tmp00,maximum(tmp0));
 
@@ -83,10 +83,10 @@ Kvy=DYCsm*DYCsm/T/2;
 #loop:
 for it=1:nbt
   (dTdxAtU,dTdyAtV)=gradient(fld);
-  tmpU=dTdxAtU*Kux*GCMFaces.DYG;
-  tmpV=dTdyAtV*Kvy*GCMFaces.DXG;
+  tmpU=dTdxAtU*Kux*MeshArrays.DYG;
+  tmpV=dTdyAtV*Kvy*MeshArrays.DXG;
   tmpC=convergence(tmpU,tmpV);
-  fld=fld-dt*msk*tmpC/GCMFaces.RAC;
+  fld=fld-dt*msk*tmpC/MeshArrays.RAC;
 end
 
 return fld

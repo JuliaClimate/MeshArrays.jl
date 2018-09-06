@@ -11,7 +11,7 @@ function read_bin(fil::String,kt,kk,prec::DataType);
     error("non-empty kk option not implemented yet");
   end;
 
-  (n1,n2)=GCMFaces.ioSize;
+  (n1,n2)=MeshArrays.ioSize;
   
   if prec==Float64;
     reclen=8;

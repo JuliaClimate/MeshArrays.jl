@@ -25,29 +25,29 @@ end
 ## convert2array ##
 function convert2array(fld::Array)
 
-grTopo=GCMFaces.grTopo;
-nFaces=GCMFaces.nFaces;
+grTopo=MeshArrays.grTopo;
+nFaces=MeshArrays.nFaces;
 
 v1=Array{Any,1}(undef,nFaces);
 
 #an alternative to (or overload of?) rotr90, etc. is needed for mutldim case
 
-if GCMFaces.grTopo=="llc";
-    (n1,n2)=GCMFaces.facesSize[1,:];
+if MeshArrays.grTopo=="llc";
+    (n1,n2)=MeshArrays.facesSize[1,:];
     v1[1]=fld[1:n1,1:n2];
     v1[2]=fld[n1+1:n1*2,1:n2];
     v1[3]=rotr90(fld[1:n1,n2+1:n2+n1]);
     v1[4]=rotl90(fld[n1*2+1:n1*3,1:n2]);
     v1[5]=rotl90(fld[n1*3+1:n1*4,1:n2]);
-elseif GCMFaces.grTopo=="cs";
-    (n1,n2)=GCMFaces.facesSize[1,:];
+elseif MeshArrays.grTopo=="cs";
+    (n1,n2)=MeshArrays.facesSize[1,:];
     v1[1]=fld[1:n1,n1+1:n1+n2];
     v1[2]=fld[n1+1:2*n1,n1+1:n1+n2];
     v1[3]=rotr90(fld[1:n1,n1+n2+1:n2+n1*2]);
     v1[4]=rotl90(fld[n1*2+1:n1*3,n1+1:n1+n2]);
     v1[5]=rotl90(fld[n1*3+1:n1*4,n1+1:n1+n2]);
     v1[6]=rotl90(fld[n1*3+1:n1*4,1:n1]);
-elseif GCMFaces.grTopo=="ll";
+elseif MeshArrays.grTopo=="ll";
     v1[1]=fld;
 else;
   error("unknown grTopo case");
@@ -61,10 +61,10 @@ end
 
 function convert2gcmfaces(fld::gcmfaces)
 
-    grTopo=GCMFaces.grTopo;
-    nFaces=GCMFaces.nFaces;
-    (n1,n2)=GCMFaces.ioSize;
-    facesSize=GCMFaces.facesSize;
+    grTopo=MeshArrays.grTopo;
+    nFaces=MeshArrays.nFaces;
+    (n1,n2)=MeshArrays.ioSize;
+    facesSize=MeshArrays.facesSize;
 
     aa=0;bb=0;
     for iFace=1:nFaces;
@@ -93,10 +93,10 @@ end
 
 function convert2gcmfaces(fld::Array)
 
-grTopo=GCMFaces.grTopo;
-nFaces=GCMFaces.nFaces;
-(n1,n2)=GCMFaces.ioSize;
-facesSize=GCMFaces.facesSize;
+grTopo=MeshArrays.grTopo;
+nFaces=MeshArrays.nFaces;
+(n1,n2)=MeshArrays.ioSize;
+facesSize=MeshArrays.facesSize;
 
 n3=Int64(prod(size(fld))/n1/n2);
 

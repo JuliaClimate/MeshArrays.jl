@@ -1,5 +1,5 @@
 using Test
-using GCMFaces
+using MeshArrays
 
 @testset "GCMFaces tests:" begin
 for nTopo=1:3

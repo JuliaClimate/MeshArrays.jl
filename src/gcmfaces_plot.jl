@@ -7,8 +7,8 @@ export qwckplot
 #
 #examples:
 #  GCMGridLoad()
-#  qwckplot(GCMFaces.Depth)
-#  qwckplot(GCMFaces.Depth,"Ocean Bottom Depth")
+#  qwckplot(MeshArrays.Depth)
+#  qwckplot(MeshArrays.Depth,"Ocean Bottom Depth")
 
 function qwckplot(fld::gcmfaces)
     tmp1=Dates.now()
