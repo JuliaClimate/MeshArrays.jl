@@ -9,8 +9,7 @@ This repository contains the `MeshArrays.jl` package introduced at the [JuliaCon
 
 ### Installation And Usage
 
-To activate `MeshArrays`  (e.g., by `using MeshArrays` at `julia`'s prompt), it first needs to be added to `julia` by executing the following command at the `pkg>` prompt: `add https://github.com/gaelforget/MeshArrays.jl`
-
+To install the package first execute `add MeshArrays` command at `julia`'s `pkg>` prompt. To use it then execute `using MeshArrays` at `julia`'s `>` REPL prompt or include this command in your modules. `Julia`'s package manager, `Pkg`, is currently documented [here within docs.julialang.org](https://docs.julialang.org/en/stable/stdlib/Pkg/).
 
 ### Notebooks And Grids
 
