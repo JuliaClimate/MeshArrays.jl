@@ -1,12 +1,113 @@
 
-## MeshArrays type definition + methods
+## gcmfaces type definition + methods
 
-abstract type abstractGcmfaces end
+## type definition
 
-struct gcmfaces <: abstractGcmfaces
+abstract type AbstractGcmfaces{T, N} <: AbstractArray{T, N} end
+
+struct gcmfaces{T, N} <: AbstractGcmfaces{T, N}
    nFaces::Int
    grTopo::String
-   f
+   f::Array{Array{T,N},1}
+end
+
+# additional constructors
+
+function gcmfaces(nFaces::Int,grTopo::String,v1::AbstractArray)
+  tmp_eltype=eltype(v1[1])
+  tmp_ndims=ndims(v1[1])
+  gcmfaces{tmp_eltype,tmp_ndims}(nFaces,grTopo,v1)
+end
+
+function gcmfaces(nFaces::Int,grTopo::String)
+  tmp0=Array{Float64}(undef,1,1)
+  tmp1=fill(tmp0,nFaces)
+  gcmfaces{Float64,2}(nFaces,grTopo,tmp1)
+end
+
+gcmfaces() = gcmfaces(MeshArrays.nFaces,MeshArrays.grTopo);
+
+## Convenience functions
+
+function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
+  fs=Array{NTuple{N, Int}}(undef,A.nFaces)
+  for i=1:A.nFaces
+    fs[i]=size(A.f[i]);
+  end
+  return fs
+end
+
+function fsize(A::AbstractGcmfaces{T, N},i::Integer) where {T,N}
+  fs=size(A.f[i]);
+end
+
+## Interface Methods
+
+function Base.size(A::AbstractGcmfaces{T, N}) where {T,N}
+  fs=fsize(A)
+  tmp1=0
+  for i=1:A.nFaces
+    tmp1=tmp1+fs[i][1]*fs[i][2]
+  end
+  #N>2 ? s=(tmp1,1,fs[1][3]) : s=(tmp1,1)
+  if N==2; s=(tmp1,1);
+  elseif N==3; s=(tmp1,1,fs[1][3]);
+  elseif N==4; s=(tmp1,1,fs[1][3],fs[1][4]);
+  else; error("N>4 case not implemented yet");
+  end
+  return s
+end
+
+function Base.size(A::AbstractGcmfaces{T, N},dim::Integer) where {T,N}
+  tmp1=size(A)
+  s=tmp1[dim]
+end
+
+function Base.getindex(A::AbstractGcmfaces{T, N}, i::Vararg{Int, N}) where {T,N}
+
+  f=0
+  j=0
+  k=0
+  tmp1=0
+  for iFace=1:A.nFaces
+    tmpsize=fsize(A,iFace)
+    tmp11=tmpsize[1]*tmpsize[2]
+    tmp2=tmp1+tmp11
+    if tmp1<i[1]<=tmp2
+      f=iFace;
+      tmp3=(i[1]-tmp1);
+      k=Int(ceil(tmp3/tmpsize[1]))
+      j=Int(tmp3-tmpsize[1]*(k-1))
+    end;
+    tmp1=tmp1+tmp11
+  end
+  if ndims(A)==2; val=A.f[f][j,k];
+  elseif ndims(A)==3; val=A.f[f][j,k,i[3]];
+  elseif ndims(A)==4; val=A.f[f][j,k,i[3],i[4]];
+  else; error("ndims>4 case not implemented yet")
+  end
+  return val
+end
+
+## view
+
+function Base.view(a::AbstractGcmfaces{T, N}, I::Vararg{Any, N}) where {T,N}
+  nFaces=a.nFaces;
+  grTopo=a.grTopo;
+  v1=Array{Any}(undef,nFaces);
+  for iFace=1:nFaces
+    if N==2;
+      v1[iFace]=view(a.f[iFace],:,:);
+    elseif N==3;
+      v1[iFace]=view(a.f[iFace],:,:,I[3]);
+    elseif N==4;
+      v1[iFace]=view(a.f[iFace],:,:,I[3],I[4]);
+    else;
+      error("N>4 case not implemented yet")
+    end
+  end
+  c=gcmfaces(nFaces,grTopo,v1);
+  return c;
 end
 
 # Custom pretty-printing
@@ -37,15 +138,6 @@ function Base.show(io::IO, z::gcmfaces)
 
     return
 end
-
-# additional constructors
-
-function gcmfaces(nFaces::Int,grTopo::String)
-  tmp1=Array{Any}(undef,nFaces)
-  gcmfaces(nFaces,grTopo,tmp1);
-end
-
-gcmfaces() = gcmfaces(MeshArrays.nFaces,MeshArrays.grTopo);
 
 # basic operations
 
@@ -181,24 +273,7 @@ function /(a::gcmfaces,b::Number)
   return c
 end
 
-function getindex(a::gcmfaces,I::Vararg{Any, N}) where {N}
-  nFaces=a.nFaces;
-  grTopo=a.grTopo;
-  v1=Array{Any}(undef,nFaces);
-  for iFace=1:nFaces
-    if N==2;
-      v1[iFace]=getindex(a.f[iFace],I[1],I[2]);
-    elseif N==3;
-      v1[iFace]=getindex(a.f[iFace],I[1],I[2],I[3]);
-    elseif N==4;
-      v1[iFace]=getindex(a.f[iFace],I[1],I[2],I[3],I[4]);
-    else;
-      error("N>4 case not implemented yet")
-    end
-  end
-  c=gcmfaces(nFaces,grTopo,v1);
-  return c;
-end
+##
 
 function isnan(a::gcmfaces)
     nFaces=a.nFaces;

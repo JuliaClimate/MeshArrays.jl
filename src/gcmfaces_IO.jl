@@ -26,7 +26,8 @@ function read_bin(fil::String,kt,kk,prec::DataType);
   read!(fid,fld);
   fld = hton.(fld);
 
-  v0=reshape(fld,(n1,n2,n3));
+  n3>1 ? s=(n1,n2,n3) : s=(n1,n2)
+  v0=reshape(fld,s);
   convert2gcmfaces(v0);
 
 end

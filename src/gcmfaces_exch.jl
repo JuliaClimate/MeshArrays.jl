@@ -11,8 +11,6 @@
 #6	rot180
 #7	rotr90
 
-#an alternative to (or overload of?) rotr90, etc. is needed for mutldim case
-
 ## user front end
 
 function exchange(fld::gcmfaces)

@@ -3,13 +3,11 @@ function gradient(fld)
 
   FLD=exchange(fld,1);
 
-  dFLDdx=gcmfaces();
-  dFLDdy=gcmfaces();
+  dFLDdx=gcmfaces(fld.nFaces,fld.grTopo);
+  dFLDdy=gcmfaces(fld.nFaces,fld.grTopo);
   for iFace=1:FLD.nFaces;
      tmpA=FLD.f[iFace][2:end-1,2:end-1];
      tmpB=FLD.f[iFace][1:end-2,2:end-1];
-#		 tmpC=MeshArrays.DXC.f[iFace];
-#		 dFLDdx.f[iFace]=(tmpA-tmpB)./tmpC;
      dFLDdx.f[iFace]=(tmpA-tmpB)./MeshArrays.DXC.f[iFace];
      tmpA=FLD.f[iFace][2:end-1,2:end-1];
      tmpB=FLD.f[iFace][2:end-1,1:end-2];
@@ -74,7 +72,6 @@ tmp00=max(tmp00,maximum(tmp0));
 nbt=ceil(1.1*2*tmp00^2);
 dt=1.;
 T=nbt*dt;
-#println("nbt in smooth="*"$nbt")
 
 #diffusion operator:
 Kux=DXCsm*DXCsm/T/2;
