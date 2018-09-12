@@ -42,39 +42,39 @@ end
 
 function GCMGridLoad()
 
-global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth;
+    global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth;
 
-list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
-for ii=1:length(list0);
-    tmp1=read_bin(grDir*list0[ii]*".data",ioPrec);
-    tmp2=Symbol(list0[ii]);
-    @eval (($tmp2) = ($tmp1))
-end
+    list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
+    for ii=1:length(list0);
+        tmp1=read_bin(grDir*list0[ii]*".data",ioPrec);
+        tmp2=Symbol(list0[ii]);
+        @eval (($tmp2) = ($tmp1))
+    end
 
-return "GCMGridLoad: passed"
+    return "GCMGridLoad: passed"
 
 end
 
 function GCMGridOnes(grTp,nF,nP)
 
-global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;
-global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth;
+    global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;
+    global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth;
 
-grDir=""
-grTopo=grTp
-nFaces=nF
-ioSize=[nP nP*nF];
-facesSize=fill(nP,(nF,2));
-ioPrec=Float32;
+    grDir=""
+    grTopo=grTp
+    nFaces=nF
+    ioSize=[nP nP*nF];
+    facesSize=fill(nP,(nF,2));
+    ioPrec=Float32;
 
-list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
-for ii=1:length(list0);
-    tmp1=fill(1.,nP,nP*nF);
-    tmp1=convert2gcmfaces(tmp1);
-    tmp2=Symbol(list0[ii]);
-    @eval (($tmp2) = ($tmp1))
-end
+    list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
+    for ii=1:length(list0);
+        tmp1=fill(1.,nP,nP*nF);
+        tmp1=convert2gcmfaces(tmp1);
+        tmp2=Symbol(list0[ii]);
+        @eval (($tmp2) = ($tmp1))
+    end
 
-return "GCMGridOnes: passed"
+    return "GCMGridOnes: passed"
 
 end

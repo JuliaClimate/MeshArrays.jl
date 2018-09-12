@@ -30,8 +30,6 @@ nFaces=MeshArrays.nFaces;
 
 v1=Array{Any,1}(undef,nFaces);
 
-#an alternative to (or overload of?) rotr90, etc. is needed for mutldim case
-
 if MeshArrays.grTopo=="llc";
     (n1,n2)=MeshArrays.facesSize[1,:];
     v1[1]=fld[1:n1,1:n2];
@@ -101,7 +99,7 @@ facesSize=MeshArrays.facesSize;
 n3=Int64(prod(size(fld))/n1/n2);
 
 v0=reshape(fld,(n1*n2,n3));
-v1=Array{Any,1}(undef,nFaces);
+v1=Array{Array{eltype(fld),ndims(fld)}}(undef,nFaces);
 i0=0; i1=0;
 for iFace=1:nFaces
   i0=i1+1;

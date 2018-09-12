@@ -33,15 +33,14 @@ Dexch=exchange(D,4)
 Darr=convert2array(D)
 DD=convert2array(Darr)
 
-#the following still issues deprecation warnings:
-#PP=heatmap(DD',title="DD for "*gridChoice);
-#plot(PP)
-
 GCMGridLoad()
 
 (dFLDdx, dFLDdy)=gradient(MeshArrays.YC)
 (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
-MeshArrays.hFacC[:,:,40]
+
+view(MeshArrays.hFacC,:,:,40)
+#show(fsize(MeshArrays.hFacC,1))
+#show(fsize(view(MeshArrays.hFacC,:,:,40),1))
 
 return (D,Dexch,Darr,DD)
 
@@ -63,7 +62,11 @@ tmp1=randn(Float32,size(tmp1));
 Rini=convert2gcmfaces(tmp1);
 
 #apply land mask
-tmp1=mask(MeshArrays.hFacC[:,:,1],NaN);
+if ndims(MeshArrays.hFacC.f[1])>2
+    tmp1=mask(view(MeshArrays.hFacC,:,:,1),NaN);
+else
+    tmp1=mask(MeshArrays.hFacC,NaN);
+end
 msk=fill(1.,tmp1) + 0. *tmp1;
 Rini=msk*Rini;
 
