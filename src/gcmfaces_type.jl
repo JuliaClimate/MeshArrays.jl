@@ -146,13 +146,18 @@ import Base: isnan, isinf, isfinite
 import Base: maximum, minimum, sum, fill
 
 function +(a::gcmfaces)
-  c=gcmfaces(a.nFaces,a.grTopo,a.f)
+  c=gcmfaces(a.nFaces,a.grTopo)
+  for iFace=1:a.nFaces
+    c.f[iFace]=+a.f[iFace];
+  end
   return c
 end
 
 function +(a::gcmfaces,b::gcmfaces)
-  cf=a.f+b.f
-  c=gcmfaces(a.nFaces,a.grTopo,cf)
+  c=gcmfaces(a.nFaces,a.grTopo)
+  for iFace=1:a.nFaces
+    c.f[iFace]=a.f[iFace]+b.f[iFace];
+  end
   return c
   #the following modifies a:
   #  c=a
@@ -163,15 +168,10 @@ function +(a::gcmfaces,b::gcmfaces)
 end
 
 function +(a::Number,b::gcmfaces)
-  nFaces=b.nFaces;
-  grTopo=b.grTopo;
-  v1=Array{Any}(undef,nFaces);
-  for iFace=1:nFaces
-    tmp1=b.f[iFace];
-    tmp2=a*ones(Float64, size(tmp1));
-    v1[iFace]=tmp1+tmp2;
+  c=gcmfaces(b.nFaces,b.grTopo)
+  for iFace=1:b.nFaces
+    c.f[iFace]=a.+b.f[iFace];
   end
-  c=gcmfaces(nFaces,grTopo,v1);
   return c
   #the following is deprecated synthax as of v0.7:
   #  c=gcmfaces(b.nFaces,b.grTopo)
@@ -184,92 +184,87 @@ function +(a::gcmfaces,b::Number)
 end
 
 function -(a::gcmfaces)
-  c=gcmfaces(a.nFaces,a.grTopo,-a.f)
+  c=gcmfaces(a.nFaces,a.grTopo)
+  for iFace=1:a.nFaces
+    c.f[iFace]=-a.f[iFace];
+  end
   return c
 end
 
 function -(a::gcmfaces,b::gcmfaces)
-  cf=a.f .- b.f
-  c=gcmfaces(a.nFaces,a.grTopo,cf)
+  c=gcmfaces(a.nFaces,a.grTopo)
+  for iFace=1:a.nFaces
+    c.f[iFace]=a.f[iFace]-b.f[iFace];
+  end
   return c
 end
 
 function -(a::Number,b::gcmfaces)
-  nFaces=b.nFaces;
-  grTopo=b.grTopo;
-  v1=Array{Any}(undef,nFaces);
-  for iFace=1:nFaces
-    tmpb=b.f[iFace];
-    tmpa=a*ones(Float64,size(tmpb));
-    v1[iFace]=tmpa-tmpb;
+  c=gcmfaces(b.nFaces,b.grTopo)
+  for iFace=1:b.nFaces
+    c.f[iFace]=a.-b.f[iFace];
   end
-  c=gcmfaces(b.nFaces,b.grTopo,v1);
   return c
 end
 
 function -(a::gcmfaces,b::Number)
-  nFaces=a.nFaces;
-  grTopo=a.grTopo;
-  v1=Array{Any}(undef,nFaces);
-  for iFace=1:nFaces
-    tmpa=a.f[iFace];
-    tmpb=b*ones(Float64,size(tmpa));
-    v1[iFace]=tmpa-tmpb;
+  c=gcmfaces(a.nFaces,a.grTopo)
+  for iFace=1:a.nFaces
+    c.f[iFace]=a.f[iFace].-b;
   end
-  c=gcmfaces(a.nFaces,a.grTopo,v1);
   return c
 end
 
 function *(a::gcmfaces,b::gcmfaces)
   nFaces=a.nFaces;
   grTopo=a.grTopo;
-  v1=Array{Any}(undef,nFaces);
+  c=gcmfaces(nFaces,grTopo);
   for iFace=1:nFaces
-    v1[iFace]=a.f[iFace] .* b.f[iFace];
+    c.f[iFace]=a.f[iFace].*b.f[iFace];
   end
-  c=gcmfaces(nFaces,grTopo,v1);
   return c
 end
 
 function *(a::Number,b::gcmfaces)
-  v1=a .* b.f;
-  c=gcmfaces(b.nFaces,b.grTopo,v1);
+  c=gcmfaces(b.nFaces,b.grTopo);
+  for iFace=1:b.nFaces
+    c.f[iFace]=a*b.f[iFace];
+  end
   return c
 end
 
 function *(a::gcmfaces,b::Number)
-  v1=b .* a.f;
-  c=gcmfaces(a.nFaces,a.grTopo,v1);
+  c=b*a
   return c
 end
 
 function /(a::gcmfaces,b::gcmfaces)
   nFaces=a.nFaces;
   grTopo=a.grTopo;
-  v1=Array{Any}(undef,nFaces);
+  c=gcmfaces(nFaces,grTopo);
   for iFace=1:nFaces
-    v1[iFace]=a.f[iFace] ./ b.f[iFace];
+    c.f[iFace]=a.f[iFace]./b.f[iFace];
   end
-  c=gcmfaces(nFaces,grTopo,v1);
   return c
 end
 
 function /(a::Number,b::gcmfaces)
   nFaces=b.nFaces;
   grTopo=b.grTopo;
-  v1=Array{Any}(undef,nFaces);
+  c=gcmfaces(nFaces,grTopo);
   for iFace=1:nFaces
-    v1[iFace]=a ./ b.f[iFace];
+    c.f[iFace]=a./b.f[iFace];
   end
-  c=gcmfaces(nFaces,grTopo,v1);
   return c
 end
 
 function /(a::gcmfaces,b::Number)
   nFaces=a.nFaces;
   grTopo=a.grTopo;
-  v1=a.f ./ b;
-  c=gcmfaces(nFaces,grTopo,v1);
+  c=gcmfaces(nFaces,grTopo);
+  for iFace=1:nFaces
+    c.f[iFace]=a.f[iFace]./b;
+  end
   return c
 end
 
@@ -278,41 +273,35 @@ end
 function isnan(a::gcmfaces)
     nFaces=a.nFaces;
     grTopo=a.grTopo;
-    v1=Array{Any}(undef,nFaces);
-    for iFace=1:nFaces
-      tmp1=a.f[iFace];
-      v1[iFace]=isnan.(tmp1);
+    c=gcmfaces(a.nFaces,a.grTopo);
+    for iFace=1:a.nFaces
+      c.f[iFace]=isnan.(a.f[iFace]);
     end
-    c=gcmfaces(nFaces,grTopo,v1);
     return c
 end
 
 function isinf(a::gcmfaces)
     nFaces=a.nFaces;
     grTopo=a.grTopo;
-    v1=Array{Any}(undef,nFaces);
-    for iFace=1:nFaces
-      tmp1=a.f[iFace];
-      v1[iFace]=isinf.(tmp1);
+    c=gcmfaces(a.nFaces,a.grTopo);
+    for iFace=1:a.nFaces
+      c.f[iFace]=isinf.(a.f[iFace]);
     end
-    c=gcmfaces(nFaces,grTopo,v1);
     return c
 end
 
 function isfinite(a::gcmfaces)
     nFaces=a.nFaces;
     grTopo=a.grTopo;
-    v1=Array{Any}(undef,nFaces);
-    for iFace=1:nFaces
-      tmp1=a.f[iFace];
-      v1[iFace]=isfinite.(tmp1);
+    c=gcmfaces(a.nFaces,a.grTopo);
+    for iFace=1:a.nFaces
+      c.f[iFace]=isfinite.(a.f[iFace]);
     end
-    c=gcmfaces(nFaces,grTopo,v1);
     return c
 end
 
 function sum(a::gcmfaces)
-    c=0.;
+    c=0.0;
     for iFace=1:a.nFaces
       tmp1=a.f[iFace];
       c=c+sum(tmp1);
@@ -339,13 +328,9 @@ function minimum(a::gcmfaces)
 end
 
 function fill(val::Any,a::gcmfaces)
-    nFaces=a.nFaces;
-    grTopo=a.grTopo;
-    v1=Array{Any}(undef,nFaces);
-    for iFace=1:nFaces
-      tmp1=a.f[iFace];
-      v1[iFace]=fill(val,size(tmp1));
+    c=gcmfaces(a.nFaces,a.grTopo);
+    for iFace=1:a.nFaces
+      c.f[iFace]=fill(val,fsize(a,iFace));
     end
-    c=gcmfaces(nFaces,grTopo,v1);
     return c
 end

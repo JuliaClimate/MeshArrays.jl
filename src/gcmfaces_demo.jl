@@ -63,9 +63,9 @@ Rini=convert2gcmfaces(tmp1);
 
 #apply land mask
 if ndims(MeshArrays.hFacC.f[1])>2
-    tmp1=mask(view(MeshArrays.hFacC,:,:,1),NaN);
+    tmp1=mask(view(MeshArrays.hFacC,:,:,1),NaN,0);
 else
-    tmp1=mask(MeshArrays.hFacC,NaN);
+    tmp1=mask(MeshArrays.hFacC,NaN,0);
 end
 msk=fill(1.,tmp1) + 0. *tmp1;
 Rini=msk*Rini;
