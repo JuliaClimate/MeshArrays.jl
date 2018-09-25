@@ -14,21 +14,21 @@ if gridName=="LLC90";
     nFaces=5;
     grTopo="llc";
     ioSize=[90 1170];
-    facesSize=[[90 270];[90 270];[90 90];[270 90];[270 90]];
+    facesSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
     ioPrec=Float64;
 elseif gridName=="CS32";
     grDir="GRID_CS32/";
     nFaces=6;
     grTopo="cs";
     ioSize=[32 192];
-    facesSize=[[32 32];[32 32];[32 32];[32 32];[32 32];[32 32]];
+    facesSize=[(32, 32), (32, 32), (32, 32), (32, 32), (32, 32), (32, 32)]
     ioPrec=Float32;
 elseif gridName=="LL360";
     grDir="GRID_LL360/";
     nFaces=1;
     grTopo="ll";
     ioSize=[360 160];
-    facesSize=[360 160];
+    facesSize=[(360, 160)]
     ioPrec=Float32;
 else;
     error("unknown gridName case");
@@ -63,9 +63,10 @@ function GCMGridOnes(grTp,nF,nP)
     grDir=""
     grTopo=grTp
     nFaces=nF
-    ioSize=[nP nP*nF];
-    facesSize=fill(nP,(nF,2));
-    ioPrec=Float32;
+    ioSize=[nP nP*nF]
+    facesSize=Array{NTuple{2, Int},1}(undef,nFaces)
+    facesSize[:].=[(nP,nP)]
+    ioPrec=Float32
 
     list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
     for ii=1:length(list0);

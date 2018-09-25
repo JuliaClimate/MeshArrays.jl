@@ -1,4 +1,3 @@
-
 ## gcmfaces type definition + methods
 
 ## type definition
@@ -9,25 +8,106 @@ struct gcmfaces{T, N} <: AbstractGcmfaces{T, N}
    nFaces::Int
    grTopo::String
    f::Array{Array{T,N},1}
+   fSize::Array{NTuple{N, Int}}
+   aSize::NTuple{N, Int}
 end
 
-# additional constructors
-
-function gcmfaces(nFaces::Int,grTopo::String,v1::AbstractArray)
-  tmp_eltype=eltype(v1[1])
-  tmp_ndims=ndims(v1[1])
-  gcmfaces{tmp_eltype,tmp_ndims}(nFaces,grTopo,v1)
+struct gcmsubset{T, N} <: AbstractGcmfaces{T, N}
+   nFaces::Int
+   grTopo::String
+   f::Array{Array{T,N},1}
+   fSize::Array{NTuple{N, Int}}
+   aSize::NTuple{N, Int}
+   i::Array{Array{T,N},1}
+   iSize::Array{NTuple{N, Int}}
 end
 
-function gcmfaces(nFaces::Int,grTopo::String)
-  tmp0=Array{Float64}(undef,1,1)
-  tmp1=fill(tmp0,nFaces)
-  gcmfaces{Float64,2}(nFaces,grTopo,tmp1)
+## additional constructors for gcmfaces
+
+function gcmfaces(nFaces::Int,grTopo::String,::Type{T},
+  fSize::Array{NTuple{N, Int}},
+  aSize::NTuple{N,Int}) where {T,N}
+  f=Array{Array{T,N},1}(undef,nFaces)
+  for a=1:nFaces
+    f[a]=Array{T}(undef,fSize[a])
+  end
+  gcmfaces{T,N}(nFaces,grTopo,f,fSize,aSize)
 end
 
-gcmfaces() = gcmfaces(MeshArrays.nFaces,MeshArrays.grTopo);
+function gcmfaces(nFaces::Int,grTopo::String,
+  v1::Array{Array{T,N},1}) where {T,N}
+  fSize=fsize(v1)
+  aSize=fsize(v1,0)
+  gcmfaces{T,N}(nFaces,grTopo,deepcopy(v1),fSize,aSize)
+#  gcmfaces(nFaces,grTopo,T,fs,as)
+end
+
+function gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
+  #should this be called similar? deepcopy?
+  fSize=fsize(A)
+  aSize=size(A)
+  gcmfaces{T,N}(nFaces,grTopo,deepcopy(A.f),fSize,aSize)
+#  gcmfaces(nFaces,grTopo,T,fSize,aSize)
+end
+
+function gcmfaces()
+  if isdefined(MeshArrays,:nFaces)
+    nFaces=MeshArrays.nFaces
+    grTopo=MeshArrays.grTopo
+    T=MeshArrays.ioPrec
+    fSize=MeshArrays.facesSize
+    aSize=(prod(MeshArrays.ioSize),1)
+  else
+    nFaces=5
+    grTopo="llc"
+    T=Float64
+    fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
+    aSize=(105300, 1);
+  end
+  gcmfaces(nFaces,grTopo,T,fSize,aSize)
+end
+
+## additional constructors for gcmsubset
+
+#maybe: replace this constructor with one that gets A and sets f to view(A.f)
+function gcmsubset(nFaces::Int,grTopo::String,::Type{T},
+  fSize::Array{NTuple{N, Int}},aSize::NTuple{N,Int},
+  dims::NTuple{N,Int}) where {T,N}
+  f=Array{Array{T,N},1}(undef,nFaces)
+  i=Array{Array{T,N},1}(undef,nFaces)
+  iSize=Array{NTuple{N, Int},1}(undef,nFaces)
+  for a=1:nFaces
+    f[a]=Array{T}(undef,fSize[a])
+    #eventually I will distribute across faces; for now I just use face 1:
+    a==1 ? nloc=dims[1] : nloc=0
+    tmp1=Base.tail(dims)
+    iSize[a]=(nloc,tmp1...)
+    i[a]=Array{T}(undef,iSize[a])
+  end
+  gcmsubset{T,N}(nFaces,grTopo,f,fSize,aSize,i,iSize)
+end
 
 ## Convenience functions
+
+function fijind(A::gcmfaces,ij::Int)
+  f=0
+  j=0
+  k=0
+  tmp1=0
+  for iFace=1:A.nFaces
+    tmpsize=fsize(A,iFace)
+    tmp11=tmpsize[1]*tmpsize[2]
+    tmp2=tmp1+tmp11
+    if tmp1<ij<=tmp2
+      f=iFace;
+      tmp3=(ij-tmp1);
+      k=Int(ceil(tmp3/tmpsize[1]))
+      j=Int(tmp3-tmpsize[1]*(k-1))
+    end;
+    tmp1=tmp1+tmp11
+  end
+  return (f,j,k)
+end
 
 function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
   fs=Array{NTuple{N, Int}}(undef,A.nFaces)
@@ -37,74 +117,115 @@ function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
   return fs
 end
 
-function fsize(A::AbstractGcmfaces{T, N},i::Integer) where {T,N}
-  fs=size(A.f[i]);
+function fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
+  if i>0
+    fs=size(A.f[i])
+  else
+    tmp1=0
+    for i=1:A.nFaces
+      tmp1=tmp1+size(A.f[i],1)*size(A.f[i],2)
+    end
+    tmp2=size(A.f[1])
+    fs=(tmp1,1,tmp2[3:end]...)
+  end
+end
+
+function fsize(A::Array{Array{T,N},1}) where {T,N}
+  fs=Array{NTuple{N, Int}}(undef,length(A))
+  for i=1:length(A)
+    fs[i]=size(A[i]);
+  end
+  return fs
+end
+
+function fsize(A::Array{Array{T,N},1},i::Int) where {T,N}
+  if i>0
+    fs=size(A[i])
+  else
+    tmp1=0
+    for i=1:length(A)
+      tmp1=tmp1+size(A[i],1)*size(A[i],2)
+    end
+    tmp2=size(A[1])
+    fs=(tmp1,1,tmp2[3:end]...)
+  end
 end
 
 ## Interface Methods
 
-function Base.size(A::AbstractGcmfaces{T, N}) where {T,N}
-  fs=fsize(A)
-  tmp1=0
-  for i=1:A.nFaces
-    tmp1=tmp1+fs[i][1]*fs[i][2]
-  end
-  #N>2 ? s=(tmp1,1,fs[1][3]) : s=(tmp1,1)
-  if N==2; s=(tmp1,1);
-  elseif N==3; s=(tmp1,1,fs[1][3]);
-  elseif N==4; s=(tmp1,1,fs[1][3],fs[1][4]);
-  else; error("N>4 case not implemented yet");
-  end
-  return s
-end
+Base.size(A::gcmfaces) = fsize(A, 0)
+Base.size(A::gcmfaces, dim::Integer) = fsize(A, 0)[dim]
+Base.size(A::gcmsubset) = fsize(A.i, 0)
+Base.size(A::gcmsubset, dim::Integer) = fsize(A.i, 0)[dim]
 
-function Base.size(A::AbstractGcmfaces{T, N},dim::Integer) where {T,N}
-  tmp1=size(A)
-  s=tmp1[dim]
-end
+#
 
-function Base.getindex(A::AbstractGcmfaces{T, N}, i::Vararg{Int, N}) where {T,N}
-
-  f=0
-  j=0
-  k=0
-  tmp1=0
-  for iFace=1:A.nFaces
-    tmpsize=fsize(A,iFace)
-    tmp11=tmpsize[1]*tmpsize[2]
-    tmp2=tmp1+tmp11
-    if tmp1<i[1]<=tmp2
-      f=iFace;
-      tmp3=(i[1]-tmp1);
-      k=Int(ceil(tmp3/tmpsize[1]))
-      j=Int(tmp3-tmpsize[1]*(k-1))
-    end;
-    tmp1=tmp1+tmp11
-  end
-  if ndims(A)==2; val=A.f[f][j,k];
-  elseif ndims(A)==3; val=A.f[f][j,k,i[3]];
-  elseif ndims(A)==4; val=A.f[f][j,k,i[3],i[4]];
-  else; error("ndims>4 case not implemented yet")
+function Base.getindex(A::AbstractGcmfaces{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
+  if typeof(I[1])<:Int
+    (f,i,j)=fijind(A,I[1])
+    J=Base.tail(Base.tail(I))
+    J=(i,j,J...)
+    val=A.f[f][J...]
+  elseif typeof(I[1])<:AbstractUnitRange
+    val=similar(A,eltype(A),length.(I))
+    for iFace=1:A.nFaces
+      @views val.f[iFace]=A.f[iFace]
+    end
+    #eventually I will distribute across faces; for now I just use face 1:
+    k=0
+    J=Base.tail(Base.tail(I))
+    for kk=I[1]
+      k+=1
+      (f,i,j)=fijind(A,kk)
+      tmp1=(k,1,J...)
+      tmp2=(i,j,J...)
+      val.i[1][tmp1...]=A.f[f][tmp2...]
+    end
+  elseif typeof(I[1])<:Colon
+    #should this rather be a copy as the above?
+    val=view(A,I...)
+  else
+    er1=typeof(A)
+    er2=typeof(I[1])
+    error("getindex not yet implemented for "*"$er1"*" and "*"$er2"*" indices")
   end
   return val
 end
 
+function Base.getindex(A::gcmsubset{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
+  #eventually I will distribute across faces; for now I just use face 1:
+  return getindex(A.i[1],I...)
+end
+
+#
+
+function Base.setindex!(A::AbstractGcmfaces{T, N}, v, I::Vararg{Int, N}) where {T,N}
+  (f,i,j)=fijind(A,I[1])
+  J=Base.tail(Base.tail(I))
+  J=(i,j,J...)
+  return (A.f[f][J...] = v)
+end
+
+function Base.setindex!(A::gcmsubset{T, N}, v, I::Vararg{Int, N}) where {T,N}
+  #eventually I will distribute across faces; for now I just use face 1:
+  return (A.i[1][I...] = v)
+end
+
 ## view
 
-function Base.view(a::AbstractGcmfaces{T, N}, I::Vararg{Any, N}) where {T,N}
+function Base.view(a::AbstractGcmfaces{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
   nFaces=a.nFaces;
   grTopo=a.grTopo;
-  v1=Array{Any}(undef,nFaces);
+  if !isa(I[1],Colon)|!isa(I[2],Colon)
+    J=Base.tail(Base.tail(I))
+    J=(:,:,J...)
+  else
+    J=I
+  end
+  Nout=length(size(view(a.f[1],J...)));
+  v1=Array{Array{T,Nout}}(undef,nFaces);
   for iFace=1:nFaces
-    if N==2;
-      v1[iFace]=view(a.f[iFace],:,:);
-    elseif N==3;
-      v1[iFace]=view(a.f[iFace],:,:,I[3]);
-    elseif N==4;
-      v1[iFace]=view(a.f[iFace],:,:,I[3],I[4]);
-    else;
-      error("N>4 case not implemented yet")
-    end
+    v1[iFace]=view(a.f[iFace],J...);
   end
   c=gcmfaces(nFaces,grTopo,v1);
   return c;
@@ -112,10 +233,20 @@ end
 
 # Custom pretty-printing
 
-function Base.show(io::IO, z::gcmfaces)
+function Base.show(io::IO, z::AbstractGcmfaces{T, N}) where {T,N}
 
 #    @printf io " MeshArrays instance with \n"
-    printstyled(io, " gcmfaces array \n",color=:normal)
+    if isa(z,gcmfaces)
+      printstyled(io, " gcmfaces array \n",color=:normal)
+      nm="face"
+      fs=fsize(z.f)
+    elseif isa(z,gcmsubset)
+      printstyled(io, " gcmsubset array \n",color=:normal)
+      fs=fsize(z.i)
+      nm="subset"
+    else
+      error("unknown type")
+    end
     printstyled(io, "  grid type   = ",color=:normal)
     printstyled(io, "$(z.grTopo)\n",color=:blue)
     printstyled(io, "  # of faces  = ",color=:normal)
@@ -128,16 +259,62 @@ function Base.show(io::IO, z::gcmfaces)
     else
       printstyled(io, "  data type   = ",color=:normal)
       printstyled(io, "$(typeof(z.f[1][1]))\n",color=:blue)
-      printstyled(io, "  face sizes  = ",color=:normal)
-      printstyled(io, "$(size(z.f[1]))\n",color=:blue)
+      printstyled(io, "  $(nm) sizes  = ",color=:normal)
+      printstyled(io, "$(fs[1])\n",color=:blue)
       for iFace=2:z.nFaces
         printstyled(io, "                ",color=:normal)
-        printstyled(io, "$(size(z.f[iFace]))\n",color=:blue)
+        printstyled(io, "$(fs[iFace])\n",color=:blue)
       end
     end
 
     return
 end
+
+#
+
+function Base.similar(A::gcmfaces, ::Type{T}, dims::Dims) where {T}
+  if prod(dims)==length(A)
+    B=gcmfaces(A.nFaces,A.grTopo,T,A.fSize,A.aSize)
+  else
+    B=gcmsubset(A.nFaces,A.grTopo,T,A.fSize,A.aSize,dims)
+  end
+end
+
+Base.BroadcastStyle(::Type{<:gcmfaces}) = Broadcast.ArrayStyle{gcmfaces}()
+
+function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmfaces}}, ::Type{ElType}) where ElType
+    # Scan the inputs for the gcmfaces:
+    A = find_gcmfaces(bc)
+    # Create the gcmfaces output:
+    similar(A)
+end
+
+find_gcmfaces(bc::Base.Broadcast.Broadcasted) = find_gcmfaces(bc.args)
+find_gcmfaces(args::Tuple) = find_gcmfaces(find_gcmfaces(args[1]), Base.tail(args))
+find_gcmfaces(x) = x
+find_gcmfaces(a::gcmfaces, rest) = a
+find_gcmfaces(::Any, rest) = find_gcmfaces(rest)
+
+#
+
+function Base.similar(A::gcmsubset, ::Type{T}, dims::Dims) where {T}
+    B=gcmsubset(A.nFaces,A.grTopo,T,A.fSize,A.aSize,dims[1])
+end
+
+Base.BroadcastStyle(::Type{<:gcmsubset}) = Broadcast.ArrayStyle{gcmsubset}()
+
+function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmsubset}}, ::Type{ElType}) where ElType
+    # Scan the inputs for the gcmsubset:
+    A = find_gcmsubset(bc)
+    # Create the gcmsubset output:
+    similar(A)
+end
+
+find_gcmsubset(bc::Base.Broadcast.Broadcasted) = find_gcmsubset(bc.args)
+find_gcmsubset(args::Tuple) = find_gcmsubset(find_gcmsubset(args[1]), Base.tail(args))
+find_gcmsubset(x) = x
+find_gcmsubset(a::gcmsubset, rest) = a
+find_gcmsubset(::Any, rest) = find_gcmsubset(rest)
 
 # basic operations
 
@@ -146,7 +323,7 @@ import Base: isnan, isinf, isfinite
 import Base: maximum, minimum, sum, fill
 
 function +(a::gcmfaces)
-  c=gcmfaces(a.nFaces,a.grTopo)
+  c=similar(a)
   for iFace=1:a.nFaces
     c.f[iFace]=+a.f[iFace];
   end
@@ -154,7 +331,7 @@ function +(a::gcmfaces)
 end
 
 function +(a::gcmfaces,b::gcmfaces)
-  c=gcmfaces(a.nFaces,a.grTopo)
+  c=similar(a)
   for iFace=1:a.nFaces
     c.f[iFace]=a.f[iFace]+b.f[iFace];
   end
@@ -168,7 +345,7 @@ function +(a::gcmfaces,b::gcmfaces)
 end
 
 function +(a::Number,b::gcmfaces)
-  c=gcmfaces(b.nFaces,b.grTopo)
+  c=similar(b)
   for iFace=1:b.nFaces
     c.f[iFace]=a.+b.f[iFace];
   end
@@ -184,7 +361,7 @@ function +(a::gcmfaces,b::Number)
 end
 
 function -(a::gcmfaces)
-  c=gcmfaces(a.nFaces,a.grTopo)
+  c=similar(a)
   for iFace=1:a.nFaces
     c.f[iFace]=-a.f[iFace];
   end
@@ -192,7 +369,7 @@ function -(a::gcmfaces)
 end
 
 function -(a::gcmfaces,b::gcmfaces)
-  c=gcmfaces(a.nFaces,a.grTopo)
+  c=similar(a)
   for iFace=1:a.nFaces
     c.f[iFace]=a.f[iFace]-b.f[iFace];
   end
@@ -200,7 +377,7 @@ function -(a::gcmfaces,b::gcmfaces)
 end
 
 function -(a::Number,b::gcmfaces)
-  c=gcmfaces(b.nFaces,b.grTopo)
+  c=similar(b)
   for iFace=1:b.nFaces
     c.f[iFace]=a.-b.f[iFace];
   end
@@ -208,7 +385,7 @@ function -(a::Number,b::gcmfaces)
 end
 
 function -(a::gcmfaces,b::Number)
-  c=gcmfaces(a.nFaces,a.grTopo)
+  c=similar(a)
   for iFace=1:a.nFaces
     c.f[iFace]=a.f[iFace].-b;
   end
@@ -216,17 +393,15 @@ function -(a::gcmfaces,b::Number)
 end
 
 function *(a::gcmfaces,b::gcmfaces)
-  nFaces=a.nFaces;
-  grTopo=a.grTopo;
-  c=gcmfaces(nFaces,grTopo);
-  for iFace=1:nFaces
+  c=similar(a);
+  for iFace=1:a.nFaces
     c.f[iFace]=a.f[iFace].*b.f[iFace];
   end
   return c
 end
 
 function *(a::Number,b::gcmfaces)
-  c=gcmfaces(b.nFaces,b.grTopo);
+  c=similar(b);
   for iFace=1:b.nFaces
     c.f[iFace]=a*b.f[iFace];
   end
@@ -239,30 +414,24 @@ function *(a::gcmfaces,b::Number)
 end
 
 function /(a::gcmfaces,b::gcmfaces)
-  nFaces=a.nFaces;
-  grTopo=a.grTopo;
-  c=gcmfaces(nFaces,grTopo);
-  for iFace=1:nFaces
+  c=similar(a);
+  for iFace=1:a.nFaces
     c.f[iFace]=a.f[iFace]./b.f[iFace];
   end
   return c
 end
 
 function /(a::Number,b::gcmfaces)
-  nFaces=b.nFaces;
-  grTopo=b.grTopo;
-  c=gcmfaces(nFaces,grTopo);
-  for iFace=1:nFaces
+  c=similar(b);
+  for iFace=1:b.nFaces
     c.f[iFace]=a./b.f[iFace];
   end
   return c
 end
 
 function /(a::gcmfaces,b::Number)
-  nFaces=a.nFaces;
-  grTopo=a.grTopo;
-  c=gcmfaces(nFaces,grTopo);
-  for iFace=1:nFaces
+  c=similar(a);
+  for iFace=1:a.nFaces
     c.f[iFace]=a.f[iFace]./b;
   end
   return c
@@ -271,9 +440,7 @@ end
 ##
 
 function isnan(a::gcmfaces)
-    nFaces=a.nFaces;
-    grTopo=a.grTopo;
-    c=gcmfaces(a.nFaces,a.grTopo);
+    c=similar(a);
     for iFace=1:a.nFaces
       c.f[iFace]=isnan.(a.f[iFace]);
     end
@@ -281,9 +448,7 @@ function isnan(a::gcmfaces)
 end
 
 function isinf(a::gcmfaces)
-    nFaces=a.nFaces;
-    grTopo=a.grTopo;
-    c=gcmfaces(a.nFaces,a.grTopo);
+    c=similar(a);
     for iFace=1:a.nFaces
       c.f[iFace]=isinf.(a.f[iFace]);
     end
@@ -291,9 +456,7 @@ function isinf(a::gcmfaces)
 end
 
 function isfinite(a::gcmfaces)
-    nFaces=a.nFaces;
-    grTopo=a.grTopo;
-    c=gcmfaces(a.nFaces,a.grTopo);
+    c=similar(a);
     for iFace=1:a.nFaces
       c.f[iFace]=isfinite.(a.f[iFace]);
     end
@@ -328,7 +491,7 @@ function minimum(a::gcmfaces)
 end
 
 function fill(val::Any,a::gcmfaces)
-    c=gcmfaces(a.nFaces,a.grTopo);
+    c=similar(a);
     for iFace=1:a.nFaces
       c.f[iFace]=fill(val,fsize(a,iFace));
     end

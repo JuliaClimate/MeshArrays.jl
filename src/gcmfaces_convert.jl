@@ -23,22 +23,23 @@ return arr;
 end
 
 ## convert2array ##
-function convert2array(fld::Array)
+function convert2array(fld::Array{T,N}) where {T,N}
 
 grTopo=MeshArrays.grTopo;
 nFaces=MeshArrays.nFaces;
 
-v1=Array{Any,1}(undef,nFaces);
+v1=Array{Array{T,N},1}(undef,nFaces);
+N>2 ? error("N>2 case not implemented yet") : nothing
 
 if MeshArrays.grTopo=="llc";
-    (n1,n2)=MeshArrays.facesSize[1,:];
+    (n1,n2)=MeshArrays.facesSize[1];
     v1[1]=fld[1:n1,1:n2];
     v1[2]=fld[n1+1:n1*2,1:n2];
     v1[3]=rotr90(fld[1:n1,n2+1:n2+n1]);
     v1[4]=rotl90(fld[n1*2+1:n1*3,1:n2]);
     v1[5]=rotl90(fld[n1*3+1:n1*4,1:n2]);
 elseif MeshArrays.grTopo=="cs";
-    (n1,n2)=MeshArrays.facesSize[1,:];
+    (n1,n2)=MeshArrays.facesSize[1];
     v1[1]=fld[1:n1,n1+1:n1+n2];
     v1[2]=fld[n1+1:2*n1,n1+1:n1+n2];
     v1[3]=rotr90(fld[1:n1,n1+n2+1:n2+n1*2]);
@@ -66,7 +67,7 @@ function convert2gcmfaces(fld::gcmfaces)
 
     aa=0;bb=0;
     for iFace=1:nFaces;
-        aa=aa+prod(facesSize[iFace,:]);
+        aa=aa+prod(facesSize[iFace]);
         bb=bb+prod(size(fld.f[iFace]));
     end;
     n3=Int64(bb/aa);
@@ -75,8 +76,8 @@ function convert2gcmfaces(fld::gcmfaces)
     i0=0; i1=0;
     for iFace=1:nFaces;
         i0=i1+1;
-        nn=facesSize[iFace,1];
-        mm=facesSize[iFace,2];
+        nn=facesSize[iFace][1];
+        mm=facesSize[iFace][2];
         i1=i1+nn*mm;
         v11[i0:i1,:]=reshape(fld.f[iFace],(nn*mm,n3));
     end;
@@ -103,7 +104,7 @@ v1=Array{Array{eltype(fld),ndims(fld)}}(undef,nFaces);
 i0=0; i1=0;
 for iFace=1:nFaces
   i0=i1+1;
-  nn=facesSize[iFace,1]; mm=facesSize[iFace,2];
+  nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
   i1=i1+nn*mm;
   if n3>1;
     v1[iFace]=reshape(v0[i0:i1,:],(nn,mm,n3));
