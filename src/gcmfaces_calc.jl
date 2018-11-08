@@ -9,8 +9,8 @@ end
 function gradient(inFLD::gcmfaces,doDIV::Bool)
 
 exFLD=exchange(inFLD,1)
-dFLDdx=gcmfaces(inFLD.nFaces,inFLD.grTopo)
-dFLDdy=gcmfaces(inFLD.nFaces,inFLD.grTopo)
+dFLDdx=similar(inFLD)
+dFLDdy=similar(inFLD)
 
 for a=1:inFLD.nFaces;
   (s1,s2)=fsize(exFLD,a)
@@ -32,8 +32,8 @@ end
 function gradient(inFLD::gcmfaces,iDXC::gcmfaces,iDYC::gcmfaces)
 
 exFLD=exchange(inFLD,1)
-dFLDdx=gcmfaces(inFLD.nFaces,inFLD.grTopo)
-dFLDdy=gcmfaces(inFLD.nFaces,inFLD.grTopo)
+dFLDdx=similar(inFLD)
+dFLDdy=similar(inFLD)
 
 for a=1:inFLD.nFaces;
   (s1,s2)=fsize(exFLD,a)
@@ -55,7 +55,7 @@ return fldmsk
 end
 
 function mask(fld::gcmfaces, val::Number)
-  fldmsk=gcmfaces(fld.nFaces,fld.grTopo)
+  fldmsk=similar(fld)
   for a=1:fld.nFaces
     tmp1=copy(fld.f[a])
     replace!(x -> !isfinite(x) ? val : x, tmp1 )
@@ -65,7 +65,7 @@ function mask(fld::gcmfaces, val::Number)
 end
 
 function mask(fld::gcmfaces, val::Number, noval::Number)
-  fldmsk=gcmfaces(fld.nFaces,fld.grTopo)
+  fldmsk=similar(fld)
   for a=1:fld.nFaces
     tmp1=copy(fld.f[a])
     replace!(x -> x==noval ? val : x, tmp1  )
@@ -83,7 +83,7 @@ function convergence(uFLD::gcmfaces,vFLD::gcmfaces);
 #  if otherwise then something this may be needed:
 #  uFLD=mask(uFLD,0.0); vFLD=mask(vFLD,0.0);
 
-CONV=gcmfaces(uFLD.nFaces,uFLD.grTopo)
+CONV=similar(uFLD)
 
 (tmpU,tmpV)=exch_UV(uFLD,vFLD)
 for a=1:tmpU.nFaces
@@ -118,8 +118,8 @@ mskW=mask(mskW,0.0)
 mskS=mask(mskS,0.0)
 
 #get inverse grid spacing:
-iDXC=gcmfaces(FLD.nFaces,FLD.grTopo)
-iDYC=gcmfaces(FLD.nFaces,FLD.grTopo)
+iDXC=similar(FLD)
+iDYC=similar(FLD)
 for a=1:FLD.nFaces;
   iDXC.f[a]=1.0./MeshArrays.DXC.f[a]
   iDYC.f[a]=1.0./MeshArrays.DYC.f[a]
@@ -147,8 +147,8 @@ dtFac=dt*mskC/MeshArrays.RAC;
 #loop:
 for it=1:nbt
   (dTdxAtU,dTdyAtV)=gradient(FLD,iDXC,iDYC);
-  tmpU=gcmfaces(FLD.nFaces,FLD.grTopo)
-  tmpV=gcmfaces(FLD.nFaces,FLD.grTopo)
+  tmpU=similar(FLD)
+  tmpV=similar(FLD)
   for a=1:FLD.nFaces
       tmpU.f[a]=dTdxAtU.f[a].*KuxFac.f[a];
       tmpV.f[a]=dTdyAtV.f[a].*KvyFac.f[a];

@@ -81,7 +81,7 @@ fillval=0.0
 #step 1
 
 s=size.(fld.f);
-FLD=gcmfaces(1,"ll");
+FLD=similar(fld);
 FLD.f[1]=fill(fillval,s[1].+2N);
 @views FLD.f[1][N+1:N+s[1][1],N+1:N+s[1][2]]=fld.f[1];
 
@@ -118,8 +118,8 @@ fillval=0.0
 #step 1
 
 s=size.(fldU.f);
-FLDU=gcmfaces(1,"ll");
-FLDV=gcmfaces(1,"ll");
+FLDU=similar(fldU);
+FLDV=similar(fldV);
 
 FLDU.f[1]=fill(fillval,s[1][1]+1,s[1][2]);
 FLDV.f[1]=fill(fillval,s[1][1],s[1][2]+1);
@@ -148,7 +148,7 @@ s=size.(fld.f);
 nf=fld.nFaces;
 nf==5 ? s=vcat(s,s[3]) : nothing
 tp=fld.grTopo;
-FLD=gcmfaces(nf,tp);
+FLD=similar(fld);
 
 for i=1:nf; FLD.f[i]=fill(fillval,s[i].+2N); end;
 #code below yields strange, seemingly incorrect results:
@@ -196,8 +196,8 @@ s=size.(fldU.f);
 nf=fldU.nFaces;
 nf==5 ? s=vcat(s,s[3]) : nothing
 tp=fldU.grTopo;
-FLDU=gcmfaces(nf,tp);
-FLDV=gcmfaces(nf,tp);
+FLDU=similar(fldU);
+FLDV=similar(fldV);
 
 for i=1:nf;
  FLDU.f[i]=fill(fillval,s[i].+2N);
@@ -250,8 +250,8 @@ s=size.(fldU.f);
 nf=fldU.nFaces;
 nf==5 ? s=vcat(s,s[3]) : nothing
 tp=fldU.grTopo;
-FLDU=gcmfaces(nf,tp);
-FLDV=gcmfaces(nf,tp);
+FLDU=similar(fldU);
+FLDV=similar(fldV);
 
 for i=1:nf
   FLDU.f[i]=fill(fillval,s[i][1]+1,s[i][2]);
