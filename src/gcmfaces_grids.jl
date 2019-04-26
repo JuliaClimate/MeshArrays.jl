@@ -5,6 +5,12 @@ GCMGridSpec() = GCMGridSpec("LLC90")
 
 ## GCMGridSpec function with gridName argument:
 
+"""
+    GCMGridSpec(gridName)
+
+Set global variables in the module scope for grDir, nFaces, grTopo, ioSize,
+facesSize, ioPrec using hard-coded values for LLC90, CS32, LL360 (for now).
+"""
 function GCMGridSpec(gridName)
 
 global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;
@@ -40,6 +46,14 @@ end
 
 ## GCMGridLoad function
 
+"""
+    GCMGridLoad()
+
+Loads grid variables from files located in grDir set by GCMGridSpec.
+
+Grid variables are XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC,
+hFacS, hFacW, Depth based on the MITgcm naming convention.
+"""
 function GCMGridLoad()
 
     global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth;
@@ -55,6 +69,11 @@ function GCMGridLoad()
 
 end
 
+"""
+    GCMGridOnes(grTp,nF,nP)
+
+Define all-1 grid variables instead of using GCMGridSpec & GCMGridLoad.
+"""
 function GCMGridOnes(grTp,nF,nP)
 
     global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;

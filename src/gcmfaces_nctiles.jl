@@ -10,7 +10,12 @@ export read_nctiles
 #  Depth=read_nctiles(fileName,"Depth")
 #  hFacC=read_nctiles(fileName,"hFacC")
 
-function read_nctiles(fileName,fldName);
+"""
+    read_nctiles(fileName,fldName)
+
+Read model output from Netcdf / NCTiles file and convert to gcmfaces structure.
+"""
+function read_nctiles(fileName,fldName)
 
 if ~(MeshArrays.grTopo=="llc");
   error("non-llc cases not implemented yet");

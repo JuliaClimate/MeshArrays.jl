@@ -1,7 +1,12 @@
 
 ## read_bin function with full list of argument
 
-function read_bin(fil::String,kt,kk,prec::DataType);
+"""
+    read_bin(fil::String,kt,kk,prec::DataType)
+
+Read model output from binary file and convert to gcmfaces structure.
+"""
+function read_bin(fil::String,kt,kk,prec::DataType)
 
   if ~isempty(kt);
     error("non-empty kt option not implemented yet");
@@ -12,7 +17,7 @@ function read_bin(fil::String,kt,kk,prec::DataType);
   end;
 
   (n1,n2)=MeshArrays.ioSize;
-  
+
   if prec==Float64;
     reclen=8;
   else;
@@ -34,12 +39,22 @@ end
 
 ## read_bin function with reduced list of argument
 
-function read_bin(fil::String,prec::DataType);
-  read_bin(fil,[],[],prec);
+"""
+    read_bin(fil,[],[],prec)
+
+Read model output from binary file and convert to gcmfaces structure.
+"""
+function read_bin(fil::String,prec::DataType)
+  read_bin(fil,[],[],prec)
 end
 
 ## read_bin function with reduced list of argument
 
-function read_bin(fil::String);
-  read_bin(fil,[],[],Float32);
+"""
+    read_bin(fil::String)
+
+Read model output from binary file and convert to gcmfaces structure.
+"""
+function read_bin(fil::String)
+  read_bin(fil,[],[],Float32)
 end
