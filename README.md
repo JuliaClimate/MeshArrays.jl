@@ -5,6 +5,8 @@
 [![codecov](https://codecov.io/gh/gaelforget/GCMFaces.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gaelforget/GCMFaces.jl)
 [![Coverage Status](https://coveralls.io/repos/github/gaelforget/GCMFaces_jl/badge.svg?branch=master)](https://coveralls.io/github/gaelforget/GCMFaces_jl?branch=master)
 [![DOI](https://zenodo.org/badge/143987632.svg)](https://zenodo.org/badge/latestdoi/143987632)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://gaelforget.github.io/MeshArrays.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://gaelforget.github.io/MeshArrays.jl/dev)
 
 This repository contains the `MeshArrays.jl` package introduced at the [JuliaCon-2018](http://juliacon.org/2018/) conference by [this presentation](https://youtu.be/RDxAy_zSUvg). The code has passed a full test suite with `julia v0.7 and v1.0` but is still regarded as a **preliminary implementation**.
 
@@ -14,7 +16,7 @@ To install this `Julia` package first execute `add MeshArrays` at the `pkg>` pro
 
 ### Main Package Features
 
-`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections within a `struct` and provides an `exchange` function that effectively transfers data between connected arrays. 
+`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections within a `struct` and provides an `exchange` function that effectively transfers data between connected arrays.
 
 The composite types specify how each array collection forms a mesh and provide information to allow `exchange` to dispatch to the appropriate method. Various configurations that are commonly used in `Earth System Models` are implemented using the concrete type called `gcmfaces`. Embedded arrays, or meshes, each represent a subdomain within, e.g., an Earth System Model grid.
 
@@ -32,8 +34,4 @@ wget --recursive {$DemoGrids}/GRID_LLC90/
 mv mit.ecco-group.org/gforget/grid_examples/GRID_* .
 ```
 
-But the [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git) also contains `demo_smooth.ipynb` which illustrates how the `smooth` function is used for CI testing purposes and does not require downloading any of the predefined grids. 
-
-
-
-
+But the [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git) also contains `demo_smooth.ipynb` which illustrates how the `smooth` function is used for CI testing purposes and does not require downloading any of the predefined grids.
