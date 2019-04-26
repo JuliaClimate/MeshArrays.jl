@@ -35,8 +35,7 @@ end
 ## additional constructors for gcmfaces
 
 """
-    gcmfaces(nFaces::Int,grTopo::String,::Type{T},
-      fSize::Array{NTuple{N, Int}},
+    gcmfaces(nFaces::Int,grTopo::String,::Type{T},fSize::Array{NTuple{N, Int}},
       aSize::NTuple{N,Int}) where {T,N}
 
 gcmfaces constructor.
@@ -152,7 +151,7 @@ end
 
 fsize convenience function.
 """
-function fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
+function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
   fs=Array{NTuple{N, Int}}(undef,A.nFaces)
   for i=1:A.nFaces
     fs[i]=size(A.f[i]);
@@ -161,7 +160,7 @@ function fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
 end
 
 """
-    fsize(A::AbstractGcmfaces{T, N}) where {T,N}
+    fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
 
 fsize convenience function.
 """

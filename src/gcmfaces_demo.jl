@@ -10,6 +10,11 @@
 # (Rini,Rend,DXCsm,DYCsm)=demo2();
 # @time Rend=smooth(Rini,DXCsm,DYCsm);
 
+"""
+    demo1(gridChoice)
+
+Demo overloaded arithmetic, exchange, GCMGridLoad, gradient, etc.
+"""
 function demo1(gridChoice)
 
 GCMGridSpec(gridChoice)
@@ -48,6 +53,11 @@ end
 
 ##
 
+"""
+    demo2()
+
+Demo at higher level using smooth()
+"""
 function demo2()
 
 #Pre-requisite:

@@ -4,6 +4,15 @@
 
 ## User Front Ends
 
+"""
+    exchange(fld::gcmfaces)
+
+Exchange / transfer data between neighbor arrays. Other methods are
+
+    exchange(fld::gcmfaces,N::Integer)
+    exchange(u::gcmfaces,v::gcmfaces)
+    exchange(u::gcmfaces,v::gcmfaces,N::Integer)
+"""
 function exchange(fld::gcmfaces)
   FLD=exch_T_N(fld,1);
 end
