@@ -4,6 +4,11 @@
 
 abstract type AbstractGcmfaces{T, N} <: AbstractArray{T, N} end
 
+"""
+    gcmfaces{T, N}
+
+gcmfaces data structure.
+"""
 struct gcmfaces{T, N} <: AbstractGcmfaces{T, N}
    nFaces::Int
    grTopo::String
@@ -12,6 +17,11 @@ struct gcmfaces{T, N} <: AbstractGcmfaces{T, N}
    aSize::NTuple{N, Int}
 end
 
+"""
+    gcmsubset{T, N}
+
+gcmsubset data structure.
+"""
 struct gcmsubset{T, N} <: AbstractGcmfaces{T, N}
    nFaces::Int
    grTopo::String
@@ -24,6 +34,13 @@ end
 
 ## additional constructors for gcmfaces
 
+"""
+    gcmfaces(nFaces::Int,grTopo::String,::Type{T},
+      fSize::Array{NTuple{N, Int}},
+      aSize::NTuple{N,Int}) where {T,N}
+
+gcmfaces constructor.
+"""
 function gcmfaces(nFaces::Int,grTopo::String,::Type{T},
   fSize::Array{NTuple{N, Int}},
   aSize::NTuple{N,Int}) where {T,N}
@@ -34,6 +51,12 @@ function gcmfaces(nFaces::Int,grTopo::String,::Type{T},
   gcmfaces{T,N}(nFaces,grTopo,f,fSize,aSize)
 end
 
+"""
+    gcmfaces(nFaces::Int,grTopo::String,
+      v1::Array{Array{T,N},1}) where {T,N}
+
+gcmfaces constructor.
+"""
 function gcmfaces(nFaces::Int,grTopo::String,
   v1::Array{Array{T,N},1}) where {T,N}
   fSize=fsize(v1)
@@ -42,6 +65,11 @@ function gcmfaces(nFaces::Int,grTopo::String,
 #  gcmfaces(nFaces,grTopo,T,fs,as)
 end
 
+"""
+    gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
+
+gcmfaces constructor.
+"""
 function gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
   #should this be called similar? deepcopy?
   fSize=fsize(A)
@@ -50,6 +78,11 @@ function gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
 #  gcmfaces(nFaces,grTopo,T,fSize,aSize)
 end
 
+"""
+    gcmfaces()
+
+gcmfaces constructor.
+"""
 function gcmfaces()
   if isdefined(MeshArrays,:nFaces)
     nFaces=MeshArrays.nFaces
@@ -89,6 +122,11 @@ end
 
 ## Convenience functions
 
+"""
+    fijind(A::gcmfaces,ij::Int)
+
+fijind convenience function.
+"""
 function fijind(A::gcmfaces,ij::Int)
   f=0
   j=0
@@ -109,7 +147,12 @@ function fijind(A::gcmfaces,ij::Int)
   return (f,j,k)
 end
 
-function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
+"""
+    fsize(A::AbstractGcmfaces{T, N}) where {T,N}
+
+fsize convenience function.
+"""
+function fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
   fs=Array{NTuple{N, Int}}(undef,A.nFaces)
   for i=1:A.nFaces
     fs[i]=size(A.f[i]);
@@ -117,6 +160,11 @@ function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
   return fs
 end
 
+"""
+    fsize(A::AbstractGcmfaces{T, N}) where {T,N}
+
+fsize convenience function.
+"""
 function fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
   if i>0
     fs=size(A.f[i])
@@ -130,6 +178,11 @@ function fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
   end
 end
 
+"""
+    fsize(A::Array{Array{T,N},1}) where {T,N}
+
+fsize convenience function.
+"""
 function fsize(A::Array{Array{T,N},1}) where {T,N}
   fs=Array{NTuple{N, Int}}(undef,length(A))
   for i=1:length(A)
@@ -138,6 +191,11 @@ function fsize(A::Array{Array{T,N},1}) where {T,N}
   return fs
 end
 
+"""
+    fsize(A::Array{Array{T,N},1},i::Int) where {T,N}
+
+fsize convenience function.
+"""
 function fsize(A::Array{Array{T,N},1},i::Int) where {T,N}
   if i>0
     fs=size(A[i])
