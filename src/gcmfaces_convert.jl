@@ -1,6 +1,11 @@
 
 ## convert2array method:
 
+"""
+    convert2array(fld::gcmfaces)
+
+Convert gcmfaces to array
+"""
 function convert2array(fld::gcmfaces)
 
 if fld.grTopo=="llc";
@@ -23,6 +28,12 @@ return arr;
 end
 
 ## convert2array ##
+
+"""
+    convert2array(fld::Array{T,N}) where {T,N}
+
+Convert array to gcmfaces
+"""
 function convert2array(fld::Array{T,N}) where {T,N}
 
 grTopo=MeshArrays.grTopo;
@@ -58,6 +69,11 @@ end
 
 ## convert2gcmfaces method:
 
+"""
+    convert2gcmfaces(fld::gcmfaces)
+
+Convert mitgcm output to gcmfaces
+"""
 function convert2gcmfaces(fld::gcmfaces)
 
     grTopo=MeshArrays.grTopo;
@@ -90,6 +106,11 @@ end
 
 ## convert2gcmfaces ##
 
+"""
+    convert2gcmfaces(fld::Array)
+
+Convert gcmfaces to mitgcm output
+"""
 function convert2gcmfaces(fld::Array)
 
 grTopo=MeshArrays.grTopo;
