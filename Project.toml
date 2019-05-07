@@ -4,14 +4,13 @@ authors = ["gaelforget <gforget@mit.edu>"]
 version = "0.1.6"
 
 [deps]
-Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
+[compat]
+julia = "≥ 0.7.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
-
-[compat]
-julia = "≥ 0.7.0"
