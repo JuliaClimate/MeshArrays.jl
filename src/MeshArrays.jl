@@ -11,10 +11,12 @@ include("gcmfaces_exch.jl");
 include("gcmfaces_convert.jl");
 include("gcmfaces_IO.jl");
 include("gcmfaces_demo.jl");
+include("gcmfaces_nctiles.jl");
 
 export AbstractGcmfaces, gcmfaces, gcmsubset, fsize, fijind
 export exchange, gradient, convergence, smooth, mask
 export GCMGridSpec, GCMGridLoad, GCMGridOnes
+export findtiles
 export demo1, demo2
 #The following functions rely on grid specs; currently via global vars.
 export read_bin, convert2array, convert2gcmfaces
@@ -22,6 +24,6 @@ export read_bin, convert2array, convert2gcmfaces
 export exch_UV
 #The following codes add dependencies to Plots & NetCDF.
 #include("gcmfaces_plot.jl");
-#include("gcmfaces_nctiles.jl");
+
 
 end # module

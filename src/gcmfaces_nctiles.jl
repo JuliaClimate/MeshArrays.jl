@@ -60,3 +60,61 @@ end;
 fld=gcmfaces(5,"llc",f);
 
 end
+
+
+function findtiles(ni,nj,grid="llc90")
+  mytiles = Dict()
+  GCMGridSpec()
+  if grid=="llc90"
+      GCMGridLoad()
+  else
+      println("Unsupported grid option")
+  end
+  mytiles["nFaces"]=MeshArrays.nFaces;
+  #mytiles.fileFormat=mygrid.fileFormat;
+  mytiles["ioSize"]=MeshArrays.ioSize;
+  %
+  XC=MeshArrays.XC;
+  YC=MeshArrays.YC;
+  XC11=copy(XC); YC11=copy(XC);
+  XCNINJ=copy(XC); YCNINJ=copy(XC);
+  iTile=copy(XC); jTile=copy(XC); tileNo=copy(XC);
+  tileCount=0;
+  for iF=1:XC11.nFaces;
+      #global tileCount,XC,YC,XC11,YC11,iTile,jTile,tileNo
+      face_XC=XC.f[iF]; face_YC=YC.f[iF];
+  #ordering convention that was used in first generation nctile files:
+  #    for ii=1:size(face_XC,1)/ni;
+  #        for jj=1:size(face_XC,2)/nj;
+  #ordering convention that is consistent with MITgcm/pkg/exch2:
+      for jj=Int.(1:size(face_XC,2)/nj);
+          for ii=Int.(1:size(face_XC,1)/ni);    
+              tileCount=tileCount+1;
+              tmp_i=(1:ni).+ni*(ii-1)
+              tmp_j=(1:nj).+nj*(jj-1)
+              tmp_XC=face_XC[tmp_i,tmp_j]
+              tmp_YC=face_YC[tmp_i,tmp_j]
+              XC11.f[iF][tmp_i,tmp_j].=tmp_XC[1,1]
+              YC11.f[iF][tmp_i,tmp_j].=tmp_YC[1,1]
+              XCNINJ.f[iF][tmp_i,tmp_j].=tmp_XC[end,end]
+              YCNINJ.f[iF][tmp_i,tmp_j].=tmp_YC[end,end]
+              iTile.f[iF][tmp_i,tmp_j]=collect(1:ni)*ones(Int,1,nj)
+              jTile.f[iF][tmp_i,tmp_j]=ones(Int,ni,1)*collect(1:nj)'
+              tileNo.f[iF][tmp_i,tmp_j]=tileCount*ones(Int,ni,nj)
+          end
+      end
+  end
+
+  mytiles["XC"] = XC;
+  mytiles["YC"] = YC;
+  mytiles["XC11"] = XC11;
+  mytiles["YC11"] = YC11;
+  mytiles["XCNINJ"] = XCNINJ;
+  mytiles["YCNINJ"] = YCNINJ;
+  mytiles["iTile"] = iTile;
+  mytiles["jTile"] = jTile;
+  mytiles["tileNo"] = tileNo;
+
+  return mytiles
+
+end
