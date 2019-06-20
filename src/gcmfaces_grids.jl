@@ -11,26 +11,26 @@ GCMGridSpec() = GCMGridSpec("LLC90")
 Set global variables in the module scope for grDir, nFaces, grTopo, ioSize,
 facesSize, ioPrec using hard-coded values for LLC90, CS32, LL360 (for now).
 """
-function GCMGridSpec(gridName)
+function GCMGridSpec(gridName,gridParentDir="./")
 
 global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;
 
 if gridName=="LLC90";
-    grDir="GRID_LLC90/";
+    grDir=gridParentDir*"GRID_LLC90/";
     nFaces=5;
     grTopo="llc";
     ioSize=[90 1170];
     facesSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
     ioPrec=Float64;
 elseif gridName=="CS32";
-    grDir="GRID_CS32/";
+    grDir=gridParentDir*"GRID_CS32/";
     nFaces=6;
     grTopo="cs";
     ioSize=[32 192];
     facesSize=[(32, 32), (32, 32), (32, 32), (32, 32), (32, 32), (32, 32)]
     ioPrec=Float32;
 elseif gridName=="LL360";
-    grDir="GRID_LL360/";
+    grDir=gridParentDir*"GRID_LL360/";
     nFaces=1;
     grTopo="ll";
     ioSize=[360 160];
@@ -102,7 +102,6 @@ end
 
 function findtiles(ni,nj,grid="llc90")
     mytiles = Dict()
-    GCMGridSpec()
     if grid=="llc90"
         GCMGridLoad()
     else
