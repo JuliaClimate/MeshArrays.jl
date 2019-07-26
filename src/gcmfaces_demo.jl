@@ -1,19 +1,14 @@
 
 ## demo functions:
-#
-#examples:
-# (D,Dexch,Darr,DD)=demo1("LLC90");
-# (Rini,Rend,DXCsm,DYCsm)=demo2();
-# @time Rend=smooth(Rini,DXCsm,DYCsm);
-#
-# GCMGridOnes("cs",6,100);
-# (Rini,Rend,DXCsm,DYCsm)=demo2();
-# @time Rend=smooth(Rini,DXCsm,DYCsm);
 
 """
     demo1(gridChoice)
 
-Demo overloaded arithmetic, exchange, GCMGridLoad, gradient, etc.
+Demonstrate basic fucntions (arithmetic, exchange, GCMGridLoad, gradient, etc.). Example call:
+
+```
+isdir("GRID_LLC90") ? (D,Dexch,Darr,DD)=demo1("LLC90") : nothing
+```
 """
 function demo1(gridChoice)
 
@@ -56,15 +51,22 @@ end
 """
     demo2()
 
-Demo at higher level using smooth()
+Demonstrate higher level functions using smooth() and
+
+```
+isdir("GRID_LLC90") ? demo1("LLC90") : GCMGridOnes("cs",6,100)
+(Rini,Rend,DXCsm,DYCsm)=demo2()
+@time Rend=smooth(Rini,DXCsm,DYCsm)
+
+include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
+qwckplot(Rini)
+qwckplot(Rend)
+```
+
 """
 function demo2()
 
-#Pre-requisite:
-#either load predefined grid:
-#  demo1("CS32");
-#or create a simple one:
-#  GCMGridOnes("cs",6,10);
+#Pre-requisite: either load predefined grid using `demo1` or call `GCMGridOnes`
 
 #initialize 2D field of random numbers
 tmp1=convert2gcmfaces(MeshArrays.XC);
@@ -87,5 +89,24 @@ DXCsm=3*MeshArrays.DXC; DYCsm=3*MeshArrays.DYC;
 Rend=smooth(Rini,DXCsm,DYCsm);
 
 return (Rini,Rend,DXCsm,DYCsm)
+
+end
+
+"""
+    demo3(gridChoice)
+
+Demonstrate computations of ocean transports. Calling sequence:
+
+```
+include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
+demo3()
+```
+"""
+function demo3(gridChoice)
+
+GCMGridSpec(gridChoice)
+GCMGridLoad()
+
+return "To be continued..."
 
 end
