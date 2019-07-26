@@ -3,8 +3,8 @@ using MeshArrays
 
 makedocs(
     sitename = "MeshArrays",
-    format = :html,
-    modules = [MeshArrays]
+    format   = Documenter.HTML(),
+    modules  = [MeshArrays]
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.
