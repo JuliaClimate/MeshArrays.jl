@@ -98,11 +98,13 @@ demo3()
 Demonstrate computations of ocean meridional transports. Calling sequence:
 
 ```
-include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
 !isdir("GRID_LLC90")||!isdir("nctiles_climatology") ? error("missing files") : nothing
+(LatCircles, UV, Tr)=demo3()
 
-demo3()
+include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
+qwckplot(UV["U"][:,:,1,1],"U component (note varying face orientations)")
+qwckplot(UV["V"][:,:,1,1],"V component (note varying face orientations)")
 ```
 """
 function demo3()
@@ -139,7 +141,53 @@ function demo3()
     U=read_nctiles(fileName,"UVELMASS")
     fileName="nctiles_climatology/VVELMASS/VVELMASS"
     V=read_nctiles(fileName,"VVELMASS")
+    UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
 
-    return LatCircles
+    Tr=TransportThrough(UV,LatCircles)
 
+    return LatCircles, UV, Tr
+
+end
+
+function TransportThrough(VectorField,IntegralPath)
+
+    #Note: vertical intergration is not always wanted; left for user to do outside
+
+    U=mask(VectorField["U"],0.0)
+    V=mask(VectorField["V"],0.0)
+    nd=ndims(U)
+    #println("nd=$nd and d=$d")
+
+    n=fill(1,4)
+    tmp=size(U)
+    n[1:nd].=tmp[1:nd]
+
+    haskey(VectorField,"factors") ? f=VectorField["factors"] : f=Array{String,1}(undef,nd)
+    haskey(VectorField,"dimensions") ? d=VectorField["dimensions"] : d=Array{String,1}(undef,nd)
+
+    length(d)!=nd ? error("inconsistent specification of dims") : nothing
+
+    #maybe use one of these functions:"
+    #find_gcmsubset
+    #fijind
+
+    trsp=Array{Float64}(undef,U.nFaces,n[3],n[4])
+    do_dz=sum(f.=="dz")
+    do_dxory=sum(f.=="dxory")
+
+    for i4=1:n[4]
+        for i3=1:n[3]
+            for a=1:U.nFaces
+                tmpU=U.f[a][:,:,i3,i4]
+                do_dxory==1 ? tmpU=tmpU.*MeshArrays.DYG.f[a] : nothing
+                #do_dz==1 ? tmpU=tmpU.*MeshArrays.DRF[i3] : nothing
+                tmpV=V.f[a][:,:,i3,i4]
+                do_dxory==1 ? tmpV=tmpV.*MeshArrays.DXG.f[a] : nothing
+                #do_dz==1 ? tmpV=tmpV.*MeshArrays.DRF[i3] : nothing
+                trsp[a,i3,i4]=sum(tmpU)+sum(tmpV)
+            end
+        end
+    end
+
+    return trsp
 end

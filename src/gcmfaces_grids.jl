@@ -65,6 +65,9 @@ function GCMGridLoad()
         @eval (($tmp2) = ($tmp1))
     end
 
+    #here I need to read also DRF etc
+    #and maybe just return as a dictionnary? 
+
     return "GCMGridLoad: passed"
 
 end
@@ -125,7 +128,7 @@ function findtiles(ni,nj,grid="llc90")
     #        for jj=1:size(face_XC,2)/nj;
     #ordering convention that is consistent with MITgcm/pkg/exch2:
         for jj=Int.(1:size(face_XC,2)/nj);
-            for ii=Int.(1:size(face_XC,1)/ni);    
+            for ii=Int.(1:size(face_XC,1)/ni);
                 tileCount=tileCount+1;
                 tmp_i=(1:ni).+ni*(ii-1)
                 tmp_j=(1:nj).+nj*(jj-1)
@@ -141,7 +144,7 @@ function findtiles(ni,nj,grid="llc90")
             end
         end
     end
-  
+
     mytiles["XC"] = XC;
     mytiles["YC"] = YC;
     mytiles["XC11"] = XC11;
@@ -151,8 +154,7 @@ function findtiles(ni,nj,grid="llc90")
     mytiles["iTile"] = iTile;
     mytiles["jTile"] = jTile;
     mytiles["tileNo"] = tileNo;
-  
+
     return mytiles
-  
+
 end
-  
