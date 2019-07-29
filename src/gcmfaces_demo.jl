@@ -100,11 +100,12 @@ Demonstrate computations of ocean meridional transports. Calling sequence:
 ```
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
 !isdir("GRID_LLC90")||!isdir("nctiles_climatology") ? error("missing files") : nothing
-(LatCircles, UV, Tr)=demo3()
+(UV, LC, Tr)=demo3();
 
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
 qwckplot(UV["U"][:,:,1,1],"U component (note varying face orientations)")
 qwckplot(UV["V"][:,:,1,1],"V component (note varying face orientations)")
+plot(dropdims(mean(sum(Tr,dims=2),dims=3),dims=(2,3))/1e6)
 ```
 """
 function demo3()
@@ -112,7 +113,7 @@ function demo3()
     GCMGridSpec("LLC90")
     GCMGridLoad()
 
-    LatValues=-179.5:179.5
+    LatValues=-89:89
     LatCircles=Array{Dict}(undef,length(LatValues))
 
     for j=1:length(LatValues)
@@ -139,13 +140,22 @@ function demo3()
 
     fileName="nctiles_climatology/UVELMASS/UVELMASS"
     U=read_nctiles(fileName,"UVELMASS")
+    U=mask(U,0.0)
+
     fileName="nctiles_climatology/VVELMASS/VVELMASS"
     V=read_nctiles(fileName,"VVELMASS")
+    V=mask(V,0.0)
+
     UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
 
-    Tr=TransportThrough(UV,LatCircles)
+    n=size(U)
+    Tr=Array{Float64}(undef,length(LatCircles),n[3],n[4])
+    for i=1:length(LatCircles)
+        Tr[i,:,:]=TransportThrough(UV,LatCircles[i])
+    end
+    #Tr=TransportThrough.(Ref{UV},LatCircles)
 
-    return LatCircles, UV, Tr
+    return UV, LatCircles, Tr
 
 end
 
@@ -153,8 +163,9 @@ function TransportThrough(VectorField,IntegralPath)
 
     #Note: vertical intergration is not always wanted; left for user to do outside
 
-    U=mask(VectorField["U"],0.0)
-    V=mask(VectorField["V"],0.0)
+    U=VectorField["U"]
+    V=VectorField["V"]
+
     nd=ndims(U)
     #println("nd=$nd and d=$d")
 
@@ -178,16 +189,18 @@ function TransportThrough(VectorField,IntegralPath)
     for i4=1:n[4]
         for i3=1:n[3]
             for a=1:U.nFaces
-                tmpU=U.f[a][:,:,i3,i4]
+                tmpU=U.f[a][:,:,i3,i4].*IntegralPath["mskW"].f[a]
                 do_dxory==1 ? tmpU=tmpU.*MeshArrays.DYG.f[a] : nothing
-                #do_dz==1 ? tmpU=tmpU.*MeshArrays.DRF[i3] : nothing
-                tmpV=V.f[a][:,:,i3,i4]
+                do_dz==1 ? tmpU=tmpU.*MeshArrays.DRF[i3] : nothing
+                tmpV=V.f[a][:,:,i3,i4].*IntegralPath["mskS"].f[a]
                 do_dxory==1 ? tmpV=tmpV.*MeshArrays.DXG.f[a] : nothing
-                #do_dz==1 ? tmpV=tmpV.*MeshArrays.DRF[i3] : nothing
+                do_dz==1 ? tmpV=tmpV.*MeshArrays.DRF[i3] : nothing
                 trsp[a,i3,i4]=sum(tmpU)+sum(tmpV)
             end
         end
     end
+
+    trsp=sum(trsp,dims=1)
 
     return trsp
 end
