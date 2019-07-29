@@ -29,12 +29,14 @@ ndims=length(size(x));
 if ndims==2;
   f0=Array{Float64}(undef,90,0);
   f00=Array{Float64}(undef,0,90);
-else;
-  nr=size(x,3)
-  f0=Array{Float64}(undef,90,0,nr);
-  f00=Array{Float64}(undef,0,90,nr);
+elseif ndims==3;
+  f0=Array{Float64}(undef,90,0,size(x,3));
+  f00=Array{Float64}(undef,0,90,size(x,3));
+elseif ndims==4;
+  f0=Array{Float64}(undef,90,0,size(x,3),size(x,4));
+  f00=Array{Float64}(undef,0,90,size(x,3),size(x,4));
 end;
-f=[f0,f0,NaN,f00,f00];
+f=[f0,f0,f0,f00,f00];
 
 #fill in f
 for ff=1:13;
@@ -57,6 +59,7 @@ for ff=1:13;
 end;
 
 #return f gcmfaces object fld
-fld=gcmfaces(5,"llc",f);
+fld=gcmfaces(5,"llc",f)
+return fld
 
 end

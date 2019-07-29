@@ -56,11 +56,30 @@ hFacS, hFacW, Depth based on the MITgcm naming convention.
 """
 function GCMGridLoad()
 
-    global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth;
+    #maybe just return as a dictionnary?
+    global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth
+    global AngleCS, AngleSN, RAW, RAS
+    global DRC, DRF, RC, RF
 
-    list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
+    list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
+    "DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth")
     for ii=1:length(list0);
         tmp1=read_bin(grDir*list0[ii]*".data",ioPrec);
+        tmp2=Symbol(list0[ii]);
+        @eval (($tmp2) = ($tmp1))
+    end
+
+    list0=("DRC","DRF","RC","RF")
+    for ii=1:length(list0);
+        fil=grDir*list0[ii]*".data"
+        tmp1=stat(fil)
+        n3=Int64(tmp1.size/8)
+
+        fid = open(fil);
+        tmp1 = Array{Float64,1}(undef,n3);
+        read!(fid,tmp1);
+        tmp1 = hton.(tmp1);
+
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
     end
@@ -125,7 +144,7 @@ function findtiles(ni,nj,grid="llc90")
     #        for jj=1:size(face_XC,2)/nj;
     #ordering convention that is consistent with MITgcm/pkg/exch2:
         for jj=Int.(1:size(face_XC,2)/nj);
-            for ii=Int.(1:size(face_XC,1)/ni);    
+            for ii=Int.(1:size(face_XC,1)/ni);
                 tileCount=tileCount+1;
                 tmp_i=(1:ni).+ni*(ii-1)
                 tmp_j=(1:nj).+nj*(jj-1)
@@ -141,7 +160,7 @@ function findtiles(ni,nj,grid="llc90")
             end
         end
     end
-  
+
     mytiles["XC"] = XC;
     mytiles["YC"] = YC;
     mytiles["XC11"] = XC11;
@@ -151,8 +170,7 @@ function findtiles(ni,nj,grid="llc90")
     mytiles["iTile"] = iTile;
     mytiles["jTile"] = jTile;
     mytiles["tileNo"] = tileNo;
-  
+
     return mytiles
-  
+
 end
-  
