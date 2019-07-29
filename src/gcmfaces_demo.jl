@@ -98,29 +98,31 @@ demo3()
 Demonstrate computations of ocean meridional transports. Calling sequence:
 
 ```
-include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
 !isdir("GRID_LLC90")||!isdir("nctiles_climatology") ? error("missing files") : nothing
-(UV, LC, Tr)=demo3();
 
+GCMGridSpec("LLC90")
+GCMGridLoad()
+
+include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
+fileName="nctiles_climatology/UVELMASS/UVELMASS"
+U=read_nctiles(fileName,"UVELMASS");
+fileName="nctiles_climatology/VVELMASS/VVELMASS"
+V=read_nctiles(fileName,"VVELMASS");
+
+(UV, LC, Tr)=demo3(U,V);
+
+using Statistics
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
 qwckplot(UV["U"][:,:,1,1],"U component (note varying face orientations)")
 qwckplot(UV["V"][:,:,1,1],"V component (note varying face orientations)")
-plot(dropdims(mean(sum(Tr,dims=2),dims=3),dims=(2,3))/1e6)
+plot(dropdims(mean(sum(Tr,dims=2),dims=3),dims=(2,3))/1e6,title="meridional transport")
 ```
 """
-function demo3()
-
-    GCMGridSpec("LLC90")
-    GCMGridLoad()
+function demo3(U,V)
 
     LC=LatCircles(-89.0:89.0)
 
-    fileName="nctiles_climatology/UVELMASS/UVELMASS"
-    U=read_nctiles(fileName,"UVELMASS")
     U=mask(U,0.0)
-
-    fileName="nctiles_climatology/VVELMASS/VVELMASS"
-    V=read_nctiles(fileName,"VVELMASS")
     V=mask(V,0.0)
 
     UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
@@ -130,7 +132,6 @@ function demo3()
     for i=1:length(LC)
         Tr[i,:,:]=TransportThrough(UV,LC[i])
     end
-    #Tr=TransportThrough.(Ref{UV},LatCircles)
 
     return UV, LC, Tr
 
