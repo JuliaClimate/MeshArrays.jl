@@ -113,30 +113,7 @@ function demo3()
     GCMGridSpec("LLC90")
     GCMGridLoad()
 
-    LatValues=-89:89
-    LatCircles=Array{Dict}(undef,length(LatValues))
-
-    for j=1:length(LatValues)
-        mskCint=1*(MeshArrays.YC .>= LatValues[j])
-        mskC=similar(mskCint)
-        mskW=similar(mskCint)
-        mskS=similar(mskCint)
-
-        mskCint=exchange(mskCint,1)
-
-        for i=1:mskCint.nFaces
-            tmp1=mskCint.f[i]
-            # tracer mask:
-            tmp2=tmp1[2:end-1,1:end-2]+tmp1[2:end-1,3:end]+
-            tmp1[1:end-2,2:end-1]+tmp1[3:end,2:end-1]
-            mskC.f[i]=1((tmp2.>0).&(tmp1[2:end-1,2:end-1].==0))
-            # velocity masks:
-            mskW.f[i]=tmp1[2:end-1,2:end-1] - tmp1[1:end-2,2:end-1]
-            mskS.f[i]=tmp1[2:end-1,2:end-1] - tmp1[2:end-1,1:end-2]
-        end
-
-        LatCircles[j]=Dict("lat"=>LatValues[j],"mskC"=>mskC,"mskW"=>mskW,"mskS"=>mskS)
-    end
+    LC=LatCircles(-89.0:89.0)
 
     fileName="nctiles_climatology/UVELMASS/UVELMASS"
     U=read_nctiles(fileName,"UVELMASS")
@@ -149,13 +126,13 @@ function demo3()
     UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
 
     n=size(U)
-    Tr=Array{Float64}(undef,length(LatCircles),n[3],n[4])
-    for i=1:length(LatCircles)
-        Tr[i,:,:]=TransportThrough(UV,LatCircles[i])
+    Tr=Array{Float64}(undef,length(LC),n[3],n[4])
+    for i=1:length(LC)
+        Tr[i,:,:]=TransportThrough(UV,LC[i])
     end
     #Tr=TransportThrough.(Ref{UV},LatCircles)
 
-    return UV, LatCircles, Tr
+    return UV, LC, Tr
 
 end
 
@@ -182,25 +159,51 @@ function TransportThrough(VectorField,IntegralPath)
     #find_gcmsubset
     #fijind
 
-    trsp=Array{Float64}(undef,U.nFaces,n[3],n[4])
+    trsp=Array{Float64}(undef,1,n[3],n[4])
     do_dz=sum(f.=="dz")
     do_dxory=sum(f.=="dxory")
 
-    for i4=1:n[4]
-        for i3=1:n[3]
-            for a=1:U.nFaces
-                tmpU=U.f[a][:,:,i3,i4].*IntegralPath["mskW"].f[a]
-                do_dxory==1 ? tmpU=tmpU.*MeshArrays.DYG.f[a] : nothing
-                do_dz==1 ? tmpU=tmpU.*MeshArrays.DRF[i3] : nothing
-                tmpV=V.f[a][:,:,i3,i4].*IntegralPath["mskS"].f[a]
-                do_dxory==1 ? tmpV=tmpV.*MeshArrays.DXG.f[a] : nothing
-                do_dz==1 ? tmpV=tmpV.*MeshArrays.DRF[i3] : nothing
-                trsp[a,i3,i4]=sum(tmpU)+sum(tmpV)
-            end
+    for i3=1:n[3]
+        mskW=IntegralPath["mskW"]
+        do_dxory==1 ? mskW=mskW*MeshArrays.DYG : nothing
+        do_dz==1 ? mskW=MeshArrays.DRF[i3]*mskW : nothing
+        mskS=IntegralPath["mskS"]
+        do_dxory==1 ? mskS=mskS*MeshArrays.DXG : nothing
+        do_dz==1 ? mskS=MeshArrays.DRF[i3]*mskS : nothing
+        for i4=1:n[4]
+            trsp[1,i3,i4]=sum(mskW*U[:,:,i3,i4])+sum(mskS*V[:,:,i3,i4])
         end
     end
 
-    trsp=sum(trsp,dims=1)
-
     return trsp
+end
+
+function LatCircles(LatValues)
+
+    LatCircles=Array{Dict}(undef,length(LatValues))
+
+    for j=1:length(LatValues)
+        mskCint=1*(MeshArrays.YC .>= LatValues[j])
+        mskC=similar(mskCint)
+        mskW=similar(mskCint)
+        mskS=similar(mskCint)
+
+        mskCint=exchange(mskCint,1)
+
+        for i=1:mskCint.nFaces
+            tmp1=mskCint.f[i]
+            # tracer mask:
+            tmp2=tmp1[2:end-1,1:end-2]+tmp1[2:end-1,3:end]+
+            tmp1[1:end-2,2:end-1]+tmp1[3:end,2:end-1]
+            mskC.f[i]=1((tmp2.>0).&(tmp1[2:end-1,2:end-1].==0))
+            # velocity masks:
+            mskW.f[i]=tmp1[2:end-1,2:end-1] - tmp1[1:end-2,2:end-1]
+            mskS.f[i]=tmp1[2:end-1,2:end-1] - tmp1[2:end-1,1:end-2]
+        end
+
+        LatCircles[j]=Dict("lat"=>LatValues[j],"mskC"=>mskC,"mskW"=>mskW,"mskS"=>mskS)
+    end
+
+    return LatCircles
+
 end
