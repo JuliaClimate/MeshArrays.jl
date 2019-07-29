@@ -155,23 +155,40 @@ function TransportThrough(VectorField,IntegralPath)
 
     length(d)!=nd ? error("inconsistent specification of dims") : nothing
 
-    #maybe use one of these functions:"
-    #find_gcmsubset
-    #fijind
-
     trsp=Array{Float64}(undef,1,n[3],n[4])
     do_dz=sum(f.=="dz")
     do_dxory=sum(f.=="dxory")
 
     for i3=1:n[3]
-        mskW=IntegralPath["mskW"]
-        do_dxory==1 ? mskW=mskW*MeshArrays.DYG : nothing
-        do_dz==1 ? mskW=MeshArrays.DRF[i3]*mskW : nothing
-        mskS=IntegralPath["mskS"]
-        do_dxory==1 ? mskS=mskS*MeshArrays.DXG : nothing
-        do_dz==1 ? mskS=MeshArrays.DRF[i3]*mskS : nothing
+        #method 1: quite slow
+        #mskW=IntegralPath["mskW"]
+        #do_dxory==1 ? mskW=mskW*MeshArrays.DYG : nothing
+        #do_dz==1 ? mskW=MeshArrays.DRF[i3]*mskW : nothing
+        #mskS=IntegralPath["mskS"]
+        #do_dxory==1 ? mskS=mskS*MeshArrays.DXG : nothing
+        #do_dz==1 ? mskS=MeshArrays.DRF[i3]*mskS : nothing
+        #
+        #method 2: less slow
+        tabW=IntegralPath["tabW"]
+        tabS=IntegralPath["tabS"]
         for i4=1:n[4]
-            trsp[1,i3,i4]=sum(mskW*U[:,:,i3,i4])+sum(mskS*V[:,:,i3,i4])
+            #method 1: quite slow
+            #trsp[1,i3,i4]=sum(mskW*U[:,:,i3,i4])+sum(mskS*V[:,:,i3,i4])
+            #
+            #method 2: less slow
+            trsp[1,i3,i4]=0.0
+            for k=1:size(tabW,1)
+                (a,i1,i2,w)=tabW[k,:]
+                do_dxory==1 ? w=w*MeshArrays.DYG.f[a][i1,i2] : nothing
+                do_dz==1 ? w=w*MeshArrays.DRF[i3] : nothing
+                trsp[1,i3,i4]=trsp[1,i3,i4]+w*U.f[a][i1,i2,i3,i4]
+            end
+            for k=1:size(tabS,1)
+                (a,i1,i2,w)=tabS[k,:]
+                do_dxory==1 ? w=w*MeshArrays.DXG.f[a][i1,i2] : nothing
+                do_dz==1 ? w=w*MeshArrays.DRF[i3] : nothing
+                trsp[1,i3,i4]=trsp[1,i3,i4]+w*V.f[a][i1,i2,i3,i4]
+            end
         end
     end
 
@@ -201,7 +218,35 @@ function LatCircles(LatValues)
             mskS.f[i]=tmp1[2:end-1,2:end-1] - tmp1[2:end-1,1:end-2]
         end
 
-        LatCircles[j]=Dict("lat"=>LatValues[j],"mskC"=>mskC,"mskW"=>mskW,"mskS"=>mskS)
+        tmp=vec(collect(mskC[:,1]))
+        ind = findall(x -> x!=0, tmp)
+        tabC=Array{Int,2}(undef,length(ind),4)
+        for j=1:length(ind)
+            tabC[j,1:3]=collect(fijind(mskC,ind[j]))
+            tabC[j,4]=tmp[ind[j]]
+        end
+
+        tmp=vec(collect(mskW[:,1]))
+        ind = findall(x -> x!=0, tmp)
+        tabW=Array{Int,2}(undef,length(ind),5)
+        for j=1:length(ind)
+            tabW[j,1:3]=collect(fijind(mskW,ind[j]))
+            tabW[j,4]=tmp[ind[j]]
+            tabW[j,5]=ind[j]
+        end
+
+        tmp=vec(collect(mskS[:,1]))
+        ind = findall(x -> x!=0, tmp)
+        tabS=Array{Int,2}(undef,length(ind),5)
+        for j=1:length(ind)
+            tabS[j,1:3]=collect(fijind(mskS,ind[j]))
+            tabS[j,4]=tmp[ind[j]]
+            tabS[j,5]=ind[j]
+        end
+
+        LatCircles[j]=Dict("lat"=>LatValues[j],
+        #"mskC"=>mskC,"mskW"=>mskW,"mskS"=>mskS,
+        "tabC"=>tabC,"tabW"=>tabW,"tabS"=>tabS)
     end
 
     return LatCircles
