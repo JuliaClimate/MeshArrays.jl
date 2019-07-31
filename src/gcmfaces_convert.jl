@@ -2,9 +2,9 @@
 ## convert2array method:
 
 """
-    convert2array(fld::gcmfaces)
+    convert2array(fld)
 
-Convert gcmfaces to array
+Convert gcmfaces to array or vice versa
 """
 function convert2array(fld::gcmfaces)
 
@@ -29,11 +29,6 @@ end
 
 ## convert2array ##
 
-"""
-    convert2array(fld::Array{T,N}) where {T,N}
-
-Convert array to gcmfaces
-"""
 function convert2array(fld::Array{T,N}) where {T,N}
 
 grTopo=MeshArrays.grTopo;
@@ -72,7 +67,7 @@ end
 """
     convert2gcmfaces(fld::gcmfaces)
 
-Convert mitgcm output to gcmfaces
+Convert mitgcm output to gcmfaces or vice versa
 """
 function convert2gcmfaces(fld::gcmfaces)
 
@@ -106,11 +101,6 @@ end
 
 ## convert2gcmfaces ##
 
-"""
-    convert2gcmfaces(fld::Array)
-
-Convert gcmfaces to mitgcm output
-"""
 function convert2gcmfaces(fld::Array)
 
 grTopo=MeshArrays.grTopo;

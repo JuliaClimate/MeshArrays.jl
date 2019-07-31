@@ -4,18 +4,17 @@
 """
     gradient(inFLD::gcmfaces)
 
-Compute spatial derivatives.
+Compute spatial derivatives. Other methods:
+```
+gradient(inFLD::gcmfaces,doDIV::Bool)
+gradient(inFLD::gcmfaces,iDXC::gcmfaces,iDYC::gcmfaces)
+```
 """
 function gradient(inFLD::gcmfaces)
 (dFLDdx, dFLDdy)=gradient(inFLD,true)
 return dFLDdx, dFLDdy
 end
 
-"""
-    gradient(inFLD::gcmfaces,doDIV::Bool)
-
-Compute spatial derivatives with or without dividing by grid scale.
-"""
 function gradient(inFLD::gcmfaces,doDIV::Bool)
 
 exFLD=exchange(inFLD,1)
@@ -39,11 +38,6 @@ end
 return dFLDdx, dFLDdy
 end
 
-"""
-    gradient(inFLD::gcmfaces,iDXC::gcmfaces,iDYC::gcmfaces)
-
-Compute spatial derivatives and multiply by inverse grid scale.
-"""
 function gradient(inFLD::gcmfaces,iDXC::gcmfaces,iDYC::gcmfaces)
 
 exFLD=exchange(inFLD,1)
@@ -64,11 +58,6 @@ end
 
 ## mask methods
 
-"""
-    mask(fld::gcmfaces)
-
-Call mask(fld,NaN)
-"""
 function mask(fld::gcmfaces)
 fldmsk=mask(fld,NaN)
 return fldmsk
@@ -77,7 +66,11 @@ end
 """
     mask(fld::gcmfaces, val::Number)
 
-Replace non finite values with val
+Replace non finite values with val. Other methods:
+```
+mask(fld::gcmfaces)
+mask(fld::gcmfaces, val::Number, noval::Number)
+```
 """
 function mask(fld::gcmfaces, val::Number)
   fldmsk=similar(fld)
@@ -89,11 +82,6 @@ function mask(fld::gcmfaces, val::Number)
   return fldmsk
 end
 
-"""
-    mask(fld::gcmfaces, val::Number)
-
-Replace noval instances with val
-"""
 function mask(fld::gcmfaces, val::Number, noval::Number)
   fldmsk=similar(fld)
   for a=1:fld.nFaces
@@ -138,7 +126,7 @@ end
 """
     smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces)
 
-Smooth out scales below threshold
+Smooth out scales below DXCsm / DYCsm via diffusion
 """
 function smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces)
 
@@ -212,7 +200,7 @@ end
 """
     TransportThrough(VectorField,IntegralPath)
 
-Computes transport through in integration path
+Compute transport through an integration path
 """
 function TransportThrough(VectorField,IntegralPath)
 
@@ -278,7 +266,7 @@ end
 """
     LatCircles(LatValues)
 
-Compute integration pathes along latitude circles
+Compute integration paths that follow latitude circles
 """
 function LatCircles(LatValues)
 

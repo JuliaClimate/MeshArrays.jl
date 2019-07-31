@@ -24,6 +24,7 @@ Pkg.test("MeshArrays")
 using MeshArrays
 
 !isdir("GRID_LLC90") ? error("could not find GRID_LLC90/") : nothing
+#git clone https://github.com/gaelforget/GRID_LLC90
 (D,Dexch,Darr,DD)=demo1("LLC90")
 (Rini,Rend,DXCsm,DYCsm)=demo2()
 
@@ -31,7 +32,6 @@ include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
 qwckplot(Rini)
 qwckplot(Rend)
 ```
-
 
 ### Notebooks
 
