@@ -18,16 +18,14 @@ _Note:_ `Julia`'s package manager is documented [here within docs.julialang.org]
 
 ## Use examples
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git) and pre-defined grids that are available from [this website](http://mit.ecco-group.org/opendap/gforget/grid_examples/contents.html) and can e.g. be downloaded as follows:
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git) and pre-defined grids that are available from [this website](http://mit.ecco-group.org/opendap/gforget/grid_examples/contents.html) and can also be downloaded from `github` as follows:
 
 ```
-setenv DemoGrids 'ftp://mit.ecco-group.org/gforget/grid_examples/'
-wget --recursive {$DemoGrids}/GRID_CS32/
-wget --recursive {$DemoGrids}/GRID_LLC90/
-mv mit.ecco-group.org/gforget/grid_examples/GRID_* .
+git clone https://github.com/gaelforget/GRID_CS32
+git clone https://github.com/gaelforget/GRID_LLC90
 ```
 
-After downloading `GRID_LLC90/`, you can also replicate this example using the following commands:
+After downloading `GRID_LLC90/`, you can also replicate the following example:
 
 ```
 using MeshArrays
@@ -58,5 +56,5 @@ The `gcmfaces` name derives from a [previous Matlab / Octave package](https://gc
 
 ```@autodocs
 Modules = [MeshArrays]
-Order   = [:function, :type]
+Order   = [:type,:function]
 ```

@@ -4,7 +4,12 @@
 """
     read_bin(fil::String,kt,kk,prec::DataType)
 
-Read model output from binary file and convert to gcmfaces structure.
+Read model output from binary file and convert to gcmfaces structure. Other methods:
+
+```
+read_bin(fil::String,prec::DataType)
+read_bin(fil::String)
+```
 """
 function read_bin(fil::String,kt,kk,prec::DataType)
 
@@ -39,22 +44,12 @@ end
 
 ## read_bin function with reduced list of argument
 
-"""
-    read_bin(fil,[],[],prec)
-
-Read model output from binary file and convert to gcmfaces structure.
-"""
 function read_bin(fil::String,prec::DataType)
   read_bin(fil,[],[],prec)
 end
 
 ## read_bin function with reduced list of argument
 
-"""
-    read_bin(fil::String)
-
-Read model output from binary file and convert to gcmfaces structure.
-"""
 function read_bin(fil::String)
   read_bin(fil,[],[],Float32)
 end
