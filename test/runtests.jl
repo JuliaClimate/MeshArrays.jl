@@ -8,9 +8,10 @@ for nTopo=1:3
     elseif nTopo==3; grTopo="ll"; nFaces=1; N=500;
     end;
     Npt=nFaces*N*N
-    @test GCMGridOnes(grTopo,nFaces,N) == "GCMGridOnes: passed"
+    mygrid=GCMGridOnes(grTopo,nFaces,N)
+    @test mygrid["grTopo"] == grTopo
     Rini= 0.; Rend= 0.;
-    (Rini,Rend,DXCsm,DYCsm)=demo2();
+    (Rini,Rend,DXCsm,DYCsm)=demo2(mygrid);
     @test isa(Rend,gcmfaces)
     @test sum(isfinite(Rend)) == Npt
     Sini=sqrt(sum(Rini*Rini)/(Npt-1.0))

@@ -4,7 +4,7 @@
 """
 demo1(gridChoice)
 
-Demonstrate basic fucntions (arithmetic, exchange, GCMGridLoad, gradient, etc.). Example call:
+Demonstrate basic functionalities (load grid, arithmetic, exchange, gradient, etc.)
 
 ```
 !isdir("GRID_LLC90") ? error("missing files") : nothing
@@ -53,7 +53,7 @@ end
 """
 demo2()
 
-Demonstrate higher level functions using smooth() and
+Demonstrate higher level functions using smooth()
 
 ```
 (Rini,Rend,DXCsm,DYCsm)=demo2();
@@ -69,6 +69,11 @@ function demo2()
 
     #Pre-requisite: either load predefined grid using `demo1` or call `GCMGridOnes`
     isdir("GRID_LLC90") ? mygrid=GCMGridLoad(GCMGridSpec("LLC90")) : mygrid=GCMGridOnes("cs",6,100)
+
+    (Rini,Rend,DXCsm,DYCsm)=demo2(mygrid)
+end
+
+function demo2(mygrid::Dict)
 
     #initialize 2D field of random numbers
     tmp1=convert2gcmfaces(mygrid["XC"])
@@ -106,10 +111,11 @@ include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
 (UV,LC,Tr)=demo3();
 
 using Statistics, Plots
+plot(dropdims(mean(sum(Tr,dims=2),dims=3),dims=(2,3))/1e6,title="meridional transport")
+
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
 qwckplot(UV["U"][:,:,1,1],"U component (note varying face orientations)")
 qwckplot(UV["V"][:,:,1,1],"V component (note varying face orientations)")
-plot(dropdims(mean(sum(Tr,dims=2),dims=3),dims=(2,3))/1e6,title="meridional transport")
 ```
 """
 function demo3()
@@ -121,9 +127,7 @@ function demo3()
     fileName="nctiles_climatology/VVELMASS/VVELMASS"
     V=Main.read_nctiles(fileName,"VVELMASS");
 
-    (UV, LC, Tr)=demo3(U,V);
-
-    return UV, LC, Tr
+    (UV, LC, Tr)=demo3(U,V)
 
 end
 
