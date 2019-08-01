@@ -37,7 +37,7 @@ function demo1(gridChoice)
 
     mygrid=GCMGridLoad(mygrid)
 
-    (dFLDdx, dFLDdy)=gradient(mygrid["YC"])
+    (dFLDdx, dFLDdy)=gradient(mygrid["YC"],mygrid)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
 
     view(mygrid["hFacC"],:,:,40)
@@ -61,7 +61,6 @@ Demonstrate higher level functions using smooth()
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
 qwckplot(Rini)
 qwckplot(Rend)
-@time Rend=smooth(Rini,DXCsm,DYCsm)
 ```
 
 """
@@ -93,7 +92,7 @@ function demo2(mygrid::Dict)
     DXCsm=3*mygrid["DXC"]; DYCsm=3*mygrid["DYC"];
 
     #apply smoother
-    Rend=smooth(Rini,DXCsm,DYCsm);
+    Rend=smooth(Rini,DXCsm,DYCsm,mygrid);
 
     return (Rini,Rend,DXCsm,DYCsm)
 
@@ -127,13 +126,13 @@ function demo3()
     fileName="nctiles_climatology/VVELMASS/VVELMASS"
     V=Main.read_nctiles(fileName,"VVELMASS");
 
-    (UV, LC, Tr)=demo3(U,V)
+    (UV, LC, Tr)=demo3(U,V,mygrid)
 
 end
 
-function demo3(U::gcmfaces,V::gcmfaces)
+function demo3(U::gcmfaces,V::gcmfaces,mygrid::Dict)
 
-    LC=LatCircles(-89.0:89.0)
+    LC=LatCircles(-89.0:89.0,mygrid)
 
     U=mask(U,0.0)
     V=mask(V,0.0)
@@ -143,7 +142,7 @@ function demo3(U::gcmfaces,V::gcmfaces)
     n=size(U)
     Tr=Array{Float64}(undef,length(LC),n[3],n[4])
     for i=1:length(LC)
-        Tr[i,:,:]=TransportThrough(UV,LC[i])
+        Tr[i,:,:]=TransportThrough(UV,LC[i],mygrid)
     end
 
     return UV, LC, Tr
