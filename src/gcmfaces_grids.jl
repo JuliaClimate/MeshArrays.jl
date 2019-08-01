@@ -40,21 +40,23 @@ else;
     error("unknown gridName case");
 end;
 
-return "GCMGridSpec: passed"
+mygrid=Dict("grDir" => grDir, "nFaces" => nFaces, "grTopo" => grTopo,
+    "ioSize" => ioSize, "facesSize" => facesSize, "ioPrec" => ioPrec)
+return mygrid
 
 end
 
 ## GCMGridLoad function
 
 """
-    GCMGridLoad()
+    GCMGridLoad(mygrid::Dict)
 
 Loads grid variables from files located in grDir set by GCMGridSpec.
 
 Grid variables are XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC,
 hFacS, hFacW, Depth based on the MITgcm naming convention.
 """
-function GCMGridLoad()
+function GCMGridLoad(mygrid::Dict=Dict())
 
     #maybe just return as a dictionnary?
     global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth
@@ -67,6 +69,7 @@ function GCMGridLoad()
         tmp1=read_bin(grDir*list0[ii]*".data",ioPrec);
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
+        mygrid[list0[ii]]=tmp1
     end
 
     list0=("DRC","DRF","RC","RF")
@@ -82,9 +85,10 @@ function GCMGridLoad()
 
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
+        mygrid[list0[ii]]=tmp1
     end
 
-    return "GCMGridLoad: passed"
+    return mygrid
 
 end
 
