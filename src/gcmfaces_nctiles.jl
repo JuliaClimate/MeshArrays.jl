@@ -21,6 +21,8 @@ if ~(MeshArrays.grTopo=="llc");
   error("non-llc cases not implemented yet");
 end;
 
+grid=Dict("nFaces"=>5,"grTopo"=>"llc")
+
 fileIn=@sprintf("%s.%04d.nc",fileName,1);
 x = ncread(fileIn,fldName);
 ndims=length(size(x));
@@ -59,7 +61,7 @@ for ff=1:13;
 end;
 
 #return f gcmfaces object fld
-fld=gcmfaces(5,"llc",f)
+fld=gcmfaces(grid,f)
 return fld
 
 end

@@ -21,7 +21,11 @@ function read_bin(fil::String,kt,kk,prec::DataType)
     error("non-empty kk option not implemented yet");
   end;
 
-  (n1,n2)=MeshArrays.ioSize;
+  mygrid=Dict("grDir" => MeshArrays.grDir, "nFaces" => MeshArrays.nFaces,
+      "grTopo" => MeshArrays.grTopo, "ioSize" => MeshArrays.ioSize,
+      "facesSize" => MeshArrays.facesSize, "ioPrec" => MeshArrays.ioPrec)
+
+  (n1,n2)=mygrid["ioSize"]
 
   if prec==Float64;
     reclen=8;
@@ -38,7 +42,8 @@ function read_bin(fil::String,kt,kk,prec::DataType)
 
   n3>1 ? s=(n1,n2,n3) : s=(n1,n2)
   v0=reshape(fld,s);
-  convert2gcmfaces(v0);
+
+  convert2gcmfaces(v0,mygrid)
 
 end
 

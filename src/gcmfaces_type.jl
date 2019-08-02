@@ -10,16 +10,18 @@ abstract type AbstractGcmfaces{T, N} <: AbstractArray{T, N} end
 gcmfaces data structure. Available constructors:
 
 ```
-gcmfaces{T,N}(nFaces::Int,grTopo::String,f::Array{Array{T,N},1},
+gcmfaces{T,N}(grid::Dict,nFaces::Int,grTopo::String,f::Array{Array{T,N},1},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int})
-gcmfaces(nFaces::Int,grTopo::String,::Type{T},
+gcmfaces(grid::Dict,,::Type{T},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
-gcmfaces(nFaces::Int,grTopo::String,v1::Array{Array{T,N},1}) where {T,N}
+gcmfaces(grid::Dict,v1::Array{Array{T,N},1}) where {T,N}
 gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
+gcmfaces(grid::Dict)
 gcmfaces()
 ```
 """
 struct gcmfaces{T, N} <: AbstractGcmfaces{T, N}
+   grid::Dict
    nFaces::Int
    grTopo::String
    f::Array{Array{T,N},1}
@@ -33,14 +35,15 @@ end
 gcmsubset data structure. Available constructors:
 
 ```
-gcmsubset{T,N}(nFaces::Int,grTopo::String,f::Array{Array{T,N},1},
+gcmsubset{T,N}(grid::Dict,nFaces::Int,grTopo::String,f::Array{Array{T,N},1},
                fSize::Array{NTuple{N, Int}},aSize::NTuple{N, Int},
                i::Array{Array{T,N},1},iSize::Array{NTuple{N, Int}})
-gcmsubset(nFaces::Int,grTopo::String,::Type{T},fSize::Array{NTuple{N, Int}},
+gcmsubset(grid::Dict,::Type{T},fSize::Array{NTuple{N, Int}},
           aSize::NTuple{N,Int},dims::NTuple{N,Int}) where {T,N}
 ```
 """
 struct gcmsubset{T, N} <: AbstractGcmfaces{T, N}
+   grid::Dict
    nFaces::Int
    grTopo::String
    f::Array{Array{T,N},1}
@@ -52,55 +55,60 @@ end
 
 ## additional constructors for gcmfaces
 
-function gcmfaces(nFaces::Int,grTopo::String,::Type{T},
+function gcmfaces(grid::Dict,::Type{T},
   fSize::Array{NTuple{N, Int}},
   aSize::NTuple{N,Int}) where {T,N}
+  nFaces=grid["nFaces"]
+  grTopo=grid["grTopo"]
   f=Array{Array{T,N},1}(undef,nFaces)
   for a=1:nFaces
     f[a]=Array{T}(undef,fSize[a])
   end
-  gcmfaces{T,N}(nFaces,grTopo,f,fSize,aSize)
+  gcmfaces{T,N}(grid,nFaces,grTopo,f,fSize,aSize)
 end
 
-function gcmfaces(nFaces::Int,grTopo::String,
+function gcmfaces(grid::Dict,
   v1::Array{Array{T,N},1}) where {T,N}
+  nFaces=grid["nFaces"]
+  grTopo=grid["grTopo"]
   fSize=fsize(v1)
   aSize=fsize(v1,0)
-  gcmfaces{T,N}(nFaces,grTopo,deepcopy(v1),fSize,aSize)
-#  gcmfaces(nFaces,grTopo,T,fs,as)
+  gcmfaces{T,N}(grid,nFaces,grTopo,deepcopy(v1),fSize,aSize)
 end
 
 function gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
   #should this be called similar? deepcopy?
   fSize=fsize(A)
   aSize=size(A)
-  gcmfaces{T,N}(nFaces,grTopo,deepcopy(A.f),fSize,aSize)
-#  gcmfaces(nFaces,grTopo,T,fSize,aSize)
+  grid=A.grid
+  nFaces=grid["nFaces"]
+  grTopo=grid["grTopo"]
+  gcmfaces{T,N}(grid,nFaces,grTopo,deepcopy(A.f),fSize,aSize)
+end
+
+function gcmfaces(grid::Dict)
+  T=grid["ioPrec"]
+  fSize=grid["facesSize"]
+  aSize=(prod(grid["ioSize"]),1)
+  gcmfaces(grid,T,fSize,aSize)
 end
 
 function gcmfaces()
-  if isdefined(MeshArrays,:nFaces)
-    nFaces=MeshArrays.nFaces
-    grTopo=MeshArrays.grTopo
-    T=MeshArrays.ioPrec
-    fSize=MeshArrays.facesSize
-    aSize=(prod(MeshArrays.ioSize),1)
-  else
-    nFaces=5
-    grTopo="llc"
-    T=Float64
-    fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
-    aSize=(105300, 1);
-  end
-  gcmfaces(nFaces,grTopo,T,fSize,aSize)
+  grid=Dict("nFaces"=>5, "grTopo"=>"llc")
+  T=Float64
+  fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
+  aSize=(105300, 1);
+  gcmfaces(grid,T,fSize,aSize)
 end
 
 ## additional constructors for gcmsubset
 
 #maybe: replace this constructor with one that gets A and sets f to view(A.f)
-function gcmsubset(nFaces::Int,grTopo::String,::Type{T},
+function gcmsubset(grid::Dict,::Type{T},
   fSize::Array{NTuple{N, Int}},aSize::NTuple{N,Int},
   dims::NTuple{N,Int}) where {T,N}
+  nFaces=grid["nFaces"]
+  grTopo=grid["grTopo"]
   f=Array{Array{T,N},1}(undef,nFaces)
   i=Array{Array{T,N},1}(undef,nFaces)
   iSize=Array{NTuple{N, Int},1}(undef,nFaces)
@@ -112,7 +120,7 @@ function gcmsubset(nFaces::Int,grTopo::String,::Type{T},
     iSize[a]=(nloc,tmp1...)
     i[a]=Array{T}(undef,iSize[a])
   end
-  gcmsubset{T,N}(nFaces,grTopo,f,fSize,aSize,i,iSize)
+  gcmsubset{T,N}(grid,nFaces,grTopo,f,fSize,aSize,i,iSize)
 end
 
 ## Convenience functions
@@ -257,8 +265,8 @@ end
 ## view
 
 function Base.view(a::AbstractGcmfaces{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
-  nFaces=a.nFaces;
-  grTopo=a.grTopo;
+  nFaces=a.grid["nFaces"]
+  grTopo=a.grid["grTopo"]
   if !isa(I[1],Colon)|!isa(I[2],Colon)
     J=Base.tail(Base.tail(I))
     J=(:,:,J...)
@@ -270,7 +278,7 @@ function Base.view(a::AbstractGcmfaces{T, N}, I::Vararg{Union{Int,AbstractUnitRa
   for iFace=1:nFaces
     v1[iFace]=view(a.f[iFace],J...);
   end
-  c=gcmfaces(nFaces,grTopo,v1);
+  c=gcmfaces(a.grid,v1);
   return c;
 end
 
@@ -317,9 +325,9 @@ end
 
 function Base.similar(A::gcmfaces, ::Type{T}, dims::Dims) where {T}
   if prod(dims)==length(A)
-    B=gcmfaces(A.nFaces,A.grTopo,T,A.fSize,A.aSize)
+    B=gcmfaces(A.grid,T,A.fSize,A.aSize)
   else
-    B=gcmsubset(A.nFaces,A.grTopo,T,A.fSize,A.aSize,dims)
+    B=gcmsubset(A.grid,T,A.fSize,A.aSize,dims)
   end
 end
 
@@ -341,7 +349,7 @@ find_gcmfaces(::Any, rest) = find_gcmfaces(rest)
 #
 
 function Base.similar(A::gcmsubset, ::Type{T}, dims::Dims) where {T}
-    B=gcmsubset(A.nFaces,A.grTopo,T,A.fSize,A.aSize,dims[1])
+    B=gcmsubset(A.grid,T,A.fSize,A.aSize,dims[1])
 end
 
 Base.BroadcastStyle(::Type{<:gcmsubset}) = Broadcast.ArrayStyle{gcmsubset}()
@@ -383,7 +391,7 @@ function +(a::gcmfaces,b::gcmfaces)
   #  c=a
   #  c.f=a.f .+ b.f
   #the following fails immutability:
-  #  c=gcmfaces(a.nFaces,a.grTopo)
+  #  c=gcmfaces()
   #  c.f=a.f .+ b.f
 end
 
@@ -394,7 +402,7 @@ function +(a::Number,b::gcmfaces)
   end
   return c
   #the following is deprecated synthax as of v0.7:
-  #  c=gcmfaces(b.nFaces,b.grTopo)
+  #  c=gcmfaces()
   #  c.f=a .+ b.f
 end
 

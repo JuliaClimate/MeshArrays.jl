@@ -29,36 +29,37 @@ end
 
 ## convert2array ##
 
-function convert2array(fld::Array{T,N}) where {T,N}
+function convert2array(fld::Array{T,N},grid::Dict) where {T,N}
 
-grTopo=MeshArrays.grTopo;
-nFaces=MeshArrays.nFaces;
+grTopo=grid["grTopo"]
+nFaces=grid["nFaces"]
+facesSize=grid["facesSize"]
 
 v1=Array{Array{T,N},1}(undef,nFaces);
 N>2 ? error("N>2 case not implemented yet") : nothing
 
-if MeshArrays.grTopo=="llc";
-    (n1,n2)=MeshArrays.facesSize[1];
+if grTopo=="llc";
+    (n1,n2)=facesSize[1];
     v1[1]=fld[1:n1,1:n2];
     v1[2]=fld[n1+1:n1*2,1:n2];
     v1[3]=rotr90(fld[1:n1,n2+1:n2+n1]);
     v1[4]=rotl90(fld[n1*2+1:n1*3,1:n2]);
     v1[5]=rotl90(fld[n1*3+1:n1*4,1:n2]);
-elseif MeshArrays.grTopo=="cs";
-    (n1,n2)=MeshArrays.facesSize[1];
+elseif grTopo=="cs";
+    (n1,n2)=facesSize[1];
     v1[1]=fld[1:n1,n1+1:n1+n2];
     v1[2]=fld[n1+1:2*n1,n1+1:n1+n2];
     v1[3]=rotr90(fld[1:n1,n1+n2+1:n2+n1*2]);
     v1[4]=rotl90(fld[n1*2+1:n1*3,n1+1:n1+n2]);
     v1[5]=rotl90(fld[n1*3+1:n1*4,n1+1:n1+n2]);
     v1[6]=rotl90(fld[n1*3+1:n1*4,1:n1]);
-elseif MeshArrays.grTopo=="ll";
+elseif grTopo=="ll";
     v1[1]=fld;
 else;
   error("unknown grTopo case");
 end;
 
-gcmfaces(nFaces,grTopo,v1);
+gcmfaces(grid,v1);
 
 end
 
@@ -71,10 +72,10 @@ Convert mitgcm output to gcmfaces or vice versa
 """
 function convert2gcmfaces(fld::gcmfaces)
 
-    grTopo=MeshArrays.grTopo;
-    nFaces=MeshArrays.nFaces;
-    (n1,n2)=MeshArrays.ioSize;
-    facesSize=MeshArrays.facesSize;
+    grTopo=fld.grid["grTopo"]
+    nFaces=fld.grid["nFaces"]
+    (n1,n2)=fld.grid["ioSize"]
+    facesSize=fld.grid["facesSize"]
 
     aa=0;bb=0;
     for iFace=1:nFaces;
@@ -101,12 +102,12 @@ end
 
 ## convert2gcmfaces ##
 
-function convert2gcmfaces(fld::Array)
+function convert2gcmfaces(fld::Array,grid::Dict)
 
-grTopo=MeshArrays.grTopo;
-nFaces=MeshArrays.nFaces;
-(n1,n2)=MeshArrays.ioSize;
-facesSize=MeshArrays.facesSize;
+grTopo=grid["grTopo"]
+nFaces=grid["nFaces"]
+(n1,n2)=grid["ioSize"]
+facesSize=grid["facesSize"]
 
 n3=Int64(prod(size(fld))/n1/n2);
 
@@ -124,6 +125,6 @@ for iFace=1:nFaces
   end;
 end
 
-gcmfaces(nFaces,grTopo,v1);
+gcmfaces(grid,v1);
 
 end

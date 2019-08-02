@@ -33,7 +33,7 @@ function demo1(gridChoice)
 
     Dexch=exchange(D,4)
     Darr=convert2array(D)
-    DD=convert2array(Darr)
+    DD=convert2array(Darr,mygrid)
 
     mygrid=GCMGridLoad(mygrid)
 
@@ -77,7 +77,7 @@ function demo2(mygrid::Dict)
     #initialize 2D field of random numbers
     tmp1=convert2gcmfaces(mygrid["XC"])
     tmp1=randn(Float32,size(tmp1))
-    Rini=convert2gcmfaces(tmp1)
+    Rini=convert2gcmfaces(tmp1,mygrid)
 
     #apply land mask
     if ndims(mygrid["hFacC"].f[1])>2
