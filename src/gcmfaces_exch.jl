@@ -35,11 +35,11 @@ end
 
 function exch_T_N(fld,N)
 
-if fld.grTopo=="llc";
+if fld.grid["grTopo"]=="llc";
   FLD=exch_T_N_cs(fld,N);
-elseif fld.grTopo=="cs";
+elseif fld.grid["grTopo"]=="cs";
   FLD=exch_T_N_cs(fld,N);
-elseif fld.grTopo=="ll";
+elseif fld.grid["grTopo"]=="ll";
   FLD=exch_T_N_ll(fld,N);
 else;
   error("unknown grTopo case");
@@ -51,11 +51,11 @@ end
 
 function exch_UV_N(u,v,N)
 
-if u.grTopo=="llc";
+if u.grid["grTopo"]=="llc";
   (uex,vex)=exch_UV_N_cs(u,v,N);
-elseif u.grTopo=="cs";
+elseif u.grid["grTopo"]=="cs";
   (uex,vex)=exch_UV_N_cs(u,v,N);
-elseif u.grTopo=="ll";
+elseif u.grid["grTopo"]=="ll";
   (uex,vex)=exch_UV_N_ll(u,v,N);
 else;
   error("unknown grTopo case");
@@ -67,11 +67,11 @@ end
 
 function exch_UV(u,v)
 
-if u.grTopo=="llc";
+if u.grid["grTopo"]=="llc";
   (uex,vex)=exch_UV_cs(u,v);
-elseif u.grTopo=="cs";
+elseif u.grid["grTopo"]=="cs";
   (uex,vex)=exch_UV_cs(u,v);
-elseif u.grTopo=="ll";
+elseif u.grid["grTopo"]=="ll";
   (uex,vex)=exch_UV_ll(u,v);
 else;
   error("unknown grTopo case");
@@ -154,9 +154,9 @@ fillval=0.0
 #step 1
 
 s=size.(fld.f);
-nf=fld.nFaces;
+nf=fld.grid["nFaces"];
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fld.grTopo;
+tp=fld.grid["grTopo"];
 FLD=similar(fld);
 
 for i=1:nf; FLD.f[i]=fill(fillval,s[i].+2N); end;
@@ -202,9 +202,9 @@ fillval=0.0
 #step 1
 
 s=size.(fldU.f);
-nf=fldU.nFaces;
+nf=fldU.grid["nFaces"];
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fldU.grTopo;
+tp=fldU.grid["grTopo"];
 FLDU=similar(fldU);
 FLDV=similar(fldV);
 
@@ -256,9 +256,9 @@ fillval=0.0
 #step 1
 
 s=size.(fldU.f);
-nf=fldU.nFaces;
+nf=fldU.grid["nFaces"];
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fldU.grTopo;
+tp=fldU.grid["grTopo"];
 FLDU=similar(fldU);
 FLDV=similar(fldV);
 

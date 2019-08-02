@@ -8,16 +8,16 @@ Convert gcmfaces to array or vice versa
 """
 function convert2array(fld::gcmfaces)
 
-if fld.grTopo=="llc";
+if fld.grid["grTopo"]=="llc";
     tmp1=cat(fld.f[1],fld.f[2],rotr90(fld.f[4]),rotr90(fld.f[5]);dims=1);
     tmp2=cat(rotl90(fld.f[3]),NaN*fld.f[3],NaN*fld.f[3],NaN*fld.f[3];dims=1);
     arr=cat(tmp1,tmp2;dims=2);
-elseif fld.grTopo=="cs";
+elseif fld.grid["grTopo"]=="cs";
     tmp1=cat(fld.f[1],fld.f[2],rotr90(fld.f[4]),rotr90(fld.f[5]);dims=1);
     tmp2=cat(rotl90(fld.f[3]),NaN*fld.f[3],NaN*fld.f[3],NaN*fld.f[3];dims=1);
     tmp0=cat(NaN*fld.f[3],NaN*fld.f[3],NaN*fld.f[3],rotr90(fld.f[6]);dims=1);
     arr=cat(tmp0,tmp1,tmp2;dims=2);
-elseif fld.grTopo=="ll";
+elseif fld.grid["grTopo"]=="ll";
   arr=fld.f[1];
 else;
   error("unknown grTopo case");

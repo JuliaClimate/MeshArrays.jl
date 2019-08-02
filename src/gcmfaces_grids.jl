@@ -144,7 +144,7 @@ function findtiles(ni,nj,grid="llc90")
     XCNINJ=copy(XC); YCNINJ=copy(XC);
     iTile=copy(XC); jTile=copy(XC); tileNo=copy(XC);
     tileCount=0;
-    for iF=1:XC11.nFaces;
+    for iF=1:XC11.grid["nFaces"]
         #global tileCount,XC,YC,XC11,YC11,iTile,jTile,tileNo
         face_XC=XC.f[iF]; face_YC=YC.f[iF];
     #ordering convention that was used in first generation nctile files:

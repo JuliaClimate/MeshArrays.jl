@@ -10,7 +10,7 @@ abstract type AbstractGcmfaces{T, N} <: AbstractArray{T, N} end
 gcmfaces data structure. Available constructors:
 
 ```
-gcmfaces{T,N}(grid::Dict,nFaces::Int,grTopo::String,f::Array{Array{T,N},1},
+gcmfaces{T,N}(grid::Dict,f::Array{Array{T,N},1},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int})
 gcmfaces(grid::Dict,,::Type{T},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
@@ -22,8 +22,6 @@ gcmfaces()
 """
 struct gcmfaces{T, N} <: AbstractGcmfaces{T, N}
    grid::Dict
-   nFaces::Int
-   grTopo::String
    f::Array{Array{T,N},1}
    fSize::Array{NTuple{N, Int}}
    aSize::NTuple{N, Int}
@@ -35,7 +33,7 @@ end
 gcmsubset data structure. Available constructors:
 
 ```
-gcmsubset{T,N}(grid::Dict,nFaces::Int,grTopo::String,f::Array{Array{T,N},1},
+gcmsubset{T,N}(grid::Dict,f::Array{Array{T,N},1},
                fSize::Array{NTuple{N, Int}},aSize::NTuple{N, Int},
                i::Array{Array{T,N},1},iSize::Array{NTuple{N, Int}})
 gcmsubset(grid::Dict,::Type{T},fSize::Array{NTuple{N, Int}},
@@ -44,8 +42,6 @@ gcmsubset(grid::Dict,::Type{T},fSize::Array{NTuple{N, Int}},
 """
 struct gcmsubset{T, N} <: AbstractGcmfaces{T, N}
    grid::Dict
-   nFaces::Int
-   grTopo::String
    f::Array{Array{T,N},1}
    fSize::Array{NTuple{N, Int}}
    aSize::NTuple{N, Int}
@@ -59,21 +55,18 @@ function gcmfaces(grid::Dict,::Type{T},
   fSize::Array{NTuple{N, Int}},
   aSize::NTuple{N,Int}) where {T,N}
   nFaces=grid["nFaces"]
-  grTopo=grid["grTopo"]
   f=Array{Array{T,N},1}(undef,nFaces)
   for a=1:nFaces
     f[a]=Array{T}(undef,fSize[a])
   end
-  gcmfaces{T,N}(grid,nFaces,grTopo,f,fSize,aSize)
+  gcmfaces{T,N}(grid,f,fSize,aSize)
 end
 
 function gcmfaces(grid::Dict,
   v1::Array{Array{T,N},1}) where {T,N}
-  nFaces=grid["nFaces"]
-  grTopo=grid["grTopo"]
   fSize=fsize(v1)
   aSize=fsize(v1,0)
-  gcmfaces{T,N}(grid,nFaces,grTopo,deepcopy(v1),fSize,aSize)
+  gcmfaces{T,N}(grid,deepcopy(v1),fSize,aSize)
 end
 
 function gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
@@ -81,9 +74,7 @@ function gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
   fSize=fsize(A)
   aSize=size(A)
   grid=A.grid
-  nFaces=grid["nFaces"]
-  grTopo=grid["grTopo"]
-  gcmfaces{T,N}(grid,nFaces,grTopo,deepcopy(A.f),fSize,aSize)
+  gcmfaces{T,N}(grid,deepcopy(A.f),fSize,aSize)
 end
 
 function gcmfaces(grid::Dict)
@@ -108,7 +99,6 @@ function gcmsubset(grid::Dict,::Type{T},
   fSize::Array{NTuple{N, Int}},aSize::NTuple{N,Int},
   dims::NTuple{N,Int}) where {T,N}
   nFaces=grid["nFaces"]
-  grTopo=grid["grTopo"]
   f=Array{Array{T,N},1}(undef,nFaces)
   i=Array{Array{T,N},1}(undef,nFaces)
   iSize=Array{NTuple{N, Int},1}(undef,nFaces)
@@ -120,7 +110,7 @@ function gcmsubset(grid::Dict,::Type{T},
     iSize[a]=(nloc,tmp1...)
     i[a]=Array{T}(undef,iSize[a])
   end
-  gcmsubset{T,N}(grid,nFaces,grTopo,f,fSize,aSize,i,iSize)
+  gcmsubset{T,N}(grid,f,fSize,aSize,i,iSize)
 end
 
 ## Convenience functions
@@ -135,7 +125,7 @@ function fijind(A::gcmfaces,ij::Int)
   j=0
   k=0
   tmp1=0
-  for iFace=1:A.nFaces
+  for iFace=1:A.grid["nFaces"]
     tmpsize=fsize(A,iFace)
     tmp11=tmpsize[1]*tmpsize[2]
     tmp2=tmp1+tmp11
@@ -161,8 +151,8 @@ fsize(A::Array{Array{T,N},1},i::Int) where {T,N}
 ```
 """
 function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
-  fs=Array{NTuple{N, Int}}(undef,A.nFaces)
-  for i=1:A.nFaces
+  fs=Array{NTuple{N, Int}}(undef,A.grid["nFaces"])
+  for i=1:A.grid["nFaces"]
     fs[i]=size(A.f[i]);
   end
   return fs
@@ -173,7 +163,7 @@ function fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
     fs=size(A.f[i])
   else
     tmp1=0
-    for i=1:A.nFaces
+    for i=1:A.grid["nFaces"]
       tmp1=tmp1+size(A.f[i],1)*size(A.f[i],2)
     end
     tmp2=size(A.f[1])
@@ -219,7 +209,7 @@ function Base.getindex(A::AbstractGcmfaces{T, N}, I::Vararg{Union{Int,AbstractUn
     val=A.f[f][J...]
   elseif typeof(I[1])<:AbstractUnitRange
     val=similar(A,eltype(A),length.(I))
-    for iFace=1:A.nFaces
+    for iFace=1:A.grid["nFaces"]
       @views val.f[iFace]=A.f[iFace]
     end
     #eventually I will distribute across faces; for now I just use face 1:
@@ -299,9 +289,9 @@ function Base.show(io::IO, z::AbstractGcmfaces{T, N}) where {T,N}
       error("unknown type")
     end
     printstyled(io, "  grid type   = ",color=:normal)
-    printstyled(io, "$(z.grTopo)\n",color=:blue)
+    printstyled(io, "$(z.grid["grTopo"])\n",color=:blue)
     printstyled(io, "  # of faces  = ",color=:normal)
-    printstyled(io, "$(z.nFaces)\n",color=:blue)
+    printstyled(io, "$(z.grid["nFaces"])\n",color=:blue)
     if ~isassigned(z.f);
       printstyled(io, "  data type   = ",color=:normal)
       printstyled(io, "unassigned\n",color=:green)
@@ -312,7 +302,7 @@ function Base.show(io::IO, z::AbstractGcmfaces{T, N}) where {T,N}
       printstyled(io, "$(typeof(z.f[1][1]))\n",color=:blue)
       printstyled(io, "  $(nm) sizes  = ",color=:normal)
       printstyled(io, "$(fs[1])\n",color=:blue)
-      for iFace=2:z.nFaces
+      for iFace=2:z.grid["nFaces"]
         printstyled(io, "                ",color=:normal)
         printstyled(io, "$(fs[iFace])\n",color=:blue)
       end
@@ -375,7 +365,7 @@ import Base: maximum, minimum, sum, fill
 
 function +(a::gcmfaces)
   c=similar(a)
-  for iFace=1:a.nFaces
+  for iFace=1:a.grid["nFaces"]
     c.f[iFace]=+a.f[iFace];
   end
   return c
@@ -383,7 +373,7 @@ end
 
 function +(a::gcmfaces,b::gcmfaces)
   c=similar(a)
-  for iFace=1:a.nFaces
+  for iFace=1:a.grid["nFaces"]
     c.f[iFace]=a.f[iFace]+b.f[iFace];
   end
   return c
@@ -397,7 +387,7 @@ end
 
 function +(a::Number,b::gcmfaces)
   c=similar(b)
-  for iFace=1:b.nFaces
+  for iFace=1:b.grid["nFaces"]
     c.f[iFace]=a.+b.f[iFace];
   end
   return c
@@ -413,7 +403,7 @@ end
 
 function -(a::gcmfaces)
   c=similar(a)
-  for iFace=1:a.nFaces
+  for iFace=1:a.grid["nFaces"]
     c.f[iFace]=-a.f[iFace];
   end
   return c
@@ -421,7 +411,7 @@ end
 
 function -(a::gcmfaces,b::gcmfaces)
   c=similar(a)
-  for iFace=1:a.nFaces
+  for iFace=1:a.grid["nFaces"]
     c.f[iFace]=a.f[iFace]-b.f[iFace];
   end
   return c
@@ -429,7 +419,7 @@ end
 
 function -(a::Number,b::gcmfaces)
   c=similar(b)
-  for iFace=1:b.nFaces
+  for iFace=1:b.grid["nFaces"]
     c.f[iFace]=a.-b.f[iFace];
   end
   return c
@@ -437,7 +427,7 @@ end
 
 function -(a::gcmfaces,b::Number)
   c=similar(a)
-  for iFace=1:a.nFaces
+  for iFace=1:a.grid["nFaces"]
     c.f[iFace]=a.f[iFace].-b;
   end
   return c
@@ -445,7 +435,7 @@ end
 
 function *(a::gcmfaces,b::gcmfaces)
   c=similar(a);
-  for iFace=1:a.nFaces
+  for iFace=1:a.grid["nFaces"]
     c.f[iFace]=a.f[iFace].*b.f[iFace];
   end
   return c
@@ -453,7 +443,7 @@ end
 
 function *(a::Number,b::gcmfaces)
   c=similar(b);
-  for iFace=1:b.nFaces
+  for iFace=1:b.grid["nFaces"]
     c.f[iFace]=a*b.f[iFace];
   end
   return c
@@ -466,7 +456,7 @@ end
 
 function /(a::gcmfaces,b::gcmfaces)
   c=similar(a);
-  for iFace=1:a.nFaces
+  for iFace=1:a.grid["nFaces"]
     c.f[iFace]=a.f[iFace]./b.f[iFace];
   end
   return c
@@ -474,7 +464,7 @@ end
 
 function /(a::Number,b::gcmfaces)
   c=similar(b);
-  for iFace=1:b.nFaces
+  for iFace=1:b.grid["nFaces"]
     c.f[iFace]=a./b.f[iFace];
   end
   return c
@@ -482,7 +472,7 @@ end
 
 function /(a::gcmfaces,b::Number)
   c=similar(a);
-  for iFace=1:a.nFaces
+  for iFace=1:a.grid["nFaces"]
     c.f[iFace]=a.f[iFace]./b;
   end
   return c
@@ -492,7 +482,7 @@ end
 
 function isnan(a::gcmfaces)
     c=similar(a);
-    for iFace=1:a.nFaces
+    for iFace=1:a.grid["nFaces"]
       c.f[iFace]=isnan.(a.f[iFace]);
     end
     return c
@@ -500,7 +490,7 @@ end
 
 function isinf(a::gcmfaces)
     c=similar(a);
-    for iFace=1:a.nFaces
+    for iFace=1:a.grid["nFaces"]
       c.f[iFace]=isinf.(a.f[iFace]);
     end
     return c
@@ -508,7 +498,7 @@ end
 
 function isfinite(a::gcmfaces)
     c=similar(a);
-    for iFace=1:a.nFaces
+    for iFace=1:a.grid["nFaces"]
       c.f[iFace]=isfinite.(a.f[iFace]);
     end
     return c
@@ -516,7 +506,7 @@ end
 
 function sum(a::gcmfaces)
     c=0.0;
-    for iFace=1:a.nFaces
+    for iFace=1:a.grid["nFaces"]
       tmp1=a.f[iFace];
       c=c+sum(tmp1);
     end
@@ -525,7 +515,7 @@ end
 
 function maximum(a::gcmfaces)
     c=-Inf;
-    for iFace=1:a.nFaces
+    for iFace=1:a.grid["nFaces"]
       tmp1=a.f[iFace];
       c=max(c,maximum(tmp1));
     end
@@ -534,7 +524,7 @@ end
 
 function minimum(a::gcmfaces)
     c=Inf;
-    for iFace=1:a.nFaces
+    for iFace=1:a.grid["nFaces"]
       tmp1=a.f[iFace];
       c=min(c,minimum(tmp1));
     end
@@ -543,7 +533,7 @@ end
 
 function fill(val::Any,a::gcmfaces)
     c=similar(a);
-    for iFace=1:a.nFaces
+    for iFace=1:a.grid["nFaces"]
       c.f[iFace]=fill(val,fsize(a,iFace));
     end
     return c
