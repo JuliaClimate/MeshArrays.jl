@@ -40,8 +40,8 @@ else;
     error("unknown gridName case");
 end;
 
-mygrid=Dict("grDir" => grDir, "nFaces" => nFaces, "grTopo" => grTopo,
-    "ioSize" => ioSize, "facesSize" => facesSize, "ioPrec" => ioPrec)
+mygrid=Dict("path" => grDir, "class" => grTopo, "nFaces" => nFaces,
+    "fSize" => facesSize, "ioSize" => ioSize, "ioPrec" => ioPrec)
 return mygrid
 
 end
@@ -66,24 +66,26 @@ function GCMGridLoad(mygrid::Dict=Dict())
     list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
     "DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth")
     for ii=1:length(list0);
-        tmp1=read_bin(grDir*list0[ii]*".data",ioPrec);
+        tmp1=read_bin(mygrid["path"]*list0[ii]*".data",mygrid["ioPrec"]);
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
         mygrid[list0[ii]]=tmp1
     end
 
+    mygrid["ioPrec"]==Float64 ? reclen=8 : reclen=4
+
     list0=("DRC","DRF","RC","RF")
-    for ii=1:length(list0);
-        fil=grDir*list0[ii]*".data"
+    for ii=1:length(list0)
+        fil=mygrid["path"]*list0[ii]*".data"
         tmp1=stat(fil)
-        n3=Int64(tmp1.size/8)
+        n3=Int64(tmp1.size/reclen) #need fix for float32?
 
-        fid = open(fil);
-        tmp1 = Array{Float64,1}(undef,n3);
-        read!(fid,tmp1);
-        tmp1 = hton.(tmp1);
+        fid = open(fil)
+        tmp1 = Array{mygrid["ioPrec"],1}(undef,n3)  #need fix for float32?
+        read!(fid,tmp1)
+        tmp1 = hton.(tmp1)
 
-        tmp2=Symbol(list0[ii]);
+        tmp2=Symbol(list0[ii])
         @eval (($tmp2) = ($tmp1))
         mygrid[list0[ii]]=tmp1
     end
@@ -110,8 +112,8 @@ function GCMGridOnes(grTp,nF,nP)
     facesSize[:].=[(nP,nP)]
     ioPrec=Float32
 
-    mygrid=Dict("grDir" => grDir, "nFaces" => nFaces, "grTopo" => grTopo,
-        "ioSize" => ioSize, "facesSize" => facesSize, "ioPrec" => ioPrec)
+    mygrid=Dict("path" => grDir, "class" => grTopo, "nFaces" => nFaces,
+        "fSize" => facesSize, "ioSize" => ioSize, "ioPrec" => ioPrec)
 
     list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
     for ii=1:length(list0);
@@ -137,7 +139,7 @@ function findtiles(ni,nj,grid="llc90")
     mytiles["nFaces"]=MeshArrays.nFaces;
     #mytiles.fileFormat=mygrid.fileFormat;
     mytiles["ioSize"]=MeshArrays.ioSize;
-    %
+
     XC=MeshArrays.XC;
     YC=MeshArrays.YC;
     XC11=copy(XC); YC11=copy(XC);

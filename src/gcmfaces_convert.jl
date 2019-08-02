@@ -8,16 +8,16 @@ Convert gcmfaces to array or vice versa
 """
 function convert2array(fld::gcmfaces)
 
-if fld.grid["grTopo"]=="llc";
+if fld.grid["class"]=="llc";
     tmp1=cat(fld.f[1],fld.f[2],rotr90(fld.f[4]),rotr90(fld.f[5]);dims=1);
     tmp2=cat(rotl90(fld.f[3]),NaN*fld.f[3],NaN*fld.f[3],NaN*fld.f[3];dims=1);
     arr=cat(tmp1,tmp2;dims=2);
-elseif fld.grid["grTopo"]=="cs";
+elseif fld.grid["class"]=="cs";
     tmp1=cat(fld.f[1],fld.f[2],rotr90(fld.f[4]),rotr90(fld.f[5]);dims=1);
     tmp2=cat(rotl90(fld.f[3]),NaN*fld.f[3],NaN*fld.f[3],NaN*fld.f[3];dims=1);
     tmp0=cat(NaN*fld.f[3],NaN*fld.f[3],NaN*fld.f[3],rotr90(fld.f[6]);dims=1);
     arr=cat(tmp0,tmp1,tmp2;dims=2);
-elseif fld.grid["grTopo"]=="ll";
+elseif fld.grid["class"]=="ll";
   arr=fld.f[1];
 else;
   error("unknown grTopo case");
@@ -31,9 +31,9 @@ end
 
 function convert2array(fld::Array{T,N},grid::Dict) where {T,N}
 
-grTopo=grid["grTopo"]
+grTopo=grid["class"]
 nFaces=grid["nFaces"]
-facesSize=grid["facesSize"]
+facesSize=grid["fSize"]
 
 v1=Array{Array{T,N},1}(undef,nFaces);
 N>2 ? error("N>2 case not implemented yet") : nothing
@@ -72,10 +72,10 @@ Convert mitgcm output to gcmfaces or vice versa
 """
 function convert2gcmfaces(fld::gcmfaces)
 
-    grTopo=fld.grid["grTopo"]
+    grTopo=fld.grid["class"]
     nFaces=fld.grid["nFaces"]
     (n1,n2)=fld.grid["ioSize"]
-    facesSize=fld.grid["facesSize"]
+    facesSize=fld.grid["fSize"]
 
     aa=0;bb=0;
     for iFace=1:nFaces;
@@ -104,10 +104,10 @@ end
 
 function convert2gcmfaces(fld::Array,grid::Dict)
 
-grTopo=grid["grTopo"]
+grTopo=grid["class"]
 nFaces=grid["nFaces"]
 (n1,n2)=grid["ioSize"]
-facesSize=grid["facesSize"]
+facesSize=grid["fSize"]
 
 n3=Int64(prod(size(fld))/n1/n2);
 

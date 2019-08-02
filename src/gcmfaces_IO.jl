@@ -21,9 +21,9 @@ function read_bin(fil::String,kt,kk,prec::DataType)
     error("non-empty kk option not implemented yet");
   end;
 
-  mygrid=Dict("grDir" => MeshArrays.grDir, "nFaces" => MeshArrays.nFaces,
-      "grTopo" => MeshArrays.grTopo, "ioSize" => MeshArrays.ioSize,
-      "facesSize" => MeshArrays.facesSize, "ioPrec" => MeshArrays.ioPrec)
+  mygrid=Dict("path" => MeshArrays.grDir, "class" => MeshArrays.grTopo,
+      "nFaces" => MeshArrays.nFaces, "fSize" => MeshArrays.facesSize,
+      "ioSize" => MeshArrays.ioSize, "ioPrec" => MeshArrays.ioPrec)
 
   (n1,n2)=mygrid["ioSize"]
 

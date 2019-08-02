@@ -79,13 +79,13 @@ end
 
 function gcmfaces(grid::Dict)
   T=grid["ioPrec"]
-  fSize=grid["facesSize"]
+  fSize=grid["fSize"]
   aSize=(prod(grid["ioSize"]),1)
   gcmfaces(grid,T,fSize,aSize)
 end
 
 function gcmfaces()
-  grid=Dict("nFaces"=>5, "grTopo"=>"llc")
+  grid=Dict("nFaces"=>5, "class"=>"llc")
   T=Float64
   fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
   aSize=(105300, 1);
@@ -256,7 +256,7 @@ end
 
 function Base.view(a::AbstractGcmfaces{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
   nFaces=a.grid["nFaces"]
-  grTopo=a.grid["grTopo"]
+  grTopo=a.grid["class"]
   if !isa(I[1],Colon)|!isa(I[2],Colon)
     J=Base.tail(Base.tail(I))
     J=(:,:,J...)
@@ -289,7 +289,7 @@ function Base.show(io::IO, z::AbstractGcmfaces{T, N}) where {T,N}
       error("unknown type")
     end
     printstyled(io, "  grid type   = ",color=:normal)
-    printstyled(io, "$(z.grid["grTopo"])\n",color=:blue)
+    printstyled(io, "$(z.grid["class"])\n",color=:blue)
     printstyled(io, "  # of faces  = ",color=:normal)
     printstyled(io, "$(z.grid["nFaces"])\n",color=:blue)
     if ~isassigned(z.f);

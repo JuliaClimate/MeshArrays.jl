@@ -9,7 +9,7 @@ for nTopo=1:3
     end;
     Npt=nFaces*N*N
     mygrid=GCMGridOnes(grTopo,nFaces,N)
-    @test mygrid["grTopo"] == grTopo
+    @test mygrid["class"] == grTopo
     Rini= 0.; Rend= 0.;
     (Rini,Rend,DXCsm,DYCsm)=demo2(mygrid);
     @test isa(Rend,gcmfaces)
