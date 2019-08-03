@@ -66,9 +66,9 @@ function GCMGridLoad(mygrid::gcmgrid)
     GridVariables=Dict()
     list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
     "DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth")
-    for ii=1:length(list0);
-        tmp1=read_bin(mygrid.path*list0[ii]*".data",mygrid.ioPrec);
-        tmp2=Symbol(list0[ii]);
+    for ii=1:length(list0)
+        tmp1=read_bin(mygrid.path*list0[ii]*".data",mygrid.ioPrec,mygrid)
+        tmp2=Symbol(list0[ii])
         @eval (($tmp2) = ($tmp1))
         GridVariables[list0[ii]]=tmp1
     end
@@ -79,10 +79,10 @@ function GCMGridLoad(mygrid::gcmgrid)
     for ii=1:length(list0)
         fil=mygrid.path*list0[ii]*".data"
         tmp1=stat(fil)
-        n3=Int64(tmp1.size/reclen) #need fix for float32?
+        n3=Int64(tmp1.size/reclen)
 
         fid = open(fil)
-        tmp1 = Array{mygrid.ioPrec,1}(undef,n3)  #need fix for float32?
+        tmp1 = Array{mygrid.ioPrec,1}(undef,n3)
         read!(fid,tmp1)
         tmp1 = hton.(tmp1)
 

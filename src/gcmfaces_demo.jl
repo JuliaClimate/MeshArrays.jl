@@ -16,7 +16,7 @@ function demo1(gridChoice)
 
     mygrid=GCMGridSpec(gridChoice)
 
-    D=read_bin(mygrid.path*"Depth.data",mygrid.ioPrec)
+    D=read_bin(mygrid.path*"Depth.data",mygrid.ioPrec,mygrid)
 
     1000+D
     D+1000
@@ -37,7 +37,7 @@ function demo1(gridChoice)
 
     GridVariables=GCMGridLoad(mygrid)
 
-    (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],mygrid)
+    (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],GridVariables)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
 
     view(GridVariables["hFacC"],:,:,40)
@@ -121,12 +121,13 @@ qwckplot(UV["V"][:,:,1,1],"V component (note varying face orientations)")
 """
 function demo3()
 
-    GridVariables=GCMGridLoad(GCMGridSpec("LLC90"));
+    mygrid=GCMGridSpec("LLC90")
+    GridVariables=GCMGridLoad(mygrid)
 
     fileName="nctiles_climatology/UVELMASS/UVELMASS"
-    U=Main.read_nctiles(fileName,"UVELMASS");
+    U=Main.read_nctiles(fileName,"UVELMASS",mygrid);
     fileName="nctiles_climatology/VVELMASS/VVELMASS"
-    V=Main.read_nctiles(fileName,"VVELMASS");
+    V=Main.read_nctiles(fileName,"VVELMASS",mygrid);
 
     (UV, LC, Tr)=demo3(U,V,GridVariables)
 
