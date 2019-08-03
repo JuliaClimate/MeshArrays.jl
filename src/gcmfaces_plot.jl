@@ -4,16 +4,17 @@ using Plots, Dates; gr();
 export qwckplot
 
 ##  qwckplot function
-#
-#examples:
-#  GCMGridLoad()
-#  qwckplot(MeshArrays.Depth)
-#  qwckplot(MeshArrays.Depth,"Ocean Bottom Depth")
 
 """
     qwckplot(fld::gcmfaces)
 
-Call qwckplot(fld::gcmfaces,ttl::String) with current date for title
+Call qwckplot(fld::gcmfaces,ttl::String) with current date for title. Example:
+
+```
+!isdir("GRID_LLC90") ? error("missing files") : nothing
+GridVariables=GCMGridLoad(GCMGridSpec("LLC90"))
+qwckplot(GridVariables["Depth"])
+```
 """
 function qwckplot(fld::gcmfaces)
     tmp1=Dates.now()

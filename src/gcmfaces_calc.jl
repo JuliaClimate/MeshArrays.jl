@@ -2,33 +2,33 @@
 ## gradient methods
 
 """
-    gradient(inFLD::gcmfaces)
+    gradient(inFLD::gcmfaces,GridVariables::Dict)
 
 Compute spatial derivatives. Other methods:
 ```
-gradient(inFLD::gcmfaces,doDIV::Bool)
+gradient(inFLD::gcmfaces,GridVariables::Dict,doDIV::Bool)
 gradient(inFLD::gcmfaces,iDXC::gcmfaces,iDYC::gcmfaces)
 ```
 """
-function gradient(inFLD::gcmfaces)
-(dFLDdx, dFLDdy)=gradient(inFLD,true)
+function gradient(inFLD::gcmfaces,GridVariables::Dict)
+(dFLDdx, dFLDdy)=gradient(inFLD,GridVariables,true)
 return dFLDdx, dFLDdy
 end
 
-function gradient(inFLD::gcmfaces,doDIV::Bool)
+function gradient(inFLD::gcmfaces,GridVariables::Dict,doDIV::Bool)
 
 exFLD=exchange(inFLD,1)
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
-for a=1:inFLD.nFaces;
+for a=1:inFLD.grid.nFaces
   (s1,s2)=fsize(exFLD,a)
   tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
   tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
   tmpC=tmpA-view(exFLD.f[a],2:s1-1,1:s2-2)
   if doDIV
-    dFLDdx.f[a]=tmpB./MeshArrays.DXC.f[a]
-    dFLDdy.f[a]=tmpC./MeshArrays.DYC.f[a]
+    dFLDdx.f[a]=tmpB./GridVariables["DXC"].f[a]
+    dFLDdy.f[a]=tmpC./GridVariables["DYC"].f[a]
   else
     dFLDdx.f[a]=tmpB
     dFLDdy.f[a]=tmpC
@@ -44,7 +44,7 @@ exFLD=exchange(inFLD,1)
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
-for a=1:inFLD.nFaces;
+for a=1:inFLD.grid.nFaces
   (s1,s2)=fsize(exFLD,a)
   tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
   tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
@@ -74,7 +74,7 @@ mask(fld::gcmfaces, val::Number, noval::Number)
 """
 function mask(fld::gcmfaces, val::Number)
   fldmsk=similar(fld)
-  for a=1:fld.nFaces
+  for a=1:fld.grid.nFaces
     tmp1=copy(fld.f[a])
     replace!(x -> !isfinite(x) ? val : x, tmp1 )
     fldmsk.f[a]=tmp1
@@ -84,7 +84,7 @@ end
 
 function mask(fld::gcmfaces, val::Number, noval::Number)
   fldmsk=similar(fld)
-  for a=1:fld.nFaces
+  for a=1:fld.grid.nFaces
     tmp1=copy(fld.f[a])
     replace!(x -> x==noval ? val : x, tmp1  )
     fldmsk.f[a]=tmp1
@@ -109,7 +109,7 @@ function convergence(uFLD::gcmfaces,vFLD::gcmfaces)
 CONV=similar(uFLD)
 
 (tmpU,tmpV)=exch_UV(uFLD,vFLD)
-for a=1:tmpU.nFaces
+for a=1:tmpU.grid.nFaces
   (s1,s2)=fsize(uFLD,a)
   tmpU1=view(tmpU.f[a],1:s1,1:s2)
   tmpU2=view(tmpU.f[a],2:s1+1,1:s2)
@@ -124,18 +124,18 @@ end
 ## smooth function
 
 """
-    smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces)
+    smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces,GridVariables::Dict)
 
 Smooth out scales below DXCsm / DYCsm via diffusion
 """
-function smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces)
+function smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces,GridVariables::Dict)
 
 #important note:
 #input FLD should be land masked (NaN/1) by caller if needed
 
 #get land masks (NaN/1):
 mskC=fill(1.0,FLD) + 0.0 * mask(FLD)
-(mskW,mskS)=gradient(FLD,false)
+(mskW,mskS)=gradient(FLD,GridVariables,false)
 mskW=fill(1.0,FLD) + 0.0 * mask(mskW)
 mskS=fill(1.0,FLD) + 0.0 * mask(mskS)
 
@@ -148,9 +148,9 @@ mskS=mask(mskS,0.0)
 #get inverse grid spacing:
 iDXC=similar(FLD)
 iDYC=similar(FLD)
-for a=1:FLD.nFaces;
-  iDXC.f[a]=1.0./MeshArrays.DXC.f[a]
-  iDYC.f[a]=1.0./MeshArrays.DYC.f[a]
+for a=1:FLD.grid.nFaces
+  iDXC.f[a]=1.0./GridVariables["DXC"].f[a]
+  iDYC.f[a]=1.0./GridVariables["DYC"].f[a]
 end
 
 #Before scaling the diffusive operator ...
@@ -166,23 +166,23 @@ T=nbt*dt;
 #println("nbt="*"$nbt")
 
 #diffusion operator times DYG / DXG:
-KuxFac=mskW*DXCsm*DXCsm/T/2.0*MeshArrays.DYG;
-KvyFac=mskS*DYCsm*DYCsm/T/2.0*MeshArrays.DXG;
+KuxFac=mskW*DXCsm*DXCsm/T/2.0*GridVariables["DYG"];
+KvyFac=mskS*DYCsm*DYCsm/T/2.0*GridVariables["DXG"];
 
 #time steping factor:
-dtFac=dt*mskC/MeshArrays.RAC;
+dtFac=dt*mskC/GridVariables["RAC"];
 
 #loop:
 for it=1:nbt
   (dTdxAtU,dTdyAtV)=gradient(FLD,iDXC,iDYC);
   tmpU=similar(FLD)
   tmpV=similar(FLD)
-  for a=1:FLD.nFaces
+  for a=1:FLD.grid.nFaces
       tmpU.f[a]=dTdxAtU.f[a].*KuxFac.f[a];
       tmpV.f[a]=dTdyAtV.f[a].*KvyFac.f[a];
   end
   tmpC=convergence(tmpU,tmpV);
-  for a=1:FLD.nFaces
+  for a=1:FLD.grid.nFaces
       FLD.f[a]=FLD.f[a]-dtFac.f[a].*tmpC.f[a];
   end
 end
@@ -198,11 +198,11 @@ end
 ## TransportThrough function
 
 """
-    TransportThrough(VectorField,IntegralPath)
+    TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
 
 Compute transport through an integration path
 """
-function TransportThrough(VectorField,IntegralPath)
+function TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
 
     #Note: vertical intergration is not always wanted; left for user to do outside
 
@@ -228,11 +228,11 @@ function TransportThrough(VectorField,IntegralPath)
     for i3=1:n[3]
         #method 1: quite slow
         #mskW=IntegralPath["mskW"]
-        #do_dxory==1 ? mskW=mskW*MeshArrays.DYG : nothing
-        #do_dz==1 ? mskW=MeshArrays.DRF[i3]*mskW : nothing
+        #do_dxory==1 ? mskW=mskW*GridVariables["DYG"] : nothing
+        #do_dz==1 ? mskW=GridVariables["DRF"][i3]*mskW : nothing
         #mskS=IntegralPath["mskS"]
-        #do_dxory==1 ? mskS=mskS*MeshArrays.DXG : nothing
-        #do_dz==1 ? mskS=MeshArrays.DRF[i3]*mskS : nothing
+        #do_dxory==1 ? mskS=mskS*GridVariables["DXG"] : nothing
+        #do_dz==1 ? mskS=GridVariables["DRF"][i3]*mskS : nothing
         #
         #method 2: less slow
         tabW=IntegralPath["tabW"]
@@ -245,14 +245,14 @@ function TransportThrough(VectorField,IntegralPath)
             trsp[1,i3,i4]=0.0
             for k=1:size(tabW,1)
                 (a,i1,i2,w)=tabW[k,:]
-                do_dxory==1 ? w=w*MeshArrays.DYG.f[a][i1,i2] : nothing
-                do_dz==1 ? w=w*MeshArrays.DRF[i3] : nothing
+                do_dxory==1 ? w=w*GridVariables["DYG"].f[a][i1,i2] : nothing
+                do_dz==1 ? w=w*GridVariables["DRF"][i3] : nothing
                 trsp[1,i3,i4]=trsp[1,i3,i4]+w*U.f[a][i1,i2,i3,i4]
             end
             for k=1:size(tabS,1)
                 (a,i1,i2,w)=tabS[k,:]
-                do_dxory==1 ? w=w*MeshArrays.DXG.f[a][i1,i2] : nothing
-                do_dz==1 ? w=w*MeshArrays.DRF[i3] : nothing
+                do_dxory==1 ? w=w*GridVariables["DXG"].f[a][i1,i2] : nothing
+                do_dz==1 ? w=w*GridVariables["DRF"][i3] : nothing
                 trsp[1,i3,i4]=trsp[1,i3,i4]+w*V.f[a][i1,i2,i3,i4]
             end
         end
@@ -264,23 +264,23 @@ end
 ## LatCircles function
 
 """
-    LatCircles(LatValues)
+    LatCircles(LatValues,GridVariables::Dict)
 
 Compute integration paths that follow latitude circles
 """
-function LatCircles(LatValues)
+function LatCircles(LatValues,GridVariables::Dict)
 
     LatCircles=Array{Dict}(undef,length(LatValues))
 
     for j=1:length(LatValues)
-        mskCint=1*(MeshArrays.YC .>= LatValues[j])
+        mskCint=1*(GridVariables["YC"] .>= LatValues[j])
         mskC=similar(mskCint)
         mskW=similar(mskCint)
         mskS=similar(mskCint)
 
         mskCint=exchange(mskCint,1)
 
-        for i=1:mskCint.nFaces
+        for i=1:mskCint.grid.nFaces
             tmp1=mskCint.f[i]
             # tracer mask:
             tmp2=tmp1[2:end-1,1:end-2]+tmp1[2:end-1,3:end]+

@@ -2,26 +2,26 @@
 ## read_bin function with full list of argument
 
 """
-    read_bin(fil::String,kt,kk,prec::DataType)
+    read_bin(fil::String,kt::Union{Int,Missing},kk::Union{Int,Missing},prec::DataType,mygrid::gcmgrid)
 
 Read model output from binary file and convert to gcmfaces structure. Other methods:
 
 ```
-read_bin(fil::String,prec::DataType)
-read_bin(fil::String)
+read_bin(fil::String,prec::DataType,mygrid::gcmgrid)
+read_bin(fil::String,mygrid::gcmgrid)
 ```
 """
-function read_bin(fil::String,kt,kk,prec::DataType)
+function read_bin(fil::String,kt::Union{Int,Missing},kk::Union{Int,Missing},prec::DataType,mygrid::gcmgrid)
 
-  if ~isempty(kt);
+  if ~ismissing(kt);
     error("non-empty kt option not implemented yet");
   end;
 
-  if ~isempty(kk);
+  if ~ismissing(kk);
     error("non-empty kk option not implemented yet");
   end;
 
-  (n1,n2)=MeshArrays.ioSize;
+  (n1,n2)=mygrid.ioSize
 
   if prec==Float64;
     reclen=8;
@@ -38,18 +38,19 @@ function read_bin(fil::String,kt,kk,prec::DataType)
 
   n3>1 ? s=(n1,n2,n3) : s=(n1,n2)
   v0=reshape(fld,s);
-  convert2gcmfaces(v0);
+
+  convert2gcmfaces(v0,mygrid)
 
 end
 
 ## read_bin function with reduced list of argument
 
-function read_bin(fil::String,prec::DataType)
-  read_bin(fil,[],[],prec)
+function read_bin(fil::String,prec::DataType,mygrid::gcmgrid)
+  read_bin(fil,missing,missing,prec,mygrid::gcmgrid)
 end
 
 ## read_bin function with reduced list of argument
 
 function read_bin(fil::String)
-  read_bin(fil,[],[],Float32)
+  read_bin(fil,missing,missing,Float32,mygrid::gcmgrid)
 end

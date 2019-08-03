@@ -6,19 +6,20 @@ export read_nctiles
 ## read_nctiles function
 #
 #examples:
+#  mygrid=GCMGridSpec("LLC90")
 #  fileName="nctiles_grid/GRID"
-#  Depth=read_nctiles(fileName,"Depth")
-#  hFacC=read_nctiles(fileName,"hFacC")
+#  Depth=read_nctiles(fileName,"Depth",mygrid)
+#  hFacC=read_nctiles(fileName,"hFacC",mygrid)
 
 """
-    read_nctiles(fileName,fldName)
+    read_nctiles(fileName,fldName,mygrid)
 
 Read model output from Netcdf / NCTiles file and convert to gcmfaces structure.
 """
-function read_nctiles(fileName,fldName)
+function read_nctiles(fileName::String,fldName::String,mygrid::gcmgrid)
 
-if ~(MeshArrays.grTopo=="llc");
-  error("non-llc cases not implemented yet");
+if (mygrid.class!="llc")||(mygrid.ioSize!=[90 1170])
+  error("non-llc90 cases not implemented yet");
 end;
 
 fileIn=@sprintf("%s.%04d.nc",fileName,1);
@@ -59,7 +60,7 @@ for ff=1:13;
 end;
 
 #return f gcmfaces object fld
-fld=gcmfaces(5,"llc",f)
+fld=gcmfaces(mygrid,f)
 return fld
 
 end

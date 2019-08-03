@@ -43,7 +43,7 @@ qwckplot(Rend)
 
 **MeshArrays.jl** composite types contain array collections where arrays are typically inter-connected at their edges. It provides `exchange functions` that transfer data between neighbor arrays so that the user can extend the domain of computation as needed e.g. for interpolation or to compute spatial derivatives.
 
-The composite types specify how each array collection forms a mesh and provide information to allow `exchange` to dispatch to the appropriate method. Various configurations that are commonly used in `Earth System Models` are implemented using the concrete type called `gcmfaces`. Embedded arrays, or meshes, each represent a subdomain within, e.g., an Earth System Model grid.
+The composite types specify how each array collection forms a mesh and provide information to allow `exchange` to dispatch to the appropriate method. Various configurations that are commonly used in `Earth System Models` are implemented using the concrete type called `gcmfaces`. This type contains a `gcmgrid` instance that provides grid specifications (incl. location on disk). Embedded arrays, or meshes, each represent a subdomain within, e.g., an Earth System Model grid.
 
 The `gcmfaces` name derives from a [previous Matlab / Octave package](https://gcmfaces.readthedocs.io/en/latest/) that was introduced in [Forget et al., 2015](http://www.geosci-model-dev.net/8/3071/2015/), `doi:10.5194/gmd-8-3071-2015`, and inspired this `Julia` package. Here, `GCM` is an acronym for General Circulation Model, or Global Climate Model as described in [this wikipedia entry](https://en.wikipedia.org/wiki/General_circulation_model), and `faces` is just another name for meshes, arrays, facets, or subdomains.
 

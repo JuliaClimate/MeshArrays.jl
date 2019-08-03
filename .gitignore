@@ -3,3 +3,4 @@
 *.jl.mem
 devel
 docs/build/
+.ipynb_checkpoints/
