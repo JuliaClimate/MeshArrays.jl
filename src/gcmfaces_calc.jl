@@ -2,20 +2,20 @@
 ## gradient methods
 
 """
-    gradient(inFLD::gcmfaces,mygrid::Dict)
+    gradient(inFLD::gcmfaces,mygrid::gcmgrid)
 
 Compute spatial derivatives. Other methods:
 ```
-gradient(inFLD::gcmfaces,mygrid::Dict,doDIV::Bool)
+gradient(inFLD::gcmfaces,mygrid::gcmgrid,doDIV::Bool)
 gradient(inFLD::gcmfaces,iDXC::gcmfaces,iDYC::gcmfaces)
 ```
 """
-function gradient(inFLD::gcmfaces,mygrid::Dict)
+function gradient(inFLD::gcmfaces,mygrid::gcmgrid)
 (dFLDdx, dFLDdy)=gradient(inFLD,mygrid,true)
 return dFLDdx, dFLDdy
 end
 
-function gradient(inFLD::gcmfaces,mygrid::Dict,doDIV::Bool)
+function gradient(inFLD::gcmfaces,mygrid::gcmgrid,doDIV::Bool)
 
 exFLD=exchange(inFLD,1)
 dFLDdx=similar(inFLD)
@@ -124,11 +124,11 @@ end
 ## smooth function
 
 """
-    smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces,mygrid::Dict)
+    smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces,mygrid::gcmgrid)
 
 Smooth out scales below DXCsm / DYCsm via diffusion
 """
-function smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces,mygrid::Dict)
+function smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces,mygrid::gcmgrid)
 
 #important note:
 #input FLD should be land masked (NaN/1) by caller if needed
@@ -198,11 +198,11 @@ end
 ## TransportThrough function
 
 """
-    TransportThrough(VectorField,IntegralPath,mygrid::Dict)
+    TransportThrough(VectorField,IntegralPath,mygrid::gcmgrid)
 
 Compute transport through an integration path
 """
-function TransportThrough(VectorField,IntegralPath,mygrid::Dict)
+function TransportThrough(VectorField,IntegralPath,mygrid::gcmgrid)
 
     #Note: vertical intergration is not always wanted; left for user to do outside
 
@@ -264,11 +264,11 @@ end
 ## LatCircles function
 
 """
-    LatCircles(LatValues,mygrid::Dict)
+    LatCircles(LatValues,mygrid::gcmgrid)
 
 Compute integration paths that follow latitude circles
 """
-function LatCircles(LatValues,mygrid::Dict)
+function LatCircles(LatValues,mygrid::gcmgrid)
 
     LatCircles=Array{Dict}(undef,length(LatValues))
 

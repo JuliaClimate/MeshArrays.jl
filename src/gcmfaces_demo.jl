@@ -72,7 +72,7 @@ function demo2()
     (Rini,Rend,DXCsm,DYCsm)=demo2(mygrid)
 end
 
-function demo2(mygrid::Dict)
+function demo2(mygrid::gcmgrid)
 
     #initialize 2D field of random numbers
     tmp1=convert2gcmfaces(mygrid["XC"])
@@ -130,7 +130,7 @@ function demo3()
 
 end
 
-function demo3(U::gcmfaces,V::gcmfaces,mygrid::Dict)
+function demo3(U::gcmfaces,V::gcmfaces,mygrid::gcmgrid)
 
     LC=LatCircles(-89.0:89.0,mygrid)
 

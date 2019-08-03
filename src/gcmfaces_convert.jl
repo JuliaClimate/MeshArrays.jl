@@ -29,7 +29,7 @@ end
 
 ## convert2array ##
 
-function convert2array(fld::Array{T,N},grid::Dict) where {T,N}
+function convert2array(fld::Array{T,N},grid::gcmgrid) where {T,N}
 
 grTopo=grid["class"]
 nFaces=grid["nFaces"]
@@ -102,7 +102,7 @@ end
 
 ## convert2gcmfaces ##
 
-function convert2gcmfaces(fld::Array,grid::Dict)
+function convert2gcmfaces(fld::Array,grid::gcmgrid)
 
 grTopo=grid["class"]
 nFaces=grid["nFaces"]

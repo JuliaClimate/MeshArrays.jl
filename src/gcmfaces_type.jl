@@ -5,23 +5,40 @@
 abstract type AbstractGcmfaces{T, N} <: AbstractArray{T, N} end
 
 """
+    gcmgrid
+
+gcmsubset data structure. Available constructors?
+
+"""
+struct gcmgrid
+  path::String
+  class::String
+  nFaces::Int
+  fSize::Array{NTuple{2, Int},1}
+#  ioSize::NTuple{2, Int}
+  ioSize::Array{Int64,2}
+  ioPrec::Type
+  read::Function
+end
+
+"""
     gcmfaces{T, N}
 
 gcmfaces data structure. Available constructors:
 
 ```
-gcmfaces{T,N}(grid::Dict,f::Array{Array{T,N},1},
+gcmfaces{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int})
-gcmfaces(grid::Dict,,::Type{T},
+gcmfaces(grid::gcmgrid,,::Type{T},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
-gcmfaces(grid::Dict,v1::Array{Array{T,N},1}) where {T,N}
+gcmfaces(grid::gcmgrid,v1::Array{Array{T,N},1}) where {T,N}
 gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
-gcmfaces(grid::Dict)
+gcmfaces(grid::gcmgrid)
 gcmfaces()
 ```
 """
 struct gcmfaces{T, N} <: AbstractGcmfaces{T, N}
-   grid::Dict
+   grid::gcmgrid
    f::Array{Array{T,N},1}
    fSize::Array{NTuple{N, Int}}
    aSize::NTuple{N, Int}
@@ -33,15 +50,15 @@ end
 gcmsubset data structure. Available constructors:
 
 ```
-gcmsubset{T,N}(grid::Dict,f::Array{Array{T,N},1},
+gcmsubset{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
                fSize::Array{NTuple{N, Int}},aSize::NTuple{N, Int},
                i::Array{Array{T,N},1},iSize::Array{NTuple{N, Int}})
-gcmsubset(grid::Dict,::Type{T},fSize::Array{NTuple{N, Int}},
+gcmsubset(grid::gcmgrid,::Type{T},fSize::Array{NTuple{N, Int}},
           aSize::NTuple{N,Int},dims::NTuple{N,Int}) where {T,N}
 ```
 """
 struct gcmsubset{T, N} <: AbstractGcmfaces{T, N}
-   grid::Dict
+   grid::gcmgrid
    f::Array{Array{T,N},1}
    fSize::Array{NTuple{N, Int}}
    aSize::NTuple{N, Int}
@@ -51,7 +68,7 @@ end
 
 ## additional constructors for gcmfaces
 
-function gcmfaces(grid::Dict,::Type{T},
+function gcmfaces(grid::gcmgrid,::Type{T},
   fSize::Array{NTuple{N, Int}},
   aSize::NTuple{N,Int}) where {T,N}
   nFaces=grid["nFaces"]
@@ -62,7 +79,7 @@ function gcmfaces(grid::Dict,::Type{T},
   gcmfaces{T,N}(grid,f,fSize,aSize)
 end
 
-function gcmfaces(grid::Dict,
+function gcmfaces(grid::gcmgrid,
   v1::Array{Array{T,N},1}) where {T,N}
   fSize=fsize(v1)
   aSize=fsize(v1,0)
@@ -77,7 +94,7 @@ function gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
   gcmfaces{T,N}(grid,deepcopy(A.f),fSize,aSize)
 end
 
-function gcmfaces(grid::Dict)
+function gcmfaces(grid::gcmgrid)
   T=grid["ioPrec"]
   fSize=grid["fSize"]
   aSize=(prod(grid["ioSize"]),1)
@@ -85,17 +102,18 @@ function gcmfaces(grid::Dict)
 end
 
 function gcmfaces()
-  grid=Dict("nFaces"=>5, "class"=>"llc")
   T=Float64
   fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
-  aSize=(105300, 1);
+  aSize=(105300, 1)
+  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, x -> x)
+
   gcmfaces(grid,T,fSize,aSize)
 end
 
 ## additional constructors for gcmsubset
 
 #maybe: replace this constructor with one that gets A and sets f to view(A.f)
-function gcmsubset(grid::Dict,::Type{T},
+function gcmsubset(grid::gcmgrid,::Type{T},
   fSize::Array{NTuple{N, Int}},aSize::NTuple{N,Int},
   dims::NTuple{N,Int}) where {T,N}
   nFaces=grid["nFaces"]

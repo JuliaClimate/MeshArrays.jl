@@ -40,8 +40,8 @@ else;
     error("unknown gridName case");
 end;
 
-mygrid=Dict("path" => grDir, "class" => grTopo, "nFaces" => nFaces,
-    "fSize" => facesSize, "ioSize" => ioSize, "ioPrec" => ioPrec)
+mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, x -> x)
+
 return mygrid
 
 end
@@ -49,14 +49,14 @@ end
 ## GCMGridLoad function
 
 """
-    GCMGridLoad(mygrid::Dict)
+    GCMGridLoad(mygrid::gcmgrid)
 
 Loads grid variables from files located in grDir set by GCMGridSpec.
 
 Grid variables are XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC,
 hFacS, hFacW, Depth based on the MITgcm naming convention.
 """
-function GCMGridLoad(mygrid::Dict=Dict())
+function GCMGridLoad(mygrid::gcmgrid)
 
     #maybe just return as a dictionnary?
     global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth
@@ -112,8 +112,7 @@ function GCMGridOnes(grTp,nF,nP)
     facesSize[:].=[(nP,nP)]
     ioPrec=Float32
 
-    mygrid=Dict("path" => grDir, "class" => grTopo, "nFaces" => nFaces,
-        "fSize" => facesSize, "ioSize" => ioSize, "ioPrec" => ioPrec)
+    mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec)
 
     list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
     for ii=1:length(list0);

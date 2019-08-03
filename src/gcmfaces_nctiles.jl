@@ -21,7 +21,8 @@ if ~(MeshArrays.grTopo=="llc");
   error("non-llc cases not implemented yet");
 end;
 
-grid=Dict("nFaces"=>5,"class"=>"llc")
+fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
+grid=gcmgrid("", "llc", 5, fSize, [90 1170], Float64, x -> x)
 
 fileIn=@sprintf("%s.%04d.nc",fileName,1);
 x = ncread(fileIn,fldName);
