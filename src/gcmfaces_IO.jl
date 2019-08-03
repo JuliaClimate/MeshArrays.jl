@@ -22,7 +22,8 @@ function read_bin(fil::String,kt,kk,prec::DataType)
   end;
 
   mygrid=gcmgrid(MeshArrays.grDir, MeshArrays.grTopo, MeshArrays.nFaces,
-                 MeshArrays.facesSize, MeshArrays.ioSize, MeshArrays.ioPrec)
+                 MeshArrays.facesSize, MeshArrays.ioSize, MeshArrays.ioPrec,
+                 x -> missing)
 
   (n1,n2)=mygrid.ioSize
 

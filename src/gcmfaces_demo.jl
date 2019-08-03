@@ -35,14 +35,14 @@ function demo1(gridChoice)
     Darr=convert2array(D)
     DD=convert2array(Darr,mygrid)
 
-    mygrid=GCMGridLoad(mygrid)
+    GridVariables=GCMGridLoad(mygrid)
 
-    (dFLDdx, dFLDdy)=gradient(mygrid["YC"],mygrid)
+    (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],mygrid)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
 
-    view(mygrid["hFacC"],:,:,40)
-    #show(fsize(mygrid["hFacC"],1))
-    #show(fsize(view(mygrid["hFacC"],:,:,40),1))
+    view(GridVariables["hFacC"],:,:,40)
+    #show(fsize(GridVariables["hFacC"],1))
+    #show(fsize(view(GridVariables["hFacC"],:,:,40),1))
 
     return (D,Dexch,Darr,DD)
 
@@ -67,32 +67,34 @@ qwckplot(Rend)
 function demo2()
 
     #Pre-requisite: either load predefined grid using `demo1` or call `GCMGridOnes`
-    isdir("GRID_LLC90") ? mygrid=GCMGridLoad(GCMGridSpec("LLC90")) : mygrid=GCMGridOnes("cs",6,100)
+    isdir("GRID_LLC90") ? GridVariables=GCMGridLoad(GCMGridSpec("LLC90")) : GridVariables=GCMGridOnes("cs",6,100)
 
-    (Rini,Rend,DXCsm,DYCsm)=demo2(mygrid)
+    (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables)
 end
 
-function demo2(mygrid::gcmgrid)
+function demo2(GridVariables::Dict)
+
+    mygrid=GridVariables["XC"].grid
 
     #initialize 2D field of random numbers
-    tmp1=convert2gcmfaces(mygrid["XC"])
+    tmp1=convert2gcmfaces(GridVariables["XC"])
     tmp1=randn(Float32,size(tmp1))
     Rini=convert2gcmfaces(tmp1,mygrid)
 
     #apply land mask
-    if ndims(mygrid["hFacC"].f[1])>2
-        tmp1=mask(view(mygrid["hFacC"],:,:,1),NaN,0)
+    if ndims(GridVariables["hFacC"].f[1])>2
+        tmp1=mask(view(GridVariables["hFacC"],:,:,1),NaN,0)
     else
-        tmp1=mask(mygrid["hFacC"],NaN,0)
+        tmp1=mask(GridVariables["hFacC"],NaN,0)
     end
     msk=fill(1.,tmp1) + 0. *tmp1;
     Rini=msk*Rini;
 
     #specify smoothing length scales in x, y directions
-    DXCsm=3*mygrid["DXC"]; DYCsm=3*mygrid["DYC"];
+    DXCsm=3*GridVariables["DXC"]; DYCsm=3*GridVariables["DYC"];
 
     #apply smoother
-    Rend=smooth(Rini,DXCsm,DYCsm,mygrid);
+    Rend=smooth(Rini,DXCsm,DYCsm,GridVariables);
 
     return (Rini,Rend,DXCsm,DYCsm)
 
@@ -119,20 +121,20 @@ qwckplot(UV["V"][:,:,1,1],"V component (note varying face orientations)")
 """
 function demo3()
 
-    mygrid=GCMGridLoad(GCMGridSpec("LLC90"));
+    GridVariables=GCMGridLoad(GCMGridSpec("LLC90"));
 
     fileName="nctiles_climatology/UVELMASS/UVELMASS"
     U=Main.read_nctiles(fileName,"UVELMASS");
     fileName="nctiles_climatology/VVELMASS/VVELMASS"
     V=Main.read_nctiles(fileName,"VVELMASS");
 
-    (UV, LC, Tr)=demo3(U,V,mygrid)
+    (UV, LC, Tr)=demo3(U,V,GridVariables)
 
 end
 
-function demo3(U::gcmfaces,V::gcmfaces,mygrid::gcmgrid)
+function demo3(U::gcmfaces,V::gcmfaces,GridVariables::Dict)
 
-    LC=LatCircles(-89.0:89.0,mygrid)
+    LC=LatCircles(-89.0:89.0,GridVariables)
 
     U=mask(U,0.0)
     V=mask(V,0.0)
@@ -142,7 +144,7 @@ function demo3(U::gcmfaces,V::gcmfaces,mygrid::gcmgrid)
     n=size(U)
     Tr=Array{Float64}(undef,length(LC),n[3],n[4])
     for i=1:length(LC)
-        Tr[i,:,:]=TransportThrough(UV,LC[i],mygrid)
+        Tr[i,:,:]=TransportThrough(UV,LC[i],GridVariables)
     end
 
     return UV, LC, Tr

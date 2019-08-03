@@ -12,8 +12,8 @@ Call qwckplot(fld::gcmfaces,ttl::String) with current date for title. Example:
 
 ```
 !isdir("GRID_LLC90") ? error("missing files") : nothing
-mygrid=GCMGridLoad(GCMGridSpec("LLC90"))
-qwckplot(mygrid["Depth"])
+GridVariables=GCMGridLoad(GCMGridSpec("LLC90"))
+qwckplot(GridVariables["Depth"])
 ```
 """
 function qwckplot(fld::gcmfaces)

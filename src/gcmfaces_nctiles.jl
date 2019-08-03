@@ -22,7 +22,7 @@ if ~(MeshArrays.grTopo=="llc");
 end;
 
 fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
-grid=gcmgrid("", "llc", 5, fSize, [90 1170], Float64, x -> x)
+grid=gcmgrid("", "llc", 5, fSize, [90 1170], Float64, x -> missing)
 
 fileIn=@sprintf("%s.%04d.nc",fileName,1);
 x = ncread(fileIn,fldName);

@@ -7,7 +7,7 @@ abstract type AbstractGcmfaces{T, N} <: AbstractArray{T, N} end
 """
     gcmgrid
 
-gcmsubset data structure. Available constructors?
+gcmgrid data structure. Available constructors?
 
 """
 struct gcmgrid
@@ -105,7 +105,7 @@ function gcmfaces()
   T=Float64
   fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
   aSize=(105300, 1)
-  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, x -> x)
+  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, x -> missing)
 
   gcmfaces(grid,T,fSize,aSize)
 end

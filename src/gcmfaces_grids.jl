@@ -40,7 +40,7 @@ else;
     error("unknown gridName case");
 end;
 
-mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, x -> x)
+mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, x -> missing)
 
 return mygrid
 
@@ -63,13 +63,14 @@ function GCMGridLoad(mygrid::gcmgrid)
     global AngleCS, AngleSN, RAW, RAS
     global DRC, DRF, RC, RF
 
+    GridVariables=Dict()
     list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
     "DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth")
     for ii=1:length(list0);
         tmp1=read_bin(mygrid.path*list0[ii]*".data",mygrid.ioPrec);
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
-        mygrid[list0[ii]]=tmp1
+        GridVariables[list0[ii]]=tmp1
     end
 
     mygrid.ioPrec==Float64 ? reclen=8 : reclen=4
@@ -87,10 +88,10 @@ function GCMGridLoad(mygrid::gcmgrid)
 
         tmp2=Symbol(list0[ii])
         @eval (($tmp2) = ($tmp1))
-        mygrid[list0[ii]]=tmp1
+        GridVariables[list0[ii]]=tmp1
     end
 
-    return mygrid
+    return GridVariables
 
 end
 
@@ -112,18 +113,19 @@ function GCMGridOnes(grTp,nF,nP)
     facesSize[:].=[(nP,nP)]
     ioPrec=Float32
 
-    mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec)
+    mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, x -> missing)
 
+    GridVariables=Dict()
     list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
     for ii=1:length(list0);
         tmp1=fill(1.,nP,nP*nF);
         tmp1=convert2gcmfaces(tmp1,mygrid);
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
-        mygrid[list0[ii]]=tmp1
+        GridVariables[list0[ii]]=tmp1
     end
 
-    return mygrid
+    return GridVariables
 
 end
 
