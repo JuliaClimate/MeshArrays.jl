@@ -7,8 +7,13 @@ abstract type AbstractGcmfaces{T, N} <: AbstractArray{T, N} end
 """
     gcmgrid
 
-gcmgrid data structure. Available constructors?
+gcmgrid data structure. Available constructors:
 
+```
+gcmgrid(path::String, class::String, nFaces::Int,
+        fSize::Array{NTuple{2, Int},1}, ioSize::Array{Int64,2},
+        ioPrec::Type, read::Function)
+```
 """
 struct gcmgrid
   path::String

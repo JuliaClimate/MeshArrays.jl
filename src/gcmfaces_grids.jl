@@ -8,12 +8,11 @@ GCMGridSpec() = GCMGridSpec("LLC90")
 """
     GCMGridSpec(gridName)
 
-Set global variables in the module scope for grDir, nFaces, grTopo, ioSize,
-facesSize, ioPrec using hard-coded values for LLC90, CS32, LL360 (for now).
+Return a `gmcgrid` specification that provides grid files path,
+class, nFaces, ioSize, facesSize, ioPrec, & a read function (not
+yet) using hard-coded values for LLC90, CS32, LL360 (for now).
 """
 function GCMGridSpec(gridName,gridParentDir="./")
-
-global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;
 
 if gridName=="LLC90";
     grDir=gridParentDir*"GRID_LLC90/";
@@ -51,17 +50,12 @@ end
 """
     GCMGridLoad(mygrid::gcmgrid)
 
-Loads grid variables from files located in grDir set by GCMGridSpec.
+Return a `Dict` of grid variables from files located in mygrid.path (see `GCMGridSpec`).
 
-Grid variables are XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC,
+Grid variables are named XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC,
 hFacS, hFacW, Depth based on the MITgcm naming convention.
 """
 function GCMGridLoad(mygrid::gcmgrid)
-
-    #maybe just return as a dictionnary?
-    global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth
-    global AngleCS, AngleSN, RAW, RAS
-    global DRC, DRF, RC, RF
 
     GridVariables=Dict()
     list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
@@ -102,9 +96,6 @@ Define all-1 grid variables instead of using GCMGridSpec & GCMGridLoad.
 """
 function GCMGridOnes(grTp,nF,nP)
 
-    global grDir, nFaces, grTopo, ioSize, facesSize, ioPrec;
-    global XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC, hFacS, hFacW, Depth;
-
     grDir=""
     grTopo=grTp
     nFaces=nF
@@ -130,19 +121,25 @@ function GCMGridOnes(grTp,nF,nP)
 end
 
 
-function findtiles(ni,nj,grid="llc90")
+"""
+    findtiles(ni,nj,grid="llc90")
+
+Return a `gcmfaces` map of tile indices for tile size (ni,nj)
+"""
+function findtiles(ni::Int,nj::Int,grid="llc90")
     mytiles = Dict()
     if grid=="llc90"
-        GCMGridLoad()
+        mygrid=GCMGridSpec("LLC90")
+        GridVariables=GCMGridLoad(mygrid)
     else
         println("Unsupported grid option")
     end
-    mytiles["nFaces"]=MeshArrays.nFaces;
+    mytiles["nFaces"]=mygrid.nFaces;
     #mytiles.fileFormat=mygrid.fileFormat;
-    mytiles["ioSize"]=MeshArrays.ioSize;
+    mytiles["ioSize"]=mygrid.ioSize;
 
-    XC=MeshArrays.XC;
-    YC=MeshArrays.YC;
+    XC=GridVariables["XC"];
+    YC=GridVariables["YC"];
     XC11=copy(XC); YC11=copy(XC);
     XCNINJ=copy(XC); YCNINJ=copy(XC);
     iTile=copy(XC); jTile=copy(XC); tileNo=copy(XC);
