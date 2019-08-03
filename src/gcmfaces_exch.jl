@@ -35,15 +35,15 @@ end
 
 function exch_T_N(fld,N)
 
-if fld.grid["class"]=="llc";
-  FLD=exch_T_N_cs(fld,N);
-elseif fld.grid["class"]=="cs";
-  FLD=exch_T_N_cs(fld,N);
-elseif fld.grid["class"]=="ll";
-  FLD=exch_T_N_ll(fld,N);
-else;
-  error("unknown grTopo case");
-end;
+if fld.grid.class=="llc"
+  FLD=exch_T_N_cs(fld,N)
+elseif fld.grid.class=="cs"
+  FLD=exch_T_N_cs(fld,N)
+elseif fld.grid.class=="ll"
+  FLD=exch_T_N_ll(fld,N)
+else
+  error("unknown grTopo case")
+end
 
 FLD
 
@@ -51,15 +51,15 @@ end
 
 function exch_UV_N(u,v,N)
 
-if u.grid["class"]=="llc";
-  (uex,vex)=exch_UV_N_cs(u,v,N);
-elseif u.grid["class"]=="cs";
-  (uex,vex)=exch_UV_N_cs(u,v,N);
-elseif u.grid["class"]=="ll";
-  (uex,vex)=exch_UV_N_ll(u,v,N);
-else;
-  error("unknown grTopo case");
-end;
+if u.grid.class=="llc"
+  (uex,vex)=exch_UV_N_cs(u,v,N)
+elseif u.grid.class=="cs"
+  (uex,vex)=exch_UV_N_cs(u,v,N)
+elseif u.grid.class=="ll"
+  (uex,vex)=exch_UV_N_ll(u,v,N)
+else
+  error("unknown grTopo case")
+end
 
 return uex,vex
 
@@ -67,15 +67,15 @@ end
 
 function exch_UV(u,v)
 
-if u.grid["class"]=="llc";
-  (uex,vex)=exch_UV_cs(u,v);
-elseif u.grid["class"]=="cs";
-  (uex,vex)=exch_UV_cs(u,v);
-elseif u.grid["class"]=="ll";
-  (uex,vex)=exch_UV_ll(u,v);
-else;
-  error("unknown grTopo case");
-end;
+if u.grid.class=="llc"
+  (uex,vex)=exch_UV_cs(u,v)
+elseif u.grid.class=="cs"
+  (uex,vex)=exch_UV_cs(u,v)
+elseif u.grid.class=="ll"
+  (uex,vex)=exch_UV_ll(u,v)
+else
+  error("unknown grTopo case")
+end
 
 return uex,vex
 
@@ -153,11 +153,11 @@ fillval=0.0
 
 #step 1
 
-s=size.(fld.f);
-nf=fld.grid["nFaces"];
+s=size.(fld.f)
+nf=fld.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fld.grid["class"];
-FLD=similar(fld);
+tp=fld.grid.class
+FLD=similar(fld)
 
 for i=1:nf; FLD.f[i]=fill(fillval,s[i].+2N); end;
 #code below yields strange, seemingly incorrect results:
@@ -201,12 +201,12 @@ fillval=0.0
 
 #step 1
 
-s=size.(fldU.f);
-nf=fldU.grid["nFaces"];
+s=size.(fldU.f)
+nf=fldU.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fldU.grid["class"];
-FLDU=similar(fldU);
-FLDV=similar(fldV);
+tp=fldU.grid.class
+FLDU=similar(fldU)
+FLDV=similar(fldV)
 
 for i=1:nf;
  FLDU.f[i]=fill(fillval,s[i].+2N);
@@ -255,12 +255,12 @@ fillval=0.0
 
 #step 1
 
-s=size.(fldU.f);
-nf=fldU.grid["nFaces"];
+s=size.(fldU.f)
+nf=fldU.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fldU.grid["class"];
-FLDU=similar(fldU);
-FLDV=similar(fldV);
+tp=fldU.grid.class
+FLDU=similar(fldU)
+FLDV=similar(fldV)
 
 for i=1:nf
   FLDU.f[i]=fill(fillval,s[i][1]+1,s[i][2]);

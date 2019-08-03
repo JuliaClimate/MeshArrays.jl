@@ -16,7 +16,7 @@ function demo1(gridChoice)
 
     mygrid=GCMGridSpec(gridChoice)
 
-    D=read_bin(mygrid["path"]*"Depth.data",mygrid["ioPrec"])
+    D=read_bin(mygrid.path*"Depth.data",mygrid.ioPrec)
 
     1000+D
     D+1000

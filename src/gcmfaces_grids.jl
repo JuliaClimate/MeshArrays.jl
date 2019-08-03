@@ -66,22 +66,22 @@ function GCMGridLoad(mygrid::gcmgrid)
     list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
     "DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth")
     for ii=1:length(list0);
-        tmp1=read_bin(mygrid["path"]*list0[ii]*".data",mygrid["ioPrec"]);
+        tmp1=read_bin(mygrid.path*list0[ii]*".data",mygrid.ioPrec);
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
         mygrid[list0[ii]]=tmp1
     end
 
-    mygrid["ioPrec"]==Float64 ? reclen=8 : reclen=4
+    mygrid.ioPrec==Float64 ? reclen=8 : reclen=4
 
     list0=("DRC","DRF","RC","RF")
     for ii=1:length(list0)
-        fil=mygrid["path"]*list0[ii]*".data"
+        fil=mygrid.path*list0[ii]*".data"
         tmp1=stat(fil)
         n3=Int64(tmp1.size/reclen) #need fix for float32?
 
         fid = open(fil)
-        tmp1 = Array{mygrid["ioPrec"],1}(undef,n3)  #need fix for float32?
+        tmp1 = Array{mygrid.ioPrec,1}(undef,n3)  #need fix for float32?
         read!(fid,tmp1)
         tmp1 = hton.(tmp1)
 
@@ -145,7 +145,7 @@ function findtiles(ni,nj,grid="llc90")
     XCNINJ=copy(XC); YCNINJ=copy(XC);
     iTile=copy(XC); jTile=copy(XC); tileNo=copy(XC);
     tileCount=0;
-    for iF=1:XC11.grid["nFaces"]
+    for iF=1:XC11.grid.nFaces
         #global tileCount,XC,YC,XC11,YC11,iTile,jTile,tileNo
         face_XC=XC.f[iF]; face_YC=YC.f[iF];
     #ordering convention that was used in first generation nctile files:

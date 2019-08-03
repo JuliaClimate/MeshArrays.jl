@@ -24,7 +24,7 @@ function read_bin(fil::String,kt,kk,prec::DataType)
   mygrid=gcmgrid(MeshArrays.grDir, MeshArrays.grTopo, MeshArrays.nFaces,
                  MeshArrays.facesSize, MeshArrays.ioSize, MeshArrays.ioPrec)
 
-  (n1,n2)=mygrid["ioSize"]
+  (n1,n2)=mygrid.ioSize
 
   if prec==Float64;
     reclen=8;

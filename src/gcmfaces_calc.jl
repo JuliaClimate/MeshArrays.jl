@@ -21,7 +21,7 @@ exFLD=exchange(inFLD,1)
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
-for a=1:inFLD.grid["nFaces"];
+for a=1:inFLD.grid.nFaces
   (s1,s2)=fsize(exFLD,a)
   tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
   tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
@@ -44,7 +44,7 @@ exFLD=exchange(inFLD,1)
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
-for a=1:inFLD.grid["nFaces"];
+for a=1:inFLD.grid.nFaces
   (s1,s2)=fsize(exFLD,a)
   tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
   tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
@@ -74,7 +74,7 @@ mask(fld::gcmfaces, val::Number, noval::Number)
 """
 function mask(fld::gcmfaces, val::Number)
   fldmsk=similar(fld)
-  for a=1:fld.grid["nFaces"]
+  for a=1:fld.grid.nFaces
     tmp1=copy(fld.f[a])
     replace!(x -> !isfinite(x) ? val : x, tmp1 )
     fldmsk.f[a]=tmp1
@@ -84,7 +84,7 @@ end
 
 function mask(fld::gcmfaces, val::Number, noval::Number)
   fldmsk=similar(fld)
-  for a=1:fld.grid["nFaces"]
+  for a=1:fld.grid.nFaces
     tmp1=copy(fld.f[a])
     replace!(x -> x==noval ? val : x, tmp1  )
     fldmsk.f[a]=tmp1
@@ -109,7 +109,7 @@ function convergence(uFLD::gcmfaces,vFLD::gcmfaces)
 CONV=similar(uFLD)
 
 (tmpU,tmpV)=exch_UV(uFLD,vFLD)
-for a=1:tmpU.grid["nFaces"]
+for a=1:tmpU.grid.nFaces
   (s1,s2)=fsize(uFLD,a)
   tmpU1=view(tmpU.f[a],1:s1,1:s2)
   tmpU2=view(tmpU.f[a],2:s1+1,1:s2)
@@ -148,7 +148,7 @@ mskS=mask(mskS,0.0)
 #get inverse grid spacing:
 iDXC=similar(FLD)
 iDYC=similar(FLD)
-for a=1:FLD.grid["nFaces"];
+for a=1:FLD.grid.nFaces
   iDXC.f[a]=1.0./mygrid["DXC"].f[a]
   iDYC.f[a]=1.0./mygrid["DYC"].f[a]
 end
@@ -177,12 +177,12 @@ for it=1:nbt
   (dTdxAtU,dTdyAtV)=gradient(FLD,iDXC,iDYC);
   tmpU=similar(FLD)
   tmpV=similar(FLD)
-  for a=1:FLD.grid["nFaces"]
+  for a=1:FLD.grid.nFaces
       tmpU.f[a]=dTdxAtU.f[a].*KuxFac.f[a];
       tmpV.f[a]=dTdyAtV.f[a].*KvyFac.f[a];
   end
   tmpC=convergence(tmpU,tmpV);
-  for a=1:FLD.grid["nFaces"]
+  for a=1:FLD.grid.nFaces
       FLD.f[a]=FLD.f[a]-dtFac.f[a].*tmpC.f[a];
   end
 end
@@ -280,7 +280,7 @@ function LatCircles(LatValues,mygrid::gcmgrid)
 
         mskCint=exchange(mskCint,1)
 
-        for i=1:mskCint.grid["nFaces"]
+        for i=1:mskCint.grid.nFaces
             tmp1=mskCint.f[i]
             # tracer mask:
             tmp2=tmp1[2:end-1,1:end-2]+tmp1[2:end-1,3:end]+
