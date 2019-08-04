@@ -7,7 +7,7 @@
 """
     exchange(fld::gcmfaces)
 
-Exchange / transfer data between neighbor arrays. Other methods are
+Exchange / transfer data between neighboring arrays. Other methods are
 
     exchange(fld::gcmfaces,N::Integer)
     exchange(u::gcmfaces,v::gcmfaces)

@@ -4,7 +4,7 @@
 """
     convert2array(fld::gcmfaces)
 
-Convert gcmfaces to array (or vice versa)
+Convert gcmfaces to array (or vice versa otherwise)
 """
 function convert2array(fld::gcmfaces)
 
@@ -68,7 +68,7 @@ end
 """
     convert2gcmfaces(fld::gcmfaces)
 
-Convert mitgcm output to gcmfaces (or vice versa)
+Convert mitgcm output to gcmfaces (or vice versa otherwise)
 """
 function convert2gcmfaces(fld::gcmfaces)
 

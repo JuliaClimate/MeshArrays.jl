@@ -34,10 +34,11 @@ gcmfaces data structure. Available constructors:
 ```
 gcmfaces{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int})
-gcmfaces(grid::gcmgrid,,::Type{T},
-         fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
 gcmfaces(grid::gcmgrid,v1::Array{Array{T,N},1}) where {T,N}
 gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
+
+gcmfaces(grid::gcmgrid,,::Type{T},
+         fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
 gcmfaces(grid::gcmgrid)
 gcmfaces()
 ```

@@ -2,17 +2,18 @@
 ## demo functions:
 
 """
-demo1(gridChoice)
+    demo1(gridChoice::String)
 
-Demonstrate basic functionalities (load grid, arithmetic, exchange, gradient, etc.)
+Demonstrate basic functionalities (load grid, arithmetic, exchange, gradient,
+etc.). Call sequence:
 
 ```
 !isdir("GRID_LLC90") ? error("missing files") : nothing
 
-(D,Dexch,Darr,DD)=demo1("LLC90");
+(D,Dexch,Darr,DD)=MeshArrays.demo1("LLC90");
 ```
 """
-function demo1(gridChoice)
+function demo1(gridChoice::String)
 
     mygrid=GCMGridSpec(gridChoice)
 
@@ -51,12 +52,12 @@ end
 ##
 
 """
-demo2()
+    demo2()
 
-Demonstrate higher level functions using smooth()
+Demonstrate higher level functions using `smooth`. Call sequence:
 
 ```
-(Rini,Rend,DXCsm,DYCsm)=demo2();
+(Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2();
 
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
 qwckplot(Rini)
@@ -101,15 +102,15 @@ function demo2(GridVariables::Dict)
 end
 
 """
-demo3()
+    demo3()
 
-Demonstrate computations of ocean meridional transports. Calling sequence:
+Demonstrate ocean transport computations. Call sequence:
 
 ```
 !isdir("GRID_LLC90")||!isdir("nctiles_climatology") ? error("missing files") : nothing
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
 
-(UV,LC,Tr)=demo3();
+(UV,LC,Tr)=MeshArrays.demo3();
 
 using Statistics, Plots
 plot(dropdims(mean(sum(Tr,dims=2),dims=3),dims=(2,3))/1e6,title="meridional transport")
