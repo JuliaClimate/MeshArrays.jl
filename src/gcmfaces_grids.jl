@@ -8,9 +8,9 @@ GCMGridSpec() = GCMGridSpec("LLC90")
 """
     GCMGridSpec(gridName)
 
-Return a `gmcgrid` specification that provides grid files path,
-class, nFaces, ioSize, facesSize, ioPrec, & a read function (not
-yet) using hard-coded values for LLC90, CS32, LL360 (for now).
+Return a `gmcgrid` specification that provides grid files `path`,
+`class`, `nFaces`, `ioSize`, `facesSize`, `ioPrec`, & a `read` function
+(not yet) using hard-coded values for `"LLC90"`, `"CS32"`, `"LL360"` (for now).
 """
 function GCMGridSpec(gridName,gridParentDir="./")
 
@@ -50,10 +50,13 @@ end
 """
     GCMGridLoad(mygrid::gcmgrid)
 
-Return a `Dict` of grid variables from files located in mygrid.path (see `GCMGridSpec`).
+Return a `Dict` of grid variables read from files located in `mygrid.path` (see `?GCMGridSpec`).
 
-Grid variables are named XC, XG, YC, YG, RAC, RAZ, DXC, DXG, DYC, DYG, hFacC,
-hFacS, hFacW, Depth based on the MITgcm naming convention.
+Based on the MITgcm naming convention, grid variables are:
+
+- XC, XG, YC, YG, AngleCS, AngleSN, hFacC, hFacS, hFacW, Depth.
+- RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
+- DRC, DRF, RC, RF (one-dimensional)
 """
 function GCMGridLoad(mygrid::gcmgrid)
 
@@ -92,7 +95,7 @@ end
 """
     GCMGridOnes(grTp,nF,nP)
 
-Define all-1 grid variables instead of using GCMGridSpec & GCMGridLoad.
+Define all-ones grid variables instead of using `GCMGridSpec` & `GCMGridLoad`.
 """
 function GCMGridOnes(grTp,nF,nP)
 
@@ -124,7 +127,7 @@ end
 """
     findtiles(ni,nj,grid="llc90")
 
-Return a `gcmfaces` map of tile indices for tile size (ni,nj)
+Return a `gcmfaces` map of tile indices for tile size `ni,nj`
 """
 function findtiles(ni::Int,nj::Int,grid="llc90")
     mytiles = Dict()

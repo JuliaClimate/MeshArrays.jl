@@ -51,6 +51,6 @@ end
 
 ## read_bin function with reduced list of argument
 
-function read_bin(fil::String)
-  read_bin(fil,missing,missing,Float32,mygrid::gcmgrid)
+function read_bin(fil::String,mygrid::gcmgrid)
+  read_bin(fil,missing,missing,mygrid.ioPrec,mygrid::gcmgrid)
 end

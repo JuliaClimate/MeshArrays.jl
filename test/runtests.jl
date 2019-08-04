@@ -12,7 +12,7 @@ for nTopo=1:3
     mygrid=GridVariables["XC"].grid
     @test mygrid.class == grTopo
     Rini= 0.; Rend= 0.;
-    (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables);
+    (Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2(GridVariables);
     @test isa(Rend,gcmfaces)
     @test sum(isfinite(Rend)) == Npt
     Sini=sqrt(sum(Rini*Rini)/(Npt-1.0))
