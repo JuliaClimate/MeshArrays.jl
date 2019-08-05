@@ -216,7 +216,7 @@ function TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
     tmp=size(U)
     n[1:nd].=tmp[1:nd]
 
-    haskey(VectorField,"factors") ? f=VectorField["factors"] : f=Array{String,1}(undef,nd)
+    haskey(VectorField,"factors") ? f=VectorField["factors"] : f=Array{String,1}(undef,0)
     haskey(VectorField,"dimensions") ? d=VectorField["dimensions"] : d=Array{String,1}(undef,nd)
 
     length(d)!=nd ? error("inconsistent specification of dims") : nothing
@@ -257,6 +257,10 @@ function TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
             end
         end
     end
+
+    nd<4 ? trsp=dropdims(trsp,dims=3) : nothing
+    nd<3 ? trsp=dropdims(trsp,dims=2) : nothing
+    nd==2 ? trsp=trsp[1] : nothing
 
     return trsp
 end
