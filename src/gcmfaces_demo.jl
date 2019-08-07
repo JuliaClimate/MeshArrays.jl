@@ -112,7 +112,8 @@ include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
 
 (UV,LC,Tr)=MeshArrays.demo3();
 
-using Statistics, Plots
+using Statistics
+using Plots
 plot(dropdims(mean(sum(Tr,dims=2),dims=3),dims=(2,3))/1e6,title="meridional transport")
 
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
@@ -136,7 +137,7 @@ end
 
 function demo3(U::gcmfaces,V::gcmfaces,GridVariables::Dict)
 
-    LC=LatCircles(-89.0:89.0,GridVariables)
+    LC=LatitudeCircles(-89.0:89.0,GridVariables)
 
     U=mask(U,0.0)
     V=mask(V,0.0)
@@ -146,7 +147,7 @@ function demo3(U::gcmfaces,V::gcmfaces,GridVariables::Dict)
     n=size(U)
     Tr=Array{Float64}(undef,length(LC),n[3],n[4])
     for i=1:length(LC)
-        Tr[i,:,:]=TransportThrough(UV,LC[i],GridVariables)
+        Tr[i,:,:]=ThroughFlow(UV,LC[i],GridVariables)
     end
 
     return UV, LC, Tr

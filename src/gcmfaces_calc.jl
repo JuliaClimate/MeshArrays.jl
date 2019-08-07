@@ -195,14 +195,14 @@ return FLD
 
 end
 
-## TransportThrough function
+## ThroughFlow function
 
 """
-    TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
+    ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
 
 Compute transport through an integration path
 """
-function TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
+function ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
 
     #Note: vertical intergration is not always wanted; left for user to do outside
 
@@ -265,16 +265,16 @@ function TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
     return trsp
 end
 
-## LatCircles function
+## LatitudeCircles function
 
 """
-    LatCircles(LatValues,GridVariables::Dict)
+    LatitudeCircles(LatValues,GridVariables::Dict)
 
 Compute integration paths that follow latitude circles
 """
-function LatCircles(LatValues,GridVariables::Dict)
+function LatitudeCircles(LatValues,GridVariables::Dict)
 
-    LatCircles=Array{Dict}(undef,length(LatValues))
+    LatitudeCircles=Array{Dict}(undef,length(LatValues))
 
     for j=1:length(LatValues)
         mskCint=1*(GridVariables["YC"] .>= LatValues[j])
@@ -321,12 +321,12 @@ function LatCircles(LatValues,GridVariables::Dict)
             tabS[j,5]=ind[j]
         end
 
-        LatCircles[j]=Dict("lat"=>LatValues[j],
+        LatitudeCircles[j]=Dict("lat"=>LatValues[j],
         #"mskC"=>mskC,"mskW"=>mskW,"mskS"=>mskS,
         "tabC"=>tabC,"tabW"=>tabW,"tabS"=>tabS)
     end
 
-    return LatCircles
+    return LatitudeCircles
 
 end
 
