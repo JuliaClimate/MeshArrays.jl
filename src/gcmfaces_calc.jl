@@ -195,14 +195,14 @@ return FLD
 
 end
 
-## TransportThrough function
+## ThroughFlow function
 
 """
-    TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
+    ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
 
 Compute transport through an integration path
 """
-function TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
+function ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
 
     #Note: vertical intergration is not always wanted; left for user to do outside
 
@@ -216,7 +216,7 @@ function TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
     tmp=size(U)
     n[1:nd].=tmp[1:nd]
 
-    haskey(VectorField,"factors") ? f=VectorField["factors"] : f=Array{String,1}(undef,nd)
+    haskey(VectorField,"factors") ? f=VectorField["factors"] : f=Array{String,1}(undef,0)
     haskey(VectorField,"dimensions") ? d=VectorField["dimensions"] : d=Array{String,1}(undef,nd)
 
     length(d)!=nd ? error("inconsistent specification of dims") : nothing
@@ -258,19 +258,23 @@ function TransportThrough(VectorField,IntegralPath,GridVariables::Dict)
         end
     end
 
+    nd<4 ? trsp=dropdims(trsp,dims=3) : nothing
+    nd<3 ? trsp=dropdims(trsp,dims=2) : nothing
+    nd==2 ? trsp=trsp[1] : nothing
+
     return trsp
 end
 
-## LatCircles function
+## LatitudeCircles function
 
 """
-    LatCircles(LatValues,GridVariables::Dict)
+    LatitudeCircles(LatValues,GridVariables::Dict)
 
 Compute integration paths that follow latitude circles
 """
-function LatCircles(LatValues,GridVariables::Dict)
+function LatitudeCircles(LatValues,GridVariables::Dict)
 
-    LatCircles=Array{Dict}(undef,length(LatValues))
+    LatitudeCircles=Array{Dict}(undef,length(LatValues))
 
     for j=1:length(LatValues)
         mskCint=1*(GridVariables["YC"] .>= LatValues[j])
@@ -317,12 +321,12 @@ function LatCircles(LatValues,GridVariables::Dict)
             tabS[j,5]=ind[j]
         end
 
-        LatCircles[j]=Dict("lat"=>LatValues[j],
+        LatitudeCircles[j]=Dict("lat"=>LatValues[j],
         #"mskC"=>mskC,"mskW"=>mskW,"mskS"=>mskS,
         "tabC"=>tabC,"tabW"=>tabW,"tabS"=>tabS)
     end
 
-    return LatCircles
+    return LatitudeCircles
 
 end
 

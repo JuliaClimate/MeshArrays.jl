@@ -107,13 +107,8 @@ end
 Demonstrate ocean transport computations. Call sequence:
 
 ```
-!isdir("GRID_LLC90")||!isdir("nctiles_climatology") ? error("missing files") : nothing
-include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_nctiles.jl"))
-
 (UV,LC,Tr)=MeshArrays.demo3();
-
-using Statistics, Plots
-plot(dropdims(mean(sum(Tr,dims=2),dims=3),dims=(2,3))/1e6,title="meridional transport")
+using Plots; plot(Tr/1e6,title="meridional transport")
 
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
 qwckplot(UV["U"][:,:,1,1],"U component (note varying face orientations)")
@@ -125,28 +120,26 @@ function demo3()
     mygrid=GCMGridSpec("LLC90")
     GridVariables=GCMGridLoad(mygrid)
 
-    fileName="nctiles_climatology/UVELMASS/UVELMASS"
-    U=Main.read_nctiles(fileName,"UVELMASS",mygrid);
-    fileName="nctiles_climatology/VVELMASS/VVELMASS"
-    V=Main.read_nctiles(fileName,"VVELMASS",mygrid);
+    TrspX=read_bin(mygrid.path*"TrspX.bin",Float32,mygrid)
+    TrspY=read_bin(mygrid.path*"TrspY.bin",Float32,mygrid)
+    TauX=read_bin(mygrid.path*"TauX.bin",Float32,mygrid)
+    TauY=read_bin(mygrid.path*"TauY.bin",Float32,mygrid)
+    SSH=read_bin(mygrid.path*"SSH.bin",Float32,mygrid)
 
-    (UV, LC, Tr)=demo3(U,V,GridVariables)
+    (UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables)
 
 end
 
 function demo3(U::gcmfaces,V::gcmfaces,GridVariables::Dict)
 
-    LC=LatCircles(-89.0:89.0,GridVariables)
+    LC=LatitudeCircles(-89.0:89.0,GridVariables)
 
-    U=mask(U,0.0)
-    V=mask(V,0.0)
+    #UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
+    UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y"])
 
-    UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
-
-    n=size(U)
-    Tr=Array{Float64}(undef,length(LC),n[3],n[4])
+    Tr=Array{Float64,1}(undef,length(LC));
     for i=1:length(LC)
-        Tr[i,:,:]=TransportThrough(UV,LC[i],GridVariables)
+       Tr[i]=ThroughFlow(UV,LC[i],GridVariables)
     end
 
     return UV, LC, Tr
