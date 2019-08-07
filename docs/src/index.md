@@ -29,8 +29,7 @@ At the command line, one can reproduce the same computation as follows:
 
 ```
 using MeshArrays
-isdir("GRID_LLC90") ? GridVariables=GCMGridLoad(GCMGridSpec("LLC90")) : 
-                      GridVariables=GCMGridOnes("cs",6,100);
+isdir("GRID_LLC90") ? GridVariables=GCMGridLoad(GCMGridSpec("LLC90")) : GridVariables=GCMGridOnes("cs",6,100);
                     
 (Rini,Rend,DXCsm,DYCsm)= MeshArrays.demo2(GridVariables);
 ```
