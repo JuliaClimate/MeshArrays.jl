@@ -17,7 +17,7 @@ function demo1(gridChoice::String)
 
     mygrid=GCMGridSpec(gridChoice)
 
-    D=read_bin(mygrid.path*"Depth.data",mygrid.ioPrec,mygrid)
+    D=mygrid.read(mygrid.path*"Depth.data",mygrid)
 
     1000+D
     D+1000
@@ -60,8 +60,8 @@ Demonstrate higher level functions using `smooth`. Call sequence:
 (Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2();
 
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
-qwckplot(Rini)
-qwckplot(Rend)
+qwckplot(Rini,"raw noise")
+qwckplot(Rend,"smoothed noise")
 ```
 
 """
@@ -120,11 +120,11 @@ function demo3()
     mygrid=GCMGridSpec("LLC90")
     GridVariables=GCMGridLoad(mygrid)
 
-    TrspX=read_bin(mygrid.path*"TrspX.bin",Float32,mygrid)
-    TrspY=read_bin(mygrid.path*"TrspY.bin",Float32,mygrid)
-    TauX=read_bin(mygrid.path*"TauX.bin",Float32,mygrid)
-    TauY=read_bin(mygrid.path*"TauY.bin",Float32,mygrid)
-    SSH=read_bin(mygrid.path*"SSH.bin",Float32,mygrid)
+    TrspX=mygrid.read(mygrid.path*"TrspX.bin",Float32,mygrid)
+    TrspY=mygrid.read(mygrid.path*"TrspY.bin",Float32,mygrid)
+    TauX=mygrid.read(mygrid.path*"TauX.bin",Float32,mygrid)
+    TauY=mygrid.read(mygrid.path*"TauY.bin",Float32,mygrid)
+    SSH=mygrid.read(mygrid.path*"SSH.bin",Float32,mygrid)
 
     (UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables)
 

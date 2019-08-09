@@ -39,7 +39,7 @@ else;
     error("unknown gridName case");
 end;
 
-mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, x -> missing)
+mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read_bin)
 
 return mygrid
 
@@ -64,7 +64,7 @@ function GCMGridLoad(mygrid::gcmgrid)
     list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
     "DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth")
     for ii=1:length(list0)
-        tmp1=read_bin(mygrid.path*list0[ii]*".data",mygrid.ioPrec,mygrid)
+        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",mygrid)
         tmp2=Symbol(list0[ii])
         @eval (($tmp2) = ($tmp1))
         GridVariables[list0[ii]]=tmp1

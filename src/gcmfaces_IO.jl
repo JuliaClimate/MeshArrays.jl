@@ -35,6 +35,7 @@ function read_bin(fil::String,kt::Union{Int,Missing},kk::Union{Int,Missing},prec
   fld = Array{prec,1}(undef,(n1*n2*n3));
   read!(fid,fld);
   fld = hton.(fld);
+  close(fid)
 
   n3>1 ? s=(n1,n2,n3) : s=(n1,n2)
   v0=reshape(fld,s);
@@ -43,14 +44,31 @@ function read_bin(fil::String,kt::Union{Int,Missing},kk::Union{Int,Missing},prec
 
 end
 
-## read_bin function with reduced list of argument
+## read_bin with reduced list of argument
 
+# read_bin(fil::String,prec::DataType,mygrid::gcmgrid)
 function read_bin(fil::String,prec::DataType,mygrid::gcmgrid)
   read_bin(fil,missing,missing,prec,mygrid::gcmgrid)
 end
 
-## read_bin function with reduced list of argument
-
+# read_bin(fil::String,mygrid::gcmgrid)
 function read_bin(fil::String,mygrid::gcmgrid)
   read_bin(fil,missing,missing,mygrid.ioPrec,mygrid::gcmgrid)
+end
+
+## read_bin with alternative arguments
+
+# read_bin(fil::String,x::gcmfaces)
+function read_bin(fil::String,x::gcmfaces)
+  read_bin(fil,missing,missing,x.mygrid.ioPrec,x.mygrid::gcmgrid)
+end
+
+# read_bin(tmp::Array,mygrid::gcmgrid)
+function read_bin(tmp::Array,mygrid::gcmgrid)
+  convert2gcmfaces(tmp,mygrid)
+end
+
+# read_bin(tmp::Array,x::gcmfaces)
+function read_bin(tmp::Array,x::gcmfaces)
+  convert2gcmfaces(tmp,x.mygrid)
 end

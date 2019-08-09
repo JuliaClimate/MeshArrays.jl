@@ -111,7 +111,7 @@ function gcmfaces()
   T=Float64
   fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
   aSize=(105300, 1)
-  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, x -> missing)
+  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, read_bin)
 
   gcmfaces(grid,T,fSize,aSize)
 end
