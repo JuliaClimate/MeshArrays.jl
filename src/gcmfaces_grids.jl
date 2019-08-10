@@ -123,7 +123,7 @@ function GCMGridOnes(grTp,nF,nP)
     list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
     for ii=1:length(list0);
         tmp1=fill(1.,nP,nP*nF);
-        tmp1=read(tmp1,gcmfaces(mygrid));
+        tmp1=mygrid.read(tmp1,gcmfaces(mygrid));
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
         GridVariables[list0[ii]]=tmp1
