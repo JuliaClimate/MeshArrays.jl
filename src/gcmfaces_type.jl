@@ -85,6 +85,23 @@ function gcmfaces(grid::gcmgrid,::Type{T},
   gcmfaces{T,N}(grid,f,fSize,aSize)
 end
 
+function gcmfaces(grid::gcmgrid,::Type{T}) where {T,N}
+  nFaces=grid.nFaces
+  fSize=grid.fSize
+  aSize=(prod(grid.ioSize),1)
+  gcmfaces(grid,T,fSize,aSize)
+end
+
+function gcmfaces(grid::gcmgrid,::Type{T},n3::Int) where {T,N}
+  nFaces=grid.nFaces
+  fSize=Array{NTuple{3, Int},1}(undef,nFaces)
+  for a=1:nFaces
+    fSize[a]=(grid.fSize[a][1],grid.fSize[a][2],n3)
+  end
+  aSize=(prod(grid.ioSize),1,n3)
+  gcmfaces(grid,T,fSize,aSize)
+end
+
 #gcmfaces{T,N}(grid::gcmgrid)
 #gcmfaces(grid::gcmgrid,::Type{T}) where {T}
 #gcmfaces(grid::gcmgrid,::Type{T},n3::Int) where {T}
@@ -115,7 +132,7 @@ function gcmfaces()
   T=Float64
   fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
   aSize=(105300, 1)
-  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, read_bin)
+  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, read)
 
   gcmfaces(grid,T,fSize,aSize)
 end

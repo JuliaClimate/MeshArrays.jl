@@ -17,7 +17,7 @@ function demo1(gridChoice::String)
 
     mygrid=GCMGridSpec(gridChoice)
 
-    D=mygrid.read(mygrid.path*"Depth.data",mygrid)
+    D=mygrid.read(mygrid.path*"Depth.data",gcmfaces(mygrid))
 
     1000+D
     D+1000
@@ -120,11 +120,11 @@ function demo3()
     mygrid=GCMGridSpec("LLC90")
     GridVariables=GCMGridLoad(mygrid)
 
-    TrspX=mygrid.read(mygrid.path*"TrspX.bin",Float32,mygrid)
-    TrspY=mygrid.read(mygrid.path*"TrspY.bin",Float32,mygrid)
-    TauX=mygrid.read(mygrid.path*"TauX.bin",Float32,mygrid)
-    TauY=mygrid.read(mygrid.path*"TauY.bin",Float32,mygrid)
-    SSH=mygrid.read(mygrid.path*"SSH.bin",Float32,mygrid)
+    TrspX=mygrid.read(mygrid.path*"TrspX.bin",gcmfaces(mygrid,Float32))
+    TrspY=mygrid.read(mygrid.path*"TrspY.bin",gcmfaces(mygrid,Float32))
+    TauX=mygrid.read(mygrid.path*"TauX.bin",gcmfaces(mygrid,Float32))
+    TauY=mygrid.read(mygrid.path*"TauY.bin",gcmfaces(mygrid,Float32))
+    SSH=mygrid.read(mygrid.path*"SSH.bin",gcmfaces(mygrid,Float32))
 
     (UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables)
 

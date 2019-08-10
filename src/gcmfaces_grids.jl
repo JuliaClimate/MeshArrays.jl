@@ -39,7 +39,7 @@ else;
     error("unknown gridName case");
 end;
 
-mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read_bin)
+mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read)
 
 return mygrid
 
@@ -61,10 +61,11 @@ Based on the MITgcm naming convention, grid variables are:
 function GCMGridLoad(mygrid::gcmgrid)
 
     GridVariables=Dict()
+
     list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
-    "DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth")
+    "DXC","DXG","DYC","DYG","Depth")
     for ii=1:length(list0)
-        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",mygrid)
+        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",gcmfaces(mygrid))
         tmp2=Symbol(list0[ii])
         @eval (($tmp2) = ($tmp1))
         GridVariables[list0[ii]]=tmp1
@@ -83,6 +84,15 @@ function GCMGridLoad(mygrid::gcmgrid)
         read!(fid,tmp1)
         tmp1 = hton.(tmp1)
 
+        tmp2=Symbol(list0[ii])
+        @eval (($tmp2) = ($tmp1))
+        GridVariables[list0[ii]]=tmp1
+    end
+
+    list0=("hFacC","hFacS","hFacW")
+    n3=length(GridVariables["RC"])
+    for ii=1:length(list0)
+        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",gcmfaces(mygrid,mygrid.ioPrec,n3))
         tmp2=Symbol(list0[ii])
         @eval (($tmp2) = ($tmp1))
         GridVariables[list0[ii]]=tmp1
