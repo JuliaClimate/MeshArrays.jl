@@ -12,7 +12,7 @@ gcmgrid data structure. Available constructors:
 ```
 gcmgrid(path::String, class::String, nFaces::Int,
         fSize::Array{NTuple{2, Int},1}, ioSize::Array{Int64,2},
-        ioPrec::Type, read::Function)
+        ioPrec::Type, read::Function, write::Function)
 ```
 """
 struct gcmgrid
@@ -24,6 +24,7 @@ struct gcmgrid
   ioSize::Array{Int64,2}
   ioPrec::Type
   read::Function
+  write::Function
 end
 
 """
@@ -132,7 +133,7 @@ function gcmfaces()
   T=Float64
   fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
   aSize=(105300, 1)
-  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, read)
+  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, read, write)
 
   gcmfaces(grid,T,fSize,aSize)
 end

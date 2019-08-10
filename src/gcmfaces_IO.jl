@@ -75,6 +75,8 @@ end
 
 ## function read
 
+import Base: read, write
+
 function read(fil::String,x::gcmfaces)
 
   grTopo=x.grid.class
@@ -101,6 +103,83 @@ function read(fil::String,x::gcmfaces)
       y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm));
     end;
   end
+
+  return y
+
+end
+
+function read(xx::Array,x::gcmfaces)
+
+  grTopo=x.grid.class
+  nFaces=x.grid.nFaces
+  facesSize=x.grid.fSize
+  (n1,n2)=x.grid.ioSize
+  n3=Int64(prod(size(x))/n1/n2)
+
+  xx=reshape(xx,(n1*n2,n3))
+
+  y=similar(x)
+  i0=0; i1=0;
+  for iFace=1:nFaces
+    i0=i1+1;
+    nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
+    i1=i1+nn*mm;
+    if n3>1;
+      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3));
+    else;
+      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm));
+    end;
+  end
+
+  return y
+
+end
+
+
+function write(fil::String,x::gcmfaces)
+
+  grTopo=x.grid.class
+  nFaces=x.grid.nFaces
+  facesSize=x.grid.fSize
+  (n1,n2)=x.grid.ioSize
+  n3=Int64(prod(size(x))/n1/n2)
+
+  y = Array{eltype(x),2}(undef,(n1*n2,n3))
+  i0=0; i1=0;
+  for iFace=1:nFaces;
+    i0=i1+1;
+    nn=facesSize[iFace][1];
+    mm=facesSize[iFace][2];
+    i1=i1+nn*mm;
+    y[i0:i1,:]=reshape(x.f[iFace],(nn*mm,n3));
+  end;
+
+  fid = open(fil,"w")
+  write(fid,ntoh.(y))
+  close(fid)
+
+end
+
+function write(x::gcmfaces)
+
+  grTopo=x.grid.class
+  nFaces=x.grid.nFaces
+  facesSize=x.grid.fSize
+  (n1,n2)=x.grid.ioSize
+  n3=Int64(prod(size(x))/n1/n2)
+
+  y = Array{eltype(x),2}(undef,(n1*n2,n3))
+  i0=0; i1=0;
+  for iFace=1:nFaces;
+    i0=i1+1;
+    nn=facesSize[iFace][1];
+    mm=facesSize[iFace][2];
+    i1=i1+nn*mm;
+    y[i0:i1,:]=reshape(x.f[iFace],(nn*mm,n3));
+  end;
+
+  y=reshape(y,(n1,n2,n3));
+  n3==1 ? y=dropdims(y,dims=3) : nothing
 
   return y
 

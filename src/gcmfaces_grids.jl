@@ -39,7 +39,7 @@ else;
     error("unknown gridName case");
 end;
 
-mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read)
+mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
 return mygrid
 
@@ -117,7 +117,7 @@ function GCMGridOnes(grTp,nF,nP)
     facesSize[:].=[(nP,nP)]
     ioPrec=Float32
 
-    mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, x -> missing)
+    mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
     GridVariables=Dict()
     list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
