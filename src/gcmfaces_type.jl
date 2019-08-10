@@ -37,7 +37,7 @@ gcmfaces{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
 gcmfaces(grid::gcmgrid,v1::Array{Array{T,N},1}) where {T,N}
 gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
 
-gcmfaces(grid::gcmgrid,,::Type{T},
+gcmfaces(grid::gcmgrid,::Type{T},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
 gcmfaces(grid::gcmgrid)
 gcmfaces()
@@ -84,6 +84,10 @@ function gcmfaces(grid::gcmgrid,::Type{T},
   end
   gcmfaces{T,N}(grid,f,fSize,aSize)
 end
+
+#gcmfaces{T,N}(grid::gcmgrid)
+#gcmfaces(grid::gcmgrid,::Type{T}) where {T}
+#gcmfaces(grid::gcmgrid,::Type{T},n3::Int) where {T}
 
 function gcmfaces(grid::gcmgrid,
   v1::Array{Array{T,N},1}) where {T,N}
