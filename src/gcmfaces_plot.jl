@@ -28,7 +28,7 @@ end
 Plot input using convert2array and heatmap + add title
 """
 function qwckplot(fld::gcmfaces,ttl::String)
-    arr=convert2array(fld)
+    arr=MeshArrays.convert2array(fld)
     arr=permutedims(arr,[2 1])
     #This uses Plots.jl:
     p=heatmap(arr,title=ttl)

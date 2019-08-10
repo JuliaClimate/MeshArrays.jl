@@ -33,8 +33,8 @@ function demo1(gridChoice::String)
     D/D
 
     Dexch=exchange(D,4)
-    Darr=convert2array(D)
-    DD=convert2array(Darr,mygrid)
+    Darr=write(D)
+    DD=read(Darr,D)
 
     GridVariables=GCMGridLoad(mygrid)
 
@@ -78,9 +78,8 @@ function demo2(GridVariables::Dict)
     mygrid=GridVariables["XC"].grid
 
     #initialize 2D field of random numbers
-    tmp1=convert2gcmfaces(GridVariables["XC"])
-    tmp1=randn(Float32,size(tmp1))
-    Rini=convert2gcmfaces(tmp1,mygrid)
+    tmp1=randn(Float32,Tuple(mygrid.ioSize))
+    Rini=read(tmp1,gcmfaces(mygrid,Float32))
 
     #apply land mask
     if ndims(GridVariables["hFacC"].f[1])>2

@@ -17,8 +17,6 @@ export AbstractGcmfaces, gcmfaces, gcmsubset, gcmgrid, fsize, fijind
 export exchange, gradient, convergence, smooth, mask
 export GCMGridSpec, GCMGridLoad, GCMGridOnes
 export findtiles, LatitudeCircles, ThroughFlow
-#The following functions rely on grid specs; currently via global vars.
-export read_bin, convert2array, convert2gcmfaces
 #The following exch_UV differs from normal exchange; incl. exch_UV_N.
 export exch_UV
 #The following codes add dependencies to Plots & NetCDF.
