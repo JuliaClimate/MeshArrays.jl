@@ -17,7 +17,7 @@ function demo1(gridChoice::String)
 
     mygrid=GCMGridSpec(gridChoice)
 
-    D=read_bin(mygrid.path*"Depth.data",mygrid.ioPrec,mygrid)
+    D=mygrid.read(mygrid.path*"Depth.data",gcmfaces(mygrid))
 
     1000+D
     D+1000
@@ -33,8 +33,8 @@ function demo1(gridChoice::String)
     D/D
 
     Dexch=exchange(D,4)
-    Darr=convert2array(D)
-    DD=convert2array(Darr,mygrid)
+    Darr=mygrid.write(D)
+    DD=mygrid.read(Darr,D)
 
     GridVariables=GCMGridLoad(mygrid)
 
@@ -60,8 +60,8 @@ Demonstrate higher level functions using `smooth`. Call sequence:
 (Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2();
 
 include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
-qwckplot(Rini)
-qwckplot(Rend)
+qwckplot(Rini,"raw noise")
+qwckplot(Rend,"smoothed noise")
 ```
 
 """
@@ -78,9 +78,8 @@ function demo2(GridVariables::Dict)
     mygrid=GridVariables["XC"].grid
 
     #initialize 2D field of random numbers
-    tmp1=convert2gcmfaces(GridVariables["XC"])
-    tmp1=randn(Float32,size(tmp1))
-    Rini=convert2gcmfaces(tmp1,mygrid)
+    tmp1=randn(Float32,Tuple(mygrid.ioSize))
+    Rini=mygrid.read(tmp1,gcmfaces(mygrid,Float32))
 
     #apply land mask
     if ndims(GridVariables["hFacC"].f[1])>2
@@ -120,11 +119,11 @@ function demo3()
     mygrid=GCMGridSpec("LLC90")
     GridVariables=GCMGridLoad(mygrid)
 
-    TrspX=read_bin(mygrid.path*"TrspX.bin",Float32,mygrid)
-    TrspY=read_bin(mygrid.path*"TrspY.bin",Float32,mygrid)
-    TauX=read_bin(mygrid.path*"TauX.bin",Float32,mygrid)
-    TauY=read_bin(mygrid.path*"TauY.bin",Float32,mygrid)
-    SSH=read_bin(mygrid.path*"SSH.bin",Float32,mygrid)
+    TrspX=mygrid.read(mygrid.path*"TrspX.bin",gcmfaces(mygrid,Float32))
+    TrspY=mygrid.read(mygrid.path*"TrspY.bin",gcmfaces(mygrid,Float32))
+    TauX=mygrid.read(mygrid.path*"TauX.bin",gcmfaces(mygrid,Float32))
+    TauY=mygrid.read(mygrid.path*"TauY.bin",gcmfaces(mygrid,Float32))
+    SSH=mygrid.read(mygrid.path*"SSH.bin",gcmfaces(mygrid,Float32))
 
     (UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables)
 

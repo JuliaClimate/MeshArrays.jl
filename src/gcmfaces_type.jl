@@ -12,7 +12,7 @@ gcmgrid data structure. Available constructors:
 ```
 gcmgrid(path::String, class::String, nFaces::Int,
         fSize::Array{NTuple{2, Int},1}, ioSize::Array{Int64,2},
-        ioPrec::Type, read::Function)
+        ioPrec::Type, read::Function, write::Function)
 ```
 """
 struct gcmgrid
@@ -24,6 +24,7 @@ struct gcmgrid
   ioSize::Array{Int64,2}
   ioPrec::Type
   read::Function
+  write::Function
 end
 
 """
@@ -37,7 +38,7 @@ gcmfaces{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
 gcmfaces(grid::gcmgrid,v1::Array{Array{T,N},1}) where {T,N}
 gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
 
-gcmfaces(grid::gcmgrid,,::Type{T},
+gcmfaces(grid::gcmgrid,::Type{T},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
 gcmfaces(grid::gcmgrid)
 gcmfaces()
@@ -85,6 +86,27 @@ function gcmfaces(grid::gcmgrid,::Type{T},
   gcmfaces{T,N}(grid,f,fSize,aSize)
 end
 
+function gcmfaces(grid::gcmgrid,::Type{T}) where {T,N}
+  nFaces=grid.nFaces
+  fSize=grid.fSize
+  aSize=(prod(grid.ioSize),1)
+  gcmfaces(grid,T,fSize,aSize)
+end
+
+function gcmfaces(grid::gcmgrid,::Type{T},n3::Int) where {T,N}
+  nFaces=grid.nFaces
+  fSize=Array{NTuple{3, Int},1}(undef,nFaces)
+  for a=1:nFaces
+    fSize[a]=(grid.fSize[a][1],grid.fSize[a][2],n3)
+  end
+  aSize=(prod(grid.ioSize),1,n3)
+  gcmfaces(grid,T,fSize,aSize)
+end
+
+#gcmfaces{T,N}(grid::gcmgrid)
+#gcmfaces(grid::gcmgrid,::Type{T}) where {T}
+#gcmfaces(grid::gcmgrid,::Type{T},n3::Int) where {T}
+
 function gcmfaces(grid::gcmgrid,
   v1::Array{Array{T,N},1}) where {T,N}
   fSize=fsize(v1)
@@ -111,7 +133,7 @@ function gcmfaces()
   T=Float64
   fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
   aSize=(105300, 1)
-  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, x -> missing)
+  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, read, write)
 
   gcmfaces(grid,T,fSize,aSize)
 end
