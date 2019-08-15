@@ -2,7 +2,7 @@
 
 ## type definition
 
-abstract type AbstractGcmfaces{T, N} <: AbstractArray{T, N} end
+abstract type AbstractMeshArray{T, N} <: AbstractArray{T, N} end
 
 """
     gcmgrid
@@ -36,7 +36,7 @@ gcmfaces data structure. Available constructors:
 gcmfaces{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int})
 gcmfaces(grid::gcmgrid,v1::Array{Array{T,N},1}) where {T,N}
-gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
+gcmfaces(A::AbstractMeshArray{T, N}) where {T,N}
 
 gcmfaces(grid::gcmgrid,::Type{T},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
@@ -44,7 +44,7 @@ gcmfaces(grid::gcmgrid)
 gcmfaces()
 ```
 """
-struct gcmfaces{T, N} <: AbstractGcmfaces{T, N}
+struct gcmfaces{T, N} <: AbstractMeshArray{T, N}
    grid::gcmgrid
    f::Array{Array{T,N},1}
    fSize::Array{NTuple{N, Int}}
@@ -64,7 +64,7 @@ gcmsubset(grid::gcmgrid,::Type{T},fSize::Array{NTuple{N, Int}},
           aSize::NTuple{N,Int},dims::NTuple{N,Int}) where {T,N}
 ```
 """
-struct gcmsubset{T, N} <: AbstractGcmfaces{T, N}
+struct gcmsubset{T, N} <: AbstractMeshArray{T, N}
    grid::gcmgrid
    f::Array{Array{T,N},1}
    fSize::Array{NTuple{N, Int}}
@@ -114,7 +114,7 @@ function gcmfaces(grid::gcmgrid,
   gcmfaces{T,N}(grid,deepcopy(v1),fSize,aSize)
 end
 
-function gcmfaces(A::AbstractGcmfaces{T, N}) where {T,N}
+function gcmfaces(A::AbstractMeshArray{T, N}) where {T,N}
   #should this be called similar? deepcopy?
   fSize=fsize(A)
   aSize=size(A)
@@ -187,16 +187,16 @@ function fijind(A::gcmfaces,ij::Int)
 end
 
 """
-    fsize(A::AbstractGcmfaces{T, N}) where {T,N}
+    fsize(A::AbstractMeshArray{T, N}) where {T,N}
 
 Return vector of face array sizes. Other methods:
 ```
-fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
+fsize(A::AbstractMeshArray{T, N},i::Int) where {T,N}
 fsize(A::Array{Array{T,N},1}) where {T,N}
 fsize(A::Array{Array{T,N},1},i::Int) where {T,N}
 ```
 """
-function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
+function fsize(A::AbstractMeshArray{T, N}) where {T,N}
   fs=Array{NTuple{N, Int}}(undef,A.grid.nFaces)
   for i=1:A.grid.nFaces
     fs[i]=size(A.f[i]);
@@ -204,7 +204,7 @@ function fsize(A::AbstractGcmfaces{T, N}) where {T,N}
   return fs
 end
 
-function fsize(A::AbstractGcmfaces{T, N},i::Int) where {T,N}
+function fsize(A::AbstractMeshArray{T, N},i::Int) where {T,N}
   if i>0
     fs=size(A.f[i])
   else
@@ -247,7 +247,7 @@ Base.size(A::gcmsubset, dim::Integer) = fsize(A.i, 0)[dim]
 
 #
 
-function Base.getindex(A::AbstractGcmfaces{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
+function Base.getindex(A::AbstractMeshArray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
   if typeof(I[1])<:Int
     (f,i,j)=fijind(A,I[1])
     J=Base.tail(Base.tail(I))
@@ -286,7 +286,7 @@ end
 
 #
 
-function Base.setindex!(A::AbstractGcmfaces{T, N}, v, I::Vararg{Int, N}) where {T,N}
+function Base.setindex!(A::AbstractMeshArray{T, N}, v, I::Vararg{Int, N}) where {T,N}
   (f,i,j)=fijind(A,I[1])
   J=Base.tail(Base.tail(I))
   J=(i,j,J...)
@@ -300,7 +300,7 @@ end
 
 ## view
 
-function Base.view(a::AbstractGcmfaces{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
+function Base.view(a::AbstractMeshArray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
   nFaces=a.grid.nFaces
   grTopo=a.grid.class
   if !isa(I[1],Colon)|!isa(I[2],Colon)
@@ -320,7 +320,7 @@ end
 
 # Custom pretty-printing
 
-function Base.show(io::IO, z::AbstractGcmfaces{T, N}) where {T,N}
+function Base.show(io::IO, z::AbstractMeshArray{T, N}) where {T,N}
 
 #    @printf io " MeshArrays instance with \n"
     if isa(z,gcmfaces)

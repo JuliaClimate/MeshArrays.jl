@@ -2,20 +2,20 @@
 ## gradient methods
 
 """
-    gradient(inFLD::gcmfaces,GridVariables::Dict)
+    gradient(inFLD::MeshArray,GridVariables::Dict)
 
 Compute spatial derivatives. Other methods:
 ```
-gradient(inFLD::gcmfaces,GridVariables::Dict,doDIV::Bool)
-gradient(inFLD::gcmfaces,iDXC::gcmfaces,iDYC::gcmfaces)
+gradient(inFLD::MeshArray,GridVariables::Dict,doDIV::Bool)
+gradient(inFLD::MeshArray,iDXC::MeshArray,iDYC::MeshArray)
 ```
 """
-function gradient(inFLD::gcmfaces,GridVariables::Dict)
+function gradient(inFLD::MeshArray,GridVariables::Dict)
 (dFLDdx, dFLDdy)=gradient(inFLD,GridVariables,true)
 return dFLDdx, dFLDdy
 end
 
-function gradient(inFLD::gcmfaces,GridVariables::Dict,doDIV::Bool)
+function gradient(inFLD::MeshArray,GridVariables::Dict,doDIV::Bool)
 
 exFLD=exchange(inFLD,1)
 dFLDdx=similar(inFLD)
@@ -38,7 +38,7 @@ end
 return dFLDdx, dFLDdy
 end
 
-function gradient(inFLD::gcmfaces,iDXC::gcmfaces,iDYC::gcmfaces)
+function gradient(inFLD::MeshArray,iDXC::MeshArray,iDYC::MeshArray)
 
 exFLD=exchange(inFLD,1)
 dFLDdx=similar(inFLD)
@@ -58,21 +58,21 @@ end
 
 ## mask methods
 
-function mask(fld::gcmfaces)
+function mask(fld::MeshArray)
 fldmsk=mask(fld,NaN)
 return fldmsk
 end
 
 """
-    mask(fld::gcmfaces, val::Number)
+    mask(fld::MeshArray, val::Number)
 
 Replace non finite values with val. Other methods:
 ```
-mask(fld::gcmfaces)
-mask(fld::gcmfaces, val::Number, noval::Number)
+mask(fld::MeshArray)
+mask(fld::MeshArray, val::Number, noval::Number)
 ```
 """
-function mask(fld::gcmfaces, val::Number)
+function mask(fld::MeshArray, val::Number)
   fldmsk=similar(fld)
   for a=1:fld.grid.nFaces
     tmp1=copy(fld.f[a])
@@ -82,7 +82,7 @@ function mask(fld::gcmfaces, val::Number)
   return fldmsk
 end
 
-function mask(fld::gcmfaces, val::Number, noval::Number)
+function mask(fld::MeshArray, val::Number, noval::Number)
   fldmsk=similar(fld)
   for a=1:fld.grid.nFaces
     tmp1=copy(fld.f[a])
@@ -95,11 +95,11 @@ end
 ## convergence methods
 
 """
-    convergence(uFLD::gcmfaces,vFLD::gcmfaces)
+    convergence(uFLD::MeshArray,vFLD::MeshArray)
 
 Compute convergence of a vector field
 """
-function convergence(uFLD::gcmfaces,vFLD::gcmfaces)
+function convergence(uFLD::MeshArray,vFLD::MeshArray)
 
 #important note:
 #  Normally uFLD, vFLD should not contain any NaN;
@@ -124,11 +124,11 @@ end
 ## smooth function
 
 """
-    smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces,GridVariables::Dict)
+    smooth(FLD::MeshArray,DXCsm::MeshArray,DYCsm::MeshArray,GridVariables::Dict)
 
 Smooth out scales below DXCsm / DYCsm via diffusion
 """
-function smooth(FLD::gcmfaces,DXCsm::gcmfaces,DYCsm::gcmfaces,GridVariables::Dict)
+function smooth(FLD::MeshArray,DXCsm::MeshArray,DYCsm::MeshArray,GridVariables::Dict)
 
 #important note:
 #input FLD should be land masked (NaN/1) by caller if needed

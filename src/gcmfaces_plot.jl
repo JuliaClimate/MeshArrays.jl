@@ -6,9 +6,9 @@ export qwckplot
 ##  qwckplot function
 
 """
-    qwckplot(fld::gcmfaces)
+    qwckplot(fld::AbstractMeshArray)
 
-Call qwckplot(fld::gcmfaces,ttl::String) with current date for title. Example:
+Call qwckplot(fld::AbstractMeshArray,ttl::String) with current date for title. Example:
 
 ```
 !isdir("GRID_LLC90") ? error("missing files") : nothing
@@ -16,18 +16,18 @@ GridVariables=GCMGridLoad(GCMGridSpec("LLC90"))
 qwckplot(GridVariables["Depth"])
 ```
 """
-function qwckplot(fld::gcmfaces)
+function qwckplot(fld::AbstractMeshArray)
     tmp1=Dates.now()
     tmp1=Dates.format(tmp1, "yyyy-mm-dd HH:MM:SS")
     qwckplot(fld,"Plotted at time "*tmp1)
 end
 
 """
-    qwckplot(fld::gcmfaces,ttl::String)
+    qwckplot(fld::AbstractMeshArray,ttl::String)
 
 Plot input using convert2array and heatmap + add title
 """
-function qwckplot(fld::gcmfaces,ttl::String)
+function qwckplot(fld::AbstractMeshArray,ttl::String)
     arr=MeshArrays.convert2array(fld)
     arr=permutedims(arr,[2 1])
     #This uses Plots.jl:

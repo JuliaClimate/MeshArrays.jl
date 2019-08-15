@@ -14,7 +14,7 @@ export read_nctiles
 """
     read_nctiles(fileName,fldName,mygrid)
 
-Read model output from Netcdf / NCTiles file and convert to gcmfaces structure.
+Read model output from Netcdf / NCTiles file and convert to MeshArray instance.
 """
 function read_nctiles(fileName::String,fldName::String,mygrid::gcmgrid)
 
@@ -59,8 +59,7 @@ for ff=1:13;
 
 end;
 
-#return f gcmfaces object fld
-fld=gcmfaces(mygrid,f)
+fld=MeshArray(mygrid,f)
 return fld
 
 end

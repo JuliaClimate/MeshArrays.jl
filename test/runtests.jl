@@ -1,7 +1,7 @@
 using Test
 using MeshArrays
 
-@testset "GCMFaces tests:" begin
+@testset "MeshArrays tests:" begin
 for nTopo=1:3
     if nTopo==1; grTopo="cs"; nFaces=6; N=200;
     elseif nTopo==2; grTopo="llc"; nFaces=5; N=200;
@@ -13,7 +13,7 @@ for nTopo=1:3
     @test mygrid.class == grTopo
     Rini= 0.; Rend= 0.;
     (Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2(GridVariables);
-    @test isa(Rend,gcmfaces)
+    @test isa(Rend,MeshArray)
     @test sum(isfinite(Rend)) == Npt
     Sini=sqrt(sum(Rini*Rini)/(Npt-1.0))
     Send=sqrt(sum(Rend*Rend)/(Npt-1.0))

@@ -17,7 +17,7 @@ function demo1(gridChoice::String)
 
     mygrid=GCMGridSpec(gridChoice)
 
-    D=mygrid.read(mygrid.path*"Depth.data",gcmfaces(mygrid))
+    D=mygrid.read(mygrid.path*"Depth.data",MeshArray(mygrid))
 
     1000+D
     D+1000
@@ -79,7 +79,7 @@ function demo2(GridVariables::Dict)
 
     #initialize 2D field of random numbers
     tmp1=randn(Float32,Tuple(mygrid.ioSize))
-    Rini=mygrid.read(tmp1,gcmfaces(mygrid,Float32))
+    Rini=mygrid.read(tmp1,MeshArray(mygrid,Float32))
 
     #apply land mask
     if ndims(GridVariables["hFacC"].f[1])>2
@@ -119,17 +119,17 @@ function demo3()
     mygrid=GCMGridSpec("LLC90")
     GridVariables=GCMGridLoad(mygrid)
 
-    TrspX=mygrid.read(mygrid.path*"TrspX.bin",gcmfaces(mygrid,Float32))
-    TrspY=mygrid.read(mygrid.path*"TrspY.bin",gcmfaces(mygrid,Float32))
-    TauX=mygrid.read(mygrid.path*"TauX.bin",gcmfaces(mygrid,Float32))
-    TauY=mygrid.read(mygrid.path*"TauY.bin",gcmfaces(mygrid,Float32))
-    SSH=mygrid.read(mygrid.path*"SSH.bin",gcmfaces(mygrid,Float32))
+    TrspX=mygrid.read(mygrid.path*"TrspX.bin",MeshArray(mygrid,Float32))
+    TrspY=mygrid.read(mygrid.path*"TrspY.bin",MeshArray(mygrid,Float32))
+    TauX=mygrid.read(mygrid.path*"TauX.bin",MeshArray(mygrid,Float32))
+    TauY=mygrid.read(mygrid.path*"TauY.bin",MeshArray(mygrid,Float32))
+    SSH=mygrid.read(mygrid.path*"SSH.bin",MeshArray(mygrid,Float32))
 
     (UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables)
 
 end
 
-function demo3(U::gcmfaces,V::gcmfaces,GridVariables::Dict)
+function demo3(U::MeshArray,V::MeshArray,GridVariables::Dict)
 
     LC=LatitudeCircles(-89.0:89.0,GridVariables)
 

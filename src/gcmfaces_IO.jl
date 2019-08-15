@@ -4,7 +4,7 @@
 """
     read_bin(fil::String,kt::Union{Int,Missing},kk::Union{Int,Missing},prec::DataType,mygrid::gcmgrid)
 
-Read model output from binary file and convert to gcmfaces structure. Other methods:
+Read model output from binary file and convert to MeshArray. Other methods:
 
 ```
 read_bin(fil::String,prec::DataType,mygrid::gcmgrid)
@@ -58,8 +58,8 @@ end
 
 ## read_bin with alternative arguments
 
-# read_bin(fil::String,x::gcmfaces)
-function read_bin(fil::String,x::gcmfaces)
+# read_bin(fil::String,x::MeshArray)
+function read_bin(fil::String,x::MeshArray)
   read_bin(fil,missing,missing,eltype(x),x.grid::gcmgrid)
 end
 
@@ -68,8 +68,8 @@ function read_bin(tmp::Array,mygrid::gcmgrid)
   convert2gcmfaces(tmp,mygrid)
 end
 
-# read_bin(tmp::Array,x::gcmfaces)
-function read_bin(tmp::Array,x::gcmfaces)
+# read_bin(tmp::Array,x::MeshArray)
+function read_bin(tmp::Array,x::MeshArray)
   convert2gcmfaces(tmp,x.grid)
 end
 
@@ -77,13 +77,15 @@ end
 
 import Base: read, write
 
-function read(fil::String,x::gcmfaces)
+function read(fil::String,x::AbstractMeshArray)
 
   grTopo=x.grid.class
   nFaces=x.grid.nFaces
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  n3=Int64(prod(size(x))/n1/n2)
+  n3=1
+# isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
+  isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
 
   fid = open(fil)
   xx = Array{eltype(x),2}(undef,(n1*n2,n3))
@@ -108,7 +110,7 @@ function read(fil::String,x::gcmfaces)
 
 end
 
-function read(xx::Array,x::gcmfaces)
+function read(xx::Array,x::MeshArray)
 
   grTopo=x.grid.class
   nFaces=x.grid.nFaces
@@ -136,7 +138,7 @@ function read(xx::Array,x::gcmfaces)
 end
 
 
-function write(fil::String,x::gcmfaces)
+function write(fil::String,x::MeshArray)
 
   grTopo=x.grid.class
   nFaces=x.grid.nFaces
@@ -160,7 +162,7 @@ function write(fil::String,x::gcmfaces)
 
 end
 
-function write(x::gcmfaces)
+function write(x::MeshArray)
 
   grTopo=x.grid.class
   nFaces=x.grid.nFaces

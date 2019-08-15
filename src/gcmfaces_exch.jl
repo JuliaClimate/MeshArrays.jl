@@ -5,27 +5,27 @@
 ## User Front Ends
 
 """
-    exchange(fld::gcmfaces)
+    exchange(fld::MeshArray)
 
 Exchange / transfer data between neighboring arrays. Other methods are
 
-    exchange(fld::gcmfaces,N::Integer)
-    exchange(u::gcmfaces,v::gcmfaces)
-    exchange(u::gcmfaces,v::gcmfaces,N::Integer)
+    exchange(fld::MeshArray,N::Integer)
+    exchange(u::MeshArray,v::MeshArray)
+    exchange(u::MeshArray,v::MeshArray,N::Integer)
 """
-function exchange(fld::gcmfaces)
+function exchange(fld::MeshArray)
   FLD=exch_T_N(fld,1);
 end
 
-function exchange(fld::gcmfaces,N::Integer)
+function exchange(fld::MeshArray,N::Integer)
   FLD=exch_T_N(fld,N);
 end
 
-function exchange(u::gcmfaces,v::gcmfaces)
+function exchange(u::MeshArray,v::MeshArray)
   (uex,vex)=exch_UV_N(u,v,1);
 end
 
-function exchange(u::gcmfaces,v::gcmfaces,N::Integer)
+function exchange(u::MeshArray,v::MeshArray,N::Integer)
   (uex,vex)=exch_UV_N(u,v,N);
 end
 
@@ -83,7 +83,7 @@ end
 
 ## Grid-specific implementations: ll grid case
 
-function exch_T_N_ll(fld::gcmfaces,N::Integer)
+function exch_T_N_ll(fld::MeshArray,N::Integer)
 
 fillval=0.0
 
@@ -147,7 +147,7 @@ end
 
 #note: the "cs" implementation covers both cs and llc
 
-function exch_T_N_cs(fld::gcmfaces,N::Integer)
+function exch_T_N_cs(fld::MeshArray,N::Integer)
 
 fillval=0.0
 
@@ -195,7 +195,7 @@ end
 
 ##
 
-function exch_UV_N_cs(fldU::gcmfaces,fldV::gcmfaces,N::Integer)
+function exch_UV_N_cs(fldU::MeshArray,fldV::MeshArray,N::Integer)
 
 fillval=0.0
 
@@ -249,7 +249,7 @@ end
 
 ##
 
-function exch_UV_cs(fldU::gcmfaces,fldV::gcmfaces)
+function exch_UV_cs(fldU::MeshArray,fldV::MeshArray)
 
 fillval=0.0
 

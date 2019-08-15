@@ -65,7 +65,7 @@ function GCMGridLoad(mygrid::gcmgrid)
     list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
     "DXC","DXG","DYC","DYG","Depth")
     for ii=1:length(list0)
-        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",gcmfaces(mygrid))
+        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",MeshArray(mygrid))
         tmp2=Symbol(list0[ii])
         @eval (($tmp2) = ($tmp1))
         GridVariables[list0[ii]]=tmp1
@@ -92,7 +92,7 @@ function GCMGridLoad(mygrid::gcmgrid)
     list0=("hFacC","hFacS","hFacW")
     n3=length(GridVariables["RC"])
     for ii=1:length(list0)
-        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",gcmfaces(mygrid,mygrid.ioPrec,n3))
+        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",MeshArray(mygrid,mygrid.ioPrec,n3))
         tmp2=Symbol(list0[ii])
         @eval (($tmp2) = ($tmp1))
         GridVariables[list0[ii]]=tmp1
@@ -123,7 +123,7 @@ function GCMGridOnes(grTp,nF,nP)
     list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
     for ii=1:length(list0);
         tmp1=fill(1.,nP,nP*nF);
-        tmp1=mygrid.read(tmp1,gcmfaces(mygrid));
+        tmp1=mygrid.read(tmp1,MeshArray(mygrid));
         tmp2=Symbol(list0[ii]);
         @eval (($tmp2) = ($tmp1))
         GridVariables[list0[ii]]=tmp1
@@ -137,7 +137,7 @@ end
 """
     findtiles(ni,nj,grid="llc90")
 
-Return a `gcmfaces` map of tile indices for tile size `ni,nj`
+Return a `MeshArray` map of tile indices for tile size `ni,nj`
 """
 function findtiles(ni::Int,nj::Int,grid="llc90")
     mytiles = Dict()
