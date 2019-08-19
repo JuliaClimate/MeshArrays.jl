@@ -84,7 +84,7 @@ function read(fil::String,x::AbstractMeshArray)
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   n3=1
-# isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
+  isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
   isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
 
   fid = open(fil)
@@ -99,11 +99,15 @@ function read(fil::String,x::AbstractMeshArray)
     i0=i1+1;
     nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
     i1=i1+nn*mm;
-    if n3>1;
-      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3));
-    else;
-      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm));
-    end;
+    if n3>1 && isa(x,gcmfaces)
+      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3))
+    elseif n3>1 && isa(x,gcmarray)
+      for i3=1:n3
+        y.f[iFace,i3]=reshape(xx[i0:i1,i3],(nn,mm))
+      end
+    else
+      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm))
+    end
   end
 
   return y
@@ -116,7 +120,9 @@ function read(xx::Array,x::MeshArray)
   nFaces=x.grid.nFaces
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  n3=Int64(prod(size(x))/n1/n2)
+  n3=1
+  isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
+  isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
 
   xx=reshape(xx,(n1*n2,n3))
 
@@ -126,11 +132,16 @@ function read(xx::Array,x::MeshArray)
     i0=i1+1;
     nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
     i1=i1+nn*mm;
-    if n3>1;
-      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3));
-    else;
-      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm));
-    end;
+
+    if n3>1 && isa(x,gcmfaces)
+      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3))
+    elseif n3>1 && isa(x,gcmarray)
+      for i3=1:n3
+        y.f[iFace,i3]=reshape(xx[i0:i1,i3],(nn,mm))
+      end
+    else
+      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm))
+    end
   end
 
   return y
@@ -144,7 +155,9 @@ function write(fil::String,x::MeshArray)
   nFaces=x.grid.nFaces
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  n3=Int64(prod(size(x))/n1/n2)
+  n3=1
+  isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
+  isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
 
   y = Array{eltype(x),2}(undef,(n1*n2,n3))
   i0=0; i1=0;
@@ -168,7 +181,9 @@ function write(x::MeshArray)
   nFaces=x.grid.nFaces
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  n3=Int64(prod(size(x))/n1/n2)
+  n3=1
+  isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
+  isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
 
   y = Array{eltype(x),2}(undef,(n1*n2,n3))
   i0=0; i1=0;

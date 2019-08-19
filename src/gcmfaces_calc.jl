@@ -22,7 +22,8 @@ dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
 for a=1:inFLD.grid.nFaces
-  (s1,s2)=fsize(exFLD,a)
+  #(s1,s2)=fsize(exFLD,a)
+  (s1,s2)=size(exFLD.f[a])
   tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
   tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
   tmpC=tmpA-view(exFLD.f[a],2:s1-1,1:s2-2)
@@ -45,7 +46,8 @@ dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
 for a=1:inFLD.grid.nFaces
-  (s1,s2)=fsize(exFLD,a)
+  #(s1,s2)=fsize(exFLD,a)
+  (s1,s2)=size(exFLD.f[a])
   tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
   tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
   tmpC=tmpA-view(exFLD.f[a],2:s1-1,1:s2-2)
@@ -110,7 +112,8 @@ CONV=similar(uFLD)
 
 (tmpU,tmpV)=exch_UV(uFLD,vFLD)
 for a=1:tmpU.grid.nFaces
-  (s1,s2)=fsize(uFLD,a)
+  #(s1,s2)=fsize(uFLD,a)
+  (s1,s2)=size(uFLD.f[a])
   tmpU1=view(tmpU.f[a],1:s1,1:s2)
   tmpU2=view(tmpU.f[a],2:s1+1,1:s2)
   tmpV1=view(tmpV.f[a],1:s1,1:s2)

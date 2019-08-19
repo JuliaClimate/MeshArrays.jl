@@ -17,19 +17,19 @@ function demo1(gridChoice::String)
 
     mygrid=GCMGridSpec(gridChoice)
 
-    D=mygrid.read(mygrid.path*"Depth.data",MeshArray(mygrid))
+    D=mygrid.read(mygrid.path*"Depth.data",MeshArray(mygrid,mygrid.ioPrec))
 
-    1000+D
-    D+1000
+    1000 .+ D
+    D .+ 1000
     D+D
-    D-1000
-    1000-D
+    D .- 1000
+    1000 .- D
     D-D
     1000*D
     D*1000
     D*D
     D/1000
-    1000/D
+    1000 ./ D
     D/D
 
     Dexch=exchange(D,4)
@@ -41,7 +41,7 @@ function demo1(gridChoice::String)
     (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],GridVariables)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
 
-    view(GridVariables["hFacC"],:,:,40)
+    #view(GridVariables["hFacC"],:,:,40)
     #show(fsize(GridVariables["hFacC"],1))
     #show(fsize(view(GridVariables["hFacC"],:,:,40),1))
 
@@ -82,8 +82,12 @@ function demo2(GridVariables::Dict)
     Rini=mygrid.read(tmp1,MeshArray(mygrid,Float32))
 
     #apply land mask
-    if ndims(GridVariables["hFacC"].f[1])>2
+    if ndims(GridVariables["hFacC"].f[1])>2&&isa(Rini,gcmfaces)
         tmp1=mask(view(GridVariables["hFacC"],:,:,1),NaN,0)
+    elseif ndims(GridVariables["hFacC"].f[1])>1&&isa(Rini,gcmarray)
+        tmp1=similar(Rini)
+        for i=1:length(tmp1.fIndex); tmp1[i]=GridVariables["hFacC"][i,1]; end;
+        tmp1=mask(tmp1,NaN,0)
     else
         tmp1=mask(GridVariables["hFacC"],NaN,0)
     end
