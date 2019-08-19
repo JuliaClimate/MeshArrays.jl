@@ -191,64 +191,32 @@ import Base: maximum, minimum, sum, fill
 #+(a::gcmarray,b::gcmarray) = a.+b
 function +(a::gcmarray,b::gcmarray)
   c=similar(a)
-  nFaces=length(a.fIndex)
-  n3=size(a.f,2)
-  for iFace=1:nFaces
-    if ndims(a)==1
-      c.f[iFace]=a.f[iFace]+b.f[iFace]
-    else
-      for i3=1:n3
-        c.f[iFace,i3]=a.f[iFace,i3]+b.f[iFace,i3]
-      end
-    end
+  for I in eachindex(a)
+    c[I] = a[I] + b[I]
   end
   return c
 end
 
 function -(a::gcmarray,b::gcmarray)
   c=similar(a)
-  nFaces=length(a.fIndex)
-  n3=size(a.f,2)
-  for iFace=1:nFaces
-    if ndims(a)==1
-      c.f[iFace]=a.f[iFace]-b.f[iFace]
-    else
-      for i3=1:n3
-        c.f[iFace,i3]=a.f[iFace,i3]-b.f[iFace,i3]
-      end
-    end
+  for I in eachindex(a)
+    c[I] = a[I] - b[I]
   end
   return c
 end
 
 function /(a::gcmarray,b::gcmarray)
   c=similar(a)
-  nFaces=length(a.fIndex)
-  n3=size(a.f,2)
-  for iFace=1:nFaces
-    if ndims(a)==1
-      c.f[iFace]=a.f[iFace]./b.f[iFace]
-    else
-      for i3=1:n3
-        c.f[iFace,i3]=a.f[iFace,i3]./b.f[iFace,i3]
-      end
-    end
+  for I in eachindex(a)
+    c[I] = a[I] ./ b[I]
   end
   return c
 end
 
 function *(a::gcmarray,b::gcmarray)
   c=similar(a)
-  nFaces=length(a.fIndex)
-  n3=size(a.f,2)
-  for iFace=1:nFaces
-    if ndims(a)==1
-      c.f[iFace]=a.f[iFace].*b.f[iFace]
-    else
-      for i3=1:n3
-        c.f[iFace,i3]=a.f[iFace,i3].*b.f[iFace,i3]
-      end
-    end
+  for I in eachindex(a)
+    c[I] = a[I] .* b[I]
   end
   return c
 end
@@ -259,64 +227,32 @@ isfinite(a::gcmarray) = isfinite.(a)
 
 function maximum(a::gcmarray)
   c=-Inf;
-  nFaces=length(a.fIndex)
-  n3=size(a.f,2)
-  for iFace=1:nFaces
-    if ndims(a)==1
-      c=max(c,maximum(a.f[iFace]))
-    else
-      for i3=1:n3
-        c=max(c,maximum(a.f[iFace,i3]))
-      end
-    end
+  for I in eachindex(a)
+    c = max(c,maximum(a[I]))
   end
   return c
 end
 
 function minimum(a::gcmarray)
   c=-Inf;
-  nFaces=length(a.fIndex)
-  n3=size(a.f,2)
-  for iFace=1:nFaces
-    if ndims(a)==1
-      c=max(c,minimum(a.f[iFace]))
-    else
-      for i3=1:n3
-        c=max(c,minimum(a.f[iFace,i3]))
-      end
-    end
+  for I in eachindex(a)
+    c = min(c,minimum(a[I]))
   end
   return c
 end
 
 function sum(a::gcmarray)
   c=0.0
-  nFaces=length(a.fIndex)
-  n3=size(a.f,2)
-  for iFace=1:nFaces
-    if ndims(a)==1
-      c=c+sum(a.f[iFace])
-    else
-      for i3=1:n3
-        c=c+sum(a.f[iFace,i3])
-      end
-    end
+  for I in eachindex(a)
+    c = c + sum(a[I])
   end
   return c
 end
 
 function fill(val::Any,a::gcmarray)
   c=similar(a)
-  nFaces=length(a.fIndex)
-  n3=size(a.f,2)
-  for iFace=1:nFaces
-    if ndims(a)==1
-      c.f[iFace]=fill(val,a.fSize[iFace])
-    else
-      for i3=1:n3
-        c.f[iFace,i3]=fill(val,a.fSize[iFace])
-      end
-    end
+  for I in eachindex(a)
+    c[I] = fill(val,size(a[I]))
   end
   return c
 end
