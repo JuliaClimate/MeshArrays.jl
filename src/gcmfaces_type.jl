@@ -162,7 +162,7 @@ function fijind(A::gcmfaces,ij::Int)
 end
 
 """
-    fsize(A::AbstractMeshArray{T, N}) where {T,N}
+    fsize(A::Union{gcmfaces{T, N},gcmsubset{T, N}}) where {T,N}
 
 Return vector of face array sizes. Other methods:
 ```

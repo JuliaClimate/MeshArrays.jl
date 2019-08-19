@@ -2,11 +2,11 @@
 ## convert2array method:
 
 """
-    convert2array(fld::AbstractMeshArray)
+    convert2array(fld::MeshArray)
 
 Convert MeshArray to Array (or vice versa otherwise)
 """
-function convert2array(fld::AbstractMeshArray)
+function convert2array(fld::MeshArray)
 
 if fld.grid.class=="llc";
     tmp1=cat(fld.f[1],fld.f[2],rotr90(fld.f[4]),rotr90(fld.f[5]);dims=1);
