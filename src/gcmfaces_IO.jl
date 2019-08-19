@@ -77,7 +77,7 @@ end
 
 import Base: read, write
 
-function read(fil::String,x::AbstractMeshArray)
+function read(fil::String,x::MeshArray)
 
   grTopo=x.grid.class
   facesSize=x.grid.fSize
