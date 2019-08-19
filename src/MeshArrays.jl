@@ -4,9 +4,7 @@ module MeshArrays
 
 #using Printf
 
-include("gcmfaces_type.jl");
-MeshArray=gcmfaces
-
+include("Types.jl");
 include("gcmfaces_grids.jl");
 include("gcmfaces_calc.jl");
 include("gcmfaces_exch.jl");
