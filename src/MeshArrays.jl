@@ -12,7 +12,7 @@ include("gcmfaces_convert.jl");
 include("gcmfaces_IO.jl");
 include("gcmfaces_demo.jl");
 
-export AbstractMeshArray, MeshArray, gcmsubset, gcmgrid, fsize, fijind
+export AbstractMeshArray, MeshArray, gcmsubset, gcmgrid, nFacesEtc, fijind
 export exchange, gradient, convergence, smooth, mask
 export GCMGridSpec, GCMGridLoad, GCMGridOnes
 export findtiles, LatitudeCircles, ThroughFlow

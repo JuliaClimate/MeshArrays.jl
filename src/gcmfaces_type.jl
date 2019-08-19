@@ -559,3 +559,11 @@ function fill(val::Any,a::gcmfaces)
     end
     return c
 end
+
+###
+
+function nFacesEtc(a::gcmfaces)
+  nFaces=length(a.f)
+  ndims(a.f[1])>2 ? n3=size(a.f[1],3) : n3=1
+  return nFaces, n3
+end

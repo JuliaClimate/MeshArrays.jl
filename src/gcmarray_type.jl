@@ -256,3 +256,11 @@ function fill(val::Any,a::gcmarray)
   end
   return c
 end
+
+###
+
+function nFacesEtc(a::gcmarray)
+  nFaces=length(a.fIndex)
+  ndims(a.f)>1 ? n3=size(a.f,2) : n3=1
+  return nFaces, n3
+end

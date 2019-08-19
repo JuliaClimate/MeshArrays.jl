@@ -35,15 +35,26 @@ function demo1(gridChoice::String)
     Dexch=exchange(D,4)
     Darr=mygrid.write(D)
     DD=mygrid.read(Darr,D)
+    DD .== D
 
     GridVariables=GCMGridLoad(mygrid)
 
     (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],GridVariables)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
 
-    #view(GridVariables["hFacC"],:,:,40)
-    #show(fsize(GridVariables["hFacC"],1))
-    #show(fsize(view(GridVariables["hFacC"],:,:,40),1))
+    H=GridVariables["hFacC"]
+    Ha=mygrid.write(H)
+    Hb=mygrid.read(Ha,H)
+
+    println(typeof(H))
+    println(size(H))
+    println(H.fSize[1])
+    println(size(H.f[1]))
+    if ndims(H)==3&&size(H,3)>40
+        println(typeof(view(H,:,:,40)))
+    elseif ndims(H.f)==2&&size(H.f,2)>40
+        println(typeof(view(H,:,40)))
+    end
 
     return (D,Dexch,Darr,DD)
 
@@ -82,9 +93,10 @@ function demo2(GridVariables::Dict)
     Rini=mygrid.read(tmp1,MeshArray(mygrid,Float32))
 
     #apply land mask
-    if ndims(GridVariables["hFacC"].f[1])>2&&isa(Rini,gcmfaces)
+    if ndims(GridVariables["hFacC"].f[1])>2
         tmp1=mask(view(GridVariables["hFacC"],:,:,1),NaN,0)
-    elseif ndims(GridVariables["hFacC"].f[1])>1&&isa(Rini,gcmarray)
+    elseif ndims(GridVariables["hFacC"].f)>1
+        #tmp1=mask(view(GridVariables["hFacC"],:,1),NaN,0)
         tmp1=similar(Rini)
         for i=1:length(tmp1.fIndex); tmp1[i]=GridVariables["hFacC"][i,1]; end;
         tmp1=mask(tmp1,NaN,0)

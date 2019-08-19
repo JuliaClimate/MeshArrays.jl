@@ -80,12 +80,9 @@ import Base: read, write
 function read(fil::String,x::AbstractMeshArray)
 
   grTopo=x.grid.class
-  nFaces=x.grid.nFaces
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  n3=1
-  isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
-  isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
+  (nFaces,n3)=nFacesEtc(x)
 
   fid = open(fil)
   xx = Array{eltype(x),2}(undef,(n1*n2,n3))
@@ -99,9 +96,9 @@ function read(fil::String,x::AbstractMeshArray)
     i0=i1+1;
     nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
     i1=i1+nn*mm;
-    if n3>1 && isa(x,gcmfaces)
+    if n3>1 && ndims(x.f)==1
       y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3))
-    elseif n3>1 && isa(x,gcmarray)
+    elseif n3>1 && ndims(x.f)==2
       for i3=1:n3
         y.f[iFace,i3]=reshape(xx[i0:i1,i3],(nn,mm))
       end
@@ -117,12 +114,9 @@ end
 function read(xx::Array,x::MeshArray)
 
   grTopo=x.grid.class
-  nFaces=x.grid.nFaces
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  n3=1
-  isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
-  isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
+  (nFaces,n3)=nFacesEtc(x)
 
   xx=reshape(xx,(n1*n2,n3))
 
@@ -133,9 +127,9 @@ function read(xx::Array,x::MeshArray)
     nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
     i1=i1+nn*mm;
 
-    if n3>1 && isa(x,gcmfaces)
+    if n3>1 && ndims(x.f)==1
       y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3))
-    elseif n3>1 && isa(x,gcmarray)
+    elseif n3>1 && ndims(x.f)==2
       for i3=1:n3
         y.f[iFace,i3]=reshape(xx[i0:i1,i3],(nn,mm))
       end
@@ -152,22 +146,25 @@ end
 function write(fil::String,x::MeshArray)
 
   grTopo=x.grid.class
-  nFaces=x.grid.nFaces
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  n3=1
-  isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
-  isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
+  (nFaces,n3)=nFacesEtc(x)
 
   y = Array{eltype(x),2}(undef,(n1*n2,n3))
   i0=0; i1=0;
   for iFace=1:nFaces;
     i0=i1+1;
-    nn=facesSize[iFace][1];
-    mm=facesSize[iFace][2];
+    nn=facesSize[iFace][1]
+    mm=facesSize[iFace][2]
     i1=i1+nn*mm;
-    y[i0:i1,:]=reshape(x.f[iFace],(nn*mm,n3));
-  end;
+    if n3>1 && ndims(x.f)==2
+      for i3=1:n3
+        y[i0:i1,i3]=reshape(x.f[iFace,i3],(nn*mm,1))
+      end
+    else
+      y[i0:i1,:]=reshape(x.f[iFace],(nn*mm,n3))
+    end
+  end
 
   fid = open(fil,"w")
   write(fid,ntoh.(y))
@@ -178,12 +175,9 @@ end
 function write(x::MeshArray)
 
   grTopo=x.grid.class
-  nFaces=x.grid.nFaces
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  n3=1
-  isa(x,gcmarray)&&(ndims(x)>1) ? n3=size(x,2) : nothing
-  isa(x,gcmfaces) ? n3=Int64(prod(size(x))/n1/n2) : nothing
+  (nFaces,n3)=nFacesEtc(x)
 
   y = Array{eltype(x),2}(undef,(n1*n2,n3))
   i0=0; i1=0;
@@ -192,8 +186,14 @@ function write(x::MeshArray)
     nn=facesSize[iFace][1];
     mm=facesSize[iFace][2];
     i1=i1+nn*mm;
-    y[i0:i1,:]=reshape(x.f[iFace],(nn*mm,n3));
-  end;
+    if n3>1 && ndims(x.f)==2
+      for i3=1:n3
+        y[i0:i1,i3]=reshape(x.f[iFace,i3],(nn*mm,1))
+      end
+    else
+      y[i0:i1,:]=reshape(x.f[iFace],(nn*mm,n3))
+    end
+  end
 
   y=reshape(y,(n1,n2,n3));
   n3==1 ? y=dropdims(y,dims=3) : nothing
