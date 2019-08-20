@@ -2,11 +2,12 @@
 ## convert2array method:
 
 """
-    convert2array(fld::gcmfaces)
+    convert2array(fld::MeshArray)
 
-Convert gcmfaces to array (or vice versa otherwise)
+Convert MeshArray to Array (or vice versa otherwise)
 """
-function convert2array(fld::gcmfaces)
+#deprecate documentation
+function convert2array(fld::MeshArray)
 
 if fld.grid.class=="llc";
     tmp1=cat(fld.f[1],fld.f[2],rotr90(fld.f[4]),rotr90(fld.f[5]);dims=1);
@@ -59,18 +60,19 @@ else;
   error("unknown grTopo case");
 end;
 
-gcmfaces(grid,v1);
+MeshArray(grid,v1);
 
 end
 
 ## convert2gcmfaces method:
 
 """
-    convert2gcmfaces(fld::gcmfaces)
+    convert2gcmfaces(fld::MeshArray)
 
-Convert mitgcm output to gcmfaces (or vice versa otherwise)
+Convert mitgcm output to MeshArray (or vice versa otherwise)
 """
-function convert2gcmfaces(fld::gcmfaces)
+#deprecate documentation
+function convert2gcmfaces(fld::MeshArray)
 
     grTopo=fld.grid.class
     nFaces=fld.grid.nFaces
@@ -125,6 +127,6 @@ for iFace=1:nFaces
   end;
 end
 
-gcmfaces(grid,v1);
+MeshArray(grid,v1);
 
 end

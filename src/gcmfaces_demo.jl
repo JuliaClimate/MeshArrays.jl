@@ -17,33 +17,44 @@ function demo1(gridChoice::String)
 
     mygrid=GCMGridSpec(gridChoice)
 
-    D=mygrid.read(mygrid.path*"Depth.data",gcmfaces(mygrid))
+    D=mygrid.read(mygrid.path*"Depth.data",MeshArray(mygrid,mygrid.ioPrec))
 
-    1000+D
-    D+1000
+    1000 .+ D
+    D .+ 1000
     D+D
-    D-1000
-    1000-D
+    D .- 1000
+    1000 .- D
     D-D
     1000*D
     D*1000
     D*D
     D/1000
-    1000/D
+    1000 ./ D
     D/D
 
     Dexch=exchange(D,4)
     Darr=mygrid.write(D)
     DD=mygrid.read(Darr,D)
+    DD .== D
 
     GridVariables=GCMGridLoad(mygrid)
 
     (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],GridVariables)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
 
-    view(GridVariables["hFacC"],:,:,40)
-    #show(fsize(GridVariables["hFacC"],1))
-    #show(fsize(view(GridVariables["hFacC"],:,:,40),1))
+    H=GridVariables["hFacC"]
+    Ha=mygrid.write(H)
+    Hb=mygrid.read(Ha,H)
+
+    println(typeof(H))
+    println(size(H))
+    println(H.fSize[1])
+    println(size(H.f[1]))
+    if ndims(H)==3&&size(H,3)>40
+        println(typeof(view(H,:,:,40)))
+    elseif ndims(H.f)==2&&size(H.f,2)>40
+        println(typeof(view(H,:,40)))
+    end
 
     return (D,Dexch,Darr,DD)
 
@@ -79,11 +90,16 @@ function demo2(GridVariables::Dict)
 
     #initialize 2D field of random numbers
     tmp1=randn(Float32,Tuple(mygrid.ioSize))
-    Rini=mygrid.read(tmp1,gcmfaces(mygrid,Float32))
+    Rini=mygrid.read(tmp1,MeshArray(mygrid,Float32))
 
     #apply land mask
     if ndims(GridVariables["hFacC"].f[1])>2
         tmp1=mask(view(GridVariables["hFacC"],:,:,1),NaN,0)
+    elseif ndims(GridVariables["hFacC"].f)>1
+        #tmp1=mask(view(GridVariables["hFacC"],:,1),NaN,0)
+        tmp1=similar(Rini)
+        for i=1:length(tmp1.fIndex); tmp1[i]=GridVariables["hFacC"][i,1]; end;
+        tmp1=mask(tmp1,NaN,0)
     else
         tmp1=mask(GridVariables["hFacC"],NaN,0)
     end
@@ -119,17 +135,17 @@ function demo3()
     mygrid=GCMGridSpec("LLC90")
     GridVariables=GCMGridLoad(mygrid)
 
-    TrspX=mygrid.read(mygrid.path*"TrspX.bin",gcmfaces(mygrid,Float32))
-    TrspY=mygrid.read(mygrid.path*"TrspY.bin",gcmfaces(mygrid,Float32))
-    TauX=mygrid.read(mygrid.path*"TauX.bin",gcmfaces(mygrid,Float32))
-    TauY=mygrid.read(mygrid.path*"TauY.bin",gcmfaces(mygrid,Float32))
-    SSH=mygrid.read(mygrid.path*"SSH.bin",gcmfaces(mygrid,Float32))
+    TrspX=mygrid.read(mygrid.path*"TrspX.bin",MeshArray(mygrid,Float32))
+    TrspY=mygrid.read(mygrid.path*"TrspY.bin",MeshArray(mygrid,Float32))
+    TauX=mygrid.read(mygrid.path*"TauX.bin",MeshArray(mygrid,Float32))
+    TauY=mygrid.read(mygrid.path*"TauY.bin",MeshArray(mygrid,Float32))
+    SSH=mygrid.read(mygrid.path*"SSH.bin",MeshArray(mygrid,Float32))
 
     (UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables)
 
 end
 
-function demo3(U::gcmfaces,V::gcmfaces,GridVariables::Dict)
+function demo3(U::MeshArray,V::MeshArray,GridVariables::Dict)
 
     LC=LatitudeCircles(-89.0:89.0,GridVariables)
 
