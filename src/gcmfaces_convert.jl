@@ -6,6 +6,7 @@
 
 Convert MeshArray to Array (or vice versa otherwise)
 """
+#deprecate documentation
 function convert2array(fld::MeshArray)
 
 if fld.grid.class=="llc";
@@ -70,6 +71,7 @@ end
 
 Convert mitgcm output to MeshArray (or vice versa otherwise)
 """
+#deprecate documentation
 function convert2gcmfaces(fld::MeshArray)
 
     grTopo=fld.grid.class

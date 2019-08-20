@@ -75,6 +75,8 @@ end
     getindexetc(A::gcmarray, I::Vararg{_}) where {T,N}
 
 Same as getindex but also returns the face size and index
+
+(needed in other types?)
 """
 function getindexetc(A::gcmarray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
     f=A.f[I...]
@@ -268,3 +270,10 @@ function nFacesEtc(a::gcmarray)
   ndims(a.f)>1 ? n3=size(a.f,2) : n3=1
   return nFaces, n3
 end
+
+"""
+    fijind(A::gcmarray,ij::Int)
+
+Compute face and local indices (f,j,k?) from global index (ij?).
+"""
+#missing functionality

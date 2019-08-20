@@ -11,6 +11,7 @@ read_bin(fil::String,prec::DataType,mygrid::gcmgrid)
 read_bin(fil::String,mygrid::gcmgrid)
 ```
 """
+#deprecate documentation
 function read_bin(fil::String,kt::Union{Int,Missing},kk::Union{Int,Missing},prec::DataType,mygrid::gcmgrid)
 
   if ~ismissing(kt);

@@ -28,7 +28,7 @@ end
 """
     gcmsubset{T, N}
 
-gcmsubset data structure. Available constructors:
+gcmsubset data structure for subsets of gcmfaces. Available constructors:
 
 ```
 gcmsubset{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
@@ -140,6 +140,8 @@ end
     fijind(A::gcmfaces,ij::Int)
 
 Compute face and local indices (f,j,k) from global index (ij).
+
+(needed in other types?)
 """
 function fijind(A::gcmfaces,ij::Int)
   f=0
@@ -171,6 +173,7 @@ fsize(A::Array{Array{T,N},1}) where {T,N}
 fsize(A::Array{Array{T,N},1},i::Int) where {T,N}
 ```
 """
+#deprecate documentation
 function fsize(A::Union{gcmfaces{T, N},gcmsubset{T, N}}) where {T,N}
   fs=Array{NTuple{N, Int}}(undef,A.grid.nFaces)
   for i=1:A.grid.nFaces
