@@ -31,8 +31,7 @@ end
 
 ## concrete type and MeshArray alias:
 
-#struct gcmarray{T, N} <: AbstractMeshArray{T, N} end
-#struct gcmfaces{T, N} <: AbstractMeshArray{T, N} end
-
-include("gcmfaces_type.jl"); MeshArray=gcmfaces
-#include("gcmarray_type.jl"); MeshArray=gcmarray
+include("gcmfaces_type.jl");
+include("gcmarray_type.jl");
+MeshArray=gcmfaces
+#MeshArray=gcmarray

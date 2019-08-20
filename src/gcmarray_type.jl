@@ -1,19 +1,19 @@
 
-# ### gcmarray{T, N} and constructors
-#
-# gcmarray data structure. Available constructors:
-#
-# ```
-# gcmarray{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
-#          fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1})
-# gcmarray(grid::gcmgrid,
-#          fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1})
-#
-# gcmarray(grid::gcmgrid,::Type{T})
-# gcmarray(grid::gcmgrid,::Type{T},n3::Int)
-# ```
+"""
+    gcmarray{T, N}
 
-# +
+gcmarray data structure. Available constructors:
+
+```
+gcmarray{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
+         fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1})
+gcmarray(grid::gcmgrid,
+         fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1})
+
+gcmarray(grid::gcmgrid,::Type{T})
+gcmarray(grid::gcmgrid,::Type{T},n3::Int)
+```
+"""
 struct gcmarray{T, N} <: AbstractMeshArray{T, N}
    grid::gcmgrid
    f::Array{Array{T,2},N}
@@ -51,7 +51,6 @@ function gcmarray(grid::gcmgrid,::Type{T}) where {T}
   gcmarray(grid,T,fSize,fIndex)
 end
 
-## this one needs to be redone: fSize 2D, f 3D
 function gcmarray(grid::gcmgrid,::Type{T},n3::Int) where {T}
   nFaces=grid.nFaces
   fSize=grid.fSize
@@ -73,7 +72,7 @@ function Base.getindex(A::gcmarray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,
 end
 
 """
-    getindexetc(A::gcmarray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
+    getindexetc(A::gcmarray, I::Vararg{_}) where {T,N}
 
 Same as getindex but also returns the face size and index
 """
@@ -259,6 +258,11 @@ end
 
 ###
 
+"""
+    nFacesEtc(a::gcmarray)
+
+Return nFaces, n3 (1 in 2D case; >1 otherwise)
+"""
 function nFacesEtc(a::gcmarray)
   nFaces=length(a.fIndex)
   ndims(a.f)>1 ? n3=size(a.f,2) : n3=1

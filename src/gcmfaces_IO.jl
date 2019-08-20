@@ -77,6 +77,15 @@ end
 
 import Base: read, write
 
+"""
+    read(fil::String,x::MeshArray)
+
+Read binary file to MeshArray. Other methods:
+
+```
+read(xx::Array,x::MeshArray) #from Array
+```
+"""
 function read(fil::String,x::MeshArray)
 
   grTopo=x.grid.class
@@ -143,6 +152,15 @@ function read(xx::Array,x::MeshArray)
 end
 
 
+"""
+    write(fil::String,x::MeshArray)
+
+Write MeshArray to binary file. Other methods:
+
+```
+write(xx::Array,x::MeshArray) #to Array
+```
+"""
 function write(fil::String,x::MeshArray)
 
   grTopo=x.grid.class
