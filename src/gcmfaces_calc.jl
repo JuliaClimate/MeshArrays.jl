@@ -219,7 +219,11 @@ function ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
     haskey(VectorField,"factors") ? f=VectorField["factors"] : f=Array{String,1}(undef,0)
     haskey(VectorField,"dimensions") ? d=VectorField["dimensions"] : d=Array{String,1}(undef,nd)
 
-    length(d)!=nd ? error("inconsistent specification of dims") : nothing
+    #a bit of a hack:
+    isdefined(U,:fIndex) ? ndoffset=1 : ndoffset==0
+    length(d)!=nd+ndoffset ? error("inconsistent specification of dims") : nothing
+
+    isdefined(U,:fIndex)&&nd+ndoffset> ? error("not implemented yet for gcmarray") : nothing
 
     trsp=Array{Float64}(undef,1,n[3],n[4])
     do_dz=sum(f.=="dz")
@@ -238,6 +242,9 @@ function ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
         tabW=IntegralPath["tabW"]
         tabS=IntegralPath["tabS"]
         for i4=1:n[4]
+          #a bit of a hack in the gcmarray case which needs more work:
+          !isdefined(U,:fIndex) ? UU=view(U,:,:,i3,i4) : UU=view(U,:)
+          !isdefined(V,:fIndex) ? VV=view(V,:,:,i3,i4) : VV=view(V,:)
             #method 1: quite slow
             #trsp[1,i3,i4]=sum(mskW*U[:,:,i3,i4])+sum(mskS*V[:,:,i3,i4])
             #
@@ -247,20 +254,20 @@ function ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
                 (a,i1,i2,w)=tabW[k,:]
                 do_dxory==1 ? w=w*GridVariables["DYG"].f[a][i1,i2] : nothing
                 do_dz==1 ? w=w*GridVariables["DRF"][i3] : nothing
-                trsp[1,i3,i4]=trsp[1,i3,i4]+w*U.f[a][i1,i2,i3,i4]
+                trsp[1,i3,i4]=trsp[1,i3,i4]+w*UU.f[a][i1,i2]
             end
             for k=1:size(tabS,1)
                 (a,i1,i2,w)=tabS[k,:]
                 do_dxory==1 ? w=w*GridVariables["DXG"].f[a][i1,i2] : nothing
                 do_dz==1 ? w=w*GridVariables["DRF"][i3] : nothing
-                trsp[1,i3,i4]=trsp[1,i3,i4]+w*V.f[a][i1,i2,i3,i4]
+                trsp[1,i3,i4]=trsp[1,i3,i4]+w*VV.f[a][i1,i2]
             end
         end
     end
 
-    nd<4 ? trsp=dropdims(trsp,dims=3) : nothing
-    nd<3 ? trsp=dropdims(trsp,dims=2) : nothing
-    nd==2 ? trsp=trsp[1] : nothing
+    nd+ndoffset<4 ? trsp=dropdims(trsp,dims=3) : nothing
+    nd+ndoffset<3 ? trsp=dropdims(trsp,dims=2) : nothing
+    nd+ndoffset==2 ? trsp=trsp[1] : nothing
 
     return trsp
 end
@@ -295,35 +302,22 @@ function LatitudeCircles(LatValues,GridVariables::Dict)
             mskS.f[i]=tmp1[2:end-1,2:end-1] - tmp1[2:end-1,1:end-2]
         end
 
-        tmp=vec(collect(mskC[:,1]))
-        ind = findall(x -> x!=0, tmp)
-        tabC=Array{Int,2}(undef,length(ind),4)
-        for j=1:length(ind)
-            tabC[j,1:3]=collect(fijind(mskC,ind[j]))
-            tabC[j,4]=tmp[ind[j]]
-        end
-
-        tmp=vec(collect(mskW[:,1]))
-        ind = findall(x -> x!=0, tmp)
-        tabW=Array{Int,2}(undef,length(ind),5)
-        for j=1:length(ind)
-            tabW[j,1:3]=collect(fijind(mskW,ind[j]))
-            tabW[j,4]=tmp[ind[j]]
-            tabW[j,5]=ind[j]
-        end
-
-        tmp=vec(collect(mskS[:,1]))
-        ind = findall(x -> x!=0, tmp)
-        tabS=Array{Int,2}(undef,length(ind),5)
-        for j=1:length(ind)
-            tabS[j,1:3]=collect(fijind(mskS,ind[j]))
-            tabS[j,4]=tmp[ind[j]]
-            tabS[j,5]=ind[j]
+        function MskToTab(msk::MeshArray)
+          n=Int(sum(msk .!= 0)); k=0
+          tab=Array{Int,2}(undef,n,4)
+          for i=1:msk.grid.nFaces
+            a=msk.f[i]
+            b=findall( a .!= 0)
+            for ii in eachindex(b)
+              k += 1
+              tab[k,:]=[i,b[ii][1],b[ii][2],a[b[ii]]]
+            end
+          end
+          return tab
         end
 
         LatitudeCircles[j]=Dict("lat"=>LatValues[j],
-        #"mskC"=>mskC,"mskW"=>mskW,"mskS"=>mskS,
-        "tabC"=>tabC,"tabW"=>tabW,"tabS"=>tabS)
+        "tabC"=>MskToTab(mskC),"tabW"=>MskToTab(mskW),"tabS"=>MskToTab(mskS))
     end
 
     return LatitudeCircles
