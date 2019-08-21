@@ -220,10 +220,10 @@ function ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
     haskey(VectorField,"dimensions") ? d=VectorField["dimensions"] : d=Array{String,1}(undef,nd)
 
     #a bit of a hack:
-    isdefined(U,:fIndex) ? ndoffset=1 : ndoffset==0
+    isdefined(U,:fIndex) ? ndoffset=1 : ndoffset=0
     length(d)!=nd+ndoffset ? error("inconsistent specification of dims") : nothing
 
-    isdefined(U,:fIndex)&&nd+ndoffset> ? error("not implemented yet for gcmarray") : nothing
+    isdefined(U,:fIndex)&&nd+ndoffset>2 ? error("ThroughFlow not implemented yet for gcmarray") : nothing
 
     trsp=Array{Float64}(undef,1,n[3],n[4])
     do_dz=sum(f.=="dz")
@@ -242,9 +242,6 @@ function ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
         tabW=IntegralPath["tabW"]
         tabS=IntegralPath["tabS"]
         for i4=1:n[4]
-          #a bit of a hack in the gcmarray case which needs more work:
-          !isdefined(U,:fIndex) ? UU=view(U,:,:,i3,i4) : UU=view(U,:)
-          !isdefined(V,:fIndex) ? VV=view(V,:,:,i3,i4) : VV=view(V,:)
             #method 1: quite slow
             #trsp[1,i3,i4]=sum(mskW*U[:,:,i3,i4])+sum(mskS*V[:,:,i3,i4])
             #
@@ -254,13 +251,17 @@ function ThroughFlow(VectorField,IntegralPath,GridVariables::Dict)
                 (a,i1,i2,w)=tabW[k,:]
                 do_dxory==1 ? w=w*GridVariables["DYG"].f[a][i1,i2] : nothing
                 do_dz==1 ? w=w*GridVariables["DRF"][i3] : nothing
-                trsp[1,i3,i4]=trsp[1,i3,i4]+w*UU.f[a][i1,i2]
+                #a bit of a hack in the gcmarray case which needs more work:
+                isdefined(U,:fIndex) ? u=U.f[a][i1,i2] : u=U.f[a][i1,i2,i3,i4]
+                trsp[1,i3,i4]=trsp[1,i3,i4]+w*u
             end
             for k=1:size(tabS,1)
                 (a,i1,i2,w)=tabS[k,:]
                 do_dxory==1 ? w=w*GridVariables["DXG"].f[a][i1,i2] : nothing
                 do_dz==1 ? w=w*GridVariables["DRF"][i3] : nothing
-                trsp[1,i3,i4]=trsp[1,i3,i4]+w*VV.f[a][i1,i2]
+                #a bit of a hack in the gcmarray case which needs more work:
+                isdefined(V,:fIndex) ? v=V.f[a][i1,i2] : v=V.f[a][i1,i2,i3,i4]
+                trsp[1,i3,i4]=trsp[1,i3,i4]+w*v
             end
         end
     end
