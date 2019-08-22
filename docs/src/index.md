@@ -1,22 +1,32 @@
 # MeshArrays.jl documentation
 
-`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections within a `struct` and provides an `exchange` function that effectively transfers data between connected arrays. It was originally introduced, as `gcmfaces.jl`, in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) (see below for **notebooks**). _Note: even though `MeshArrays.jl` is registered, documented, archived, and routinely tested, it is still regarded as a **preliminary implementation**._
+`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections within a `struct` and provides an `exchange` function that effectively transfers data between connected arrays. 
 
-## Contents
+Such computational frameworks are commonly used in Earth System Modeling. `MeshArrays.jl` is inteneded as a simple but flexible solution. It was originally introduced as `gcmfaces.jl` in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) (see below for **notebooks**). 
+
+_Note:_ 
+
+`MeshArrays.jl` is registered, documented, archived, and routinely tested, but also still regarded as a **preliminary implementation**.
+
+_Contents:_
 
 ```@contents
+Pages = ["index.md","detail.md","API.md"]
+Depth = 3
 ```
 
-## Installation
+## Install & Test
 
 ```
 using Pkg
 Pkg.add("MeshArrays")
 Pkg.test("MeshArrays")
 ```
-_Note:_ `Julia`'s package manager is documented [here within docs.julialang.org](https://docs.julialang.org/en/stable/stdlib/Pkg/).
+_Note:_ 
 
-## Use examples
+`Julia`'s package manager is documented [here within docs.julialang.org](https://docs.julialang.org/en/stable/stdlib/Pkg/).
+
+## Use Examples
 
 ```
 using MeshArrays
@@ -40,24 +50,3 @@ The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on similar
 **MeshArrays'** composite types contain array collections. Elemental arrays in a `MeshArray` are typically inter-connected at their edges according to a user-specified global structure. `exchange` methods transfer data between neighboring arrays to extend their computational domains, as often needed to compute e.g. planetary transports in the climate system.
 
 
-## Additional detail
-
-Functions like `GCMGridSpec("LLC90")` return a `gcmgrid` struct that just contains the basic specifications of a global grid -- not the grid itself; just a few parameters, ranges, and possibly a file location. A `gcmgrid` is embeded in each `MeshArray` objects for which they serve as a blueprint. The `gcmgrid` determines how an array collection forms a global mesh and allows `exchange` to dispatch to the appropriate method. 
-
-Various configurations that are commonly used in `Earth System Models` are implemented using the concrete type called `MeshArray`. This type is used as an alias for other types that can thus used interchangeably. Initially, `gcmfaces` or `gcmarray` are the two available options for `MeshArray`. 
-
-Within a `MeshArray`, a whole Earth System Model grid is represented as an array of elemental arrays. Each one of these typically represents a subdomain mesh. For example, `gcmarray` represents a climate state variable `x` as an array of 2D ragged arrays `x.f`. `MeshArrays.demo1` illustrates the `MeshArray` data structures and basic methods. In brief, a `MeshArray` is used simply like any other Array type.
-
-_Background:_ `MeshArrays.jl` is rooted in a [previous Matlab / Octave package](https://gcmfaces.readthedocs.io/en/latest/), `gcmfaces` introduced in [Forget et al., 2015](http://www.geosci-model-dev.net/8/3071/2015/) (`doi:10.5194/gmd-8-3071-2015`). `GCM` is an acronym for General Circulation Model, or Global Climate Model (see [this wikipedia entry](https://en.wikipedia.org/wiki/General_circulation_model)), and `faces` can mean meshes, arrays, facets, or subdomains (`x.f` in a `MeshArray ` instance `x`).
-
-## API index
-
-```@index
-```
-
-## API details
-
-```@autodocs
-Modules = [MeshArrays]
-Order   = [:type,:function]
-```
