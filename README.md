@@ -34,4 +34,4 @@ qwckplot(Rend)
 
 ### Notebooks
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git). Another notebook is included to illustrate how `MeshArrays.smooth` is used for unit testing purposes without having to download a predefined grids (see `demo_smooth.ipynb`). It can readily be executed via the repo's `launch binder` badge.
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git). Another notebook is included which illustrate how `MeshArrays.smooth` is used for unit testing purposes (`demo_smooth.ipynb`). These notebooks can readily be executed via the `launch binder` badge in the notebooks repo.

@@ -33,5 +33,5 @@ end
 
 include("gcmfaces_type.jl");
 include("gcmarray_type.jl");
-MeshArray=gcmfaces
-#MeshArray=gcmarray
+#MeshArray=gcmfaces
+MeshArray=gcmarray

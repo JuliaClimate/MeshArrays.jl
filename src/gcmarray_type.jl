@@ -7,11 +7,18 @@ gcmarray data structure. Available constructors:
 ```
 gcmarray{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
          fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1})
-gcmarray(grid::gcmgrid,
-         fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1})
 
+gcmarray(grid::gcmgrid,f::Array{Array{T,2},N}) where {T,N}
+gcmarray(grid::gcmgrid,f::Array{Array{T,N},1}) where {T,N}
+
+gcmarray(grid::gcmgrid,fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1})
+gcmarray(<same as above>,n3::Int)
+gcmarray(<same as above>,n3::Int,n4::Int)
+
+gcmarray(grid::gcmgrid)
 gcmarray(grid::gcmgrid,::Type{T})
 gcmarray(grid::gcmgrid,::Type{T},n3::Int)
+gcmarray(grid::gcmgrid,::Type{T},n3::Int,n4::Int)
 ```
 """
 struct gcmarray{T, N} <: AbstractMeshArray{T, N}
@@ -19,6 +26,25 @@ struct gcmarray{T, N} <: AbstractMeshArray{T, N}
    f::Array{Array{T,2},N}
    fSize::Array{NTuple{2, Int}}
    fIndex::Array{Int,1}
+end
+
+function gcmarray(grid::gcmgrid,f::Array{Array{T,2},N}) where {T, N}
+  gcmarray{T,N}(grid,f,grid.fSize,collect(1:grid.nFaces))
+end
+
+function gcmarray(grid::gcmgrid,f::Array{Array{T,N},1}) where {T, N}
+  nFaces=grid.nFaces
+  if N>2
+    n3=size(f[1],3); n4=size(f[1],4);
+    g=Array{Array{T,2},3}(undef,nFaces,n3,n4)
+    for I in eachindex(view(g,1:nFaces,1:n3,1:n4))
+      g[I]=view(f[I[1]],:,:,I[2],I[3])
+    end
+    n4==1 ? g=dropdims(g,dims=3) : nothing
+    gcmarray{T,ndims(g)}(grid,g,grid.fSize,collect(1:nFaces))
+  else
+    gcmarray{T,1}(grid,f,grid.fSize,collect(1:nFaces))
+  end
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
@@ -61,6 +87,14 @@ function gcmarray(grid::gcmgrid,::Type{T},
 end
 
 # +
+function gcmarray(grid::gcmgrid)
+  nFaces=grid.nFaces
+  fSize=grid.fSize
+  fIndex=collect(1:grid.nFaces)
+  T=grid.ioPrec
+  gcmarray(grid,T,fSize,fIndex)
+end
+
 function gcmarray(grid::gcmgrid,::Type{T}) where {T}
   nFaces=grid.nFaces
   fSize=grid.fSize

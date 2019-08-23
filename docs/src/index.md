@@ -40,4 +40,4 @@ git clone https://github.com/gaelforget/GRID_LLC90
 GridVariables=GCMGridLoad(GCMGridSpec("LLC90"))
 ```
 
-would download and use a pre-defined global ocean grid, from the [MITgcm](https://mitgcm.readthedocs.io/en/latest/) community, to run the same example with a proper representation of scale factors and continents. For directions to plot results, see the help section of `demo2` (`?MeshArrays.demo2`).
+would download and use a pre-defined [global ocean grid](http://www.geosci-model-dev.net/8/3071/2015/), from the [MITgcm](https://mitgcm.readthedocs.io/en/latest/) community, to run the same example with a proper representation of scale factors and continents. For directions to plot results, see the help section of `demo2` (`?MeshArrays.demo2`).
