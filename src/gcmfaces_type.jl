@@ -10,12 +10,14 @@ gcmfaces data structure. Available constructors:
 ```
 gcmfaces{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int})
-gcmfaces(grid::gcmgrid,v1::Array{Array{T,N},1}) where {T,N}
 
+gcmfaces(grid::gcmgrid,v1::Array{Array{T,N},1}) where {T,N}
 gcmfaces(grid::gcmgrid,::Type{T},
          fSize::Array{NTuple{N, Int}}, aSize::NTuple{N,Int}) where {T,N}
+
 gcmfaces(grid::gcmgrid)
-gcmfaces()
+gcmfaces(grid::gcmgrid,::Type{T})
+gcmfaces(grid::gcmgrid,::Type{T},n3::Int)
 ```
 """
 struct gcmfaces{T, N} <: AbstractMeshArray{T, N}
@@ -104,14 +106,14 @@ function gcmfaces(grid::gcmgrid)
   gcmfaces(grid,T,fSize,aSize)
 end
 
-function gcmfaces()
-  T=Float64
-  fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
-  aSize=(105300, 1)
-  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, read, write)
-
-  gcmfaces(grid,T,fSize,aSize)
-end
+#function gcmfaces()
+#  T=Float64
+#  fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
+#  aSize=(105300, 1)
+#  grid=gcmgrid("", "llc", 5, fSize, [90 1170], T, read, write)
+#
+#  gcmfaces(grid,T,fSize,aSize)
+#end
 
 ## additional constructors for gcmsubset
 
