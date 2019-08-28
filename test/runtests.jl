@@ -8,7 +8,7 @@ for nTopo=1:3
     elseif nTopo==3; grTopo="ll"; nFaces=1; N=500;
     end;
     Npt=nFaces*N*N
-    GridVariables=GCMGridOnes(grTopo,nFaces,N)
+    GridVariables=GridOfOnes(grTopo,nFaces,N)
     mygrid=GridVariables["XC"].grid
     @test mygrid.class == grTopo
     Rini= 0.; Rend= 0.;

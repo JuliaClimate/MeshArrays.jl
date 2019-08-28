@@ -12,7 +12,7 @@ Call qwckplot(fld::MeshArray,ttl::String) with current date for title. Example:
 
 ```
 !isdir("GRID_LLC90") ? error("missing files") : nothing
-GridVariables=GCMGridLoad(GCMGridSpec("LLC90"))
+GridVariables=GridLoad(GridSpec("LLC90"))
 qwckplot(GridVariables["Depth"])
 ```
 """

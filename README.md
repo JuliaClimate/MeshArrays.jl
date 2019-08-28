@@ -23,7 +23,7 @@ Pkg.test("MeshArrays")
 ```
 using MeshArrays
 
-isdir("GRID_LLC90") ? GridVariables=GCMGridLoad(GCMGridSpec("LLC90")) : GridVariables=GCMGridOnes("cs",6,100);
+isdir("GRID_LLC90") ? GridVariables=GridLoad(GridSpec("LLC90")) : GridVariables=GridOfOnes("cs",6,100);
 
 (Rini,Rend,DXCsm,DYCsm)= MeshArrays.demo2(GridVariables);
 

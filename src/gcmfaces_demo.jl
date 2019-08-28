@@ -15,7 +15,7 @@ etc.). Call sequence:
 """
 function demo1(gridChoice::String)
 
-    mygrid=GCMGridSpec(gridChoice)
+    mygrid=GridSpec(gridChoice)
 
     D=mygrid.read(mygrid.path*"Depth.data",MeshArray(mygrid,mygrid.ioPrec))
 
@@ -37,7 +37,7 @@ function demo1(gridChoice::String)
     DD=mygrid.read(Darr,D)
     DD .== D
 
-    GridVariables=GCMGridLoad(mygrid)
+    GridVariables=GridLoad(mygrid)
 
     (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],GridVariables)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
@@ -78,8 +78,8 @@ qwckplot(Rend,"smoothed noise")
 """
 function demo2()
 
-    #Pre-requisite: either load predefined grid using `demo1` or call `GCMGridOnes`
-    isdir("GRID_LLC90") ? GridVariables=GCMGridLoad(GCMGridSpec("LLC90")) : GridVariables=GCMGridOnes("cs",6,100)
+    #Pre-requisite: either load predefined grid using `demo1` or call `GridOfOnes`
+    isdir("GRID_LLC90") ? GridVariables=GridLoad(GridSpec("LLC90")) : GridVariables=GridOfOnes("cs",6,100)
 
     (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables)
 end
@@ -132,8 +132,8 @@ qwckplot(UV["V"][:,:,1,1],"V component (note varying face orientations)")
 """
 function demo3()
 
-    mygrid=GCMGridSpec("LLC90")
-    GridVariables=GCMGridLoad(mygrid)
+    mygrid=GridSpec("LLC90")
+    GridVariables=GridLoad(mygrid)
 
     TrspX=mygrid.read(mygrid.path*"TrspX.bin",MeshArray(mygrid,Float32))
     TrspY=mygrid.read(mygrid.path*"TrspY.bin",MeshArray(mygrid,Float32))
