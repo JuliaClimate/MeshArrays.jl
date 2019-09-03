@@ -1,5 +1,5 @@
 
-using Plots, Dates; gr();
+using Plots, Dates
 
 export qwckplot
 
@@ -8,7 +8,7 @@ export qwckplot
 """
     qwckplot(fld::MeshArray)
 
-Call qwckplot(fld::MeshArray,ttl::String) with current date for title. Example:
+Call qwckplot(fld::MeshArray) with date as title. Example:
 
 ```
 !isdir("GRID_LLC90") ? error("missing files") : nothing
@@ -32,4 +32,16 @@ function qwckplot(fld::MeshArray,ttl::String)
     arr=permutedims(arr,[2 1])
     #This uses Plots.jl:
     p=heatmap(arr,title=ttl)
+end
+
+"""
+    qwckplot(fld::MeshArray,clims::NTuple{2, Number})
+
+Plot input using convert2array and heatmap w. chosen clims
+"""
+function qwckplot(fld::MeshArray,clims::NTuple{2, Number})
+    arr=MeshArrays.convert2array(fld)
+    arr=permutedims(arr,[2 1])
+    #This uses Plots.jl:
+    p=heatmap(arr,clims=clims)
 end

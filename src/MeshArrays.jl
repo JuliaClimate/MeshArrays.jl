@@ -16,9 +16,14 @@ export nFacesEtc, fijind, findtiles, LatitudeCircles, ThroughFlow
 #The following exch_UV differs from normal exchange; incl. exch_UV_N.
 export exch_UV
 
-#The following codes add dependencies to Plots & NetCDF.
-#include("gcmfaces_plot.jl");
+#The following codes add dependencies to Plots
+#using Plots; include(joinpath(dirname(pathof(MeshArrays)),"Plots.jl"));
+
+#The following codes add dependencies to NetCDF
 #include("gcmfaces_nctiles.jl");
-include("gcmfaces_convert.jl");
+
+#The following codes add being deprecated
+#include("gcmfaces_plot.jl");
+#include("gcmfaces_convert.jl");
 
 end # module
