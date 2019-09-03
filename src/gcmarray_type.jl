@@ -167,28 +167,18 @@ end
 
 function Base.show(io::IO, z::gcmarray{T, N}) where {T,N}
     printstyled(io, " gcmarray \n",color=:normal)
-    fs=z.fSize
     printstyled(io, "  grid type   = ",color=:normal)
     printstyled(io, "$(z.grid.class)\n",color=:blue)
-    printstyled(io, "  array size  = ",color=:normal)
+    printstyled(io, "  data type   = ",color=:normal)
+    printstyled(io, "$(eltype(z))\n",color=:blue)
+    printstyled(io, "  tile array  = ",color=:normal)
     printstyled(io, "$(size(z))\n",color=:blue)
-
-    if ~isassigned(z.f);
-      printstyled(io, "  data type   = ",color=:normal)
-      printstyled(io, "unassigned\n",color=:green)
-      printstyled(io, "  tile sizes  = ",color=:normal)
-      printstyled(io, "unassigned\n",color=:green)
-    else
-      printstyled(io, "  data type   = ",color=:normal)
-      printstyled(io, "$(typeof(z.f[1][1]))\n",color=:blue)
-      printstyled(io, "  face sizes  = ",color=:normal)
-      printstyled(io, "$(fs[1])\n",color=:blue)
-      for iFace=2:length(fs)
-        printstyled(io, "                ",color=:normal)
-        printstyled(io, "$(fs[iFace])\n",color=:blue)
-      end
+    printstyled(io, "  tile sizes  = ",color=:normal)
+    printstyled(io, "$(size(z[1]))\n",color=:blue)
+    for iFace=2:length(z.fIndex)
+      printstyled(io, "                ",color=:normal)
+      printstyled(io, "$(size(z[iFace]))\n",color=:blue)
     end
-
   return
 end
 
