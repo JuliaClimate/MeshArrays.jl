@@ -6,19 +6,20 @@ export read_nctiles
 ## read_nctiles function
 #
 #examples:
+#  mygrid=GCMGridSpec("LLC90")
 #  fileName="nctiles_grid/GRID"
-#  Depth=read_nctiles(fileName,"Depth")
-#  hFacC=read_nctiles(fileName,"hFacC")
+#  Depth=read_nctiles(fileName,"Depth",mygrid)
+#  hFacC=read_nctiles(fileName,"hFacC",mygrid)
 
 """
-    read_nctiles(fileName,fldName)
+    read_nctiles(fileName,fldName,mygrid)
 
-Read model output from Netcdf / NCTiles file and convert to gcmfaces structure.
+Read model output from Netcdf / NCTiles file and convert to MeshArray instance.
 """
-function read_nctiles(fileName,fldName)
+function read_nctiles(fileName::String,fldName::String,mygrid::gcmgrid)
 
-if ~(MeshArrays.grTopo=="llc");
-  error("non-llc cases not implemented yet");
+if (mygrid.class!="llc")||(mygrid.ioSize!=[90 1170])
+  error("non-llc90 cases not implemented yet");
 end;
 
 fileIn=@sprintf("%s.%04d.nc",fileName,1);
@@ -29,12 +30,14 @@ ndims=length(size(x));
 if ndims==2;
   f0=Array{Float64}(undef,90,0);
   f00=Array{Float64}(undef,0,90);
-else;
-  nr=size(x,3)
-  f0=Array{Float64}(undef,90,0,nr);
-  f00=Array{Float64}(undef,0,90,nr);
+elseif ndims==3;
+  f0=Array{Float64}(undef,90,0,size(x,3));
+  f00=Array{Float64}(undef,0,90,size(x,3));
+elseif ndims==4;
+  f0=Array{Float64}(undef,90,0,size(x,3),size(x,4));
+  f00=Array{Float64}(undef,0,90,size(x,3),size(x,4));
 end;
-f=[f0,f0,NaN,f00,f00];
+f=[f0,f0,f0,f00,f00];
 
 #fill in f
 for ff=1:13;
@@ -56,7 +59,7 @@ for ff=1:13;
 
 end;
 
-#return f gcmfaces object fld
-fld=gcmfaces(5,"llc",f);
+fld=MeshArray(mygrid,f)
+return fld
 
 end
