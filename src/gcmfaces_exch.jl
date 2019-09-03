@@ -5,27 +5,27 @@
 ## User Front Ends
 
 """
-    exchange(fld::gcmfaces)
+    exchange(fld::MeshArray)
 
-Exchange / transfer data between neighbor arrays. Other methods are
+Exchange / transfer data between neighboring arrays. Other methods are
 
-    exchange(fld::gcmfaces,N::Integer)
-    exchange(u::gcmfaces,v::gcmfaces)
-    exchange(u::gcmfaces,v::gcmfaces,N::Integer)
+    exchange(fld::MeshArray,N::Integer)
+    exchange(u::MeshArray,v::MeshArray)
+    exchange(u::MeshArray,v::MeshArray,N::Integer)
 """
-function exchange(fld::gcmfaces)
+function exchange(fld::MeshArray)
   FLD=exch_T_N(fld,1);
 end
 
-function exchange(fld::gcmfaces,N::Integer)
+function exchange(fld::MeshArray,N::Integer)
   FLD=exch_T_N(fld,N);
 end
 
-function exchange(u::gcmfaces,v::gcmfaces)
+function exchange(u::MeshArray,v::MeshArray)
   (uex,vex)=exch_UV_N(u,v,1);
 end
 
-function exchange(u::gcmfaces,v::gcmfaces,N::Integer)
+function exchange(u::MeshArray,v::MeshArray,N::Integer)
   (uex,vex)=exch_UV_N(u,v,N);
 end
 
@@ -35,15 +35,15 @@ end
 
 function exch_T_N(fld,N)
 
-if fld.grTopo=="llc";
-  FLD=exch_T_N_cs(fld,N);
-elseif fld.grTopo=="cs";
-  FLD=exch_T_N_cs(fld,N);
-elseif fld.grTopo=="ll";
-  FLD=exch_T_N_ll(fld,N);
-else;
-  error("unknown grTopo case");
-end;
+if fld.grid.class=="llc"
+  FLD=exch_T_N_cs(fld,N)
+elseif fld.grid.class=="cs"
+  FLD=exch_T_N_cs(fld,N)
+elseif fld.grid.class=="ll"
+  FLD=exch_T_N_ll(fld,N)
+else
+  error("unknown grTopo case")
+end
 
 FLD
 
@@ -51,15 +51,15 @@ end
 
 function exch_UV_N(u,v,N)
 
-if u.grTopo=="llc";
-  (uex,vex)=exch_UV_N_cs(u,v,N);
-elseif u.grTopo=="cs";
-  (uex,vex)=exch_UV_N_cs(u,v,N);
-elseif u.grTopo=="ll";
-  (uex,vex)=exch_UV_N_ll(u,v,N);
-else;
-  error("unknown grTopo case");
-end;
+if u.grid.class=="llc"
+  (uex,vex)=exch_UV_N_cs(u,v,N)
+elseif u.grid.class=="cs"
+  (uex,vex)=exch_UV_N_cs(u,v,N)
+elseif u.grid.class=="ll"
+  (uex,vex)=exch_UV_N_ll(u,v,N)
+else
+  error("unknown grTopo case")
+end
 
 return uex,vex
 
@@ -67,15 +67,15 @@ end
 
 function exch_UV(u,v)
 
-if u.grTopo=="llc";
-  (uex,vex)=exch_UV_cs(u,v);
-elseif u.grTopo=="cs";
-  (uex,vex)=exch_UV_cs(u,v);
-elseif u.grTopo=="ll";
-  (uex,vex)=exch_UV_ll(u,v);
-else;
-  error("unknown grTopo case");
-end;
+if u.grid.class=="llc"
+  (uex,vex)=exch_UV_cs(u,v)
+elseif u.grid.class=="cs"
+  (uex,vex)=exch_UV_cs(u,v)
+elseif u.grid.class=="ll"
+  (uex,vex)=exch_UV_ll(u,v)
+else
+  error("unknown grTopo case")
+end
 
 return uex,vex
 
@@ -83,7 +83,7 @@ end
 
 ## Grid-specific implementations: ll grid case
 
-function exch_T_N_ll(fld::gcmfaces,N::Integer)
+function exch_T_N_ll(fld::MeshArray,N::Integer)
 
 fillval=0.0
 
@@ -147,17 +147,17 @@ end
 
 #note: the "cs" implementation covers both cs and llc
 
-function exch_T_N_cs(fld::gcmfaces,N::Integer)
+function exch_T_N_cs(fld::MeshArray,N::Integer)
 
 fillval=0.0
 
 #step 1
 
-s=size.(fld.f);
-nf=fld.nFaces;
+s=size.(fld.f)
+nf=fld.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fld.grTopo;
-FLD=similar(fld);
+tp=fld.grid.class
+FLD=similar(fld)
 
 for i=1:nf; FLD.f[i]=fill(fillval,s[i].+2N); end;
 #code below yields strange, seemingly incorrect results:
@@ -195,18 +195,18 @@ end
 
 ##
 
-function exch_UV_N_cs(fldU::gcmfaces,fldV::gcmfaces,N::Integer)
+function exch_UV_N_cs(fldU::MeshArray,fldV::MeshArray,N::Integer)
 
 fillval=0.0
 
 #step 1
 
-s=size.(fldU.f);
-nf=fldU.nFaces;
+s=size.(fldU.f)
+nf=fldU.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fldU.grTopo;
-FLDU=similar(fldU);
-FLDV=similar(fldV);
+tp=fldU.grid.class
+FLDU=similar(fldU)
+FLDV=similar(fldV)
 
 for i=1:nf;
  FLDU.f[i]=fill(fillval,s[i].+2N);
@@ -249,18 +249,18 @@ end
 
 ##
 
-function exch_UV_cs(fldU::gcmfaces,fldV::gcmfaces)
+function exch_UV_cs(fldU::MeshArray,fldV::MeshArray)
 
 fillval=0.0
 
 #step 1
 
-s=size.(fldU.f);
-nf=fldU.nFaces;
+s=size.(fldU.f)
+nf=fldU.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fldU.grTopo;
-FLDU=similar(fldU);
-FLDV=similar(fldV);
+tp=fldU.grid.class
+FLDU=similar(fldU)
+FLDV=similar(fldV)
 
 for i=1:nf
   FLDU.f[i]=fill(fillval,s[i][1]+1,s[i][2]);

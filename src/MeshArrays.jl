@@ -2,9 +2,9 @@
 
 module MeshArrays
 
-using Printf
+#using Printf
 
-include("gcmfaces_type.jl");
+include("Types.jl");
 include("gcmfaces_grids.jl");
 include("gcmfaces_calc.jl");
 include("gcmfaces_exch.jl");
@@ -13,13 +13,10 @@ include("gcmfaces_IO.jl");
 include("gcmfaces_demo.jl");
 include("gcmfaces_nctiles.jl");
 
-export AbstractGcmfaces, gcmfaces, gcmsubset, fsize, fijind
+export AbstractMeshArray, MeshArray, gcmgrid
 export exchange, gradient, convergence, smooth, mask
 export GCMGridSpec, GCMGridLoad, GCMGridOnes
-export findtiles
-export demo1, demo2
-#The following functions rely on grid specs; currently via global vars.
-export read_bin, convert2array, convert2gcmfaces
+export nFacesEtc, fijind, findtiles, LatitudeCircles, ThroughFlow
 #The following exch_UV differs from normal exchange; incl. exch_UV_N.
 export exch_UV
 #The following codes add dependencies to Plots & NetCDF.
