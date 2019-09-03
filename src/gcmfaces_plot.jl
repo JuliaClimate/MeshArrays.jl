@@ -28,7 +28,7 @@ end
 Plot input using convert2array and heatmap + add title
 """
 function qwckplot(fld::MeshArray,ttl::String)
-    arr=MeshArrays.convert2array(fld)
+    arr=convert2array(fld)
     arr=permutedims(arr,[2 1])
     #This uses Plots.jl:
     p=heatmap(arr,title=ttl)
@@ -40,7 +40,7 @@ end
 Plot input using convert2array and heatmap w. chosen clims
 """
 function qwckplot(fld::MeshArray,clims::NTuple{2, Number})
-    arr=MeshArrays.convert2array(fld)
+    arr=convert2array(fld)
     arr=permutedims(arr,[2 1])
     #This uses Plots.jl:
     p=heatmap(arr,clims=clims)
