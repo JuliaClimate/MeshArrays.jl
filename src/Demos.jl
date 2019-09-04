@@ -15,7 +15,7 @@ etc.). Call sequence:
 """
 function demo1(gridChoice::String)
 
-    mygrid=GCMGridSpec(gridChoice)
+    mygrid=GridSpec(gridChoice)
 
     D=mygrid.read(mygrid.path*"Depth.data",MeshArray(mygrid,mygrid.ioPrec))
 
@@ -37,7 +37,7 @@ function demo1(gridChoice::String)
     DD=mygrid.read(Darr,D)
     DD .== D
 
-    GridVariables=GCMGridLoad(mygrid)
+    GridVariables=GridLoad(mygrid)
 
     (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],GridVariables)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
@@ -70,16 +70,19 @@ Demonstrate higher level functions using `smooth`. Call sequence:
 ```
 (Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2();
 
-include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
-qwckplot(Rini,"raw noise")
-qwckplot(Rend,"smoothed noise")
+using Plots; plotlyjs()
+include(joinpath(dirname(pathof(MeshArrays)),"Plots.jl"))
+heatmap(Rend,title="smoothed noise",clims=(-0.5,0.5))
+heatmap(Rini,title="raw noise",clims=(-0.5,0.5))
+
+#gr(); contour(Rend,clims=(-0.5,0.5),levels=-0.5:0.1:0.5,fill=true)
 ```
 
 """
 function demo2()
 
-    #Pre-requisite: either load predefined grid using `demo1` or call `GCMGridOnes`
-    isdir("GRID_LLC90") ? GridVariables=GCMGridLoad(GCMGridSpec("LLC90")) : GridVariables=GCMGridOnes("cs",6,100)
+    #Pre-requisite: either load predefined grid using `demo1` or call `GridOfOnes`
+    isdir("GRID_LLC90") ? GridVariables=GridLoad(GridSpec("LLC90")) : GridVariables=GridOfOnes("cs",6,100)
 
     (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables)
 end
@@ -125,15 +128,16 @@ Demonstrate ocean transport computations. Call sequence:
 (UV,LC,Tr)=MeshArrays.demo3();
 using Plots; plot(Tr/1e6,title="meridional transport")
 
-include(joinpath(dirname(pathof(MeshArrays)),"gcmfaces_plot.jl"))
-qwckplot(UV["U"][:,:,1,1],"U component (note varying face orientations)")
-qwckplot(UV["V"][:,:,1,1],"V component (note varying face orientations)")
+using Plots; plotlyjs()
+include(joinpath(dirname(pathof(MeshArrays)),"Plots.jl"))
+heatmap(UV["U"],title="U comp.",clims=(-1e7,1e7))
+heatmap(UV["V"],title="V comp.",clims=(-1e7,1e7))
 ```
 """
 function demo3()
 
-    mygrid=GCMGridSpec("LLC90")
-    GridVariables=GCMGridLoad(mygrid)
+    mygrid=GridSpec("LLC90")
+    GridVariables=GridLoad(mygrid)
 
     TrspX=mygrid.read(mygrid.path*"TrspX.bin",MeshArray(mygrid,Float32))
     TrspY=mygrid.read(mygrid.path*"TrspY.bin",MeshArray(mygrid,Float32))
