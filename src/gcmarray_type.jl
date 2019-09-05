@@ -125,19 +125,31 @@ Base.size(A::gcmarray) = size(A.f)
 Base.size(A::gcmarray, dim::Integer) = size(A)[dim]
 
 # +
-function Base.getindex(A::gcmarray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
-    return A.f[I...]
+function Base.getindex(A::gcmarray{T, N}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
+  J=1:length(A.fIndex)
+  !isa(I[1],Colon) ? J=J[I[1]] : nothing
+  nFaces=length(J)
+
+  tmpf=A.f[I...]
+  if isa(tmpf,Array{eltype(A),2})
+    tmp=tmpf
+  else
+    n3=Int(length(tmpf)/nFaces)
+    K=(A.grid,eltype(A),A.fSize[J],A.fIndex[J])
+    n3>1 ? tmp=gcmarray(K...,n3) : tmp=gcmarray(K...)
+    for I in eachindex(tmpf); tmp.f[I] = view(tmpf[I],:,:); end
+  end
+
+  return tmp
 end
 
 """
     getindexetc(A::gcmarray, I::Vararg{_}) where {T,N}
 
 Same as getindex but also returns the face size and index
-
-(needed in other types?)
 """
-function getindexetc(A::gcmarray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
-    f=A.f[I...]
+function getindexetc(A::gcmarray{T, N}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
+    f=A[I...]
     fSize=A.fSize[I[1]]
     fIndex=A.fIndex[I[1]]
     return f,fSize,fIndex
