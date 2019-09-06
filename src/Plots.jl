@@ -7,8 +7,10 @@ import Plots: heatmap, contour, contourf
 Calls `heatmap` for one elementary array per subplot
 """
 function heatmap(x::MeshArray; args...)
-    n=length(x.fIndex); p=()
-    for i=1:n; p=(p...,heatmap(x.f[i]; args...)); end;
+    n=x.grid.nFaces
+    isa(x,MeshArrays.gcmarray) ? n=length(x.fIndex) : nothing
+    p=()
+    for i=1:n; p=(p...,heatmap(x.f[i]; args...)); end
     plot(p...)
 end
 
@@ -18,7 +20,9 @@ end
 Calls `contour` for one elementary array per subplot
 """
 function contour(x::MeshArray; args...)
-    n=length(x.fIndex); p=()
-    for i=1:n; p=(p...,contour(x.f[i]; args...)); end;
+    n=x.grid.nFaces
+    isa(x,MeshArrays.gcmarray) ? n=length(x.fIndex) : nothing
+    p=()
+    for i=1:n; p=(p...,contour(x.f[i]; args...)); end
     plot(p...)
 end
