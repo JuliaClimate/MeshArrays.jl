@@ -29,9 +29,11 @@ struct gcmgrid
   write::Function
 end
 
-## concrete type and MeshArray alias:
+## concrete types and MeshArray alias:
 
 include("gcmfaces_type.jl");
 include("gcmarray_type.jl");
+include("gcmvector_type.jl");
+
 #MeshArray=gcmfaces
 MeshArray=gcmarray

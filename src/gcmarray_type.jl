@@ -5,7 +5,7 @@
 gcmarray data structure. Available constructors:
 
 ```
-gcmarray{T,N}(grid::gcmgrid,f::Array{Array{T,N},1},
+gcmarray{T,N}(grid::gcmgrid,f::Array{Array{T,2},N},
          fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1})
 
 gcmarray(grid::gcmgrid,f::Array{Array{T,2},N}) where {T,N}
@@ -211,11 +211,10 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmarray}},
   # Scan the inputs for the gcmarray:
   A = find_gcmarray(bc)
   # Create the gcmarray output:
-  #similar(A)
   if ndims(A)==1
-        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex)
+        B=gcmarray(A.grid,ElType,A.fSize,A.fIndex)
   else
-        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex,size(A,2))
+        B=gcmarray(A.grid,ElType,A.fSize,A.fIndex,size(A,2))
   end
   return B
 end
@@ -243,12 +242,12 @@ import Base: copyto!
     bc′ = Broadcast.preprocess(dest, bc)
     @simd for I in eachindex(bc′)
         #@inbounds dest[I] = bc′[I]
-        @inbounds dest[I] = my_getindex_evalf(bc′,I)
+        @inbounds dest[I] = gcmarray_getindex_evalf(bc′,I)
     end
     return dest
 end
 
-function my_getindex_evalf(bc,I)
+function gcmarray_getindex_evalf(bc,I)
   @boundscheck checkbounds(bc, I)
   args = Broadcast._getindex(bc.args, I)
   return bc.f.(args...)
@@ -258,7 +257,7 @@ end
 
 import Base: +, -, *, /
 import Base: isnan, isinf, isfinite
-import Base: maximum, minimum, sum, fill
+import Base: maximum, minimum, sum, fill, fill!
 
 #+(a::gcmarray,b::gcmarray) = a.+b
 function +(a::gcmarray,b::gcmarray)
@@ -327,6 +326,13 @@ function fill(val::Any,a::gcmarray)
     c[I] = fill(val,size(a[I]))
   end
   return c
+end
+
+function fill!(a::gcmarray,val::Any)
+  for I in eachindex(a)
+    fill!(a[I],val)
+  end
+  return a
 end
 
 ###
