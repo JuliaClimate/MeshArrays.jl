@@ -9,7 +9,9 @@
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://gaelforget.github.io/MeshArrays.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://gaelforget.github.io/MeshArrays.jl/dev)
 
-`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections and provides `exchange` functions that transfer data between connected arrays. It was originally introduced in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) (see below for **notebooks**). _Note:_ the `MeshArrays.jl` package is registered, documented, etc., but still regarded as a **preliminary implementation**.
+`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections and provides `exchange` functions that transfer data between connected arrays. It was originally introduced in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) (see **notebooks** below). 
+
+_Note:_ `MeshArrays.jl` is registered, documented, etc., but still regarded as a **preliminary implementation**.
 
 ### Installation
 
