@@ -45,7 +45,7 @@ else
   error("unknown grTopo case")
 end
 
-FLD
+return FLD
 
 end
 

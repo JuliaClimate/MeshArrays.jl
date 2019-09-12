@@ -6,7 +6,7 @@ export read_nctiles
 ## read_nctiles function
 #
 #examples:
-#  mygrid=GCMGridSpec("LLC90")
+#  mygrid=GridSpec("LLC90")
 #  fileName="nctiles_grid/GRID"
 #  Depth=read_nctiles(fileName,"Depth",mygrid)
 #  hFacC=read_nctiles(fileName,"hFacC",mygrid)
