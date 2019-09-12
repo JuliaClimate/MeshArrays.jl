@@ -9,7 +9,7 @@
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://gaelforget.github.io/MeshArrays.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://gaelforget.github.io/MeshArrays.jl/dev)
 
-`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections and provides `exchange` functions that transfer data between connected arrays. It was originally introduced in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) (see **notebooks** below). 
+`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections and provides `exchange` functions that transfer data between connected arrays (see **Notebooks** below). It was originally introduced in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg). 
 
 _Note:_ `MeshArrays.jl` is registered, documented, etc., but still regarded as a **preliminary implementation**.
 
@@ -39,4 +39,4 @@ Starting from a noisy `DemoVariables[1]`, this leads to a smoothed `DemoVariable
 
 ### Notebooks
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [JuliaCon2018Notebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git). Another notebook is included which illustrate how `MeshArrays.smooth` is used for unit testing purposes (`demo_smooth.ipynb`). These notebooks can readily be executed via the `launch binder` badge in the notebooks repo.
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [MeshArrayNotebooks repo](https://github.com/gaelforget/MeshArrayNotebooks.git). Other included notebooks illustrate for example how `MeshArrays.smooth` is used for unit testing purposes (`demo_smooth.ipynb`) or how `MeshArrays.jl` allows for computations of Ocean transports (`demo_trsp.ipynb`). All `MeshArrayNotebooks` can readily be used in the cloud via `binder`.
