@@ -1,18 +1,18 @@
 
-## GCMGridSpec function with default gridName argument:
+## GridSpec function with default gridName argument:
 
-GCMGridSpec() = GCMGridSpec("LLC90")
+GridSpec() = GridSpec("LLC90")
 
-## GCMGridSpec function with gridName argument:
+## GridSpec function with gridName argument:
 
 """
-    GCMGridSpec(gridName)
+    GridSpec(gridName)
 
 Return a `gmcgrid` specification that provides grid files `path`,
 `class`, `nFaces`, `ioSize`, `facesSize`, `ioPrec`, & a `read` function
 (not yet) using hard-coded values for `"LLC90"`, `"CS32"`, `"LL360"` (for now).
 """
-function GCMGridSpec(gridName,gridParentDir="./")
+function GridSpec(gridName,gridParentDir="./")
 
 if gridName=="LLC90";
     grDir=gridParentDir*"GRID_LLC90/";
@@ -45,12 +45,12 @@ return mygrid
 
 end
 
-## GCMGridLoad function
+## GridLoad function
 
 """
-    GCMGridLoad(mygrid::gcmgrid)
+    GridLoad(mygrid::gcmgrid)
 
-Return a `Dict` of grid variables read from files located in `mygrid.path` (see `?GCMGridSpec`).
+Return a `Dict` of grid variables read from files located in `mygrid.path` (see `?GridSpec`).
 
 Based on the MITgcm naming convention, grid variables are:
 
@@ -58,7 +58,7 @@ Based on the MITgcm naming convention, grid variables are:
 - RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
 - DRC, DRF, RC, RF (one-dimensional)
 """
-function GCMGridLoad(mygrid::gcmgrid)
+function GridLoad(mygrid::gcmgrid)
 
     GridVariables=Dict()
 
@@ -103,11 +103,11 @@ function GCMGridLoad(mygrid::gcmgrid)
 end
 
 """
-    GCMGridOnes(grTp,nF,nP)
+    GridOfOnes(grTp,nF,nP)
 
-Define all-ones grid variables instead of using `GCMGridSpec` & `GCMGridLoad`.
+Define all-ones grid variables instead of using `GridSpec` & `GridLoad`.
 """
-function GCMGridOnes(grTp,nF,nP)
+function GridOfOnes(grTp,nF,nP)
 
     grDir=""
     grTopo=grTp
@@ -142,8 +142,8 @@ Return a `MeshArray` map of tile indices for tile size `ni,nj`
 function findtiles(ni::Int,nj::Int,grid="llc90")
     mytiles = Dict()
     if grid=="llc90"
-        mygrid=GCMGridSpec("LLC90")
-        GridVariables=GCMGridLoad(mygrid)
+        mygrid=GridSpec("LLC90")
+        GridVariables=GridLoad(mygrid)
     else
         println("Unsupported grid option")
     end

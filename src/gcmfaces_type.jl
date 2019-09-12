@@ -353,7 +353,7 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmfaces}},
     # Scan the inputs for the gcmfaces:
     A = find_gcmfaces(bc)
     # Create the gcmfaces output:
-    similar(A)
+    similar(A,ElType,A.aSize)
 end
 
 find_gcmfaces(bc::Base.Broadcast.Broadcasted) = find_gcmfaces(bc.args)

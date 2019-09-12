@@ -4,15 +4,15 @@ The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Ju
 
 `MeshArrays.jl` composite array types have array elements. The elementary arrays within a `MeshArray` are typically inter-connected at their edges according to a user-specified `gcmgrid` specification. `exchange` methods transfer data between neighboring arrays to extend their computational domains, as often needed to derive e.g. planetary transports in the climate system.
 
-The current default for `MeshArray` is the `gcmarray` type and an instance `H` is shown below. This example is based on a grid known as `LLC90` where each global map is associated with 5 subdomains. Hence, `H.f` is a `5x50` array when `H` represents a gridded variable on `50` depth levels, and the elements of  `H.f` are of size `(90, 270)`, `(90, 90)`, or `(270, 90)`. 
+The current default for `MeshArray` is the `gcmarray` type and an instance `H` is shown below. This example is based on a grid known as `LLC90` where each global map is associated with 5 subdomains. Hence, `H.f` is a `(5, 50)` array when `H` represents a gridded variable on `50` depth levels, and elements of  `H.f` are arrays of size `(90, 270)`, `(90, 90)`, or `(270, 90)`. 
 
 ```
 julia> show(H)
  gcmarray 
   grid type   = llc
-  array size  = (5, 50)
   data type   = Float64
-  face sizes  = (90, 270)
+  tile array  = (5, 50)
+  tile sizes  = (90, 270)
                 (90, 270)
                 (90, 90)
                 (270, 90)
