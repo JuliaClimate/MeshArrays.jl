@@ -80,3 +80,37 @@ function fill!(a::AbstractMeshArray,val::Any)
   end
   return a
 end
+
+import Base: +, -, *, /
+
+function +(a::AbstractMeshArray,b::AbstractMeshArray)
+  c=similar(a)
+  for I in eachindex(a.f)
+    c.f[I] = a.f[I] + b.f[I]
+  end
+  return c
+end
+
+function -(a::AbstractMeshArray,b::AbstractMeshArray)
+  c=similar(a)
+  for I in eachindex(a.f)
+    c.f[I] = a.f[I] - b.f[I]
+  end
+  return c
+end
+
+function /(a::AbstractMeshArray,b::AbstractMeshArray)
+  c=similar(a)
+  for I in eachindex(a.f)
+    c.f[I] = a.f[I] ./ b.f[I]
+  end
+  return c
+end
+
+function *(a::AbstractMeshArray,b::AbstractMeshArray)
+  c=similar(a)
+  for I in eachindex(a.f)
+    c.f[I] = a.f[I] .* b.f[I]
+  end
+  return c
+end

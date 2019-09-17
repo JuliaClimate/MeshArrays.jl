@@ -255,43 +255,6 @@ end
 
 ###
 
-import Base: +, -, *, /
-
-#+(a::gcmarray,b::gcmarray) = a.+b
-function +(a::gcmarray,b::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = a[I] + b[I]
-  end
-  return c
-end
-
-function -(a::gcmarray,b::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = a[I] - b[I]
-  end
-  return c
-end
-
-function /(a::gcmarray,b::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = a[I] ./ b[I]
-  end
-  return c
-end
-
-function *(a::gcmarray,b::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = a[I] .* b[I]
-  end
-  return c
-end
-
-###
-
 """
     nFacesEtc(a::gcmarray)
 
