@@ -135,18 +135,16 @@ end
 
 
 """
-    findtiles(ni,nj,grid="llc90")
+    findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
+    findtiles(ni::Int,nj::Int,grid::String="llc90",gridParentDir="./")
 
 Return a `MeshArray` map of tile indices for tile size `ni,nj`
 """
-function findtiles(ni::Int,nj::Int,grid="llc90")
+function findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
     mytiles = Dict()
-    if grid=="llc90"
-        mygrid=GridSpec("LLC90")
-        GridVariables=GridLoad(mygrid)
-    else
-        println("Unsupported grid option")
-    end
+
+    GridVariables=GridLoad(mygrid)
+
     mytiles["nFaces"]=mygrid.nFaces;
     #mytiles.fileFormat=mygrid.fileFormat;
     mytiles["ioSize"]=mygrid.ioSize;
@@ -195,3 +193,6 @@ function findtiles(ni::Int,nj::Int,grid="llc90")
     return mytiles
 
 end
+
+findtiles(ni::Int,nj::Int,grid::String="llc90",gridParentDir="./") = findtiles(ni,nj,GridSpec(grid,gridParentDir))
+
