@@ -266,10 +266,3 @@ function nFacesEtc(a::gcmarray)
   ndims(a.f)>2 ? n4=size(a.f,3) : n4=1
   return nFaces, n3, n4
 end
-
-"""
-    fijind(A::gcmarray,ij::Int)
-
-Compute face and local indices (f,j,k?) from global index (ij?).
-"""
-#missing functionality
