@@ -386,8 +386,6 @@ find_gcmsubset(::Any, rest) = find_gcmsubset(rest)
 # basic operations
 
 import Base: +, -, *, /, getindex
-import Base: isnan, isinf, isfinite
-import Base: maximum, minimum, sum, fill
 
 function +(a::gcmfaces)
   c=similar(a)
@@ -502,67 +500,6 @@ function /(a::gcmfaces,b::Number)
     c.f[iFace]=a.f[iFace]./b;
   end
   return c
-end
-
-##
-
-function isnan(a::gcmfaces)
-    c=similar(a);
-    for iFace=1:a.grid.nFaces
-      c.f[iFace]=isnan.(a.f[iFace]);
-    end
-    return c
-end
-
-function isinf(a::gcmfaces)
-    c=similar(a);
-    for iFace=1:a.grid.nFaces
-      c.f[iFace]=isinf.(a.f[iFace]);
-    end
-    return c
-end
-
-function isfinite(a::gcmfaces)
-    c=similar(a);
-    for iFace=1:a.grid.nFaces
-      c.f[iFace]=isfinite.(a.f[iFace]);
-    end
-    return c
-end
-
-function sum(a::gcmfaces)
-    c=0.0;
-    for iFace=1:a.grid.nFaces
-      tmp1=a.f[iFace];
-      c=c+sum(tmp1);
-    end
-    return c
-end
-
-function maximum(a::gcmfaces)
-    c=-Inf;
-    for iFace=1:a.grid.nFaces
-      tmp1=a.f[iFace];
-      c=max(c,maximum(tmp1));
-    end
-    return c
-end
-
-function minimum(a::gcmfaces)
-    c=Inf;
-    for iFace=1:a.grid.nFaces
-      tmp1=a.f[iFace];
-      c=min(c,minimum(tmp1));
-    end
-    return c
-end
-
-function fill(val::Any,a::gcmfaces)
-    c=similar(a);
-    for iFace=1:a.grid.nFaces
-      c.f[iFace]=fill(val,fsize(a,iFace));
-    end
-    return c
 end
 
 ###
