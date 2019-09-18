@@ -255,88 +255,6 @@ end
 
 ###
 
-import Base: +, -, *, /
-import Base: isnan, isinf, isfinite
-import Base: maximum, minimum, sum, fill, fill!
-
-#+(a::gcmarray,b::gcmarray) = a.+b
-function +(a::gcmarray,b::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = a[I] + b[I]
-  end
-  return c
-end
-
-function -(a::gcmarray,b::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = a[I] - b[I]
-  end
-  return c
-end
-
-function /(a::gcmarray,b::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = a[I] ./ b[I]
-  end
-  return c
-end
-
-function *(a::gcmarray,b::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = a[I] .* b[I]
-  end
-  return c
-end
-
-isnan(a::gcmarray) = isnan.(a)
-isinf(a::gcmarray) = isinf.(a)
-isfinite(a::gcmarray) = isfinite.(a)
-
-function maximum(a::gcmarray)
-  c=-Inf;
-  for I in eachindex(a)
-    c = max(c,maximum(a[I]))
-  end
-  return c
-end
-
-function minimum(a::gcmarray)
-  c=-Inf;
-  for I in eachindex(a)
-    c = min(c,minimum(a[I]))
-  end
-  return c
-end
-
-function sum(a::gcmarray)
-  c=0.0
-  for I in eachindex(a)
-    c = c + sum(a[I])
-  end
-  return c
-end
-
-function fill(val::Any,a::gcmarray)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = fill(val,size(a[I]))
-  end
-  return c
-end
-
-function fill!(a::gcmarray,val::Any)
-  for I in eachindex(a)
-    fill!(a[I],val)
-  end
-  return a
-end
-
-###
-
 """
     nFacesEtc(a::gcmarray)
 
@@ -348,10 +266,3 @@ function nFacesEtc(a::gcmarray)
   ndims(a.f)>2 ? n4=size(a.f,3) : n4=1
   return nFaces, n3, n4
 end
-
-"""
-    fijind(A::gcmarray,ij::Int)
-
-Compute face and local indices (f,j,k?) from global index (ij?).
-"""
-#missing functionality

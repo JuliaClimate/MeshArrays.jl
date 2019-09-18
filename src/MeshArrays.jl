@@ -12,7 +12,7 @@ include("Demos.jl");
 export AbstractMeshArray, MeshArray, gcmgrid
 export exchange, gradient, convergence, smooth, mask
 export GridSpec, GridLoad, GridOfOnes
-export nFacesEtc, fijind, findtiles, LatitudeCircles, ThroughFlow
+export findtiles, LatitudeCircles, ThroughFlow
 #The following exch_UV differs from normal exchange; incl. exch_UV_N.
 export exch_UV
 

@@ -14,7 +14,7 @@ for nTopo=1:3
     Rini= 0.; Rend= 0.;
     (Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2(GridVariables);
     @test isa(Rend,MeshArray)
-    @test sum(isfinite(Rend)) == Npt
+    @test sum(isfinite.(Rend)) == Npt
     Sini=sqrt(sum(Rini*Rini)/(Npt-1.0))
     Send=sqrt(sum(Rend*Rend)/(Npt-1.0))
     #println([Sini Send])

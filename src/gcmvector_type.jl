@@ -22,8 +22,7 @@ end
 
 ## Customize standard functions
 
-import Base: findall, size, show, getindex, setindex!
-import Base: copyto!, fill, fill!
+import Base: findall, size, show, getindex, setindex!, copyto!
 
 Base.size(A::gcmvector) = size(A.f)
 Base.size(A::gcmvector, dim::Integer) = size(A)[dim]
@@ -56,21 +55,6 @@ end
 function Base.view(A::gcmvector{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
   tmpf=view(A.f,I...)
   return gcmvector{eltype(A),ndims(tmpf)}(A.grid,tmpf,A.fSize,A.fIndex)
-end
-
-function fill(val::Any,a::gcmvector)
-  c=similar(a)
-  for I in eachindex(a)
-    c[I] = fill(val,size(a[I]))
-  end
-  return c
-end
-
-function fill!(a::gcmvector,val::Any)
-  for I in eachindex(a)
-    fill!(a[I],val)
-  end
-  return a
 end
 
 ## Customize broadcasting
