@@ -8,11 +8,13 @@ include("Operations.jl");
 include("Exchanges.jl");
 include("ReadWrite.jl");
 include("Demos.jl");
+include("Solvers.jl");
 
 export AbstractMeshArray, MeshArray, gcmgrid
 export exchange, gradient, convergence, smooth, mask
 export GridSpec, GridLoad, GridOfOnes
 export findtiles, LatitudeCircles, ThroughFlow
+export ScalarPotential, VectorPotential
 #The following exch_UV differs from normal exchange; incl. exch_UV_N.
 export exch_UV
 
