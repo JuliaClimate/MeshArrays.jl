@@ -83,3 +83,13 @@ The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Ju
 
 Standard oceanography examples are also provided in [MeshArrayNotebooks](https://github.com/gaelforget/JuliaCon2018Notebooks.git) (e.g., `04_transports.ipynb`) and / or in `MeshArrays.jl` (e.g., `demo3`).
 
+A simple way to plot a `MeshArray` consists in plotting each elementary array separately (see below). Other methods that e.g. produce global maps and projections are illustrated in the notebooks. 
+
+```
+p=dirname(pathof(MeshArrays));
+using Plots; include(joinpath(p,"Plots.jl"));
+heatmap(D,title="Ocean Depth",clims=(0.,6000.))
+```
+
+![alt-text-1](../images/ocean_depth.png "Earth Model Grid Types")
+

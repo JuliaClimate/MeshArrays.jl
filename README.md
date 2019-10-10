@@ -21,7 +21,7 @@ Pkg.test("MeshArrays")
 
 ### Use example
 
-Let's integrate a diffusion equation over the surface of a cube:
+Let's integrate a diffusion equation over the surface of a simple cube. Starting from noisy `DemoVariables[1]`, this example produces smooth `DemoVariables[2]` as depicted below.
 
 ```
 using MeshArrays; p=dirname(pathof(MeshArrays));
@@ -30,11 +30,14 @@ GridVariables=GridOfOnes("cs",6,100)
 DemoVariables=MeshArrays.demo2(GridVariables)
 
 using Plots; include(joinpath(p,"Plots.jl"));
-heatmap(DemoVariables[2],clims=(-0.5,0.5))
+heatmap(DemoVariables[1],title="initial noise",clims=(-0.5,0.5))
+heatmap(DemoVariables[2],title="smoothed noise",clims=(-0.5,0.5))
 ```
 
-Starting from a noisy `DemoVariables[1]`, this leads to a smoothed `DemoVariables[2]`.
+Initial noise example           |  Smoothed noide example
+:------------------------------:|:---------------------------------:
+![](docs/images/noise_raw.png)  |  ![](docs/images/noise_smooth.png)
 
 ### Notebooks
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [MeshArrayNotebooks repo](https://github.com/gaelforget/MeshArrayNotebooks.git). Other included notebooks illustrate for example how `MeshArrays.smooth` is used for unit testing purposes (`demo_smooth.ipynb`) or how `MeshArrays.jl` allows for computations of Ocean transports (`demo_trsp.ipynb`). All `MeshArrayNotebooks` can readily be used in the cloud via `binder`.
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [MeshArrayNotebooks repo](https://github.com/gaelforget/MeshArrayNotebooks.git). Other notebooks were later included to e.g. illustrate how the diffusion problem is used for unit testing purposes, or show how `MeshArrays` can readily be used to analyze and plot Earth System Models. All notebooks can readily be used in the cloud via `binder`.
