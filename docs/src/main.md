@@ -91,5 +91,4 @@ using Plots; include(joinpath(p,"Plots.jl"));
 heatmap(D,title="Ocean Depth",clims=(0.,6000.))
 ```
 
-<img src="https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/ocean_depth.png" title="Split Ocean Depth" align="middle" width="50%"/>
-
+![Split Ocean Depth](../images/ocean_depth.png)
