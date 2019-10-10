@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Main · MeshArrays</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MeshArrays</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li class="current"><a class="toctext" href>Main</a><ul class="internal"><li><a class="toctext" href="#Main-Features-1">Main Features</a></li></ul></li><li><a class="toctext" href="../detail/">Detail</a></li><li><a class="toctext" href="../API/">API</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Main</a></li></ul><a class="edit-page" href="https://github.com/gaelforget/MeshArrays.jl/blob/master/docs/src/main.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Main</span><a class="fa fa-bars" href="#"></a></div></header><h2><a class="nav-anchor" id="Main-Features-1" href="#Main-Features-1">Main Features</a></h2><p>An instance of the <code>MeshArray</code> type has arrays as elements. Elementary arrays within a <code>MeshArray</code> may represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified <code>gcmgrid</code> which is embeded in <code>MeshArray</code> instances. <code>Exchange</code> methods transfer data between neighboring arrays to extend computational subdomains – this is often needed in analyses of climate or ocean model output.</p><p>The current default for <code>MeshArray</code> is the <code>gcmarray</code> type and an instance <code>H</code> is shown below. This example is based on a grid known as <code>LLC90</code> where each global map is associated with 5 subdomains. Hence, <code>H.f</code> is a <code>(5, 50)</code> array when <code>H</code> represents a gridded variable on <code>50</code> depth levels, and elements of  <code>H.f</code> are arrays of size <code>(90, 270)</code>, <code>(90, 90)</code>, or <code>(270, 90)</code>. </p><pre><code class="language-none">julia&gt; show(D)
+ gcmarray 
+  grid type   = llc
+  data type   = Float64
+  tile array  = (5, 50)
+  tile sizes  = (90, 270)
+                (90, 270)
+                (90, 90)
+                (270, 90)
+                (270, 90)</code></pre><p>The underlying, <code>MeshArray</code>, data structure is:</p><pre><code class="language-none">struct gcmarray{T, N} &lt;: AbstractMeshArray{T, N}
+   grid::gcmgrid
+   f::Array{Array{T,2},N}
+   fSize::Array{NTuple{2, Int}}
+   fIndex::Array{Int,1}
+end</code></pre><p>A <code>MeshArray</code> generally behaves just like an <code>Array</code> including for operations listed below. The <em>broadcasting</em> function has been customized so that it reaches elements of each elementary array.</p><pre><code class="language-none">size(D)
+eltype(D)
+view(D,:)
+
+D .* 1.0
+D .* D
+1000*D
+D*1000
+
+D[findall(D .&gt; 300.)] .= NaN
+D[findall(D .&lt; 1.)] .= NaN
+
+D[1]=0.0 .+ D[1]
+tmp=cos.(D)</code></pre><p>In addition, <code>Mesharray</code> specific functions like <code>exchange</code> cano alter the internal structure of a <code>MeshArray</code>. Elementary array sizes are thus larger in <code>show(exchange(D))</code> than <code>show(D)</code>.</p><pre><code class="language-none">julia&gt; show(exchange(D))
+gcmarray 
+  grid type   = llc
+  data type   = Float64
+  tile array  = (5,)
+  tile sizes  = (92, 272)
+                (92, 272)
+                (92, 92)
+                (272, 92)
+                (272, 92)</code></pre><p>A <code>MeshArray</code> includes a <code>gcmgrid</code> specification which can be constructed as outlined below.</p><pre><code class="language-none">gcmgrid(path::String, class::String, nFaces::Int,
+        fSize::Array{NTuple{2, Int},1}, ioSize::Array{Int64,2},
+        ioPrec::Type, read::Function, write::Function)</code></pre><p>Each <code>gcmgrid</code> includes a pair of <code>read</code> / <code>write</code> methods that allow for basic <code>I/O</code> that is typically specified by the user when the provided defaults are not adequate. </p><p>An important aspect is that <code>gcmgrid</code> does not contain any actual grid variable – hence its memory footprint is minimal. Grid variables are instead <code>read</code> only when needed e.g. as shown below.</p><pre><code class="language-none">grid=GridSpec(&quot;LLC90&quot;)
+D=grid.read(grid.path*&quot;Depth.data&quot;,MeshArray(grid,Float64))</code></pre><p>The <a href="https://youtu.be/RDxAy_zSUvg">JuliaCon-2018 presentation</a> relied on two <code>Jupyter</code> notebooks that are available in the <a href="https://github.com/gaelforget/JuliaCon2018Notebooks.git">MeshArrayNotebooks repo</a>. <code>MeshArrays.demo1</code> and <code>MeshArrays.demo2</code> are very similar. </p><p>Standard oceanography examples are also provided in <a href="https://github.com/gaelforget/JuliaCon2018Notebooks.git">MeshArrayNotebooks</a> (e.g., <code>04_transports.ipynb</code>) and / or in <code>MeshArrays.jl</code> (e.g., <code>demo3</code>).</p><p>A simple way to plot a <code>MeshArray</code> consists in plotting each elementary array separately (see below). Other methods that e.g. produce global maps and projections are illustrated in the notebooks. </p><pre><code class="language-none">p=dirname(pathof(MeshArrays));
+using Plots; include(joinpath(p,&quot;Plots.jl&quot;));
+heatmap(D,title=&quot;Ocean Depth&quot;,clims=(0.,6000.))</code></pre><p><img src="../images/ocean_depth.png &quot;Earth Model Grid Types&quot;" alt="alt-text-1"/></p><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../detail/"><span class="direction">Next</span><span class="title">Detail</span></a></footer></article></body></html>
