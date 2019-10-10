@@ -49,4 +49,4 @@ This grid has 5 subdomains of uneven sizes (`105300` grid points in total), vari
 
 ## Model Grid Examples
 
-![alt-text-1](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/sphere_all.pdf "Earth Model Grid Types")
+<img src="https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/sphere_all.pdf" title="Earth Model Grid Types" align="middle" width="50%"/>
