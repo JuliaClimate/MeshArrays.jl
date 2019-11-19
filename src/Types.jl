@@ -51,7 +51,7 @@ function maximum(a::AbstractMeshArray)
 end
 
 function minimum(a::AbstractMeshArray)
-  c=-Inf;
+  c=Inf;
   for I in eachindex(a)
     c = min(c,minimum(a[I]))
   end

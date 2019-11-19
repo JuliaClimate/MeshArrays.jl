@@ -35,6 +35,13 @@ elseif gridName=="LL360";
     ioSize=[360 160];
     facesSize=[(360, 160)]
     ioPrec=Float32;
+elseif gridName=="FLTXMPL";
+    grDir=gridParentDir*"flt_example/";
+    nFaces=4;
+    grTopo="dpdo";
+    ioSize=[80 42];
+    facesSize=[(40, 21), (40, 21), (40, 21), (40, 21)]
+    ioPrec=Float32;
 else;
     error("unknown gridName case");
 end;
@@ -112,7 +119,16 @@ function GridOfOnes(grTp,nF,nP)
     grDir=""
     grTopo=grTp
     nFaces=nF
-    ioSize=[nP nP*nF]
+    if grTopo=="llc"
+        ioSize=[nP nP*nF]
+    elseif grTopo=="cs"
+        ioSize=[nP nP*nF]
+    elseif grTopo=="ll"
+        ioSize=[nP nP]
+    elseif grTopo=="dpdo"
+        nFsqrt=Int(sqrt(nF))
+        ioSize=[nP*nFsqrt nP*nFsqrt]
+    end
     facesSize=Array{NTuple{2, Int},1}(undef,nFaces)
     facesSize[:].=[(nP,nP)]
     ioPrec=Float32
@@ -195,4 +211,3 @@ function findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
 end
 
 findtiles(ni::Int,nj::Int,grid::String="llc90",gridParentDir="./") = findtiles(ni,nj,GridSpec(grid,gridParentDir))
-
