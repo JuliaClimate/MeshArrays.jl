@@ -13,10 +13,13 @@ include("Solvers.jl");
 export AbstractMeshArray, MeshArray, gcmgrid
 export exchange, gradient, convergence, smooth, mask
 export GridSpec, GridLoad, GridOfOnes
-export findtiles, LatitudeCircles, ThroughFlow
+export TileMap, LatitudeCircles, ThroughFlow
 export ScalarPotential, VectorPotential
+
 #The following exch_UV differs from normal exchange; incl. exch_UV_N.
-export exch_UV
+#export exch_UV
+#The following is used in NCTiles.jl ... could TileMap be used instead?
+#export findtiles
 
 #The following codes add dependencies to Plots
 #using Plots; include(joinpath(dirname(pathof(MeshArrays)),"Plots.jl"));
