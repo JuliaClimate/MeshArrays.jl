@@ -189,9 +189,9 @@ function findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
 
     XC=GridVariables["XC"];
     YC=GridVariables["YC"];
-    XC11=copy(XC); YC11=copy(XC);
-    XCNINJ=copy(XC); YCNINJ=copy(XC);
-    iTile=copy(XC); jTile=copy(XC); tileNo=copy(XC);
+    XC11=similar(XC); YC11=similar(XC);
+    XCNINJ=similar(XC); YCNINJ=similar(XC);
+    iTile=similar(XC); jTile=similar(XC); tileNo=similar(XC);
     tileCount=0;
     for iF=1:XC11.grid.nFaces
         face_XC=XC.f[iF]; face_YC=YC.f[iF];
@@ -228,3 +228,57 @@ function findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
 end
 
 findtiles(ni::Int,nj::Int,GridName::String="llc90",GridParentDir="./") = findtiles(ni,nj,GridSpec(GridName,GridParentDir))
+
+
+"""
+    GridAddWS!(GridVariables::Dict)
+
+Compute XW, YW, XS, and YS (vector field locations) from XC, YC (tracer
+field locations) and add them to GridVariables.
+
+```
+GridVariables=GridLoad(GridSpec("LLC90"))
+GridAddWS!(GridVariables)
+```
+"""
+function GridAddWS!(GridVariables::Dict)
+
+    XC=exchange(GridVariables["XC"])
+    YC=exchange(GridVariables["YC"])
+    nFaces=XC.grid.nFaces
+    XW=NaN .* XC; YW=NaN .* YC; XS=NaN .* XC; YS=NaN .* YC;
+
+    for ff=1:nFaces
+        tmp1=XC[ff][1:end-2,2:end-1]
+        tmp2=XC[ff][2:end-1,2:end-1]
+        tmp2[tmp2.-tmp1.>180]=tmp2[tmp2.-tmp1.>180].-360;
+        tmp2[tmp1.-tmp2.>180]=tmp2[tmp1.-tmp2.>180].+360;
+        XW[ff]=(tmp1.+tmp2)./2;
+       #
+        tmp1=XC[ff][2:end-1,1:end-2]
+        tmp2=XC[ff][2:end-1,2:end-1]
+        tmp2[tmp2.-tmp1.>180]=tmp2[tmp2.-tmp1.>180].-360;
+        tmp2[tmp1.-tmp2.>180]=tmp2[tmp1.-tmp2.>180].+360;
+        XS[ff]=(tmp1.+tmp2)./2;
+       #
+        tmp1=YC[ff][1:end-2,2:end-1]
+        tmp2=YC[ff][2:end-1,2:end-1]
+        YW[ff]=(tmp1.+tmp2)./2;
+       #
+        tmp1=YC[ff][2:end-1,1:end-2]
+        tmp2=YC[ff][2:end-1,2:end-1]
+        YS[ff]=(tmp1.+tmp2)./2;
+    end;
+
+    Xmax=180; Xmin=-180;
+    XS[findall(XS.<Xmin)]=XS[findall(XS.<Xmin)].+360;
+    XS[findall(XS.>Xmax)]=XS[findall(XS.>Xmax)].-360;
+    XW[findall(XW.<Xmin)]=XW[findall(XW.<Xmin)].+360;
+    XW[findall(XW.>Xmax)]=XW[findall(XW.>Xmax)].-360;
+
+    GridVariables["XW"]=XW
+    GridVariables["XS"]=XS
+    GridVariables["YW"]=YW
+    GridVariables["YS"]=YS
+    return GridVariables
+end
