@@ -31,9 +31,9 @@ end
 
 ## concrete types and MeshArray alias:
 
-include("gcmfaces_type.jl");
-include("gcmarray_type.jl");
-include("gcmvector_type.jl");
+include("Type_gcmfaces.jl");
+include("Type_gcmarray.jl");
+include("Type_gcmvector.jl");
 
 #MeshArray=gcmfaces
 MeshArray=gcmarray
@@ -51,7 +51,7 @@ function maximum(a::AbstractMeshArray)
 end
 
 function minimum(a::AbstractMeshArray)
-  c=-Inf;
+  c=Inf;
   for I in eachindex(a)
     c = min(c,minimum(a[I]))
   end
