@@ -1,13 +1,13 @@
 # MeshArrays.jl
 
 
-[![Travis Build Status](https://travis-ci.org/gaelforget/MeshArrays.jl.svg?branch=master)](https://travis-ci.org/gaelforget/MeshArrays.jl)
-[![codecov](https://codecov.io/gh/gaelforget/GCMFaces.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gaelforget/GCMFaces.jl)
-[![Coverage Status](https://coveralls.io/repos/github/gaelforget/GCMFaces_jl/badge.svg?branch=master)](https://coveralls.io/github/gaelforget/GCMFaces_jl?branch=master)
+[![Travis Build Status](https://travis-ci.org/juliaclimate/MeshArrays.jl.svg?branch=master)](https://travis-ci.org/juliaclimate/MeshArrays.jl)
+[![codecov](https://codecov.io/gh/juliaclimate/MeshArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/juliaclimate/MeshArrays.jl)
+[![Coverage Status](https://coveralls.io/repos/github/juliaclimate/MeshArrays.jl/badge.svg?branch=master)](https://coveralls.io/github/juliaclimate/MeshArrays.jl?branch=master)
 
 [![DOI](https://zenodo.org/badge/143987632.svg)](https://zenodo.org/badge/latestdoi/143987632)
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://gaelforget.github.io/MeshArrays.jl/stable)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://gaelforget.github.io/MeshArrays.jl/dev)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/dev)
 
 `MeshArrays.jl` primarily defines composite types that embed inter-connected array collections and provides `exchange` functions that transfer data between connected arrays (see **Notebooks** below). It was originally introduced in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg). _Note:_ `MeshArrays.jl` is registered, documented, etc., but still regarded as a **preliminary implementation**.
 
