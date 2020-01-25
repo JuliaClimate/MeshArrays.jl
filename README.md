@@ -21,7 +21,7 @@ Pkg.test("MeshArrays")
 
 ### Use Examples
 
-Example below (1) generates a grid decomposition, (2) seeds random everywhere, (3) smoothes out the global map, and (4) plot subdomain arrays. The diffusion-based smoother illustrates how `MeshArray` computes partial derivatives over the global domain by transfering data between neighboring subdomains. 
+The example below (1) generates a grid decomposition, (2) seeds random noise everywhere, (3) smoothes out the noise, and (4) plots the (`outer`) array of subdomain (`inner`) arrays. The diffusion-based smoother illustrates how `MeshArrays.jl` computes partial derivatives over the whole domain by transfering data between neighboring subdomains. 
 
 ```
 using MeshArrays; p=dirname(pathof(MeshArrays))
@@ -40,13 +40,13 @@ Initial noise           |  Smoothed noise
 :------------------------------:|:---------------------------------:
 ![](docs/images/noise_raw_16tiles.png)  |  ![](docs/images/noise_smooth_16tiles.png)
 
-Here we used _16 subdomains_, with _40x40 grid points_ each, covering a _doubly periodic global domain_. However, `MeshArrays` readily supports more elaborate grid configurations that are commonly used in global models.
+Here we used _16 subdomains_, with _40x40 grid points_ each, covering a _doubly periodic global domain_. However, `MeshArrays` also readily supports elaborate grids commonly used in climate models.
 
 ![](docs/images/sphere_all.png)
 
 ### Jupyter Notebooks
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) corresponds to two of the [Jupyter notebooks](https://en.wikipedia.org/wiki/Project_Jupyter) found in the [GlobalOceanNotebooks repo](https://github.com/gaelforget/MeshArrayNotebooks.git) under `DataStructures/`. Other notebooks in this repo demonstrate how `MeshArrays` accurately computes ocean transport on native, cliamte model grids ([Arakawa C-grid](https://en.wikipedia.org/wiki/Arakawa_grids)). The [IndividualDisplacements.jl](https://github.com/gaelforget/IndividualDisplacements.jl) package in turn is able to compute trajectories (of plastic, plankton, etc) across the `C-grid configurations` supported in `MeshArrays`.
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) corresponds to two of the [Jupyter notebooks](https://en.wikipedia.org/wiki/Project_Jupyter) found in the [GlobalOceanNotebooks repo](https://github.com/gaelforget/MeshArrayNotebooks.git) under `DataStructures/`. Other notebooks in this repo demonstrate how `MeshArrays` accurately computes ocean transport on native, cliamte model grids ([Arakawa C-grid](https://en.wikipedia.org/wiki/Arakawa_grids)). The [IndividualDisplacements.jl](https://github.com/gaelforget/IndividualDisplacements.jl) package (see its `examples/`) can in turn compute trajectories of ocean plastic, plankton, etc over the C-grid configurations supported in `MeshArrays.jl`.
 
 
 
