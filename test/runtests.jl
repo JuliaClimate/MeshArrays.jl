@@ -1,6 +1,9 @@
 using Test
 using MeshArrays
 
+p=dirname(pathof(MeshArrays))
+include(joinpath(p,"../examples/Demos.jl"))
+
 @testset "MeshArrays tests:" begin
 for nTopo=1:3
     if nTopo==1; grTopo="cs"; nFaces=6; N=200;
@@ -12,7 +15,7 @@ for nTopo=1:3
     mygrid=GridVariables["XC"].grid
     @test mygrid.class == grTopo
     Rini= 0.; Rend= 0.;
-    (Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2(GridVariables);
+    (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables);
     @test isa(Rend,MeshArray)
     @test sum(isfinite.(Rend)) == Npt
     Sini=sqrt(sum(Rini*Rini)/(Npt-1.0))

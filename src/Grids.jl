@@ -173,64 +173,6 @@ function TileMap(mygrid::gcmgrid,ni::Int,nj::Int)
 end
 
 """
-    findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
-    findtiles(ni::Int,nj::Int,grid::String="llc90",GridParentDir="./")
-
-Return a `MeshArray` map of tile indices, `mytiles["tileNo"]`, for tile
-size `ni,nj` and extract grid variables accordingly.
-"""
-function findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
-    mytiles = Dict()
-
-    GridVariables=GridLoad(mygrid)
-
-    mytiles["nFaces"]=mygrid.nFaces;
-    mytiles["ioSize"]=mygrid.ioSize;
-
-    XC=GridVariables["XC"];
-    YC=GridVariables["YC"];
-    XC11=similar(XC); YC11=similar(XC);
-    XCNINJ=similar(XC); YCNINJ=similar(XC);
-    iTile=similar(XC); jTile=similar(XC); tileNo=similar(XC);
-    tileCount=0;
-    for iF=1:XC11.grid.nFaces
-        face_XC=XC.f[iF]; face_YC=YC.f[iF];
-        for jj=Int.(1:size(face_XC,2)/nj);
-            for ii=Int.(1:size(face_XC,1)/ni);
-                tileCount=tileCount+1;
-                tmp_i=(1:ni).+ni*(ii-1)
-                tmp_j=(1:nj).+nj*(jj-1)
-                tmp_XC=face_XC[tmp_i,tmp_j]
-                tmp_YC=face_YC[tmp_i,tmp_j]
-                XC11.f[iF][tmp_i,tmp_j].=tmp_XC[1,1]
-                YC11.f[iF][tmp_i,tmp_j].=tmp_YC[1,1]
-                XCNINJ.f[iF][tmp_i,tmp_j].=tmp_XC[end,end]
-                YCNINJ.f[iF][tmp_i,tmp_j].=tmp_YC[end,end]
-                iTile.f[iF][tmp_i,tmp_j]=collect(1:ni)*ones(Int,1,nj)
-                jTile.f[iF][tmp_i,tmp_j]=ones(Int,ni,1)*collect(1:nj)'
-                tileNo.f[iF][tmp_i,tmp_j]=tileCount*ones(Int,ni,nj)
-            end
-        end
-    end
-
-    mytiles["tileNo"] = tileNo;
-    mytiles["XC"] = XC;
-    mytiles["YC"] = YC;
-    mytiles["XC11"] = XC11;
-    mytiles["YC11"] = YC11;
-    mytiles["XCNINJ"] = XCNINJ;
-    mytiles["YCNINJ"] = YCNINJ;
-    mytiles["iTile"] = iTile;
-    mytiles["jTile"] = jTile;
-
-    return mytiles
-
-end
-
-findtiles(ni::Int,nj::Int,GridName::String="llc90",GridParentDir="./") = findtiles(ni,nj,GridSpec(GridName,GridParentDir))
-
-
-"""
     GridAddWS!(GridVariables::Dict)
 
 Compute XW, YW, XS, and YS (vector field locations) from XC, YC (tracer
