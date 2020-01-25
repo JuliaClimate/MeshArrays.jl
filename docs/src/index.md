@@ -2,9 +2,9 @@
 
 `MeshArrays.jl` mainly defines an array type that can contain / organize / distribute collections of inter-connected arrays as done in climate models (see `EarthGrids` plot below). The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. This setup allows different choices for the outer and inner arrays -- for example `DistributedArrays` and `AxisArrays`, respectively. `MeshArrays.jl` thus provides a simple but efficient and general solution to analyze and simulate climate system variables.
 
-The internals of a `MeshArray` are simply regulated by index ranges, array sizes, and inter-connections that are encoded in the `gcmgrid` struct. Such an approach is often useful in climate modeling which can involve advanced domain decompositions (see `EarthGrids` plot). The `exchange` methods readily transfer data between connected subdomains to allow for easy computaton of partial derivatives and related operators (e.g. gradients, curl, divergence) across subdomain edges though. This allows precise transport, budget, etc computations in climate models.
+The internals of a `MeshArray` are simply regulated by index ranges, array sizes, and inter-connections that are encoded in the `gcmgrid` struct. Such an approach is often useful in climate modeling which can involve advanced domain decompositions (see `EarthGrids` plot). The `exchange` methods, however, readily transfer data between connected subdomains to allow for easy computaton of partial derivatives and related operators (e.g. gradients, curl, divergence) across subdomain edges. This allows precise transport, budget, etc computations using climate model output.
 
-`MeshArrays.jl` was first introduced as as `gcmfaces.jl` in a [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg). [This notebook folder](https://github.com/gaelforget/GlobalOceanNotebooks.git) demonstrates how its data structures can be used to accurately analyze the General Ocean Circulation. Examples include computations of [ocean heat transport](https://doi.org/10.1038/s41561-019-0333-7) and streamfunctions that are impportant and widely studied aspects of the climate system.
+`MeshArrays.jl` was first introduced as as `gcmfaces.jl` in a [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg). This [notebook folder](https://github.com/gaelforget/GlobalOceanNotebooks.git) demonstrates how its data structures can be used to accurately analyze the General Ocean Circulation. Examples include computations of [ocean heat transport](https://doi.org/10.1038/s41561-019-0333-7) and streamfunctions that are important and widely studied aspects of the climate system.
 
 _Contents:_
 
@@ -21,13 +21,13 @@ Pkg.add("MeshArrays")
 Pkg.test("MeshArrays")
 ```
 
-`Julia`'s package manager is documented [here within docs.julialang.org](https://docs.julialang.org/en/stable/stdlib/Pkg/).
+`Julia`'s package manager, `Pkg.jl`, is documented the [main Julia doc](https://docs.julialang.org/en/v1/) and [here in details](https://julialang.github.io/Pkg.jl/v1/).
 
 ## Basic Examples
 
 Examples below (1) generate a grid configuration, (2) seed a 2D field of random noise, (3) smooth out this field, and (4) plot subdomain arrays. Smoothing is done via a lateral diffusion equation through time to illustrate how `MeshArray` computes partial derivatives & transfers data between neighboring subdomains. Examples 2 & 3 illustrate grid configurations commonly used in global models.
 
-**[A]** _16 subdomains_, with _40x40 grid points_ each, covering a _doubly periodic global domain_
+**[A]** _16 subdomains_, with _40x40 grid points_ each, covering a _doubly periodic domain_
 
 ```
 using MeshArrays; p=dirname(pathof(MeshArrays))
@@ -55,7 +55,7 @@ DemoVariables=MeshArrays.demo2(GridVariables)
 
 **[C]** Global Model Grid with _5 uneven subdomains_, _variable spacing_, & _continents_
 
-_This requires downloading a pre-defined [global ocean grid](http://www.geosci-model-dev.net/8/3071/2015/) from the [MITgcm](https://mitgcm.readthedocs.io/en/latest/) community._
+_This requires downloading a pre-defined [global ocean grid](http://www.geosci-model-dev.net/8/3071/2015/) from the [MITgcm community](https://mitgcm.readthedocs.io/en/latest/)._
 
 ```
 git clone https://github.com/gaelforget/GRID_LLC90

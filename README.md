@@ -40,7 +40,7 @@ Initial noise           |  Smoothed noise
 :------------------------------:|:---------------------------------:
 ![](docs/images/noise_raw_16tiles.png)  |  ![](docs/images/noise_smooth_16tiles.png)
 
-Here we used _16 subdomains_, with _40x40 grid points_ each, covering a _doubly periodic global domain_. However, `MeshArrays` also readily supports elaborate grids commonly used in climate models.
+Here we used _16 subdomains_, with _40x40 grid points_ each, covering a _doubly periodic domain_. However, `MeshArrays` also readily supports elaborate grids commonly used in climate models.
 
 ![](docs/images/sphere_all.png)
 
