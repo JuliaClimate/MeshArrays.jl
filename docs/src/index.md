@@ -1,10 +1,10 @@
 # MeshArrays.jl documentation
 
-`MeshArrays.jl` is a `Julia` package. It defines an Array type for collections of inter-connected arrays, and extends standard methods to readily operate on these `MeshArray`s. Its `exchange` methods transfer data between connected subdomains of the overall mesh. 
+`MeshArrays.jl` mainly defines an array type that can contain / organize / distribute collections of inter-connected arrays as done in climate models (see `EarthGrids` plot below). The `MeshArray` type is a sub-type `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. This setup allows different choices for the outer and inner arrays -- for example `DistributedArrays` and `AxisArrays`, respectively. `MeshArrays.jl` thus provides a simple but efficient and general solution to analyze and simulate climate system variables.
 
-The internals of a `MeshArray` instance are regulated by index ranges, array sizes, and inter-connections that are encoded as a `gcmgrid` struct. Such a computational framework is often useful in Earth System Modeling which can involve advanced domain decomposition methods (see below). 
+The internals of a `MeshArray` are simply regulated by index ranges, array sizes, and inter-connections that are encoded in the `gcmgrid` struct. Such an approach is often useful in climate modeling which can involve advanced domain decompositions (see `EarthGrids` plot). The `exchange` methods readily transfer data between connected subdomains to allow for easy computaton of partial derivatives and related operators (e.g. gradients, curl, divergence) across subdomain edges though. This allows precise transport, budget, etc computations in climate models.
 
-`MeshArrays.jl` aims to provide a simple but versatile and powerful solution to this end. It was first introduced in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) as `gcmfaces.jl` (see [this other repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git) for notebooks).
+`MeshArrays.jl` was first introduced as as `gcmfaces.jl` in a [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg). [This notebook folder](https://github.com/gaelforget/GlobalOceanNotebooks.git) demonstrates how its data structures can be used to accurately analyze the General Ocean Circulation. Examples include computations of [ocean heat transport](https://doi.org/10.1038/s41561-019-0333-7) and streamfunctions that are impportant and widely studied aspects of the climate system.
 
 _Contents:_
 
