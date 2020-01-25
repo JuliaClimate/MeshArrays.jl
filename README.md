@@ -9,9 +9,9 @@
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/dev)
 
-`MeshArrays.jl` primarily defines composite types that embed inter-connected array collections and provides `exchange` functions that transfer data between connected arrays (see **Notebooks** below). It was originally introduced in this [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg). _Note:_ `MeshArrays.jl` is registered, documented, etc., but still regarded as a **preliminary implementation**.
+`MeshArrays.jl` mainly defines an array type that can contain / organize / distribute collections of inter-connected arrays as done in climate models (see below & docs). It provides a simple but efficient and general solution to analyze and simulate climate system variables ([JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg)).
 
-### Installation
+### Installation & Test
 
 ```
 using Pkg
@@ -19,25 +19,34 @@ Pkg.add("MeshArrays")
 Pkg.test("MeshArrays")
 ```
 
-### Use example
+### Use Examples
 
-Let's integrate a diffusion equation over the surface of a simple cube. Starting from noisy `DemoVariables[1]`, this example produces smooth `DemoVariables[2]` as depicted below.
+Example below (1) generates a grid decomposition, (2) seeds random everywhere, (3) smoothes out the global map, and (4) plot subdomain arrays. The diffusion-based smoother illustrates how `MeshArray` computes partial derivatives over the global domain by transfering data between neighboring subdomains. 
 
 ```
-using MeshArrays; p=dirname(pathof(MeshArrays));
+using MeshArrays; p=dirname(pathof(MeshArrays))
+GridVariables=GridOfOnes("dpdo",16,20)
 
-GridVariables=GridOfOnes("cs",6,100)
-DemoVariables=MeshArrays.demo2(GridVariables)
+include(joinpath(p,"../examples/Demos.jl"))
+(in,out,_,_)=demo2(GridVariables);
+show(out)
 
-using Plots; include(joinpath(p,"Plots.jl"));
-heatmap(DemoVariables[1],title="initial noise",clims=(-0.5,0.5))
-heatmap(DemoVariables[2],title="smoothed noise",clims=(-0.5,0.5))
+using Plots; plotlyjs()
+include(joinpath(p,"../examples/Plots.jl"))
+heatmap(out,clims=(-0.25,0.25))
 ```
 
-Initial noise example           |  Smoothed noide example
+Initial noise           |  Smoothed noise 
 :------------------------------:|:---------------------------------:
-![](docs/images/noise_raw.png)  |  ![](docs/images/noise_smooth.png)
+![](docs/images/noise_raw_16tiles.png)  |  ![](docs/images/noise_smooth_16tiles.png)
 
-### Notebooks
+Here we used _16 subdomains_, with _40x40 grid points_ each, covering a _doubly periodic global domain_. However, `MeshArrays` readily supports more elaborate grid configurations that are commonly used in global models.
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter notebooks` that are available in the [MeshArrayNotebooks repo](https://github.com/gaelforget/MeshArrayNotebooks.git). Other notebooks were later included to e.g. illustrate how the diffusion problem is used for unit testing purposes, or show how `MeshArrays` can readily be used to analyze and plot Earth System Models. All notebooks can readily be used in the cloud via `binder`.
+![](docs/images/sphere_all.png)
+
+### Jupyter Notebooks
+
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) corresponds to two of the [Jupyter notebooks](https://en.wikipedia.org/wiki/Project_Jupyter) found in the [GlobalOceanNotebooks repo](https://github.com/gaelforget/MeshArrayNotebooks.git) under `DataStructures/`. Other notebooks in this repo demonstrate how `MeshArrays` accurately computes ocean transport on native, cliamte model grids ([Arakawa C-grid](https://en.wikipedia.org/wiki/Arakawa_grids)). The [IndividualDisplacements.jl](https://github.com/gaelforget/IndividualDisplacements.jl) package in turn is able to compute trajectories (of plastic, plankton, etc) across the `C-grid configurations` supported in `MeshArrays`.
+
+
+
