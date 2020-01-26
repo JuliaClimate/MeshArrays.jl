@@ -1,8 +1,8 @@
 # MeshArrays.jl documentation
 
-`MeshArrays.jl` mainly defines an array type that can contain / organize / distribute collections of inter-connected arrays as done in climate models (see `EarthGrids` plot below). The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. This setup allows different choices for the outer and inner arrays -- for example `DistributedArrays` and `AxisArrays`, respectively. `MeshArrays.jl` thus provides a simple but efficient and general solution to analyze and simulate climate system variables.
+`MeshArrays.jl` mainly defines an array type that can contain / organize / distribute collections of inter-connected arrays as done in climate models (see _Earth Model Grids_ below). The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. This setup allows different choices for the outer and inner arrays -- for example `DistributedArrays` and `AxisArrays`, respectively. `MeshArrays.jl` thus provides a simple but efficient and general solution to analyze and simulate climate system variables.
 
-The internals of a `MeshArray` are simply regulated by index ranges, array sizes, and inter-connections that are encoded in the `gcmgrid` struct. Such an approach is often useful in climate modeling which can involve advanced domain decompositions (see `EarthGrids` plot). The `exchange` methods, however, readily transfer data between connected subdomains to allow for easy computaton of partial derivatives and related operators (e.g. gradients, curl, divergence) across subdomain edges. This allows precise transport, budget, etc computations using climate model output.
+The internals of a `MeshArray` are simply regulated by index ranges, array sizes, and inter-connections that are encoded in the `gcmgrid` struct. Such an approach is often useful in climate modeling which can involve advanced domain decompositions (see _Earth Model Grids_). The `exchange` methods, however, readily transfer data between connected subdomains to allow for easy computaton of partial derivatives and related operators (e.g. gradients, curl, divergence) across subdomain edges. This allows precise transport, budget, etc computations using climate model output.
 
 `MeshArrays.jl` was first introduced as as `gcmfaces.jl` in a [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg). This [notebook folder](https://github.com/gaelforget/GlobalOceanNotebooks.git) demonstrates how its data structures can be used to accurately analyze the General Ocean Circulation. Examples include computations of [ocean heat transport](https://doi.org/10.1038/s41561-019-0333-7) and streamfunctions that are important and widely studied aspects of the climate system.
 
@@ -42,7 +42,7 @@ include(joinpath(p,"../examples/Plots.jl"))
 heatmap(out,clims=(-0.25,0.25))
 ```
 
-Grid scale noise           |  Smoothed noise 
+Grid scale noise           |  Smoothed noise
 :------------------------------:|:---------------------------------:
 ![raw](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/noise_raw_16tiles.png)  |  ![smooth](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/noise_smooth_16tiles.png)
 
@@ -68,4 +68,4 @@ heatmap(out,clims=(-0.25,0.25))
 
 ## Earth Model Grids
 
-![EarthGrids](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/sphere_all.png)
+-![EarthGrids](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/sphere_all.png)
