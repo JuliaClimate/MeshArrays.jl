@@ -25,7 +25,7 @@ The example below (1) generates a grid decomposition, (2) seeds random noise eve
 
 ```
 using MeshArrays; p=dirname(pathof(MeshArrays))
-GridVariables=GridOfOnes("dpdo",16,20)
+GridVariables=GridOfOnes("PeriodicDomain",16,20)
 
 include(joinpath(p,"../examples/Demos.jl"))
 (in,out,_,_)=demo2(GridVariables);

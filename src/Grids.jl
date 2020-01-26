@@ -1,50 +1,48 @@
 
 ## GridSpec function with default GridName argument:
 
-GridSpec() = GridSpec("LLC90")
+GridSpec() = GridSpec("LatLonCap","GRID_LLC90/")
 
 ## GridSpec function with GridName argument:
 
 """
-    GridSpec(GridName)
+    GridSpec(GridName,GridParentDir="./")
 
 Return a `gmcgrid` specification that provides grid files `path`,
 `class`, `nFaces`, `ioSize`, `facesSize`, `ioPrec`, & a `read` function
-(not yet) using hard-coded values for `"LLC90"`, `"CS32"`, `"LL360"` (for now).
+(not yet) using hard-coded values for `"PeriodicDomain"`, `"PeriodicChanel"`,
+`"CubeSphere"`, and `"LatLonCap" for now.
 """
 function GridSpec(GridName,GridParentDir="./")
 
-if GridName=="LLC90";
-    grDir=GridParentDir*"GRID_LLC90/";
-    nFaces=5;
-    grTopo="llc";
-    ioSize=[90 1170];
+grDir=GridParentDir
+if GridName=="LatLonCap"
+    nFaces=5
+    grTopo="LatLonCap"
+    ioSize=[90 1170]
     facesSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
-    ioPrec=Float64;
-elseif GridName=="CS32";
-    grDir=GridParentDir*"GRID_CS32/";
-    nFaces=6;
-    grTopo="cs";
-    ioSize=[32 192];
+    ioPrec=Float64
+elseif GridName=="CubeSphere"
+    nFaces=6
+    grTopo="CubeSphere"
+    ioSize=[32 192]
     facesSize=[(32, 32), (32, 32), (32, 32), (32, 32), (32, 32), (32, 32)]
-    ioPrec=Float32;
-elseif GridName=="LL360";
-    grDir=GridParentDir*"GRID_LL360/";
-    nFaces=1;
-    grTopo="ll";
-    ioSize=[360 160];
+    ioPrec=Float32
+elseif GridName=="PeriodicChannel"
+    nFaces=1
+    grTopo="PeriodicChannel"
+    ioSize=[360 160]
     facesSize=[(360, 160)]
-    ioPrec=Float32;
-elseif GridName=="FLTXMPL";
-    grDir=GridParentDir*"flt_example/";
-    nFaces=4;
-    grTopo="dpdo";
-    ioSize=[80 42];
+    ioPrec=Float32
+elseif GridName=="PeriodicDomain"
+    nFaces=4
+    grTopo="PeriodicDomain"
+    ioSize=[80 42]
     facesSize=[(40, 21), (40, 21), (40, 21), (40, 21)]
-    ioPrec=Float32;
-else;
-    error("unknown GridName case");
-end;
+    ioPrec=Float32
+else
+    error("unknown GridName case")
+end
 
 mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
@@ -119,13 +117,13 @@ function GridOfOnes(grTp,nF,nP)
     grDir=""
     grTopo=grTp
     nFaces=nF
-    if grTopo=="llc"
+    if grTopo=="LatLonCap"
         ioSize=[nP nP*nF]
-    elseif grTopo=="cs"
+    elseif grTopo=="CubeSphere"
         ioSize=[nP nP*nF]
-    elseif grTopo=="ll"
+    elseif grTopo=="PeriodicChanel"
         ioSize=[nP nP]
-    elseif grTopo=="dpdo"
+    elseif grTopo=="PeriodicDomain"
         nFsqrt=Int(sqrt(nF))
         ioSize=[nP*nFsqrt nP*nFsqrt]
     end
@@ -179,7 +177,7 @@ Compute XW, YW, XS, and YS (vector field locations) from XC, YC (tracer
 field locations) and add them to GridVariables.
 
 ```
-GridVariables=GridLoad(GridSpec("LLC90"))
+GridVariables=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
 GridAddWS!(GridVariables)
 ```
 """

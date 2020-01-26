@@ -2,12 +2,12 @@
 
 An instance of the `MeshArray` type has arrays as elements. Elementary arrays within a `MeshArray` may represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified `gcmgrid` which is embeded in `MeshArray` instances. `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output.
 
-The current default for `MeshArray` is the `gcmarray` type and an instance `H` is shown below. This example is based on a grid known as `LLC90` where each global map is associated with 5 subdomains. Hence, `H.f` is a `(5, 50)` array when `H` represents a gridded variable on `50` depth levels, and elements of  `H.f` are arrays of size `(90, 270)`, `(90, 90)`, or `(270, 90)`. 
+The current default for `MeshArray` is the `gcmarray` type and an instance `H` is shown below. This example is based on a grid known as `LatLonCap` where each global map is associated with 5 subdomains. Hence, `H.f` is a `(5, 50)` array when `H` represents a gridded variable on `50` depth levels, and elements of  `H.f` are arrays of size `(90, 270)`, `(90, 90)`, or `(270, 90)`. 
 
 ```
 julia> show(D)
  gcmarray 
-  grid type   = llc
+  grid type   = LatLonCap
   data type   = Float64
   tile array  = (5, 50)
   tile sizes  = (90, 270)
@@ -52,7 +52,7 @@ In addition, `Mesharray` specific functions like `exchange` cano alter the inter
 ```
 julia> show(exchange(D))
 gcmarray 
-  grid type   = llc
+  grid type   = LatLonCap
   data type   = Float64
   tile array  = (5,)
   tile sizes  = (92, 272)
@@ -75,11 +75,11 @@ Each `gcmgrid` includes a pair of `read` / `write` methods that allow for basic 
 An important aspect is that `gcmgrid` does not contain any actual grid variable -- hence its memory footprint is minimal. Grid variables are instead `read` only when needed e.g. as shown below.
 
 ```
-grid=GridSpec("LLC90")
+grid=GridSpec("LatLonCap","GRID_LLC90/")
 D=grid.read(grid.path*"Depth.data",MeshArray(grid,Float64))
 ```
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter` notebooks that are available in the [MeshArrayNotebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git). `MeshArrays.demo1` and `MeshArrays.demo2` are very similar. 
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter` notebooks that are available in the [MeshArrayNotebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git). `demo1` and `demo2` are very similar. 
 
 Standard oceanography examples are also provided in [MeshArrayNotebooks](https://github.com/gaelforget/JuliaCon2018Notebooks.git) (e.g., `04_transports.ipynb`) and / or in `MeshArrays.jl` (e.g., `demo3`).
 

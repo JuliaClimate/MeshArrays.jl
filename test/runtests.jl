@@ -6,9 +6,9 @@ include(joinpath(p,"../examples/Demos.jl"))
 
 @testset "MeshArrays tests:" begin
 for nTopo=1:3
-    if nTopo==1; grTopo="cs"; nFaces=6; N=200;
-    elseif nTopo==2; grTopo="llc"; nFaces=5; N=200;
-    elseif nTopo==3; grTopo="ll"; nFaces=1; N=500;
+    if nTopo==1; grTopo="CubeSphere"; nFaces=6; N=200;
+    elseif nTopo==2; grTopo="LatLonCap"; nFaces=5; N=200;
+    elseif nTopo==3; grTopo="PeriodicChanel"; nFaces=1; N=500;
     end;
     Npt=nFaces*N*N
     GridVariables=GridOfOnes(grTopo,nFaces,N)

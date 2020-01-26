@@ -31,17 +31,17 @@ end
 
 ## dispatch over grid types
 
-#note: the "cs" implementation covers both cs and llc
+#note: the "CubeSphere" implementation covers both cs and llc
 
 function exch_T_N(fld,N)
 
-if fld.grid.class=="llc"
+if fld.grid.class=="LatLonCap"
   FLD=exch_T_N_cs(fld,N)
-elseif fld.grid.class=="cs"
+elseif fld.grid.class=="CubeSphere"
   FLD=exch_T_N_cs(fld,N)
-elseif fld.grid.class=="ll"
+elseif fld.grid.class=="PeriodicChanel"
   FLD=exch_T_N_ll(fld,N)
-elseif fld.grid.class=="dpdo"
+elseif fld.grid.class=="PeriodicDomain"
   FLD=exch_T_N_dpdo(fld,N)
 else
   error("unknown grTopo case")
@@ -53,13 +53,13 @@ end
 
 function exch_UV_N(u,v,N)
 
-if u.grid.class=="llc"
+if u.grid.class=="LatLonCap"
   (uex,vex)=exch_UV_N_cs(u,v,N)
-elseif u.grid.class=="cs"
+elseif u.grid.class=="CubeSphere"
   (uex,vex)=exch_UV_N_cs(u,v,N)
-elseif u.grid.class=="ll"
+elseif u.grid.class=="PeriodicChanel"
   (uex,vex)=exch_UV_N_ll(u,v,N)
-elseif u.grid.class=="dpdo"
+elseif u.grid.class=="PeriodicDomain"
   (uex,vex)=exch_UV_N_dpdo(u,v,N)
 else
   error("unknown grTopo case")
@@ -71,13 +71,13 @@ end
 
 function exch_UV(u,v)
 
-if u.grid.class=="llc"
+if u.grid.class=="LatLonCap"
   (uex,vex)=exch_UV_cs(u,v)
-elseif u.grid.class=="cs"
+elseif u.grid.class=="CubeSphere"
   (uex,vex)=exch_UV_cs(u,v)
-elseif u.grid.class=="ll"
+elseif u.grid.class=="PeriodicChanel"
   (uex,vex)=exch_UV_ll(u,v)
-elseif u.grid.class=="dpdo"
+elseif u.grid.class=="PeriodicDomain"
   (uex,vex)=exch_UV_dpdo(u,v)
 else
   error("unknown grTopo case")
@@ -87,7 +87,7 @@ return uex,vex
 
 end
 
-## Grid-specific implementations: ll grid case
+## Grid-specific implementations: PeriodicDomain case
 
 function exch_T_N_dpdo(fld::MeshArray,N::Integer)
 
@@ -187,7 +187,7 @@ return FLDU,FLDV
 
 end
 
-## Grid-specific implementations: ll grid case
+## Grid-specific implementations: PeriodicChanel case
 
 function exch_T_N_ll(fld::MeshArray,N::Integer)
 
@@ -249,9 +249,9 @@ return FLDU,FLDV
 
 end
 
-## Grid-specific implementations: cs & llc grid case
+## Grid-specific implementations: CubeSphere & LatLonCap case
 
-#note: the "cs" implementation covers both cs and llc
+#note: the "CubeSphere" implementation covers both cs and llc
 
 function exch_T_N_cs(fld::MeshArray,N::Integer)
 

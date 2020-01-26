@@ -10,12 +10,12 @@ etc.). Call sequence:
 ```
 !isdir("GRID_LLC90") ? error("missing files") : nothing
 
-(D,Dexch,Darr,DD)=MeshArrays.demo1("LLC90");
+(D,Dexch,Darr,DD)=demo1("LatLonCap","GRID_LLC90/");
 ```
 """
-function demo1(gridChoice::String)
+function demo1(gridChoice::String,GridParentDir="./")
 
-    mygrid=GridSpec(gridChoice)
+    mygrid=GridSpec(gridChoice,GridParentDir)
 
     D=mygrid.read(mygrid.path*"Depth.data",MeshArray(mygrid,mygrid.ioPrec))
 
@@ -68,10 +68,10 @@ end
 Demonstrate higher level functions using `smooth`. Call sequence:
 
 ```
-(Rini,Rend,DXCsm,DYCsm)=MeshArrays.demo2();
+(Rini,Rend,DXCsm,DYCsm)=demo2();
 
-using Plots; plotlyjs()
-include(joinpath(dirname(pathof(MeshArrays)),"Plots.jl"))
+using Plots
+include(joinpath(dirname(pathof(MeshArrays)),"../examples/Plots.jl"))
 heatmap(Rend,title="smoothed noise",clims=(-0.5,0.5))
 heatmap(Rini,title="raw noise",clims=(-0.5,0.5))
 
@@ -82,7 +82,7 @@ heatmap(Rini,title="raw noise",clims=(-0.5,0.5))
 function demo2()
 
     #Pre-requisite: either load predefined grid using `demo1` or call `GridOfOnes`
-    isdir("GRID_LLC90") ? GridVariables=GridLoad(GridSpec("LLC90")) : GridVariables=GridOfOnes("cs",6,100)
+    isdir("GRID_LLC90") ? GridVariables=GridLoad(GridSpec("LatLonCap","GRID_LLC90/")) : GridVariables=GridOfOnes("CubeSphere",6,100)
 
     (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables)
 end
@@ -125,18 +125,18 @@ end
 Demonstrate ocean transport computations. Call sequence:
 
 ```
-(UV,LC,Tr)=MeshArrays.demo3();
+(UV,LC,Tr)=demo3();
 using Plots; plot(Tr/1e6,title="meridional transport")
 
-using Plots; plotlyjs()
-include(joinpath(dirname(pathof(MeshArrays)),"Plots.jl"))
-heatmap(UV["U"],title="U comp.",clims=(-1e7,1e7))
-heatmap(UV["V"],title="V comp.",clims=(-1e7,1e7))
+using Plots
+include(joinpath(dirname(pathof(MeshArrays)),"../examples/Plots.jl"))
+heatmap(1e-6*UV["U"],title="U comp. in Sv",clims=(-10,10))
+heatmap(1e-6*UV["V"],title="V comp. in Sv",clims=(-10,10))
 ```
 """
 function demo3()
 
-    mygrid=GridSpec("LLC90")
+    mygrid=GridSpec("LatLonCap","GRID_LLC90/")
     GridVariables=GridLoad(mygrid)
 
     TrspX=mygrid.read(mygrid.path*"TrspX.bin",MeshArray(mygrid,Float32))

@@ -31,7 +31,7 @@ Examples below (1) generate a grid configuration, (2) seed a 2D field of random 
 
 ```
 using MeshArrays; p=dirname(pathof(MeshArrays))
-GridVariables=GridOfOnes("dpdo",16,20)
+GridVariables=GridOfOnes("PeriodicDomain",16,20)
 
 include(joinpath(p,"../examples/Demos.jl"))
 (in,out,_,_)=demo2(GridVariables);
@@ -49,8 +49,8 @@ Grid scale noise           |  Smoothed noise
 **[B]** _6 subdomains_, with _100x100 points_ each, covering the _six faces of a cube_
 
 ```
-GridVariables=GridOfOnes("cs",6,100)
-DemoVariables=MeshArrays.demo2(GridVariables)
+GridVariables=GridOfOnes("CubeSphere",6,100)
+DemoVariables=demo2(GridVariables)
 ```
 
 **[C]** Global Model Grid with _5 uneven subdomains_, _variable spacing_, & _continents_
@@ -59,10 +59,10 @@ _This requires downloading a pre-defined [global ocean grid](http://www.geosci-m
 
 ```
 git clone https://github.com/gaelforget/GRID_LLC90
-GridVariables=GridLoad(GridSpec("LLC90"))
+GridVariables=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
 show(GridVariables["Depth"])
 
-DemoVariables=MeshArrays.demo2(GridVariables)
+DemoVariables=demo2(GridVariables)
 heatmap(out,clims=(-0.25,0.25))
 ```
 
