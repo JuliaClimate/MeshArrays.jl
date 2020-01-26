@@ -1,50 +1,48 @@
 
 ## GridSpec function with default GridName argument:
 
-GridSpec() = GridSpec("LLC90")
+GridSpec() = GridSpec("LatLonCap","GRID_LLC90/")
 
 ## GridSpec function with GridName argument:
 
 """
-    GridSpec(GridName)
+    GridSpec(GridName,GridParentDir="./")
 
 Return a `gmcgrid` specification that provides grid files `path`,
 `class`, `nFaces`, `ioSize`, `facesSize`, `ioPrec`, & a `read` function
-(not yet) using hard-coded values for `"LLC90"`, `"CS32"`, `"LL360"` (for now).
+(not yet) using hard-coded values for `"PeriodicDomain"`, `"PeriodicChanel"`,
+`"CubeSphere"`, and `"LatLonCap" for now.
 """
 function GridSpec(GridName,GridParentDir="./")
 
-if GridName=="LLC90";
-    grDir=GridParentDir*"GRID_LLC90/";
-    nFaces=5;
-    grTopo="llc";
-    ioSize=[90 1170];
+grDir=GridParentDir
+if GridName=="LatLonCap"
+    nFaces=5
+    grTopo="LatLonCap"
+    ioSize=[90 1170]
     facesSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
-    ioPrec=Float64;
-elseif GridName=="CS32";
-    grDir=GridParentDir*"GRID_CS32/";
-    nFaces=6;
-    grTopo="cs";
-    ioSize=[32 192];
+    ioPrec=Float64
+elseif GridName=="CubeSphere"
+    nFaces=6
+    grTopo="CubeSphere"
+    ioSize=[32 192]
     facesSize=[(32, 32), (32, 32), (32, 32), (32, 32), (32, 32), (32, 32)]
-    ioPrec=Float32;
-elseif GridName=="LL360";
-    grDir=GridParentDir*"GRID_LL360/";
-    nFaces=1;
-    grTopo="ll";
-    ioSize=[360 160];
+    ioPrec=Float32
+elseif GridName=="PeriodicChannel"
+    nFaces=1
+    grTopo="PeriodicChannel"
+    ioSize=[360 160]
     facesSize=[(360, 160)]
-    ioPrec=Float32;
-elseif GridName=="FLTXMPL";
-    grDir=GridParentDir*"flt_example/";
-    nFaces=4;
-    grTopo="dpdo";
-    ioSize=[80 42];
+    ioPrec=Float32
+elseif GridName=="PeriodicDomain"
+    nFaces=4
+    grTopo="PeriodicDomain"
+    ioSize=[80 42]
     facesSize=[(40, 21), (40, 21), (40, 21), (40, 21)]
-    ioPrec=Float32;
-else;
-    error("unknown GridName case");
-end;
+    ioPrec=Float32
+else
+    error("unknown GridName case")
+end
 
 mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
@@ -119,13 +117,13 @@ function GridOfOnes(grTp,nF,nP)
     grDir=""
     grTopo=grTp
     nFaces=nF
-    if grTopo=="llc"
+    if grTopo=="LatLonCap"
         ioSize=[nP nP*nF]
-    elseif grTopo=="cs"
+    elseif grTopo=="CubeSphere"
         ioSize=[nP nP*nF]
-    elseif grTopo=="ll"
+    elseif grTopo=="PeriodicChanel"
         ioSize=[nP nP]
-    elseif grTopo=="dpdo"
+    elseif grTopo=="PeriodicDomain"
         nFsqrt=Int(sqrt(nF))
         ioSize=[nP*nFsqrt nP*nFsqrt]
     end
@@ -173,71 +171,13 @@ function TileMap(mygrid::gcmgrid,ni::Int,nj::Int)
 end
 
 """
-    findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
-    findtiles(ni::Int,nj::Int,grid::String="llc90",GridParentDir="./")
-
-Return a `MeshArray` map of tile indices, `mytiles["tileNo"]`, for tile
-size `ni,nj` and extract grid variables accordingly.
-"""
-function findtiles(ni::Int,nj::Int,mygrid::gcmgrid)
-    mytiles = Dict()
-
-    GridVariables=GridLoad(mygrid)
-
-    mytiles["nFaces"]=mygrid.nFaces;
-    mytiles["ioSize"]=mygrid.ioSize;
-
-    XC=GridVariables["XC"];
-    YC=GridVariables["YC"];
-    XC11=similar(XC); YC11=similar(XC);
-    XCNINJ=similar(XC); YCNINJ=similar(XC);
-    iTile=similar(XC); jTile=similar(XC); tileNo=similar(XC);
-    tileCount=0;
-    for iF=1:XC11.grid.nFaces
-        face_XC=XC.f[iF]; face_YC=YC.f[iF];
-        for jj=Int.(1:size(face_XC,2)/nj);
-            for ii=Int.(1:size(face_XC,1)/ni);
-                tileCount=tileCount+1;
-                tmp_i=(1:ni).+ni*(ii-1)
-                tmp_j=(1:nj).+nj*(jj-1)
-                tmp_XC=face_XC[tmp_i,tmp_j]
-                tmp_YC=face_YC[tmp_i,tmp_j]
-                XC11.f[iF][tmp_i,tmp_j].=tmp_XC[1,1]
-                YC11.f[iF][tmp_i,tmp_j].=tmp_YC[1,1]
-                XCNINJ.f[iF][tmp_i,tmp_j].=tmp_XC[end,end]
-                YCNINJ.f[iF][tmp_i,tmp_j].=tmp_YC[end,end]
-                iTile.f[iF][tmp_i,tmp_j]=collect(1:ni)*ones(Int,1,nj)
-                jTile.f[iF][tmp_i,tmp_j]=ones(Int,ni,1)*collect(1:nj)'
-                tileNo.f[iF][tmp_i,tmp_j]=tileCount*ones(Int,ni,nj)
-            end
-        end
-    end
-
-    mytiles["tileNo"] = tileNo;
-    mytiles["XC"] = XC;
-    mytiles["YC"] = YC;
-    mytiles["XC11"] = XC11;
-    mytiles["YC11"] = YC11;
-    mytiles["XCNINJ"] = XCNINJ;
-    mytiles["YCNINJ"] = YCNINJ;
-    mytiles["iTile"] = iTile;
-    mytiles["jTile"] = jTile;
-
-    return mytiles
-
-end
-
-findtiles(ni::Int,nj::Int,GridName::String="llc90",GridParentDir="./") = findtiles(ni,nj,GridSpec(GridName,GridParentDir))
-
-
-"""
     GridAddWS!(GridVariables::Dict)
 
 Compute XW, YW, XS, and YS (vector field locations) from XC, YC (tracer
 field locations) and add them to GridVariables.
 
 ```
-GridVariables=GridLoad(GridSpec("LLC90"))
+GridVariables=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
 GridAddWS!(GridVariables)
 ```
 """
