@@ -37,16 +37,18 @@ end
 varmeta data structure. Available constructors:
 
 ```
-varmeta(name::String,unit::Union{Unitful.AbstractQuantity,Number})
-varmeta() = varmeta("unknown",1.0)
+varmeta(name::String,unit::Union{Unitful.AbstractQuantity,Number},
+        position::Array{Float64,1})
+varmeta() = varmeta("unknown",1.0,fill(0.5,3))
 ```
 """
 struct varmeta
   name::String
   unit::Union{Unitful.AbstractQuantity,Number}
+  position::Array{Float64,1}
 end
 
-varmeta() = varmeta("unknown",1.0)
+varmeta() = varmeta("unknown",1.0,fill(0.5,3))
 
 ## concrete types and MeshArray alias:
 
