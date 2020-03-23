@@ -1,4 +1,6 @@
 
+using Unitful
+
 """
     AbstractMeshArray{T, N}
 
@@ -28,6 +30,23 @@ struct gcmgrid
   read::Function
   write::Function
 end
+
+"""
+    varmeta
+
+varmeta data structure. Available constructors:
+
+```
+varmeta(name::String,unit::Union{Unitful.AbstractQuantity,Number})
+varmeta() = varmeta("unknown",1.0)
+```
+"""
+struct varmeta
+  name::String
+  unit::Union{Unitful.AbstractQuantity,Number}
+end
+
+varmeta() = varmeta("unknown",1.0)
 
 ## concrete types and MeshArray alias:
 
