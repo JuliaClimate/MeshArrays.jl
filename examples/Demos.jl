@@ -82,9 +82,9 @@ heatmap(Rini,title="raw noise",clims=(-0.5,0.5))
 function demo2()
 
     #Pre-requisite: either load predefined grid using `demo1` or call `GridOfOnes`
-    isdir("GRID_LLC90") ? GridVariables=GridLoad(GridSpec("LatLonCap","GRID_LLC90/")) : GridVariables=GridOfOnes("CubeSphere",6,100)
+    isdir("GRID_LLC90") ? Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/")) : (γ,Γ)=GridOfOnes("CubeSphere",6,100)
 
-    (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables)
+    (Rini,Rend,DXCsm,DYCsm)=demo2(Γ)
 end
 
 function demo2(GridVariables::Dict)

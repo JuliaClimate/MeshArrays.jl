@@ -44,10 +44,10 @@ cd("/Users/gforget/mywork/data/")
 #
 # This uses `demo2 / smooth` as done in `2018/09` to test exchanges and array operations.
 
-GridVariables=GridOfOnes("CubeSphere",6,100);
-(Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables);
-@btime (dFLDdx, dFLDdy)=gradient(Rini,GridVariables);
-@btime Rend=smooth(Rini,DXCsm,DYCsm,GridVariables);
+γ,Γ=GridOfOnes("CubeSphere",6,100);
+(Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
+@btime (dFLDdx, dFLDdy)=gradient(Rini,Γ);
+@btime Rend=smooth(Rini,DXCsm,DYCsm,Γ);
 
 # **2019/08/08**
 # ```

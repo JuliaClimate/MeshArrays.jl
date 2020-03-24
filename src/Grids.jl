@@ -110,7 +110,11 @@ end
 """
     GridOfOnes(grTp,nF,nP)
 
-Define all-ones grid variables instead of using `GridSpec` & `GridLoad`.
+Define all-ones grid variables instead of using `GridSpec` & `GridLoad`. E.g.
+
+```
+γ,Γ=GridOfOnes("CubeSphere",6,20);
+```
 """
 function GridOfOnes(grTp,nF,nP)
 
@@ -143,7 +147,7 @@ function GridOfOnes(grTp,nF,nP)
         GridVariables[list0[ii]]=tmp1
     end
 
-    return GridVariables
+    return mygrid, GridVariables
 
 end
 
