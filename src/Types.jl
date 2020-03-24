@@ -44,7 +44,7 @@ varmeta() = varmeta("unknown",1.0,fill(0.5,3))
 """
 struct varmeta
   name::String
-  unit::Union{Unitful.AbstractQuantity,Number}
+  unit::Union{Unitful.Units,Number}
   position::Array{Float64,1}
 end
 
