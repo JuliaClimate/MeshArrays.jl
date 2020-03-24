@@ -3,7 +3,7 @@
 module MeshArrays
 
 using Pkg
-version()=Pkg.TOML.parsefile(joinpath(dirname(pathof(MeshArrays)), "..", "Project.toml"))["version"]
+thisversion=Pkg.TOML.parsefile(joinpath(dirname(pathof(MeshArrays)), "..", "Project.toml"))["version"]
 
 include("Types.jl");
 include("Grids.jl");

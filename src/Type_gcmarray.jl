@@ -31,7 +31,7 @@ struct gcmarray{T, N} <: AbstractMeshArray{T, N}
 end
 
 function gcmarray(grid::gcmgrid,f::Array{Array{T,2},N}) where {T, N}
-  gcmarray{T,N}(grid,varmeta(),f,grid.fSize,collect(1:grid.nFaces),version())
+  gcmarray{T,N}(grid,defaultmeta,f,grid.fSize,collect(1:grid.nFaces),thisversion)
 end
 
 function gcmarray(grid::gcmgrid,f::Array{Array{T,N},1}) where {T, N}
@@ -43,9 +43,9 @@ function gcmarray(grid::gcmgrid,f::Array{Array{T,N},1}) where {T, N}
       g[I]=view(f[I[1]],:,:,I[2],I[3])
     end
     n4==1 ? g=dropdims(g,dims=3) : nothing
-    gcmarray{T,ndims(g)}(grid,varmeta(),g,grid.fSize,collect(1:nFaces),version())
+    gcmarray{T,ndims(g)}(grid,defaultmeta,g,grid.fSize,collect(1:nFaces),thisversion)
   else
-    gcmarray{T,1}(grid,varmeta(),f,grid.fSize,collect(1:nFaces),version())
+    gcmarray{T,1}(grid,defaultmeta,f,grid.fSize,collect(1:nFaces),thisversion)
   end
 end
 
@@ -59,7 +59,7 @@ function gcmarray(grid::gcmgrid,::Type{T},
   for a=1:nFaces
     f[a]=Array{T}(undef,fSize[a])
   end
-  gcmarray{T,1}(grid,varmeta(),f,fSize,fIndex,version())
+  gcmarray{T,1}(grid,defaultmeta,f,fSize,fIndex,thisversion)
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
@@ -72,7 +72,7 @@ function gcmarray(grid::gcmgrid,::Type{T},
   for a=1:nFaces; for i3=1:n3;
     f[a,i3]=Array{T}(undef,fSize[a]...)
   end; end;
-  gcmarray{T,2}(grid,varmeta(),f,fSize,fIndex,version())
+  gcmarray{T,2}(grid,defaultmeta,f,fSize,fIndex,thisversion)
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
@@ -85,7 +85,7 @@ function gcmarray(grid::gcmgrid,::Type{T},
   for a=1:nFaces; for i4=1:n4; for i3=1:n3;
     f[a,i3,i4]=Array{T}(undef,fSize[a]...)
   end; end; end;
-  gcmarray{T,3}(grid,varmeta(),f,fSize,fIndex,version())
+  gcmarray{T,3}(grid,defaultmeta,f,fSize,fIndex,thisversion)
 end
 
 # +

@@ -48,7 +48,7 @@ struct varmeta
   position::Array{Float64,1}
 end
 
-varmeta() = varmeta("unknown",1.0,fill(0.5,3))
+defaultmeta = varmeta("unknown",1.0,fill(0.5,3))
 
 ## concrete types and MeshArray alias:
 
