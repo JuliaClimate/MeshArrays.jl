@@ -34,21 +34,29 @@ end
 """
     varmeta
 
-varmeta data structure. Available constructors:
+varmeta data structure. By default, `unit` is `1.0` (non-dimensional), `position`
+is `fill(0.5,3)` (cell center), and `name` / `long_name` is unknown.
+
+Available constructors:
 
 ```
-varmeta(name::String,unit::Union{Unitful.AbstractQuantity,Number},
-        position::Array{Float64,1})
-varmeta() = varmeta("unknown",1.0,fill(0.5,3))
+varmeta(unit::Union{Unitful.AbstractQuantity,Number},position::Array{Float64,1},
+        name::String,long_name::String)
 ```
+
+And:
+
+```defaultmeta = varmeta(1.0,fill(0.5,3),"unknown","unknown")```
+
 """
 struct varmeta
-  name::String
   unit::Union{Unitful.Units,Number}
   position::Array{Float64,1}
+  name::String
+  long_name::String
 end
 
-defaultmeta = varmeta("unknown",1.0,fill(0.5,3))
+defaultmeta = varmeta(1.0,fill(0.5,3),"unknown","unknown")
 
 ## concrete types and MeshArray alias:
 
