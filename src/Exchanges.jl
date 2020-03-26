@@ -44,7 +44,7 @@ elseif fld.grid.class=="PeriodicChanel"
 elseif fld.grid.class=="PeriodicDomain"
   FLD=exch_T_N_dpdo(fld,N)
 else
-  error("unknown grTopo case")
+  error("unknown grid.class case")
 end
 
 return FLD
@@ -62,7 +62,7 @@ elseif u.grid.class=="PeriodicChanel"
 elseif u.grid.class=="PeriodicDomain"
   (uex,vex)=exch_UV_N_dpdo(u,v,N)
 else
-  error("unknown grTopo case")
+  error("unknown grid.class case")
 end
 
 return uex,vex
@@ -80,7 +80,7 @@ elseif u.grid.class=="PeriodicChanel"
 elseif u.grid.class=="PeriodicDomain"
   (uex,vex)=exch_UV_dpdo(u,v)
 else
-  error("unknown grTopo case")
+  error("unknown grid.class case")
 end
 
 return uex,vex

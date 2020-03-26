@@ -206,9 +206,9 @@ end
 
 function Base.similar(A::gcmarray)
     if ndims(A)==1
-        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex)
+        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex; meta=A.meta)
     else
-        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex,size(A,2))
+        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex,size(A,2); meta=A.meta)
     end
     return B
 end

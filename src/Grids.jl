@@ -65,20 +65,23 @@ function GridLoad(γ::gcmgrid)
 
     Γ=Dict()
 
-    list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
-    "DXC","DXG","DYC","DYG","Depth")
-    for ii=1:length(list0)
-        tmp1=γ.read(γ.path*list0[ii]*".data",MeshArray(γ,γ.ioPrec))
-        tmp2=Symbol(list0[ii])
+    list_n=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","Depth");
+    list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m")
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    list_p=(pc,pg,pc,pg,pc,pg,pu,pv,pv,pu,pc)
+    for ii=1:length(list_n)
+        m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii])
+        tmp1=γ.read(γ.path*list_n[ii]*".data",MeshArray(γ,γ.ioPrec;meta=m))
+        tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
-        Γ[list0[ii]]=tmp1
+        Γ[list_n[ii]]=tmp1
     end
 
     γ.ioPrec==Float64 ? reclen=8 : reclen=4
 
-    list0=("DRC","DRF","RC","RF")
-    for ii=1:length(list0)
-        fil=γ.path*list0[ii]*".data"
+    list_n=("DRC","DRF","RC","RF")
+    for ii=1:length(list_n)
+        fil=γ.path*list_n[ii]*".data"
         tmp1=stat(fil)
         n3=Int64(tmp1.size/reclen)
 
@@ -87,18 +90,21 @@ function GridLoad(γ::gcmgrid)
         read!(fid,tmp1)
         tmp1 = hton.(tmp1)
 
-        tmp2=Symbol(list0[ii])
+        tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
-        Γ[list0[ii]]=tmp1
+        Γ[list_n[ii]]=tmp1
     end
 
-    list0=("hFacC","hFacS","hFacW")
+    list_n=("hFacC","hFacS","hFacW");
+    list_u=(1.0,1.0,1.0)
+    list_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
     n3=length(Γ["RC"])
-    for ii=1:length(list0)
-        tmp1=γ.read(γ.path*list0[ii]*".data",MeshArray(γ,γ.ioPrec,n3))
-        tmp2=Symbol(list0[ii])
+    for ii=1:length(list_n)
+        m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
+        tmp1=γ.read(γ.path*list_n[ii]*".data",MeshArray(γ,γ.ioPrec,n3;meta=m))
+        tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
-        Γ[list0[ii]]=tmp1
+        Γ[list_n[ii]]=tmp1
     end
 
     return Γ
@@ -136,13 +142,16 @@ function GridOfOnes(grTp,nF,nP)
     γ=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
     Γ=Dict()
-    list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
-    for ii=1:length(list0);
-        tmp1=fill(1.,nP,nP*nF);
-        tmp1=γ.read(tmp1,MeshArray(γ,Float64));
-        tmp2=Symbol(list0[ii]);
+    list_n=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
+    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    list_p=(pc,pg,pc,pg,pc,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    for ii=1:length(list_n);
+        tmp1=fill(1.,nP,nP*nF); m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
+        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
+        tmp2=Symbol(list_n[ii]);
         @eval (($tmp2) = ($tmp1))
-        Γ[list0[ii]]=tmp1
+        Γ[list_n[ii]]=tmp1
     end
 
     return γ, Γ
@@ -188,7 +197,13 @@ function GridAddWS!(Γ::Dict)
     XC=exchange(Γ["XC"])
     YC=exchange(Γ["YC"])
     nFaces=XC.grid.nFaces
-    XW=NaN .* XC; YW=NaN .* YC; XS=NaN .* XC; YS=NaN .* YC;
+    uX=XC.meta.unit
+    uY=YC.meta.unit
+
+    XW=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uX,[0.,0.5],"XW","XW"))
+    YW=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uY,[0.,0.5],"YW","YW"))
+    XS=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uX,[0.5,0.],"XS","XS"))
+    YS=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uY,[0.5,0.],"YS","YS"))
 
     for ff=1:nFaces
         tmp1=XC[ff][1:end-2,2:end-1]
