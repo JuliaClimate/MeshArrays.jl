@@ -50,13 +50,13 @@ And:
 
 """
 struct varmeta
-  unit::Union{Unitful.Units,Number}
+  unit::Union{Unitful.Units,Number,Missing}
   position::Array{Float64,1}
   name::String
   long_name::String
 end
 
-defaultmeta = varmeta(1.0,fill(0.5,3),"unknown","unknown")
+defaultmeta = varmeta(missing,fill(0.5,3),"unknown","unknown")
 
 ## concrete types and MeshArray alias:
 
