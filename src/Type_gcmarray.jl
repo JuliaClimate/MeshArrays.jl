@@ -204,11 +204,11 @@ function Base.show(io::IO, z::gcmarray{T, N}) where {T,N}
   return
 end
 
-function Base.similar(A::gcmarray)
+function Base.similar(A::gcmarray;m::varmeta=defaultmeta)
     if ndims(A)==1
-        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex; meta=A.meta)
+        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex; meta=m)
     else
-        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex,size(A,2); meta=A.meta)
+        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex,size(A,2); meta=m)
     end
     return B
 end

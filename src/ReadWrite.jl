@@ -33,7 +33,7 @@ function read(xx::Array,x::MeshArray)
 
   size(xx)!=(n1*n2,n3) ? xx=reshape(xx,(n1*n2,n3)) : nothing
 
-  y=similar(x)
+  y=similar(x; m=x.meta)
   i0=0; i1=0;
   for iFace=1:nFaces
     i0=i1+1;
