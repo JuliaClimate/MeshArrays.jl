@@ -14,9 +14,10 @@ abstract type AbstractMeshArray{T, N} <: AbstractArray{T, N} end
 gcmgrid data structure. Available constructors:
 
 ```
-gcmgrid(path::String, class::String, nFaces::Int,
-        fSize::Array{NTuple{2, Int},1}, ioSize::Array{Int64,2},
-        ioPrec::Type, read::Function, write::Function)
+gcmgrid(path::String, class::String,
+        nFaces::Int, fSize::Array{NTuple{2, Int},1},
+        ioSize::Array{Int64,2}, ioPrec::Type,
+        read::Function, write::Function)
 ```
 """
 struct gcmgrid

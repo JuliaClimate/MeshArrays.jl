@@ -6,15 +6,21 @@ The current default for `MeshArray` is the `gcmarray` type and an instance `H` i
 
 ```
 julia> show(D)
- gcmarray 
-  grid type   = LatLonCap
+  name        = Depth
+  unit        = m
   data type   = Float64
-  tile array  = (5, 50)
+  cell pos.   = [0.5, 0.5]
+
+  tile array  = (5,)
   tile sizes  = (90, 270)
                 (90, 270)
                 (90, 90)
                 (270, 90)
                 (270, 90)
+
+  grid class  = LatLonCap
+  MeshArray   = gcmarray 
+  version     = 0.2.7 
 ```
 
 The underlying, `MeshArray`, data structure is:
@@ -22,9 +28,11 @@ The underlying, `MeshArray`, data structure is:
 ```
 struct gcmarray{T, N} <: AbstractMeshArray{T, N}
    grid::gcmgrid
+   meta::varmeta
    f::Array{Array{T,2},N}
    fSize::Array{NTuple{2, Int}}
    fIndex::Array{Int,1}
+   version::String
 end
 ```
 
@@ -47,14 +55,10 @@ D[1]=0.0 .+ D[1]
 tmp=cos.(D)
 ```
 
-In addition, `Mesharray` specific functions like `exchange` cano alter the internal structure of a `MeshArray`. Elementary array sizes are thus larger in `show(exchange(D))` than `show(D)`.
+In addition, `Mesharray` specific functions like `exchange` can alter the internal structure of a `MeshArray`. Elementary array sizes are thus larger in `show(exchange(D))` than `show(D)`.
 
 ```
 julia> show(exchange(D))
-gcmarray 
-  grid type   = LatLonCap
-  data type   = Float64
-  tile array  = (5,)
   tile sizes  = (92, 272)
                 (92, 272)
                 (92, 92)
@@ -62,22 +66,35 @@ gcmarray
                 (272, 92)
 ```
 
+### Embedded Meta Data
+
 A `MeshArray` includes a `gcmgrid` specification which can be constructed as outlined below.
 
 ```
-gcmgrid(path::String, class::String, nFaces::Int,
-        fSize::Array{NTuple{2, Int},1}, ioSize::Array{Int64,2},
-        ioPrec::Type, read::Function, write::Function)
+gcmgrid(path::String, class::String, 
+        nFaces::Int, fSize::Array{NTuple{2, Int},1}, 
+        ioSize::Array{Int64,2}, ioPrec::Type, 
+        read::Function, write::Function)
 ```
 
-Each `gcmgrid` includes a pair of `read` / `write` methods that allow for basic `I/O` that is typically specified by the user when the provided defaults are not adequate. 
-
-An important aspect is that `gcmgrid` does not contain any actual grid variable -- hence its memory footprint is minimal. Grid variables are instead `read` only when needed e.g. as shown below.
+Importantly, a `gcmgrid` does **not** contain any actual grid data -- hence its memory footprint is minimal. Grid variables are instead read to memory only when needed e.g. as shown below. To make this easy, each `gcmgrid` includes a pair of `read` / `write` methods to allow for basic `I/O` at any time. These methods are typically specified by the user although defaults are provided. 
 
 ```
-grid=GridSpec("LatLonCap","GRID_LLC90/")
-D=grid.read(grid.path*"Depth.data",MeshArray(grid,Float64))
+using MeshArrays, Unitful
+γ=GridSpec("LatLonCap","GRID_LLC90/")
+m=MeshArrays.varmeta(u"m",fill(0.5,2),"Depth","Depth")
+D=γ.read(γ.path*"Depth.data",MeshArray(γ,Float64;meta=m))
 ```
+
+The above commands define a `MeshArray` called `D` which is the one displayed at the top of this section. A definition of the `varmeta` structure is reported below. The `position` of a `D` point within its grid cell is given as `x ∈ [0. 1.]` in each direction.
+
+```
+varmeta(unit::Union{Unitful.AbstractQuantity,Number},
+        position::Array{Float64,1},
+        name::String,long_name::String)
+```
+
+### Examples
 
 The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter` notebooks that are available in the [MeshArrayNotebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git). `demo1` and `demo2` are very similar. 
 
