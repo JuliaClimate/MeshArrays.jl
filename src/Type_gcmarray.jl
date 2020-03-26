@@ -188,19 +188,30 @@ end
 # ### Custom pretty-printing, similar, and broadcast
 
 function Base.show(io::IO, z::gcmarray{T, N}) where {T,N}
-    printstyled(io, " gcmarray \n",color=:normal)
-    printstyled(io, "  grid type   = ",color=:normal)
-    printstyled(io, "$(z.grid.class)\n",color=:blue)
+    if ~isa(z.meta.unit,Missing)
+      printstyled(io, "  name        = ",color=:normal)
+      printstyled(io, "$(z.meta.name)\n",color=:blue)
+      printstyled(io, "  unit        = ",color=:normal)
+      printstyled(io, "$(z.meta.unit)\n",color=:blue)
+    end
     printstyled(io, "  data type   = ",color=:normal)
     printstyled(io, "$(eltype(z))\n",color=:blue)
+    printstyled(io, "  cell pos.   = ",color=:normal)
+    printstyled(io, "$(z.meta.position)\n",color=:blue)
     printstyled(io, "  tile array  = ",color=:normal)
-    printstyled(io, "$(size(z))\n",color=:blue)
+    printstyled(io, "$(size(z))\n",color=:cyan)
     printstyled(io, "  tile sizes  = ",color=:normal)
-    printstyled(io, "$(size(z[1]))\n",color=:blue)
+    printstyled(io, "$(size(z[1]))\n",color=:cyan)
     for iFace=2:length(z.fIndex)
       printstyled(io, "                ",color=:normal)
-      printstyled(io, "$(size(z[iFace]))\n",color=:blue)
+      printstyled(io, "$(size(z[iFace]))\n",color=:cyan)
     end
+    printstyled(io, "  grid class  = ",color=:normal)
+    printstyled(io, "$(z.grid.class)\n",color=:green)
+    printstyled(io, "  MeshArray   = ",color=:normal)
+    printstyled(io, "gcmarray \n",color=:green)
+    printstyled(io, "  version     = ",color=:normal)
+    printstyled(io, "$(z.version) \n",color=:green)
   return
 end
 
