@@ -11,11 +11,10 @@ for nTopo=1:3
     elseif nTopo==3; grTopo="PeriodicChanel"; nFaces=1; N=500;
     end;
     Npt=nFaces*N*N
-    GridVariables=GridOfOnes(grTopo,nFaces,N)
-    mygrid=GridVariables["XC"].grid
-    @test mygrid.class == grTopo
+    γ,Γ=GridOfOnes(grTopo,nFaces,N)
+    @test γ.class == grTopo
     Rini= 0.; Rend= 0.;
-    (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables);
+    (Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
     @test isa(Rend,MeshArray)
     @test sum(isfinite.(Rend)) == Npt
     Sini=sqrt(sum(Rini*Rini)/(Npt-1.0))

@@ -25,15 +25,15 @@ The example below (1) generates a grid decomposition, (2) seeds random noise eve
 
 ```
 using MeshArrays; p=dirname(pathof(MeshArrays))
-GridVariables=GridOfOnes("PeriodicDomain",16,20)
+γ,Γ=GridOfOnes("PeriodicDomain",16,20)
 
 include(joinpath(p,"../examples/Demos.jl"))
-(in,out,_,_)=demo2(GridVariables);
-show(out)
+(xi,xo,_,_)=demo2(Γ);
+show(xo)
 
 using Plots; plotlyjs()
 include(joinpath(p,"../examples/Plots.jl"))
-heatmap(out,clims=(-0.25,0.25))
+heatmap(xo,clims=(-0.25,0.25))
 ```
 
 Initial noise           |  Smoothed noise 

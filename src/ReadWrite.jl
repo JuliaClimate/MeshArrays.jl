@@ -12,8 +12,6 @@ read(xx::Array,x::MeshArray) #from Array
 """
 function read(fil::String,x::MeshArray)
 
-  grTopo=x.grid.class
-  facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3)=nFacesEtc(x)
 
@@ -29,14 +27,13 @@ end
 
 function read(xx::Array,x::MeshArray)
 
-  grTopo=x.grid.class
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3)=nFacesEtc(x)
 
   size(xx)!=(n1*n2,n3) ? xx=reshape(xx,(n1*n2,n3)) : nothing
 
-  y=similar(x)
+  y=similar(x; m=x.meta)
   i0=0; i1=0;
   for iFace=1:nFaces
     i0=i1+1;
@@ -77,7 +74,6 @@ end
 
 function write(x::MeshArray)
 
-  grTopo=x.grid.class
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3)=nFacesEtc(x)

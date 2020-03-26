@@ -15,9 +15,9 @@ etc.). Call sequence:
 """
 function demo1(gridChoice::String,GridParentDir="./")
 
-    mygrid=GridSpec(gridChoice,GridParentDir)
+    γ=GridSpec(gridChoice,GridParentDir)
 
-    D=mygrid.read(mygrid.path*"Depth.data",MeshArray(mygrid,mygrid.ioPrec))
+    D=γ.read(γ.path*"Depth.data",MeshArray(γ,γ.ioPrec))
 
     1000 .+ D
     D .+ 1000
@@ -33,18 +33,18 @@ function demo1(gridChoice::String,GridParentDir="./")
     D/D
 
     Dexch=exchange(D,4)
-    Darr=mygrid.write(D)
-    DD=mygrid.read(Darr,D)
+    Darr=γ.write(D)
+    DD=γ.read(Darr,D)
     DD .== D
 
-    GridVariables=GridLoad(mygrid)
+    Γ=GridLoad(γ)
 
-    (dFLDdx, dFLDdy)=gradient(GridVariables["YC"],GridVariables)
+    (dFLDdx, dFLDdy)=gradient(Γ["YC"],Γ)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
 
-    H=GridVariables["hFacC"]
-    Ha=mygrid.write(H)
-    Hb=mygrid.read(Ha,H)
+    H=Γ["hFacC"]
+    Ha=γ.write(H)
+    Hb=γ.read(Ha,H)
 
     println(typeof(H))
     println(size(H))
@@ -82,38 +82,38 @@ heatmap(Rini,title="raw noise",clims=(-0.5,0.5))
 function demo2()
 
     #Pre-requisite: either load predefined grid using `demo1` or call `GridOfOnes`
-    isdir("GRID_LLC90") ? GridVariables=GridLoad(GridSpec("LatLonCap","GRID_LLC90/")) : GridVariables=GridOfOnes("CubeSphere",6,100)
+    isdir("GRID_LLC90") ? Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/")) : (γ,Γ)=GridOfOnes("CubeSphere",6,100)
 
-    (Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables)
+    (Rini,Rend,DXCsm,DYCsm)=demo2(Γ)
 end
 
-function demo2(GridVariables::Dict)
+function demo2(Γ::Dict)
 
-    mygrid=GridVariables["XC"].grid
+    γ=Γ["XC"].grid
 
     #initialize 2D field of random numbers
-    tmp1=randn(Float32,Tuple(mygrid.ioSize))
-    Rini=mygrid.read(tmp1,MeshArray(mygrid,Float32))
+    tmp1=randn(Float32,Tuple(γ.ioSize))
+    Rini=γ.read(tmp1,MeshArray(γ,Float32))
 
     #apply land mask
-    if ndims(GridVariables["hFacC"].f[1])>2
-        tmp1=mask(view(GridVariables["hFacC"],:,:,1),NaN,0)
-    elseif ndims(GridVariables["hFacC"].f)>1
-        #tmp1=mask(view(GridVariables["hFacC"],:,1),NaN,0)
+    if ndims(Γ["hFacC"].f[1])>2
+        tmp1=mask(view(Γ["hFacC"],:,:,1),NaN,0)
+    elseif ndims(Γ["hFacC"].f)>1
+        #tmp1=mask(view(Γ["hFacC"],:,1),NaN,0)
         tmp1=similar(Rini)
-        for i=1:length(tmp1.fIndex); tmp1[i]=GridVariables["hFacC"][i,1]; end;
+        for i=1:length(tmp1.fIndex); tmp1[i]=Γ["hFacC"][i,1]; end;
         tmp1=mask(tmp1,NaN,0)
     else
-        tmp1=mask(GridVariables["hFacC"],NaN,0)
+        tmp1=mask(Γ["hFacC"],NaN,0)
     end
     msk=fill(1.,tmp1) + 0. *tmp1;
     Rini=msk*Rini;
 
     #specify smoothing length scales in x, y directions
-    DXCsm=3*GridVariables["DXC"]; DYCsm=3*GridVariables["DYC"];
+    DXCsm=3*Γ["DXC"]; DYCsm=3*Γ["DYC"];
 
     #apply smoother
-    Rend=smooth(Rini,DXCsm,DYCsm,GridVariables);
+    Rend=smooth(Rini,DXCsm,DYCsm,Γ);
 
     return (Rini,Rend,DXCsm,DYCsm)
 
@@ -136,29 +136,29 @@ heatmap(1e-6*UV["V"],title="V comp. in Sv",clims=(-10,10))
 """
 function demo3()
 
-    mygrid=GridSpec("LatLonCap","GRID_LLC90/")
-    GridVariables=GridLoad(mygrid)
+    γ=GridSpec("LatLonCap","GRID_LLC90/")
+    Γ=GridLoad(γ)
 
-    TrspX=mygrid.read(mygrid.path*"TrspX.bin",MeshArray(mygrid,Float32))
-    TrspY=mygrid.read(mygrid.path*"TrspY.bin",MeshArray(mygrid,Float32))
-    TauX=mygrid.read(mygrid.path*"TauX.bin",MeshArray(mygrid,Float32))
-    TauY=mygrid.read(mygrid.path*"TauY.bin",MeshArray(mygrid,Float32))
-    SSH=mygrid.read(mygrid.path*"SSH.bin",MeshArray(mygrid,Float32))
+    TrspX=γ.read(γ.path*"TrspX.bin",MeshArray(γ,Float32))
+    TrspY=γ.read(γ.path*"TrspY.bin",MeshArray(γ,Float32))
+    TauX=γ.read(γ.path*"TauX.bin",MeshArray(γ,Float32))
+    TauY=γ.read(γ.path*"TauY.bin",MeshArray(γ,Float32))
+    SSH=γ.read(γ.path*"SSH.bin",MeshArray(γ,Float32))
 
-    (UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables)
+    (UV, LC, Tr)=demo3(TrspX,TrspY,Γ)
 
 end
 
-function demo3(U::MeshArray,V::MeshArray,GridVariables::Dict)
+function demo3(U::MeshArray,V::MeshArray,Γ::Dict)
 
-    LC=LatitudeCircles(-89.0:89.0,GridVariables)
+    LC=LatitudeCircles(-89.0:89.0,Γ)
 
     #UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
     UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y"])
 
     Tr=Array{Float64,1}(undef,length(LC));
     for i=1:length(LC)
-       Tr[i]=ThroughFlow(UV,LC[i],GridVariables)
+       Tr[i]=ThroughFlow(UV,LC[i],Γ)
     end
 
     return UV, LC, Tr

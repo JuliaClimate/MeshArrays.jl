@@ -44,18 +44,16 @@ else
     error("unknown GridName case")
 end
 
-mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
-
-return mygrid
+return gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
 end
 
 ## GridLoad function
 
 """
-    GridLoad(mygrid::gcmgrid)
+    GridLoad(γ::gcmgrid)
 
-Return a `Dict` of grid variables read from files located in `mygrid.path` (see `?GridSpec`).
+Return a `Dict` of grid variables read from files located in `γ.path` (see `?GridSpec`).
 
 Based on the MITgcm naming convention, grid variables are:
 
@@ -63,54 +61,64 @@ Based on the MITgcm naming convention, grid variables are:
 - RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
 - DRC, DRF, RC, RF (one-dimensional)
 """
-function GridLoad(mygrid::gcmgrid)
+function GridLoad(γ::gcmgrid)
 
-    GridVariables=Dict()
+    Γ=Dict()
 
-    list0=("XC","XG","YC","YG","AngleCS","AngleSN","RAC","RAW","RAS","RAZ",
-    "DXC","DXG","DYC","DYG","Depth")
-    for ii=1:length(list0)
-        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",MeshArray(mygrid,mygrid.ioPrec))
-        tmp2=Symbol(list0[ii])
+    list_n=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","Depth");
+    list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m")
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    list_p=(pc,pg,pc,pg,pc,pg,pu,pv,pv,pu,pc)
+    for ii=1:length(list_n)
+        m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii])
+        tmp1=γ.read(γ.path*list_n[ii]*".data",MeshArray(γ,γ.ioPrec;meta=m))
+        tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
-        GridVariables[list0[ii]]=tmp1
+        Γ[list_n[ii]]=tmp1
     end
 
-    mygrid.ioPrec==Float64 ? reclen=8 : reclen=4
+    γ.ioPrec==Float64 ? reclen=8 : reclen=4
 
-    list0=("DRC","DRF","RC","RF")
-    for ii=1:length(list0)
-        fil=mygrid.path*list0[ii]*".data"
+    list_n=("DRC","DRF","RC","RF")
+    for ii=1:length(list_n)
+        fil=γ.path*list_n[ii]*".data"
         tmp1=stat(fil)
         n3=Int64(tmp1.size/reclen)
 
         fid = open(fil)
-        tmp1 = Array{mygrid.ioPrec,1}(undef,n3)
+        tmp1 = Array{γ.ioPrec,1}(undef,n3)
         read!(fid,tmp1)
         tmp1 = hton.(tmp1)
 
-        tmp2=Symbol(list0[ii])
+        tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
-        GridVariables[list0[ii]]=tmp1
+        Γ[list_n[ii]]=tmp1
     end
 
-    list0=("hFacC","hFacS","hFacW")
-    n3=length(GridVariables["RC"])
-    for ii=1:length(list0)
-        tmp1=mygrid.read(mygrid.path*list0[ii]*".data",MeshArray(mygrid,mygrid.ioPrec,n3))
-        tmp2=Symbol(list0[ii])
+    list_n=("hFacC","hFacS","hFacW");
+    list_u=(1.0,1.0,1.0)
+    list_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    n3=length(Γ["RC"])
+    for ii=1:length(list_n)
+        m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
+        tmp1=γ.read(γ.path*list_n[ii]*".data",MeshArray(γ,γ.ioPrec,n3;meta=m))
+        tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
-        GridVariables[list0[ii]]=tmp1
+        Γ[list_n[ii]]=tmp1
     end
 
-    return GridVariables
+    return Γ
 
 end
 
 """
     GridOfOnes(grTp,nF,nP)
 
-Define all-ones grid variables instead of using `GridSpec` & `GridLoad`.
+Define all-ones grid variables instead of using `GridSpec` & `GridLoad`. E.g.
+
+```
+γ,Γ=GridOfOnes("CubeSphere",6,20);
+```
 """
 function GridOfOnes(grTp,nF,nP)
 
@@ -131,34 +139,37 @@ function GridOfOnes(grTp,nF,nP)
     facesSize[:].=[(nP,nP)]
     ioPrec=Float32
 
-    mygrid=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
+    γ=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
-    GridVariables=Dict()
-    list0=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","hFacC","hFacS","hFacW","Depth");
-    for ii=1:length(list0);
-        tmp1=fill(1.,nP,nP*nF);
-        tmp1=mygrid.read(tmp1,MeshArray(mygrid,Float64));
-        tmp2=Symbol(list0[ii]);
+    Γ=Dict()
+    list_n=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
+    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    list_p=(pc,pg,pc,pg,pc,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    for ii=1:length(list_n);
+        tmp1=fill(1.,nP,nP*nF); m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
+        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
+        tmp2=Symbol(list_n[ii]);
         @eval (($tmp2) = ($tmp1))
-        GridVariables[list0[ii]]=tmp1
+        Γ[list_n[ii]]=tmp1
     end
 
-    return GridVariables
+    return γ, Γ
 
 end
 
 """
-    TileMap(ni::Int,nj::Int,mygrid::gcmgrid)
+    TileMap(ni::Int,nj::Int,γ::gcmgrid)
 
 Return a `MeshArray` map of tile indices for tile size `ni,nj`
 """
-function TileMap(mygrid::gcmgrid,ni::Int,nj::Int)
-    nbr=MeshArray(mygrid)
+function TileMap(γ::gcmgrid,ni::Int,nj::Int)
+    nbr=MeshArray(γ)
     #
     cnt=0
-    for iF=1:mygrid.nFaces
-        for jj=Int.(1:mygrid.fSize[iF][2]/nj)
-            for ii=Int.(1:mygrid.fSize[iF][1]/ni)
+    for iF=1:γ.nFaces
+        for jj=Int.(1:γ.fSize[iF][2]/nj)
+            for ii=Int.(1:γ.fSize[iF][1]/ni)
                 cnt=cnt+1
                 tmp_i=(1:ni).+ni*(ii-1)
                 tmp_j=(1:nj).+nj*(jj-1)
@@ -171,22 +182,28 @@ function TileMap(mygrid::gcmgrid,ni::Int,nj::Int)
 end
 
 """
-    GridAddWS!(GridVariables::Dict)
+    GridAddWS!(Γ::Dict)
 
 Compute XW, YW, XS, and YS (vector field locations) from XC, YC (tracer
-field locations) and add them to GridVariables.
+field locations) and add them to Γ.
 
 ```
-GridVariables=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
-GridAddWS!(GridVariables)
+Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
+GridAddWS!(Γ)
 ```
 """
-function GridAddWS!(GridVariables::Dict)
+function GridAddWS!(Γ::Dict)
 
-    XC=exchange(GridVariables["XC"])
-    YC=exchange(GridVariables["YC"])
+    XC=exchange(Γ["XC"])
+    YC=exchange(Γ["YC"])
     nFaces=XC.grid.nFaces
-    XW=NaN .* XC; YW=NaN .* YC; XS=NaN .* XC; YS=NaN .* YC;
+    uX=XC.meta.unit
+    uY=YC.meta.unit
+
+    XW=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uX,[0.,0.5],"XW","XW"))
+    YW=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uY,[0.,0.5],"YW","YW"))
+    XS=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uX,[0.5,0.],"XS","XS"))
+    YS=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uY,[0.5,0.],"YS","YS"))
 
     for ff=1:nFaces
         tmp1=XC[ff][1:end-2,2:end-1]
@@ -216,9 +233,9 @@ function GridAddWS!(GridVariables::Dict)
     XW[findall(XW.<Xmin)]=XW[findall(XW.<Xmin)].+360;
     XW[findall(XW.>Xmax)]=XW[findall(XW.>Xmax)].-360;
 
-    GridVariables["XW"]=XW
-    GridVariables["XS"]=XS
-    GridVariables["YW"]=YW
-    GridVariables["YS"]=YS
-    return GridVariables
+    Γ["XW"]=XW
+    Γ["XS"]=XS
+    Γ["YW"]=YW
+    Γ["YS"]=YS
+    return Γ
 end

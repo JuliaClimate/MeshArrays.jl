@@ -31,15 +31,15 @@ Examples below (1) generate a grid configuration, (2) seed a 2D field of random 
 
 ```
 using MeshArrays; p=dirname(pathof(MeshArrays))
-GridVariables=GridOfOnes("PeriodicDomain",16,20)
+γ,Γ=GridOfOnes("PeriodicDomain",16,20)
 
 include(joinpath(p,"../examples/Demos.jl"))
-(in,out,_,_)=demo2(GridVariables);
-show(out)
+(xi,xo,_,_)=demo2(Γ);
+show(xo)
 
 using Plots; plotlyjs()
 include(joinpath(p,"../examples/Plots.jl"))
-heatmap(out,clims=(-0.25,0.25))
+heatmap(xo,clims=(-0.25,0.25))
 ```
 
 Grid scale noise           |  Smoothed noise
@@ -49,8 +49,8 @@ Grid scale noise           |  Smoothed noise
 **[B]** _6 subdomains_, with _100x100 points_ each, covering the _six faces of a cube_
 
 ```
-GridVariables=GridOfOnes("CubeSphere",6,100)
-DemoVariables=demo2(GridVariables)
+γ,Γ=GridOfOnes("CubeSphere",6,100)
+D=demo2(Γ)
 ```
 
 **[C]** Global Model Grid with _5 uneven subdomains_, _variable spacing_, & _continents_
@@ -58,12 +58,10 @@ DemoVariables=demo2(GridVariables)
 _This requires downloading a pre-defined [global ocean grid](http://www.geosci-model-dev.net/8/3071/2015/) from the [MITgcm community](https://mitgcm.readthedocs.io/en/latest/)._
 
 ```
-git clone https://github.com/gaelforget/GRID_LLC90
-GridVariables=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
-show(GridVariables["Depth"])
-
-DemoVariables=demo2(GridVariables)
-heatmap(out,clims=(-0.25,0.25))
+#run(`git clone https://github.com/gaelforget/GRID_LLC90`)
+Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
+D=demo2(Γ)
+heatmap(D[2],clims=(-0.25,0.25))
 ```
 
 ## Earth Model Grids

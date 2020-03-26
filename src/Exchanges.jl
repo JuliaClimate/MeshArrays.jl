@@ -44,7 +44,7 @@ elseif fld.grid.class=="PeriodicChanel"
 elseif fld.grid.class=="PeriodicDomain"
   FLD=exch_T_N_dpdo(fld,N)
 else
-  error("unknown grTopo case")
+  error("unknown grid.class case")
 end
 
 return FLD
@@ -62,7 +62,7 @@ elseif u.grid.class=="PeriodicChanel"
 elseif u.grid.class=="PeriodicDomain"
   (uex,vex)=exch_UV_N_dpdo(u,v,N)
 else
-  error("unknown grTopo case")
+  error("unknown grid.class case")
 end
 
 return uex,vex
@@ -80,7 +80,7 @@ elseif u.grid.class=="PeriodicChanel"
 elseif u.grid.class=="PeriodicDomain"
   (uex,vex)=exch_UV_dpdo(u,v)
 else
-  error("unknown grTopo case")
+  error("unknown grid.class case")
 end
 
 return uex,vex
@@ -95,7 +95,7 @@ fillval=0.0
 
 ni,nj=Int.(transpose(fld.grid.ioSize)./fld.grid.fSize[1])
 s=fld.fSize
-FLD=similar(fld);
+FLD=similar(fld;m=fld.meta);
 
 for i=1:ni
   for j=1:nj
@@ -154,8 +154,8 @@ fillval=0.0
 
 ni,nj=Int.(transpose(fldU.grid.ioSize)./fldU.grid.fSize[1])
 s=fldU.fSize
-FLDU=similar(fldU)
-FLDV=similar(fldV)
+FLDU=similar(fldU;m=fldU.meta)
+FLDV=similar(fldV;m=fldV.meta)
 
 for i=1:ni
   for j=1:nj
@@ -196,7 +196,7 @@ fillval=0.0
 #step 1
 
 s=size.(fld.f);
-FLD=similar(fld);
+FLD=similar(fld;m=fld.meta);
 FLD.f[1]=fill(fillval,s[1].+2N);
 @views FLD.f[1][N+1:N+s[1][1],N+1:N+s[1][2]]=fld.f[1];
 
@@ -233,8 +233,8 @@ fillval=0.0
 #step 1
 
 s=size.(fldU.f);
-FLDU=similar(fldU);
-FLDV=similar(fldV);
+FLDU=similar(fldU;m=fldU.meta);
+FLDV=similar(fldV;m=fldV.meta);
 
 FLDU.f[1]=fill(fillval,s[1][1]+1,s[1][2]);
 FLDV.f[1]=fill(fillval,s[1][1],s[1][2]+1);
@@ -263,7 +263,7 @@ s=size.(fld.f)
 nf=fld.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
 tp=fld.grid.class
-FLD=similar(fld)
+FLD=similar(fld;m=fld.meta)
 
 for i=1:nf; FLD.f[i]=fill(fillval,s[i].+2N); end;
 #code below yields strange, seemingly incorrect results:
@@ -311,8 +311,8 @@ s=size.(fldU.f)
 nf=fldU.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
 tp=fldU.grid.class
-FLDU=similar(fldU)
-FLDV=similar(fldV)
+FLDU=similar(fldU;m=fldU.meta)
+FLDV=similar(fldV;m=fldV.meta)
 
 for i=1:nf;
  FLDU.f[i]=fill(fillval,s[i].+2N);
@@ -365,8 +365,8 @@ s=size.(fldU.f)
 nf=fldU.grid.nFaces
 nf==5 ? s=vcat(s,s[3]) : nothing
 tp=fldU.grid.class
-FLDU=similar(fldU)
-FLDV=similar(fldV)
+FLDU=similar(fldU;m=fldU.meta)
+FLDV=similar(fldV;m=fldV.meta)
 
 for i=1:nf
   FLDU.f[i]=fill(fillval,s[i][1]+1,s[i][2]);

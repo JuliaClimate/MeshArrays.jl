@@ -44,10 +44,10 @@ cd("/Users/gforget/mywork/data/")
 #
 # This uses `demo2 / smooth` as done in `2018/09` to test exchanges and array operations.
 
-GridVariables=GridOfOnes("CubeSphere",6,100);
-(Rini,Rend,DXCsm,DYCsm)=demo2(GridVariables);
-@btime (dFLDdx, dFLDdy)=gradient(Rini,GridVariables);
-@btime Rend=smooth(Rini,DXCsm,DYCsm,GridVariables);
+γ,Γ=GridOfOnes("CubeSphere",6,100);
+(Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
+@btime (dFLDdx, dFLDdy)=gradient(Rini,Γ);
+@btime Rend=smooth(Rini,DXCsm,DYCsm,Γ);
 
 # **2019/08/08**
 # ```
@@ -59,20 +59,20 @@ GridVariables=GridOfOnes("CubeSphere",6,100);
 #
 # This uses `demo3` to test indexing type operations.
 
-mygrid=GridSpec("LatLonCap","GRID_LLC90/")
-GridVariables=GridLoad(mygrid)
-TrspX=mygrid.read(mygrid.path*"TrspX.bin",MeshArray(mygrid,Float32))
-TrspY=mygrid.read(mygrid.path*"TrspY.bin",MeshArray(mygrid,Float32))
-TauX=mygrid.read(mygrid.path*"TauX.bin",MeshArray(mygrid,Float32))
-TauY=mygrid.read(mygrid.path*"TauY.bin",MeshArray(mygrid,Float32))
-SSH=mygrid.read(mygrid.path*"SSH.bin",MeshArray(mygrid,Float32))
-(UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables);
+γ=GridSpec("LatLonCap","GRID_LLC90/")
+Γ=GridLoad(γ)
+TrspX=γ.read(γ.path*"TrspX.bin",MeshArray(γ,Float32))
+TrspY=γ.read(γ.path*"TrspY.bin",MeshArray(γ,Float32))
+TauX=γ.read(γ.path*"TauX.bin",MeshArray(γ,Float32))
+TauY=γ.read(γ.path*"TauY.bin",MeshArray(γ,Float32))
+SSH=γ.read(γ.path*"SSH.bin",MeshArray(γ,Float32))
+(UV, LC, Tr)=demo3(TrspX,TrspY,Γ);
 
-@btime GridVariables=GridLoad(mygrid)
-@btime mygrid.read(mygrid.path*"TrspX.bin",MeshArray(mygrid,Float32))
-@btime LC=LatitudeCircles(-89.0:89.0,GridVariables)
-@btime for i=1:length(LC); ThroughFlow(UV,LC[i],GridVariables); end
-@btime (UV, LC, Tr)=demo3(TrspX,TrspY,GridVariables);
+@btime Γ=GridLoad(γ)
+@btime γ.read(γ.path*"TrspX.bin",MeshArray(γ,Float32))
+@btime LC=LatitudeCircles(-89.0:89.0,Γ)
+@btime for i=1:length(LC); ThroughFlow(UV,LC[i],Γ); end
+@btime (UV, LC, Tr)=demo3(TrspX,TrspY,Γ);
 
 # **2019/08/08**
 # ```
