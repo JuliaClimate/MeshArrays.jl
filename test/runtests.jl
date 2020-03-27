@@ -8,7 +8,7 @@ include(joinpath(p,"../examples/Demos.jl"))
 for nTopo=1:3
     if nTopo==1; grTopo="CubeSphere"; nFaces=6; N=200;
     elseif nTopo==2; grTopo="LatLonCap"; nFaces=5; N=200;
-    elseif nTopo==3; grTopo="PeriodicChanel"; nFaces=1; N=500;
+    elseif nTopo==3; grTopo="PeriodicChannel"; nFaces=1; N=500;
     end;
     Npt=nFaces*N*N
     γ,Γ=GridOfOnes(grTopo,nFaces,N)
