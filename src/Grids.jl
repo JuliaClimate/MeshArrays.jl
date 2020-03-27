@@ -10,7 +10,7 @@ GridSpec() = GridSpec("LatLonCap","GRID_LLC90/")
 
 Return a `gmcgrid` specification that provides grid files `path`,
 `class`, `nFaces`, `ioSize`, `facesSize`, `ioPrec`, & a `read` function
-(not yet) using hard-coded values for `"PeriodicDomain"`, `"PeriodicChanel"`,
+(not yet) using hard-coded values for `"PeriodicDomain"`, `"PeriodicChannel"`,
 `"CubeSphere"`, and `"LatLonCap" for now.
 """
 function GridSpec(GridName,GridParentDir="./")
@@ -65,10 +65,17 @@ function GridLoad(γ::gcmgrid)
 
     Γ=Dict()
 
-    list_n=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","Depth");
-    list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m")
+    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth");
+    list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m")
     pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
-    list_p=(pc,pg,pc,pg,pc,pg,pu,pv,pv,pu,pc)
+    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc)
+
+    if !isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path)))
+        list_n=(list_n...,"AngleCS","AngleSN");
+        list_u=(list_u...,1.0,1.0)
+        list_p=(list_p...,pc,pc)
+    end
+
     for ii=1:length(list_n)
         m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii])
         tmp1=γ.read(γ.path*list_n[ii]*".data",MeshArray(γ,γ.ioPrec;meta=m))
@@ -129,7 +136,7 @@ function GridOfOnes(grTp,nF,nP)
         ioSize=[nP nP*nF]
     elseif grTopo=="CubeSphere"
         ioSize=[nP nP*nF]
-    elseif grTopo=="PeriodicChanel"
+    elseif grTopo=="PeriodicChannel"
         ioSize=[nP nP]
     elseif grTopo=="PeriodicDomain"
         nFsqrt=Int(sqrt(nF))
@@ -142,10 +149,11 @@ function GridOfOnes(grTp,nF,nP)
     γ=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
     Γ=Dict()
-    list_n=("XC","XG","YC","YG","RAC","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
-    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
+    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
+    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
     pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
-    list_p=(pc,pg,pc,pg,pc,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+
     for ii=1:length(list_n);
         tmp1=fill(1.,nP,nP*nF); m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
         tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));

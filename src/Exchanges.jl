@@ -39,7 +39,7 @@ if fld.grid.class=="LatLonCap"
   FLD=exch_T_N_cs(fld,N)
 elseif fld.grid.class=="CubeSphere"
   FLD=exch_T_N_cs(fld,N)
-elseif fld.grid.class=="PeriodicChanel"
+elseif fld.grid.class=="PeriodicChannel"
   FLD=exch_T_N_ll(fld,N)
 elseif fld.grid.class=="PeriodicDomain"
   FLD=exch_T_N_dpdo(fld,N)
@@ -57,7 +57,7 @@ if u.grid.class=="LatLonCap"
   (uex,vex)=exch_UV_N_cs(u,v,N)
 elseif u.grid.class=="CubeSphere"
   (uex,vex)=exch_UV_N_cs(u,v,N)
-elseif u.grid.class=="PeriodicChanel"
+elseif u.grid.class=="PeriodicChannel"
   (uex,vex)=exch_UV_N_ll(u,v,N)
 elseif u.grid.class=="PeriodicDomain"
   (uex,vex)=exch_UV_N_dpdo(u,v,N)
@@ -75,7 +75,7 @@ if u.grid.class=="LatLonCap"
   (uex,vex)=exch_UV_cs(u,v)
 elseif u.grid.class=="CubeSphere"
   (uex,vex)=exch_UV_cs(u,v)
-elseif u.grid.class=="PeriodicChanel"
+elseif u.grid.class=="PeriodicChannel"
   (uex,vex)=exch_UV_ll(u,v)
 elseif u.grid.class=="PeriodicDomain"
   (uex,vex)=exch_UV_dpdo(u,v)
@@ -187,7 +187,7 @@ return FLDU,FLDV
 
 end
 
-## Grid-specific implementations: PeriodicChanel case
+## Grid-specific implementations: PeriodicChannel case
 
 function exch_T_N_ll(fld::MeshArray,N::Integer)
 
