@@ -1,4 +1,54 @@
 
+using NearestNeighbors
+import NearestNeighbors: knn
+
+"""
+    knn(xgrid,ygrid::MeshArray,x,y::Array{T,1},k::Int)
+
+Find k nearest neighbors to each point in x,y on xgrid,ygrid
+
+```
+lon=collect(0.1:0.5:2.1); lat=collect(0.1:0.5:2.1);
+(f,i,j,a)=knn(Γ["XC"],Γ["YC"],lon,lat)
+```
+"""
+function knn(xgrid::MeshArray,ygrid::MeshArray,
+        xvec::Array{T,1},yvec::Array{T,1},k=1::Int) where {T}
+
+        #ancillary variables
+        Γ=xgrid.grid
+        a_f=MeshArray(Γ,Int); [a_f[ii][:,:].=ii for ii=1:Γ.nFaces]
+        a_i=MeshArray(Γ,Int); [a_i[ii]=collect(1:Γ.fSize[ii][1])*ones(Int,1,Γ.fSize[ii][2]) for ii=1:Γ.nFaces]
+        a_j=MeshArray(Γ,Int); [a_j[ii]=ones(Int,Γ.fSize[ii][1],1)*collect(1:Γ.fSize[ii][2])' for ii=1:Γ.nFaces]
+
+        #convert to flat Array format
+        a_x=write(xgrid)
+        a_y=write(ygrid)
+        a_f=write(a_f)
+        a_i=write(a_i)
+        a_j=write(a_j)
+
+        #vector of grid points in Cartesian, 3D, coordinates
+        kk=findall(isfinite.(a_x))
+        x=sin.(pi/2 .-a_y[kk]*pi/180).*cos.(a_x[kk]*pi/180)
+        y=sin.(pi/2 .-a_y[kk]*pi/180).*sin.(a_x[kk]*pi/180)
+        z=cos.(pi/2 .-a_y[kk]*pi/180);
+
+        #vector of target points in Cartesian, 3D, coordinates
+        xx=sin.(pi/2 .-yvec*pi/180).*cos.(xvec*pi/180);
+        yy=sin.(pi/2 .-yvec*pi/180).*sin.(xvec*pi/180);
+        zz=cos.(pi/2 .-yvec*pi/180);
+
+        #define tree
+        kdtree = KDTree([x y z]')
+
+        #find nearest neighbors
+        idxs, _ = knn(kdtree, [xx yy zz]', k, true)
+        idxs=[idxs[i][j] for i=1:length(idxs),j=1:k]
+
+        return a_f[kk[idxs]],a_i[kk[idxs]],a_j[kk[idxs]],kk[idxs]
+end
+
 """
     StereographicProjection(XC0,YC0,XC,YC)
 
