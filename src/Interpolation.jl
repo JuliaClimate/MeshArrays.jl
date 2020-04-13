@@ -9,17 +9,17 @@ Find k nearest neighbors to each point in x,y on xgrid,ygrid
 
 ```
 lon=collect(0.1:0.5:2.1); lat=collect(0.1:0.5:2.1);
-(f,i,j,a)=knn(Γ["XC"],Γ["YC"],lon,lat)
+(f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
 ```
 """
 function knn(xgrid::MeshArray,ygrid::MeshArray,
         xvec::Array{T,1},yvec::Array{T,1},k=1::Int) where {T}
 
         #ancillary variables
-        Γ=xgrid.grid
-        a_f=MeshArray(Γ,Int); [a_f[ii][:,:].=ii for ii=1:Γ.nFaces]
-        a_i=MeshArray(Γ,Int); [a_i[ii]=collect(1:Γ.fSize[ii][1])*ones(Int,1,Γ.fSize[ii][2]) for ii=1:Γ.nFaces]
-        a_j=MeshArray(Γ,Int); [a_j[ii]=ones(Int,Γ.fSize[ii][1],1)*collect(1:Γ.fSize[ii][2])' for ii=1:Γ.nFaces]
+        γ=xgrid.grid
+        a_f=MeshArray(γ,Int); [a_f[ii][:,:].=ii for ii=1:γ.nFaces]
+        a_i=MeshArray(γ,Int); [a_i[ii]=collect(1:γ.fSize[ii][1])*ones(Int,1,γ.fSize[ii][2]) for ii=1:γ.nFaces]
+        a_j=MeshArray(γ,Int); [a_j[ii]=ones(Int,γ.fSize[ii][1],1)*collect(1:γ.fSize[ii][2])' for ii=1:γ.nFaces]
 
         #convert to flat Array format
         a_x=write(xgrid)
@@ -47,6 +47,61 @@ function knn(xgrid::MeshArray,ygrid::MeshArray,
         idxs=[idxs[i][j] for i=1:length(idxs),j=1:k]
 
         return a_f[kk[idxs]],a_i[kk[idxs]],a_j[kk[idxs]],kk[idxs]
+end
+
+"""
+    InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1})
+
+Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
+
+```
+lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
+InterpolationFactors(Γ,lon,lat)
+```
+"""
+function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
+
+        #ancillary variables
+        γ=Γ["XC"].grid
+        a_f=MeshArray(γ,Int); [a_f[ii][:,:].=ii for ii=1:γ.nFaces]
+        a_i=MeshArray(γ,Int); [a_i[ii]=collect(1:γ.fSize[ii][1])*ones(Int,1,γ.fSize[ii][2]) for ii=1:γ.nFaces]
+        a_j=MeshArray(γ,Int); [a_j[ii]=ones(Int,γ.fSize[ii][1],1)*collect(1:γ.fSize[ii][2])' for ii=1:γ.nFaces]
+
+        (f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
+
+        ni=30; nj=30; γ=Γ["XC"].grid
+        τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int);
+        [tiles[τ[i]["face"]][τ[i]["i"],τ[i]["j"]].=i for i in 1:length(τ)]
+        t=vec(write(tiles)[c])
+        t_list=unique(t)
+
+        XCt=Tiles(τ,exchange(Γ["XC"]))
+        YCt=Tiles(τ,exchange(Γ["YC"]))
+
+        ow=Array{Float64,2}(undef,length(lon),4)
+        for ii=1:length(t_list)
+                tt=t_list[ii]
+                pp=findall(t.==tt)
+
+                ff=τ[tt]["face"]
+                ii0=minimum(τ[tt]["i"])+Int(ni/2)
+                jj0=minimum(τ[tt]["j"])+Int(nj/2)
+                XC0=Γ["XG"].f[ff][ii0,jj0]
+                YC0=Γ["YG"].f[ff][ii0,jj0]
+                #
+                (x_grid,y_grid)=StereographicProjection(XC0,YC0,XCt[tt],YCt[tt])
+                (x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon[pp],lat[pp])
+                #
+                (x_quad,y_quad,i_quad,j_quad)=QuadArrays(x_grid,y_grid)
+                angsum=PolygonAngle(x_quad,y_quad,x_trgt,y_trgt)
+                kk=findall(angsum.>180.)
+                kk=[kk[j].I[1] for j in 1:length(kk)]
+                #
+                ow[pp,:]=QuadCoeffs(x_quad[kk,:],y_quad[kk,:],x_trgt,y_trgt)
+        end
+
+        #return f,i,j,a
+        return ow
 end
 
 """
@@ -106,8 +161,9 @@ Compute sum of interior angles for polygons or points-to-polygons (when
 specifies one polygon. (optional) `x,y` are position vectors.
 
 ```
-lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
-x,y=StereographicProjection(45.,60.,lon,lat)
+px=[0. 0. 1. 1.]; py=[0. 1. 1. 0.];
+x=collect(-1.0:0.25:2.0); y=x;
+PolygonAngle(px,py,x,y)
 ```
 """
 function PolygonAngle(px,py,x=[],y=[])
@@ -146,6 +202,39 @@ function PolygonAngle(px,py,x=[],y=[])
         return angsum
 end
 
+"""
+    QuadArrays(x_grid,y_grid)
+
+Transform x_grid,y_grid (size ni+2,nj+2) into x_quad,y_quad,i_quad,j_quad
+quadrilaterals (size ni+1*nj+1,4) where i_quad,j_quad are point indices
+"""
+function QuadArrays(x_grid::Array{T,2},y_grid::Array{T,2}) where {T}
+        ni,nj=size(x_grid) .-2
+
+        x_quad=Array{Float64,2}(undef,(ni+1)*(nj+1),4)
+        y_quad=Array{Float64,2}(undef,(ni+1)*(nj+1),4)
+        i_quad=Array{Int64,2}(undef,(ni+1)*(nj+1),4)
+        j_quad=Array{Int64,2}(undef,(ni+1)*(nj+1),4)
+
+        didj=[[0 0];[1 0];[1 1];[0 1]]
+        for pp=1:4
+                di=didj[pp,1]
+                dj=didj[pp,2]
+
+                #note the shift in indices due to exchange above
+                tmp=x_grid[1+di:ni+1+di,1+dj:nj+1+dj]
+                x_quad[:,pp]=vec(tmp)
+                tmp=y_grid[1+di:ni+1+di,1+dj:nj+1+dj]
+                y_quad[:,pp]=vec(tmp)
+
+                tmp=collect(0+di:ni+di)*ones(1,nj+1)
+                i_quad[:,pp]=vec(tmp)
+                tmp=ones(ni+1,1)*transpose(collect(0+dj:nj+dj));
+                j_quad[:,pp]=vec(tmp)
+        end
+
+        return x_quad,y_quad,i_quad,j_quad
+end
 
 """
     QuadCoeffs(px,py,ox=[],oy=[])
@@ -154,7 +243,7 @@ Compute bilinear interpolation coefficients for `ox,oy` within `px,py`
 by remapping these quadrilaterals to the `unit square`.
 - `px,py` are `Mx4` matrices where each line specifies one quadrilateral.
 - `ox,oy` are `MxP` position matrices
-- `pw` (output) are the `MxPx4` bilinear interpolation weights
+- `ow` (output) are the `MxPx4` bilinear interpolation weights
 
 ```
 QuadCoeffs([-1., 8., 13., -4.]',[-1., 3., 11., 8.]',0.,6.)
@@ -166,8 +255,8 @@ function QuadCoeffs(px,py,ox=[],oy=[])
         #  QuadCoeffs([-1., 8., 13., -4.]',[-1., 3., 11., 8.]',0.,6.)
         #However the case of a perfect parallelogram needs special treatment
         #  QuadCoeffs([0., 2., 3., 1.]',[0., 0., 1., 1.]',0.1,0.1)
-        #Deals with this situtation by falling back to ParalCoeffs
-        #  ParalCoeffs([0., 2., 3., 1.]',[0., 0., 1., 1.]',0.1,0.1)
+        #Deals with this situtation by falling back to ParaCoeffs
+        #  ParaCoeffs([0., 2., 3., 1.]',[0., 0., 1., 1.]',0.1,0.1)
 
         #1. solve linear problem (`a,b` vectors from `px,py`)
         #  A=[1 0 0 0;1 1 0 0;1 1 1 1;1 0 1 0]; AI = inv(A);
@@ -230,7 +319,7 @@ function QuadCoeffs(px,py,ox=[],oy=[])
                 tmp4=(1 .-pl[:,5:end]).*pm[:,5:end]
                 ow=cat(tmp1,tmp2,tmp3,tmp4; dims=3)
                 #treat pathological cases if needed
-                tmp=ParalCoeffs(px,py,ox,oy)
+                tmp=ParaCoeffs(px,py,ox,oy)
                 ow[findall(isnan.(ow))].=tmp[findall(isnan.(ow))]
         end
 
@@ -238,7 +327,7 @@ function QuadCoeffs(px,py,ox=[],oy=[])
 end
 
 """
-    ParalCoeffs(px,py,ox=[],oy=[])
+    ParaCoeffs(px,py,ox=[],oy=[])
 
 Compute bilinear interpolation coefficients for `ox,oy` within `px,py`
 by remapping these parallelograms to the `unit square`.
@@ -248,11 +337,11 @@ by remapping these parallelograms to the `unit square`.
 
 ```
 x=1.0; y=1.0 #Try send the corners to unit square corners?
-println(vec(ParalCoeffs([0., 2., 3., 1.]',[0., 0., 1., 1.]',x,y)))
+println(vec(ParaCoeffs([0., 2., 3., 1.]',[0., 0., 1., 1.]',x,y)))
 println(vec(QuadCoeffs([0., 2.01, 3., 1.]',[0., 0., 1., 1.]',x,y)))
 ```
 """
-function ParalCoeffs(px,py,ox=[],oy=[])
+function ParaCoeffs(px,py,ox=[],oy=[])
 
         tmp1=px[:,1];
         tmp2=-px[:,1]+px[:,2];

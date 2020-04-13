@@ -17,10 +17,10 @@ include("Interpolation.jl");
 export AbstractMeshArray, MeshArray, gcmgrid
 export exchange, gradient, convergence, smooth, mask
 export GridSpec, GridLoad, GridOfOnes, GridAddWS!
-export Tiles, knn
+export Tiles, InterpolationFactors, knn
 export ScalarPotential, VectorPotential, ThroughFlow
 export StereographicProjection, LatitudeCircles
-export PolygonAngle, QuadCoeffs
+export PolygonAngle, QuadArrays, QuadCoeffs, ParaCoeffs
 
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
