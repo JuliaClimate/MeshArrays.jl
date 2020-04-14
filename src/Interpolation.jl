@@ -56,29 +56,39 @@ Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
 
 ```
 lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
-InterpolationFactors(Γ,lon,lat)
+(f,i,j,w)=InterpolationFactors(Γ,lon,lat)
 ```
 """
 function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
+#to match gcmfaces test case (`interp=gcmfaces_interp_coeffs(0.1,0.1);`)
+#set: iiTile=17; XC0=6.5000; YC0=-0.1994
 
         #ancillary variables
-        γ=Γ["XC"].grid
-        a_f=MeshArray(γ,Int); [a_f[ii][:,:].=ii for ii=1:γ.nFaces]
-        a_i=MeshArray(γ,Int); [a_i[ii]=collect(1:γ.fSize[ii][1])*ones(Int,1,γ.fSize[ii][2]) for ii=1:γ.nFaces]
-        a_j=MeshArray(γ,Int); [a_j[ii]=ones(Int,γ.fSize[ii][1],1)*collect(1:γ.fSize[ii][2])' for ii=1:γ.nFaces]
-
         (f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
 
+        γ=Γ["XC"].grid
         ni=30; nj=30; γ=Γ["XC"].grid
         τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int);
-        [tiles[τ[i]["face"]][τ[i]["i"],τ[i]["j"]].=i for i in 1:length(τ)]
+        [tiles[τ[ii]["face"]][τ[ii]["i"],τ[ii]["j"]].=ii for ii in 1:length(τ)]
+
         t=vec(write(tiles)[c])
         t_list=unique(t)
+        t_XC=Tiles(τ,exchange(Γ["XC"]))
+        t_YC=Tiles(τ,exchange(Γ["YC"]))
 
-        XCt=Tiles(τ,exchange(Γ["XC"]))
-        YCt=Tiles(τ,exchange(Γ["YC"]))
+        t_f=MeshArray(γ,Int); [t_f[ii][:,:].=ii for ii=1:γ.nFaces]
+        t_i=MeshArray(γ,Int); [t_i[ii]=collect(1:γ.fSize[ii][1])*ones(Int,1,γ.fSize[ii][2]) for ii=1:γ.nFaces]
+        t_j=MeshArray(γ,Int); [t_j[ii]=ones(Int,γ.fSize[ii][1],1)*collect(1:γ.fSize[ii][2])' for ii=1:γ.nFaces]
 
-        ow=Array{Float64,2}(undef,length(lon),4)
+        t_f=Tiles(τ,exchange(t_f))
+        t_i=Tiles(τ,exchange(t_i))
+        t_j=Tiles(τ,exchange(t_j))
+
+        #main loop
+        i_f=fill(0,length(lon),4)
+        i_i=fill(0,length(lon),4)
+        i_j=fill(0,length(lon),4)
+        i_w=fill(0.0,length(lon),4)
         for ii=1:length(t_list)
                 tt=t_list[ii]
                 pp=findall(t.==tt)
@@ -89,7 +99,7 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 XC0=Γ["XG"].f[ff][ii0,jj0]
                 YC0=Γ["YG"].f[ff][ii0,jj0]
                 #
-                (x_grid,y_grid)=StereographicProjection(XC0,YC0,XCt[tt],YCt[tt])
+                (x_grid,y_grid)=StereographicProjection(XC0,YC0,t_XC[tt],t_YC[tt])
                 (x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon[pp],lat[pp])
                 #
                 (x_quad,y_quad,i_quad,j_quad)=QuadArrays(x_grid,y_grid)
@@ -97,11 +107,13 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 kk=findall(angsum.>180.)
                 kk=[kk[j].I[1] for j in 1:length(kk)]
                 #
-                ow[pp,:]=QuadCoeffs(x_quad[kk,:],y_quad[kk,:],x_trgt,y_trgt)
+                i_f[pp,:]=[t_f[tt][i_quad[kk[j],i]+1,j_quad[kk[j],i]+1] for j=1:length(lon), i=1:4]
+                i_i[pp,:]=[t_i[tt][i_quad[kk[j],i]+1,j_quad[kk[j],i]+1] for j=1:length(lon), i=1:4]
+                i_j[pp,:]=[t_j[tt][i_quad[kk[j],i]+1,j_quad[kk[j],i]+1] for j=1:length(lon), i=1:4]
+                i_w[pp,:]=QuadCoeffs(x_quad[kk,:],y_quad[kk,:],x_trgt,y_trgt)
         end
 
-        #return f,i,j,a
-        return ow
+        return i_f,i_i,i_j,i_w
 end
 
 """
