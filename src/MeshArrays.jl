@@ -20,7 +20,6 @@ export GridSpec, GridLoad, GridOfOnes, GridAddWS!
 export Tiles, InterpolationFactors, knn
 export ScalarPotential, VectorPotential, ThroughFlow
 export StereographicProjection, LatitudeCircles
-export PolygonAngle, QuadArrays, QuadCoeffs, ParaCoeffs
 
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
