@@ -50,6 +50,33 @@ function knn(xgrid::MeshArray,ygrid::MeshArray,
 end
 
 """
+    Interpolate(z_in::MeshArray,f,i,j,w)
+
+```
+lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
+lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
+
+Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
+(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
+DD=Interpolate(Γ["Depth"],f,i,j,w)
+
+using Plots
+contourf(vec(lon[:,1]),vec(lat[1,:]),DD,clims=(0.,6000.))
+```
+"""
+function Interpolate(z_in::MeshArray,f,i,j,w)
+    z_out=NaN*similar(f[:,1])
+    for jj=1:size(f,1)
+        if !isnan(sum(w[jj,:]))
+            x=[z_in[f[jj,ii]][i[jj,ii],j[jj,ii]] for ii=1:4]
+            kk=findall(isfinite.(x))
+            ~isempty(kk) ? z_out[jj]=sum(w[jj,kk].*x[kk])/sum(w[jj,kk]) : nothing
+        end
+    end
+    return z_out
+end
+
+"""
     InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1})
 
 Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
