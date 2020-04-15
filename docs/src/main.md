@@ -1,6 +1,8 @@
 ## Main Features
 
-An instance of the `MeshArray` type has arrays as elements. Elementary arrays within a `MeshArray` may represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified `gcmgrid` which is embeded in `MeshArray` instances. `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output.
+The elements of a `MeshArray` are arrays. These elementary arrays typically represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified `gcmgrid` which is embeded inside each `MeshArray` instance. 
+
+`Interpolate` can be used to interpolate a `MeshArray` to any location (i.e. arbitrary longitude, latitude pair). `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output. 
 
 The current default for `MeshArray` is the `gcmarray` type and an instance `H` is shown below. This example is based on a grid known as `LatLonCap` where each global map is associated with 5 subdomains. Hence, `H.f` is a `(5, 50)` array when `H` represents a gridded variable on `50` depth levels, and elements of  `H.f` are arrays of size `(90, 270)`, `(90, 90)`, or `(270, 90)`. 
 
@@ -94,18 +96,30 @@ varmeta(unit::Union{Unitful.AbstractQuantity,Number},
         name::String,long_name::String)
 ```
 
-### Examples
+### Examples, Interpolation, & Plots
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter` notebooks that are available in the [MeshArrayNotebooks repo](https://github.com/gaelforget/JuliaCon2018Notebooks.git). `demo1` and `demo2` are very similar. 
+The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter` notebooks available in [GlobalOceanNotebooks](https://github.com/juliaclimate/GlobalOceanNotebooks.git)/DataStructures which are also included here in `examples/Demos.jl`. [GlobalOceanNotebooks](https://github.com/juliaclimate/GlobalOceanNotebooks.git)/OceanTransports provides use case examples related to Earth System transports.
 
-Standard oceanography examples are also provided in [MeshArrayNotebooks](https://github.com/gaelforget/JuliaCon2018Notebooks.git) (e.g., `04_transports.ipynb`) and / or in `MeshArrays.jl` (e.g., `demo3`).
 
-A simple way to plot a `MeshArray` consists in plotting each elementary array separately (see below). Other methods that e.g. produce global maps and projections are illustrated in the notebooks. 
+A simple way to plot a `MeshArray` consists in plotting each elementary array separately. Other methods that e.g. produce global maps and projections are illustrated in the notebooks. A simple one is shown below that demonstrates the included interpolation scheme.
 
 ```
 p=dirname(pathof(MeshArrays));
-using Plots; include(joinpath(p,"Plots.jl"));
+using Plots; include(joinpath(p,"../examples/Plots.jl"));
 heatmap(D,title="Ocean Depth",clims=(0.,6000.))
 ```
 
-![OceanDepthMap](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/ocean_depth.png)
+![OceanDepthMap](https://raw.githubusercontent.com/juliaclimate/MeshArrays.jl/master/docs/images/ocean_depth.png)
+
+```
+lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
+lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
+
+Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
+(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
+DD=Interpolate(Γ["Depth"],f,i,j,w)
+
+contourf(vec(lon[:,1]),vec(lat[1,:]),DD,clims=(0.,6000.))
+```
+
+![OceanDepthMap](https://raw.githubusercontent.com/juliaclimate/MeshArrays.jl/master/docs/images/interp_depth.png)
