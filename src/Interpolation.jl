@@ -66,7 +66,6 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         #ancillary variables
         (f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
 
-        γ=Γ["XC"].grid
         ni=30; nj=30; γ=Γ["XC"].grid
         τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int);
         [tiles[τ[ii]["face"]][τ[ii]["i"],τ[ii]["j"]].=ii for ii in 1:length(τ)]
@@ -88,7 +87,7 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         i_f=fill(0,length(lon),4)
         i_i=fill(0,length(lon),4)
         i_j=fill(0,length(lon),4)
-        i_w=fill(0.0,length(lon),4)
+        i_w=fill(NaN,length(lon),4)
         for ii=1:length(t_list)
                 tt=t_list[ii]
                 pp=findall(t.==tt)
@@ -105,16 +104,21 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 (x_quad,y_quad,i_quad,j_quad)=QuadArrays(x_grid,y_grid)
                 angsum=PolygonAngle(x_quad,y_quad,x_trgt,y_trgt)
                 kk=findall(angsum.>180.)
-                kk=[kk[j].I[1] for j in 1:length(kk)]
+                kk1=[kk[j].I[1] for j in 1:length(kk)]
+                kk2=[kk[j].I[2] for j in 1:length(kk)]
                 #
-                i_f[pp,:]=[t_f[tt][i_quad[kk[j],i]+1,j_quad[kk[j],i]+1] for j=1:length(lon), i=1:4]
-                i_i[pp,:]=[t_i[tt][i_quad[kk[j],i]+1,j_quad[kk[j],i]+1] for j=1:length(lon), i=1:4]
-                i_j[pp,:]=[t_j[tt][i_quad[kk[j],i]+1,j_quad[kk[j],i]+1] for j=1:length(lon), i=1:4]
-                i_w[pp,:]=QuadCoeffs(x_quad[kk,:],y_quad[kk,:],x_trgt,y_trgt)
+                if ~isempty(kk2)
+                        i_f[pp[kk2],:]=[t_f[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
+                        i_i[pp[kk2],:]=[t_i[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
+                        i_j[pp[kk2],:]=[t_j[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
+                        i_w[pp[kk2],:]=QuadCoeffs(x_quad[kk1,:],y_quad[kk1,:],x_trgt[kk2],y_trgt[kk2])
+                end
         end
 
         return i_f,i_i,i_j,i_w
 end
+
+InterpolationFactors(Γ,lon::Number,lat::Number) = InterpolationFactors(Γ,[lon],[lat])
 
 """
     StereographicProjection(XC0,YC0,XC,YC)
@@ -206,7 +210,8 @@ function PolygonAngle(px,py,x=[],y=[])
                         v2x=ppx[:,2]*ones(1,P)-ones(M,1)*x
                         v2y=ppy[:,2]*ones(1,P)-ones(M,1)*y
                 end
-                g_acos=acos.( ( v1x.*v2x+v1y.*v2y )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y ) )
+                tmp=( v1x.*v2x+v1y.*v2y )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
+                g_acos=acos.( min.(max.(tmp,-1.0),1.0) )
                 g_sin= ( v1x.*v2y-v1y.*v2x )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
                 angsum=angsum+rad2deg.(g_acos.*sign.(g_sin));
         end;
@@ -284,12 +289,14 @@ function QuadCoeffs(px,py,ox=[],oy=[])
         tmp3=-px[:,1]+px[:,4];
         tmp4=px[:,1]-px[:,2]+px[:,3]-px[:,4];
         a=[tmp1 tmp2 tmp3 tmp4];
+        a[findall(abs.(a).<1e-8)].=0.0
 
         tmp1=py[:,1];
         tmp2=-py[:,1]+py[:,2];
         tmp3=-py[:,1]+py[:,4];
         tmp4=py[:,1]-py[:,2]+py[:,3]-py[:,4];
         b=[tmp1 tmp2 tmp3 tmp4];
+        b[findall(abs.(b).<1e-8)].=0.0
 
         #2. select between the two solutions (to 2nd order
         #non-linear problem below) using polygon interior angles
@@ -298,7 +305,7 @@ function QuadCoeffs(px,py,ox=[],oy=[])
         ii=findall(abs.(angsum .-360).<1e-3); sgn[ii].=1.
         ii=findall(abs.(angsum .+360).<1e-3); sgn[ii].=-1.
         ii=findall(isnan.(angsum))
-        length(ii)>0 ? warning("edge point was found") : nothing
+        length(ii)>0 ? println("warning: edge point was found") : nothing
 
         #3. solve non-linear problem for `pl,pm` from `px,py` & `a,b`
         # This defines the mapping from physical `x,y` to logical `l,m`
@@ -332,7 +339,7 @@ function QuadCoeffs(px,py,ox=[],oy=[])
                 ow=cat(tmp1,tmp2,tmp3,tmp4; dims=3)
                 #treat pathological cases if needed
                 tmp=ParaCoeffs(px,py,ox,oy)
-                ow[findall(isnan.(ow))].=tmp[findall(isnan.(ow))]
+                ow[findall((!isfinite).(ow))].=tmp[findall((!isfinite).(ow))]
         end
 
         return ow
@@ -365,8 +372,7 @@ function ParaCoeffs(px,py,ox=[],oy=[])
         tmp3=-py[:,2]+py[:,3];
         b=[tmp1 tmp2 tmp3];
 
-        (m,l)=inv([a[1,2] a[1,3];b[1,2] b[1,3]])*[ox[1]-a[1,1]; oy[1]-b[1,1]]
-
+#        (m,l)=inv([a[1,2] a[1,3];b[1,2] b[1,3]])*[ox[1]-a[1,1]; oy[1]-b[1,1]]
         m=( b[:,3].*(ox-a[:,1])-a[:,3].*(oy-b[:,1]) ) ./(a[:,2].*b[:,3]-a[:,3].*b[:,2])
         l=( -b[:,2].*(ox-a[:,1])+a[:,2].*(oy-b[:,1]) ) ./(a[:,2].*b[:,3]-a[:,3].*b[:,2])
 
