@@ -2,7 +2,7 @@
 
 The elements of a `MeshArray` are arrays. These elementary arrays typically represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified `gcmgrid` which is embeded inside each `MeshArray` instance. 
 
-`InterpolationFactors` ... `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output. 
+`Interpolate` can be used to interpolate a `MeshArray` to any location (i.e. arbitrary longitude, latitude pair). `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output. 
 
 The current default for `MeshArray` is the `gcmarray` type and an instance `H` is shown below. This example is based on a grid known as `LatLonCap` where each global map is associated with 5 subdomains. Hence, `H.f` is a `(5, 50)` array when `H` represents a gridded variable on `50` depth levels, and elements of  `H.f` are arrays of size `(90, 270)`, `(90, 90)`, or `(270, 90)`. 
 
