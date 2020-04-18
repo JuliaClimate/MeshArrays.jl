@@ -24,23 +24,23 @@ gcmarray(grid::gcmgrid,::Type{T},n3::Int,n4::Int)
 struct gcmarray{T, N, AT} <: AbstractMeshArray{T, N}
    grid::gcmgrid
    meta::varmeta
-   f::Array{AT,N}
-   fSize::Array{NTuple{2, Int}}
-   fIndex::Array{Int,1}
+   f::OuterArray{AT,N}
+   fSize::OuterArray{NTuple{2, Int}}
+   fIndex::OuterArray{Int,1}
    version::String
 end
 
-function gcmarray(grid::gcmgrid,f::Array{InnerArray{T,2},N};
+function gcmarray(grid::gcmgrid,f::OuterArray{InnerArray{T,2},N};
                   meta::varmeta=defaultmeta) where {T, N}
   gcmarray{T,N,InnerArray{T,2}}(grid,meta,f,grid.fSize,collect(1:grid.nFaces),thisversion)
 end
 
-function gcmarray(grid::gcmgrid,f::Array{InnerArray{T,N},1};
+function gcmarray(grid::gcmgrid,f::OuterArray{InnerArray{T,N},1};
                   meta::varmeta=defaultmeta) where {T, N}
   nFaces=grid.nFaces
   if N>2
     n3=size(f[1],3); n4=size(f[1],4);
-    g=Array{InnerArray{T,2},3}(undef,nFaces,n3,n4)
+    g=OuterArray{InnerArray{T,2},3}(undef,nFaces,n3,n4)
     for I in eachindex(view(g,1:nFaces,1:n3,1:n4))
       g[I]=view(f[I[1]],:,:,I[2],I[3])
     end
@@ -52,11 +52,11 @@ function gcmarray(grid::gcmgrid,f::Array{InnerArray{T,N},1};
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
-        fSize::Union{Array{NTuple{2, Int},1},NTuple{2, Int}},
-        fIndex::Union{Array{Int,1},Int};
+        fSize::Union{OuterArray{NTuple{2, Int},1},NTuple{2, Int}},
+        fIndex::Union{OuterArray{Int,1},Int};
         meta::varmeta=defaultmeta) where {T}
   nFaces=length(fIndex)
-  f=Array{InnerArray{T,2},1}(undef,nFaces)
+  f=OuterArray{InnerArray{T,2},1}(undef,nFaces)
   isa(fSize,NTuple) ? fSize=[fSize] : nothing
   isa(fIndex,Int) ? fIndex=[fIndex] : nothing
   for a=1:nFaces
@@ -66,11 +66,11 @@ function gcmarray(grid::gcmgrid,::Type{T},
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
-        fSize::Union{Array{NTuple{2, Int},1},NTuple{2, Int}},
-        fIndex::Union{Array{Int,1},Int},n3::Int;
+        fSize::Union{OuterArray{NTuple{2, Int},1},NTuple{2, Int}},
+        fIndex::Union{OuterArray{Int,1},Int},n3::Int;
         meta::varmeta=defaultmeta) where {T}
   nFaces=length(fIndex)
-  f=Array{InnerArray{T,2},2}(undef,nFaces,n3)
+  f=OuterArray{InnerArray{T,2},2}(undef,nFaces,n3)
   isa(fSize,NTuple) ? fSize=[fSize] : nothing
   isa(fIndex,Int) ? fIndex=[fIndex] : nothing
   for a=1:nFaces; for i3=1:n3;
@@ -80,11 +80,11 @@ function gcmarray(grid::gcmgrid,::Type{T},
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
-        fSize::Union{Array{NTuple{2, Int},1},NTuple{2, Int}},
-        fIndex::Union{Array{Int,1},Int},n3::Int,n4::Int;
+        fSize::Union{OuterArray{NTuple{2, Int},1},NTuple{2, Int}},
+        fIndex::Union{OuterArray{Int,1},Int},n3::Int,n4::Int;
         meta::varmeta=defaultmeta) where {T}
   nFaces=length(fIndex)
-  f=Array{InnerArray{T,2},3}(undef,nFaces,n3,n4)
+  f=OuterArray{InnerArray{T,2},3}(undef,nFaces,n3,n4)
   isa(fSize,NTuple) ? fSize=[fSize] : nothing
   isa(fIndex,Int) ? fIndex=[fIndex] : nothing
   for a=1:nFaces; for i4=1:n4; for i3=1:n3;
