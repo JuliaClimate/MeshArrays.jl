@@ -1,11 +1,11 @@
 
 """
-    gcmarray{T, N}
+    gcmarray{T, N, AT}
 
 gcmarray data structure. Available constructors:
 
 ```
-gcmarray{T,N}(grid::gcmgrid,meta::varmeta,f::Array{Array{T,2},N},
+gcmarray{T,N,AT}(grid::gcmgrid,meta::varmeta,f::Array{AT,N},
          fSize::Array{NTuple{N, Int}},fIndex::Array{Int,1},v::String)
 
 gcmarray(grid::gcmgrid,f::Array{Array{T,2},N}) where {T,N}
@@ -21,76 +21,76 @@ gcmarray(grid::gcmgrid,::Type{T},n3::Int)
 gcmarray(grid::gcmgrid,::Type{T},n3::Int,n4::Int)
 ```
 """
-struct gcmarray{T, N} <: AbstractMeshArray{T, N}
+struct gcmarray{T, N, AT} <: AbstractMeshArray{T, N}
    grid::gcmgrid
    meta::varmeta
-   f::Array{Array{T,2},N}
-   fSize::Array{NTuple{2, Int}}
-   fIndex::Array{Int,1}
+   f::OuterArray{AT,N}
+   fSize::OuterArray{NTuple{2, Int}}
+   fIndex::OuterArray{Int,1}
    version::String
 end
 
-function gcmarray(grid::gcmgrid,f::Array{Array{T,2},N};
+function gcmarray(grid::gcmgrid,f::OuterArray{InnerArray{T,2},N};
                   meta::varmeta=defaultmeta) where {T, N}
-  gcmarray{T,N}(grid,meta,f,grid.fSize,collect(1:grid.nFaces),thisversion)
+  gcmarray{T,N,InnerArray{T,2}}(grid,meta,f,grid.fSize,collect(1:grid.nFaces),thisversion)
 end
 
-function gcmarray(grid::gcmgrid,f::Array{Array{T,N},1};
+function gcmarray(grid::gcmgrid,f::OuterArray{InnerArray{T,N},1};
                   meta::varmeta=defaultmeta) where {T, N}
   nFaces=grid.nFaces
   if N>2
     n3=size(f[1],3); n4=size(f[1],4);
-    g=Array{Array{T,2},3}(undef,nFaces,n3,n4)
+    g=OuterArray{InnerArray{T,2},3}(undef,nFaces,n3,n4)
     for I in eachindex(view(g,1:nFaces,1:n3,1:n4))
       g[I]=view(f[I[1]],:,:,I[2],I[3])
     end
     n4==1 ? g=dropdims(g,dims=3) : nothing
-    gcmarray{T,ndims(g)}(grid,meta,g,grid.fSize,collect(1:nFaces),thisversion)
+    gcmarray{T,ndims(g),InnerArray{T,2}}(grid,meta,g,grid.fSize,collect(1:nFaces),thisversion)
   else
-    gcmarray{T,1}(grid,meta,f,grid.fSize,collect(1:nFaces),thisversion)
+    gcmarray{T,1,InnerArray{T,2}}(grid,meta,f,grid.fSize,collect(1:nFaces),thisversion)
   end
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
-        fSize::Union{Array{NTuple{2, Int},1},NTuple{2, Int}},
-        fIndex::Union{Array{Int,1},Int};
+        fSize::Union{OuterArray{NTuple{2, Int},1},NTuple{2, Int}},
+        fIndex::Union{OuterArray{Int,1},Int};
         meta::varmeta=defaultmeta) where {T}
   nFaces=length(fIndex)
-  f=Array{Array{T,2},1}(undef,nFaces)
+  f=OuterArray{InnerArray{T,2},1}(undef,nFaces)
   isa(fSize,NTuple) ? fSize=[fSize] : nothing
   isa(fIndex,Int) ? fIndex=[fIndex] : nothing
   for a=1:nFaces
-    f[a]=Array{T}(undef,fSize[a])
+    f[a]=InnerArray{T}(undef,fSize[a])
   end
-  gcmarray{T,1}(grid,meta,f,fSize,fIndex,thisversion)
+  gcmarray{T,1,InnerArray{T,2}}(grid,meta,f,fSize,fIndex,thisversion)
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
-        fSize::Union{Array{NTuple{2, Int},1},NTuple{2, Int}},
-        fIndex::Union{Array{Int,1},Int},n3::Int;
+        fSize::Union{OuterArray{NTuple{2, Int},1},NTuple{2, Int}},
+        fIndex::Union{OuterArray{Int,1},Int},n3::Int;
         meta::varmeta=defaultmeta) where {T}
   nFaces=length(fIndex)
-  f=Array{Array{T,2},2}(undef,nFaces,n3)
+  f=OuterArray{InnerArray{T,2},2}(undef,nFaces,n3)
   isa(fSize,NTuple) ? fSize=[fSize] : nothing
   isa(fIndex,Int) ? fIndex=[fIndex] : nothing
   for a=1:nFaces; for i3=1:n3;
-    f[a,i3]=Array{T}(undef,fSize[a]...)
+    f[a,i3]=InnerArray{T,2}(undef,fSize[a]...)
   end; end;
-  gcmarray{T,2}(grid,meta,f,fSize,fIndex,thisversion)
+  gcmarray{T,2,InnerArray{T,2}}(grid,meta,f,fSize,fIndex,thisversion)
 end
 
 function gcmarray(grid::gcmgrid,::Type{T},
-        fSize::Union{Array{NTuple{2, Int},1},NTuple{2, Int}},
-        fIndex::Union{Array{Int,1},Int},n3::Int,n4::Int;
+        fSize::Union{OuterArray{NTuple{2, Int},1},NTuple{2, Int}},
+        fIndex::Union{OuterArray{Int,1},Int},n3::Int,n4::Int;
         meta::varmeta=defaultmeta) where {T}
   nFaces=length(fIndex)
-  f=Array{Array{T,2},3}(undef,nFaces,n3,n4)
+  f=OuterArray{InnerArray{T,2},3}(undef,nFaces,n3,n4)
   isa(fSize,NTuple) ? fSize=[fSize] : nothing
   isa(fIndex,Int) ? fIndex=[fIndex] : nothing
   for a=1:nFaces; for i4=1:n4; for i3=1:n3;
-    f[a,i3,i4]=Array{T}(undef,fSize[a]...)
+    f[a,i3,i4]=InnerArray{T,2}(undef,fSize[a]...)
   end; end; end;
-  gcmarray{T,3}(grid,meta,f,fSize,fIndex,thisversion)
+  gcmarray{T,3,InnerArray{T,2}}(grid,meta,f,fSize,fIndex,thisversion)
 end
 
 # +
@@ -135,7 +135,7 @@ Base.size(A::gcmarray) = size(A.f)
 Base.size(A::gcmarray, dim::Integer) = size(A)[dim]
 
 # +
-function Base.getindex(A::gcmarray{T, N}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
+function Base.getindex(A::gcmarray{T, N, Array{T,2}}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
   J=1:length(A.fIndex)
   !isa(I[1],Colon) ? J=J[I[1]] : nothing
   nFaces=length(J)
@@ -158,7 +158,7 @@ end
 
 Same as getindex but also returns the face size and index
 """
-function getindexetc(A::gcmarray{T, N}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
+function getindexetc(A::gcmarray{T, N,InnerArray{T,2}}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
     f=A[I...]
     fSize=A.fSize[I[1]]
     fIndex=A.fIndex[I[1]]
@@ -166,11 +166,11 @@ function getindexetc(A::gcmarray{T, N}, I::Vararg{Union{Int,Array{Int},AbstractU
 end
 # -
 
-function Base.setindex!(A::gcmarray{T, N}, v, I::Vararg{Int, N}) where {T,N}
+function Base.setindex!(A::gcmarray{T, N,InnerArray{T,2}}, v, I::Vararg{Int, N}) where {T,N}
   return (A.f[I...] = v)
 end
 
-function Base.view(A::gcmarray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
+function Base.view(A::gcmarray{T, N,InnerArray{T,2}}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
   J=1:length(A.fIndex)
   !isa(I[1],Colon) ? J=J[I[1]] : nothing
   nFaces=length(J)
@@ -187,7 +187,7 @@ end
 
 # ### Custom pretty-printing, similar, and broadcast
 
-function Base.show(io::IO, z::gcmarray{T, N}) where {T,N}
+function Base.show(io::IO, z::gcmarray{T, N, Array{T,2}}) where {T,N}
     if ~isa(z.meta.unit,Missing)
       printstyled(io, "  name        = ",color=:normal)
       printstyled(io, "$(z.meta.name)\n",color=:blue)

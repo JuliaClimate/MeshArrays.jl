@@ -62,6 +62,8 @@ defaultmeta = varmeta(missing,fill(0.5,3),"unknown","unknown")
 ## concrete types and MeshArray alias:
 
 include("Type_gcmfaces.jl");
+OuterArray{T,N}=Array{T,N} where {T,N}
+InnerArray{T,N}=Array{T,N} where {T,N}
 include("Type_gcmarray.jl");
 include("Type_gcmvector.jl");
 

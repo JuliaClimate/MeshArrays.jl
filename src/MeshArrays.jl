@@ -14,8 +14,8 @@ include("ReadWrite.jl");
 include("Solvers.jl");
 include("Interpolation.jl");
 
-export AbstractMeshArray, MeshArray, gcmgrid
-export exchange, gradient, convergence, smooth, mask
+export AbstractMeshArray, MeshArray, InnerArray, OuterArray
+export gcmgrid, exchange, gradient, convergence, smooth, mask
 export GridSpec, GridLoad, GridOfOnes, GridAddWS!
 export Tiles, Interpolate, InterpolationFactors, knn
 export ScalarPotential, VectorPotential, ThroughFlow
