@@ -49,6 +49,8 @@ function knn(xgrid::MeshArray,ygrid::MeshArray,
         return a_f[kk[idxs]],a_i[kk[idxs]],a_j[kk[idxs]],kk[idxs]
 end
 
+knn(xgrid::MeshArray,ygrid::MeshArray,lon::Number,lat::Number) = knn(xgrid::MeshArray,ygrid::MeshArray,[lon],[lat])
+
 """
     Interpolate(z_in::MeshArray,f,i,j,w)
 
@@ -57,7 +59,7 @@ lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 
 Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
-(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
+(f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,vec(lon),vec(lat))
 DD=Interpolate(Γ["Depth"],f,i,j,w)
 
 using Plots
@@ -83,7 +85,7 @@ Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
 
 ```
 lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
-(f,i,j,w)=InterpolationFactors(Γ,lon,lat)
+(f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,lon,lat)
 ```
 """
 function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
@@ -115,6 +117,9 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         i_i=fill(0,length(lon),4)
         i_j=fill(0,length(lon),4)
         i_w=fill(NaN,length(lon),4)
+        j_f=fill(0,length(lon),1)
+        j_x=fill(0.0,length(lon),1)
+        j_y=fill(0.0,length(lon),1)
         for ii=1:length(t_list)
                 tt=t_list[ii]
                 pp=findall(t.==tt)
@@ -138,11 +143,26 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                         i_f[pp[kk2],:]=[t_f[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
                         i_i[pp[kk2],:]=[t_i[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
                         i_j[pp[kk2],:]=[t_j[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
-                        i_w[pp[kk2],:]=QuadCoeffs(x_quad[kk1,:],y_quad[kk1,:],x_trgt[kk2],y_trgt[kk2])
+                        w=QuadCoeffs(x_quad[kk1,:],y_quad[kk1,:],x_trgt[kk2],y_trgt[kk2])
+                        i_w[pp[kk2],:]=w
+                        #
+                        x=minimum(τ[tt]["i"])-0.5 .+collect(-1:ni)*ones(Int,1,nj+2)
+                        y=minimum(τ[tt]["j"])-0.5 .+ones(Int,ni+2,1)*collect(-1:nj)'
+                        xx=fill(0.0,size(kk2))
+                        yy=fill(0.0,size(kk2))
+                        for jj=1:length(kk2)
+                                tmpx=[x[i_quad[kk1[jj],i]+1,j_quad[kk1[jj],i]+1] for i=1:4]
+                                tmpy=[y[i_quad[kk1[jj],i]+1,j_quad[kk1[jj],i]+1] for i=1:4]
+                                xx[jj]=sum(tmpx.*w[jj,1,:])
+                                yy[jj]=sum(tmpy.*w[jj,1,:])
+                        end
+                        j_f[pp[kk2]].=ff
+                        j_x[pp[kk2]].=xx
+                        j_y[pp[kk2]].=yy
                 end
         end
 
-        return i_f,i_i,i_j,i_w
+        return i_f,i_i,i_j,i_w,j_f,j_x,j_y
 end
 
 InterpolationFactors(Γ,lon::Number,lat::Number) = InterpolationFactors(Γ,[lon],[lat])
