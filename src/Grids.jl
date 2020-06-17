@@ -1,4 +1,45 @@
 
+"""
+    simple_periodic_domain(np::Integer,nq=missing)
+
+Set up a simple periodic domain of size np x nq
+
+```
+np=16 #domain size is np x np
+Γ=simple_periodic_domain(np)
+```
+"""
+function simple_periodic_domain(np::Integer,nq=missing)
+    ismissing(nq) ? nq=np : nothing
+
+    nFaces=1
+    ioSize=[np nq]
+    facesSize=Array{NTuple{2, Int},1}(undef,nFaces)
+    facesSize[:].=[(np,nq)]
+    ioPrec=Float32
+    γ=gcmgrid("","PeriodicDomain",1,facesSize, ioSize, ioPrec, read, write)
+
+    Γ=Dict()
+    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
+    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    for ii=1:length(list_n);
+        tmp1=fill(1.,np,nq*nFaces);
+        m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
+        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
+        tmp2=Symbol(list_n[ii]);
+        @eval (($tmp2) = ($tmp1))
+        Γ[list_n[ii]]=tmp1
+    end
+
+    Γ["XC"][1]=vec(0.5:1.0:np-0.5)*ones(1,nq)
+    Γ["XG"][1]=vec(0.0:1.0:np-1.0)*ones(1,nq)
+    Γ["YC"][1]=ones(np,1)*transpose(vec(0.5:1.0:nq-0.5))
+    Γ["YG"][1]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0))
+    return Γ
+end
+
 ## GridSpec function with default GridName argument:
 
 GridSpec() = GridSpec("LatLonCap","GRID_LLC90/")
