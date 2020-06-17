@@ -9,7 +9,7 @@
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/dev)
 
-`MeshArrays.jl` defines the `MeshArray` type that can contain / organize / distribute collections of inter-connected arrays as generally done in climate models. `MeshArrays.jl` thus provides a simple yet efficient and general way to e.g. analyze climate system simulations ([JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg)).
+`MeshArrays.jl` defines the `MeshArray` type that can contain / organize / distribute collections of inter-connected arrays as generally done in climate models. `MeshArrays.jl` thus provides a simple yet efficient and general way to e.g. analyze climate system simulations.
 
 ### Installation & Test
 
@@ -36,9 +36,7 @@ include(joinpath(p,"../examples/Plots.jl"))
 heatmap(xo,clims=(-0.25,0.25))
 ```
 
-Initial noise           |  Smoothed noise 
-:------------------------------:|:---------------------------------:
-![](docs/images/noise_raw_16tiles.png)  |  ![](docs/images/noise_smooth_16tiles.png)
+<img src="docs/images/noise_smooth_16tiles.png" width="40%">
 
 Above, we used _16 subdomains_, with _40x40 grid points_ each, covering a standard _doubly periodic domain_. However, `MeshArrays.jl` also readily supports elaborate grids commonly used in climate models, such as the ones shown below.
 
@@ -66,5 +64,10 @@ The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) corresponds to th
 - Support for [CF-compliant](http://cfconventions.org) [Netcdf](https://en.wikipedia.org/wiki/NetCDF) input / output of `MeshArray`s, with interpolation or domain decomposition, for `C-grid` variables as provided via [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/).
 - Support for [MITgcm](https://mitgcm.readthedocs.io/en/latest/) use cases and specificities is provided via [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl).
 
+### JuliaCon 2018 Video
+
+[<img src="https://user-images.githubusercontent.com/20276764/84893715-abe42180-b06d-11ea-92d3-173b678a701e.png" width="40%">](https://youtu.be/W5DNqJG9jt0)
+
+(where `MeshArrays.jl` was first introduced as as `gcmfaces.jl`)
 
 

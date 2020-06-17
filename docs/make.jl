@@ -7,9 +7,9 @@ makedocs(
     modules  = [MeshArrays],
     pages = [
     "Home" => "index.md",
-    "Main" => "main.md",
-    "Detail" => "detail.md",
+    "Design" => "main.md",
     "API" => "API.md",
+    "Detail" => "detail.md",
             ]
 )
 
