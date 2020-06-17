@@ -66,10 +66,14 @@ heatmap(D[2],clims=(-0.25,0.25))
 
 -![EarthGrids](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/sphere_all.png)
 
+## Simulated Ocean Particles
+
+[![simulated particle movie (300m)](https://user-images.githubusercontent.com/20276764/84767001-b89a4400-af9f-11ea-956f-2e207f892c4f.png)](https://youtu.be/M6vAUtIsIIY)
+
 ## JuliaCon 2018 Video
 
 (where `MeshArrays.jl` was first introduced as as `gcmfaces.jl`)
 
-[![JuliaCon-2018 presentation](https://user-images.githubusercontent.com/20276764/84893715-abe42180-b06d-11ea-92d3-173b678a701e.png)](https://youtu.be/W5DNqJG9jt0)
+[![JuliaCon-2018 presentation](https://user-images.githubusercontent.com/20276764/84893715-abe42180-b06d-11ea-92d3-173b678a701e.png)](https://youtu.be/RDxAy_zSUvg)
 
 
