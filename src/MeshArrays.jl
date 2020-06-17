@@ -16,7 +16,7 @@ include("Interpolation.jl");
 
 export AbstractMeshArray, MeshArray, InnerArray, OuterArray
 export gcmgrid, exchange, gradient, convergence, smooth, mask
-export GridSpec, GridLoad, GridOfOnes, GridAddWS!
+export simple_periodic_domain, GridSpec, GridLoad, GridOfOnes, GridAddWS!
 export Tiles, Interpolate, InterpolationFactors, knn
 export ScalarPotential, VectorPotential, ThroughFlow
 export StereographicProjection, LatitudeCircles
