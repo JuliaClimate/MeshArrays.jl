@@ -95,7 +95,11 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         #ancillary variables
         (f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
 
+        #note to self : need flexible setting for ni,nj here
         ni=30; nj=30; γ=Γ["XC"].grid
+        size(Γ["XC"][1])==(360,160) ? (ni,nj)=(40,40) : nothing
+        size(Γ["XC"][1])==(360,178) ? (ni,nj)=(360,178) : nothing
+
         τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int);
         [tiles[τ[ii]["face"]][τ[ii]["i"],τ[ii]["j"]].=ii for ii in 1:length(τ)]
 
