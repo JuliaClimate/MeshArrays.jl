@@ -5,4 +5,5 @@
 devel
 docs/build/
 docs/.DS_Store
+Manifest.toml
 .ipynb_checkpoints/
