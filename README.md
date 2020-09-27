@@ -56,7 +56,7 @@ Above, we used _16 subdomains_, with _40x40 grid points_ each, covering a standa
 The [Global Ocean Notebooks](https://github.com/JuliaClimate/GlobalOceanNotebooks.git) illustrate:
 
 - Using `MeshArrays.jl` to accurately compute planetary transports on a ocean model [C-grid](https://en.wikipedia.org/wiki/Arakawa_grids).
-- Using `MeshArrays.jl` with [IndividualDisplacements.jl](https://github.com/gaelforget/IndividualDisplacements.jl) to efficiently compute trajectories of ocean plastic, plankton, etc over the C-grid configurations supported by `MeshArrays.jl`.
+- Using `MeshArrays.jl` with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) to efficiently compute trajectories of ocean plastic, plankton, etc over the C-grid configurations supported by `MeshArrays.jl`.
 - Support for [CF-compliant](http://cfconventions.org) [Netcdf](https://en.wikipedia.org/wiki/NetCDF) input / output of `MeshArray`s, with interpolation or domain decomposition, for `C-grid` variables as provided via [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/).
 - Support for [MITgcm](https://mitgcm.readthedocs.io/en/latest/) use cases and specificities is provided via [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl).
 

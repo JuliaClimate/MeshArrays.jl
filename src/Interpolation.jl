@@ -356,7 +356,7 @@ function QuadCoeffs(px,py,ox=[],oy=[])
         ii=findall(abs.(angsum .-360).<1e-3); sgn[ii].=1.
         ii=findall(abs.(angsum .+360).<1e-3); sgn[ii].=-1.
         ii=findall(isnan.(angsum))
-        length(ii)>0 ? println("warning: edge point was found") : nothing
+        #length(ii)>0 ? println("warning: edge point was found") : nothing
 
         #3. solve non-linear problem for `pl,pm` from `px,py` & `a,b`
         # This defines the mapping from physical `x,y` to logical `l,m`
