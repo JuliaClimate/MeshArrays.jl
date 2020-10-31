@@ -95,8 +95,10 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         #ancillary variables
         (f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
 
-        #note to self : need flexible setting for ni,nj here
-        ni=30; nj=30; γ=Γ["XC"].grid
+        fs=Γ["XC"].fSize
+        s=fill(0,2*length(fs))
+        [s[collect(1:2) .+ (i-1)*2]=collect(fs[i]) for i in 1:length(fs)]
+        ni=gcd(s); nj=gcd(s); γ=Γ["XC"].grid
         size(Γ["XC"][1])==(360,160) ? (ni,nj)=(40,40) : nothing
         size(Γ["XC"][1])==(360,178) ? (ni,nj)=(360,178) : nothing
 
