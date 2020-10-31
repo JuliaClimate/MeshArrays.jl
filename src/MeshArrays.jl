@@ -2,7 +2,7 @@
 
 module MeshArrays
 
-using Pkg
+using Pkg, Pkg.Artifacts
 thistoml=joinpath(dirname(pathof(MeshArrays)), "..", "Project.toml")
 thisversion=Pkg.TOML.parsefile(thistoml)["version"]
 
