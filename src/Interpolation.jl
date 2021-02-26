@@ -141,6 +141,7 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 angsum=fill(0.0,(size(x_quad,1),size(x_trgt,1)))
                 PolygonAngle(x_quad,y_quad,x_trgt,y_trgt,angsum)
                 #angsum=PolygonAngle_deprecated(x_quad,y_quad,x_trgt,y_trgt)
+
                 kk=findall(angsum.>180.)
                 kk1=[kk[j].I[1] for j in 1:length(kk)]
                 kk2=[kk[j].I[2] for j in 1:length(kk)]
@@ -292,13 +293,13 @@ function PolygonAngle(px::Array,py::Array,angsum::Array)
         end
 end
 
-function PolygonAngle(px::Array,py::Array,x::Array,y::Array,angsum::Array)
+function PolygonAngle(px::Array,py::Array,x::Array,y::Array,angsum)
         for ii in 1:length(x)
-                PolygonAngle(px,py,x[ii],y[ii],angsum[:,ii])
+                PolygonAngle(px,py,x[ii],y[ii],view(angsum,:,ii))
         end        
 end
 
-function PolygonAngle(px::Array,py::Array,x::Number,y::Number,angsum::Array)
+function PolygonAngle(px::Array,py::Array,x::Number,y::Number,angsum)
         M=size(px,1)
         N=size(px,2)
         angsum .= 0.0
