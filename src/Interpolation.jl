@@ -154,19 +154,18 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                         (x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon[pp],lat[pp])
                         PolygonAngle(x_quad,y_quad,x_trgt,y_trgt,angsum)
                         #angsum=PolygonAngle_deprecated(x_quad,y_quad,x_trgt,y_trgt)
-                        kk=findall(angsum.>180.)
-                        #
-                        if ~isempty(kk)
-                                i_f[pp,:].=[t_f[tt][i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
-                                i_i[pp,:].=[t_i[tt][i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
-                                i_j[pp,:].=[t_j[tt][i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
-                                x_q[:].=x_quad[kk[1],:]
-                                y_q[:].=y_quad[kk[1],:]
+                        if sum(angsum.>180.)>0
+                                kk=findall(angsum.>180.)[end]
+                                i_f[pp,:].=[t_f[tt][i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
+                                i_i[pp,:].=[t_i[tt][i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
+                                i_j[pp,:].=[t_j[tt][i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
+                                x_q[:].=x_quad[kk,:]
+                                y_q[:].=y_quad[kk,:]
                                 w[:]=QuadCoeffs(x_q,y_q,[x_trgt],[y_trgt])
                                 i_w[pp,:].=w[:]
                                 #
-                                [tmpx[i]=x[i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
-                                [tmpy[i]=y[i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
+                                [tmpx[i]=x[i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
+                                [tmpy[i]=y[i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
                                 #
                                 j_f[pp]=ff
                                 j_x[pp]=sum(tmpx.*i_w[pp,:])
