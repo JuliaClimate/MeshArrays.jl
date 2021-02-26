@@ -99,8 +99,6 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         s=fill(0,2*length(fs))
         [s[collect(1:2) .+ (i-1)*2]=collect(fs[i]) for i in 1:length(fs)]
         ni=gcd(s); nj=gcd(s); γ=Γ["XC"].grid
-        size(Γ["XC"][1])==(360,160) ? (ni,nj)=(40,40) : nothing
-        size(Γ["XC"][1])==(360,178) ? (ni,nj)=(360,178) : nothing
 
         τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int);
         [tiles[τ[ii]["face"]][τ[ii]["i"],τ[ii]["j"]].=ii for ii in 1:length(τ)]
@@ -142,7 +140,7 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 (x_quad,y_quad,i_quad,j_quad)=QuadArrays(x_grid,y_grid)
                 angsum=fill(0.0,(size(x_quad,1),size(x_trgt,1)))
                 PolygonAngle(x_quad,y_quad,x_trgt,y_trgt,angsum)
-                #angsum=PolygonAngle(x_quad,y_quad,x_trgt,y_trgt)
+                #angsum=PolygonAngle_deprecated(x_quad,y_quad,x_trgt,y_trgt)
                 kk=findall(angsum.>180.)
                 kk1=[kk[j].I[1] for j in 1:length(kk)]
                 kk2=[kk[j].I[2] for j in 1:length(kk)]
@@ -186,11 +184,7 @@ lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
 x,y=StereographicProjection(45.,60.,lon,lat)
 ```
 """
-function StereographicProjection(XC0,YC0,XC,YC)
-        #For additional information see e.g.
-        #http://www4.ncsu.edu/~franzen/public_html/CH795Z/math/lab_frame/lab_frame.html
-        #http://physics.unm.edu/Courses/Finley/p503/handouts/SphereProjectionFINALwFig.pdf
-
+function StereographicProjection(XC0::Number,YC0::Number,XC,YC)
         #compute spherical coordinates:
         phi=XC; theta=90 .-YC;
         phi0=XC0; theta0=90-YC0;
@@ -237,7 +231,7 @@ x=collect(-1.0:0.25:2.0); y=x;
 PolygonAngle(px,py,x,y)
 ```
 """
-function PolygonAngle(px,py,x=[],y=[])
+function PolygonAngle_deprecated(px,py,x=[],y=[])
 
         M=size(px,1); N=size(px,2); P=1;
         doPointsInPolygon=false
