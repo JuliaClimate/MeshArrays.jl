@@ -140,7 +140,9 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 (x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon[pp],lat[pp])
                 #
                 (x_quad,y_quad,i_quad,j_quad)=QuadArrays(x_grid,y_grid)
-                angsum=PolygonAngle(x_quad,y_quad,x_trgt,y_trgt)
+                angsum=fill(0.0,(size(x_quad,1),size(x_trgt,1)))
+                PolygonAngle(x_quad,y_quad,x_trgt,y_trgt,angsum)
+                #angsum=PolygonAngle(x_quad,y_quad,x_trgt,y_trgt)
                 kk=findall(angsum.>180.)
                 kk1=[kk[j].I[1] for j in 1:length(kk)]
                 kk2=[kk[j].I[2] for j in 1:length(kk)]
@@ -263,6 +265,7 @@ function PolygonAngle(px,py,x=[],y=[])
                         v2x=ppx[:,2]*ones(1,P)-ones(M,1)*x
                         v2y=ppy[:,2]*ones(1,P)-ones(M,1)*y
                 end
+                #println(size(v1x))
                 tmp=( v1x.*v2x+v1y.*v2y )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
                 g_acos=acos.( min.(max.(tmp,-1.0),1.0) )
                 g_sin= ( v1x.*v2y-v1y.*v2x )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
@@ -271,6 +274,58 @@ function PolygonAngle(px,py,x=[],y=[])
 
         return angsum
 end
+
+function PolygonAngle(px::Array,py::Array,angsum::Array)
+        M=size(px,1)
+        N=size(px,2)
+        angsum .= 0.0
+        for ii=0:N-1
+                i1=mod1(ii+1,N)
+                i2=mod1(ii+2,N)
+                i4=mod1(ii+4,N)
+                for jj=1:M
+                #compute sum of sector angles
+                v1x=px[jj,i2]-px[jj,i1]
+                v1y=py[jj,i2]-py[jj,i1]
+                v2x=px[jj,i4]-px[jj,i1]
+                v2y=py[jj,i4]-py[jj,i1]
+
+                tmp=( v1x.*v2x+v1y.*v2y )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
+                g_acos=acos.( min.(max.(tmp,-1.0),1.0) )
+                g_sin= ( v1x.*v2y-v1y.*v2x )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
+                angsum[jj] += rad2deg(g_acos*sign(g_sin))
+                end
+        end
+end
+
+function PolygonAngle(px::Array,py::Array,x::Array,y::Array,angsum::Array)
+        for ii in 1:length(x)
+                PolygonAngle(px,py,x[ii],y[ii],angsum[:,ii])
+        end        
+end
+
+function PolygonAngle(px::Array,py::Array,x::Number,y::Number,angsum::Array)
+        M=size(px,1)
+        N=size(px,2)
+        angsum .= 0.0
+        for ii=0:N-1
+                i1=mod1(ii+1,N)
+                i2=mod1(ii+2,N)
+                for jj=1:M
+                #compute sum of sector angles
+                v1x=px[jj,i1] -x
+                v1y=py[jj,i1] -y
+                v2x=px[jj,i2] -x
+                v2y=py[jj,i2] -y
+
+                tmp=( v1x.*v2x+v1y.*v2y )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
+                g_acos=acos.( min.(max.(tmp,-1.0),1.0) )
+                g_sin= ( v1x.*v2y-v1y.*v2x )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
+                angsum[jj] += rad2deg(g_acos*sign(g_sin))
+                end
+        end
+end
+
 
 """
     QuadArrays(x_grid,y_grid)
@@ -353,7 +408,8 @@ function QuadCoeffs(px,py,ox=[],oy=[])
 
         #2. select between the two solutions (to 2nd order
         #non-linear problem below) using polygon interior angles
-        angsum=PolygonAngle(px,py)
+        angsum=fill(0.0,(size(px,1)))
+        PolygonAngle(px,py,angsum)
         sgn=NaN*px[:,1];
         ii=findall(abs.(angsum .-360).<1e-3); sgn[ii].=1.
         ii=findall(abs.(angsum .+360).<1e-3); sgn[ii].=-1.
