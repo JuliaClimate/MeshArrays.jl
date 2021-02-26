@@ -92,17 +92,27 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
 #to match gcmfaces test case (`interp=gcmfaces_interp_coeffs(0.1,0.1);`)
 #set: iiTile=17; XC0=6.5000; YC0=-0.1994
 
+        #main loop
+        i_f=fill(0,length(lon),4)
+        i_i=fill(0,length(lon),4)
+        i_j=fill(0,length(lon),4)
+        i_w=fill(NaN,length(lon),4)
+        j_f=fill(0,length(lon),1)
+        j_x=fill(0.0,length(lon),1)
+        j_y=fill(0.0,length(lon),1)
+
         #ancillary variables
         (f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
 
+        #1. tiles and τ        
         fs=Γ["XC"].fSize
         s=fill(0,2*length(fs))
         [s[collect(1:2) .+ (i-1)*2]=collect(fs[i]) for i in 1:length(fs)]
         ni=gcd(s); nj=gcd(s); γ=Γ["XC"].grid
-
         τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int);
         [tiles[τ[ii]["face"]][τ[ii]["i"],τ[ii]["j"]].=ii for ii in 1:length(τ)]
 
+        #2. t_XC, t_XC, t_f, t_i, t_j        
         t=vec(write(tiles)[c])
         t_list=unique(t)
         t_XC=Tiles(τ,exchange(Γ["XC"]))
@@ -116,17 +126,15 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         t_i=Tiles(τ,exchange(t_i))
         t_j=Tiles(τ,exchange(t_j))
 
+        x_q=fill(0.0,1,4)
+        y_q=fill(0.0,1,4)
+        tmpx=fill(0.0,1,4)
+        tmpy=fill(0.0,1,4)
+        w=fill(0.0,1,4)
+
         #main loop
-        i_f=fill(0,length(lon),4)
-        i_i=fill(0,length(lon),4)
-        i_j=fill(0,length(lon),4)
-        i_w=fill(NaN,length(lon),4)
-        j_f=fill(0,length(lon),1)
-        j_x=fill(0.0,length(lon),1)
-        j_y=fill(0.0,length(lon),1)
         for ii=1:length(t_list)
                 tt=t_list[ii]
-                pp=findall(t.==tt)
 
                 ff=τ[tt]["face"]
                 ii0=minimum(τ[tt]["i"])+Int(ni/2)
@@ -135,37 +143,35 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 YC0=Γ["YG"].f[ff][ii0,jj0]
                 #
                 (x_grid,y_grid)=StereographicProjection(XC0,YC0,t_XC[tt],t_YC[tt])
-                (x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon[pp],lat[pp])
-                #
                 (x_quad,y_quad,i_quad,j_quad)=QuadArrays(x_grid,y_grid)
-                angsum=fill(0.0,(size(x_quad,1),size(x_trgt,1)))
-                PolygonAngle(x_quad,y_quad,x_trgt,y_trgt,angsum)
-                #angsum=PolygonAngle_deprecated(x_quad,y_quad,x_trgt,y_trgt)
-
-                kk=findall(angsum.>180.)
-                kk1=[kk[j].I[1] for j in 1:length(kk)]
-                kk2=[kk[j].I[2] for j in 1:length(kk)]
                 #
-                if ~isempty(kk2)
-                        i_f[pp[kk2],:]=[t_f[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
-                        i_i[pp[kk2],:]=[t_i[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
-                        i_j[pp[kk2],:]=[t_j[tt][i_quad[kk1[j],i]+1,j_quad[kk1[j],i]+1] for j=1:length(kk1), i=1:4]
-                        w=QuadCoeffs(x_quad[kk1,:],y_quad[kk1,:],x_trgt[kk2],y_trgt[kk2])
-                        i_w[pp[kk2],:]=w
+                x=minimum(τ[tt]["i"])-0.5 .+collect(-1:ni)*ones(Int,1,nj+2)
+                y=minimum(τ[tt]["j"])-0.5 .+ones(Int,ni+2,1)*collect(-1:nj)'
+                #
+                angsum=fill(0.0,size(x_quad,1))
+
+                for pp in findall(t.==tt)
+                        (x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon[pp],lat[pp])
+                        PolygonAngle(x_quad,y_quad,x_trgt,y_trgt,angsum)
+                        #angsum=PolygonAngle_deprecated(x_quad,y_quad,x_trgt,y_trgt)
+                        kk=findall(angsum.>180.)
                         #
-                        x=minimum(τ[tt]["i"])-0.5 .+collect(-1:ni)*ones(Int,1,nj+2)
-                        y=minimum(τ[tt]["j"])-0.5 .+ones(Int,ni+2,1)*collect(-1:nj)'
-                        xx=fill(0.0,size(kk2))
-                        yy=fill(0.0,size(kk2))
-                        for jj=1:length(kk2)
-                                tmpx=[x[i_quad[kk1[jj],i]+1,j_quad[kk1[jj],i]+1] for i=1:4]
-                                tmpy=[y[i_quad[kk1[jj],i]+1,j_quad[kk1[jj],i]+1] for i=1:4]
-                                xx[jj]=sum(tmpx.*w[jj,1,:])
-                                yy[jj]=sum(tmpy.*w[jj,1,:])
+                        if ~isempty(kk)
+                                i_f[pp,:].=[t_f[tt][i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
+                                i_i[pp,:].=[t_i[tt][i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
+                                i_j[pp,:].=[t_j[tt][i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
+                                x_q[:].=x_quad[kk[1],:]
+                                y_q[:].=y_quad[kk[1],:]
+                                w[:]=QuadCoeffs(x_q,y_q,[x_trgt],[y_trgt])
+                                i_w[pp,:].=w[:]
+                                #
+                                [tmpx[i]=x[i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
+                                [tmpy[i]=y[i_quad[kk[1],i]+1,j_quad[kk[1],i]+1] for i=1:4]
+                                #
+                                j_f[pp]=ff
+                                j_x[pp]=sum(tmpx.*i_w[pp,:])
+                                j_y[pp]=sum(tmpy.*i_w[pp,:])
                         end
-                        j_f[pp[kk2]].=ff
-                        j_x[pp[kk2]].=xx
-                        j_y[pp[kk2]].=yy
                 end
         end
 
@@ -260,7 +266,6 @@ function PolygonAngle_deprecated(px,py,x=[],y=[])
                         v2x=ppx[:,2]*ones(1,P)-ones(M,1)*x
                         v2y=ppy[:,2]*ones(1,P)-ones(M,1)*y
                 end
-                #println(size(v1x))
                 tmp=( v1x.*v2x+v1y.*v2y )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
                 g_acos=acos.( min.(max.(tmp,-1.0),1.0) )
                 g_sin= ( v1x.*v2y-v1y.*v2x )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
