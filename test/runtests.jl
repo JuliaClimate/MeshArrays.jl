@@ -1,4 +1,4 @@
-using Test
+using Test, Documenter
 using MeshArrays
 
 p=dirname(pathof(MeshArrays))
@@ -24,3 +24,7 @@ for nTopo=1:3
     @test isapprox(Send,0.093; atol=1e-2)
 end;
 end;
+
+@testset "doctests" begin
+    doctest(MeshArrays; manual = false)
+end

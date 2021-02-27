@@ -5,19 +5,19 @@
 # - Reformated in 2019/08 (`gaelforget`)
 # - Added to repo in 2020/01 (`gaelforget`)
 
-# **2020/01/25 using julia 1.3**
+# **2021/02/26 using julia 1.5**
 #
 # _note the speedup in `GridLoad` & `LatitudeCircles` & `demo3` benchmarks_
 #
 # ```
-# gradient          263.030 μs (243 allocations: 3.69 MiB)
-# smooth             24.818 ms (11314 allocations: 238.19 MiB)
+# gradient          274.532 μs (231 allocations: 3.69 MiB)
+# smooth             24.581 ms (10845 allocations: 238.25 MiB)
 #
-# GridLoad           75.318 ms (7913 allocations: 663.22 MiB)
-# read_bin          177.079 μs (65 allocations: 2.01 MiB)
-# LatitudeCircles   603.469 ms (260018 allocations: 3.17 GiB)
-# ThroughFlow loop   52.728 ms (752206 allocations: 23.48 MiB)
-# demo3             643.774 ms (1012062 allocations: 3.19 GiB)
+# GridLoad               80.133 ms (8285 allocations: 663.26 MiB)
+# read_bin              151.670 μs (71 allocations: 2.01 MiB)
+# LatitudeCircles       647.875 ms (254111 allocations: 3.17 GiB)
+# ThroughFlow            43.826 ms (751490 allocations: 29.59 MiB)
+# demo3                 688.477 ms (1005446 allocations: 3.20 GiB)
 # ```
 #
 # **2019/08/08 using julia 1.1**

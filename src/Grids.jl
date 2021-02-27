@@ -1,13 +1,19 @@
-
 """
     simple_periodic_domain(np::Integer,nq=missing)
 
 Set up a simple periodic domain of size np x nq
 
-```
+```jldoctest
+using MeshArrays
 np=16 #domain size is np x np
 Γ=simple_periodic_domain(np)
+isa(Γ["XC"],MeshArray)
+
+# output
+
+true
 ```
+
 """
 function simple_periodic_domain(np::Integer,nq=missing)
     ismissing(nq) ? nq=np : nothing
@@ -42,17 +48,37 @@ end
 
 ## GridSpec function with default GridName argument:
 
-GridSpec() = GridSpec("LatLonCap","GRID_LLC90/")
+GridSpec() = GridSpec("PeriodicDomain","./")
 
 ## GridSpec function with GridName argument:
 
 """
     GridSpec(GridName,GridParentDir="./")
 
-Return a `gmcgrid` specification that provides grid files `path`,
-`class`, `nFaces`, `ioSize`, `facesSize`, `ioPrec`, & a `read` function
-(not yet) using hard-coded values for `"PeriodicDomain"`, `"PeriodicChannel"`,
-`"CubeSphere"`, and `"LatLonCap" for now.
+Select one of the pre-defined grids (by `GridName`) and return 
+the corresponding `gmcgrid` -- a global grid specification 
+which contains the grid files location (`GridParentDir`).
+    
+
+Possible choices for `GridName`:
+
+- `"PeriodicDomain"`
+- `"PeriodicChannel"`
+- `"CubeSphere"`
+- `"LatLonCap"``
+
+```jldoctest
+using MeshArrays
+g = GridSpec()
+g = GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+g = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+g = GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+isa(g,gcmgrid)
+
+# output
+
+true
+```
 """
 function GridSpec(GridName,GridParentDir="./")
 
@@ -101,6 +127,18 @@ Based on the MITgcm naming convention, grid variables are:
 - XC, XG, YC, YG, AngleCS, AngleSN, hFacC, hFacS, hFacW, Depth.
 - RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
 - DRC, DRF, RC, RF (one-dimensional)
+
+```jldoctest
+using MeshArrays
+γ = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+Γ = GridLoad(γ)
+
+isa(Γ["XC"],MeshArray)
+
+# output
+
+true
+```
 """
 function GridLoad(γ::gcmgrid)
 
