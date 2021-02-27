@@ -55,10 +55,11 @@ knn(xgrid::MeshArray,ygrid::MeshArray,lon::Number,lat::Number) = knn(xgrid::Mesh
     Interpolate(z_in::MeshArray,f,i,j,w)
 
 ```
+using MeshArrays
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 
-Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
+Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,vec(lon),vec(lat))
 DD=Interpolate(Γ["Depth"],f,i,j,w)
 
@@ -83,9 +84,18 @@ end
 
 Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
 
-```
+```jldoctest
+using MeshArrays
+γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+Γ=GridLoad(γ)
 lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,lon,lat)
+YC=Interpolate(Γ["YC"],f,i,j,w)
+extrema(i)==(9,10)
+
+# output
+
+true
 ```
 """
 function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
@@ -231,10 +241,17 @@ Compute sum of interior angles for polygons or points-to-polygons (when
 `px,py,x,y` is provided as input). `px,py` are `MxN` matrices where each line
 specifies one polygon. (optional) `x,y` are position vectors.
 
-```
+```jldoctest
+using MeshArrays
 px=[0. 0. 1. 1.]; py=[0. 1. 1. 0.];
 x=collect(-1.0:0.25:2.0); y=x;
-PolygonAngle(px,py,x,y)
+tmp=MeshArrays.PolygonAngle_deprecated(px,py,x,y)
+
+isa(tmp,Array)
+
+# output
+
+true
 ```
 """
 function PolygonAngle_deprecated(px,py,x=[],y=[])
