@@ -251,9 +251,16 @@ end
 Define sudomain `tiles` of size `ni,nj`. Each tile is defined by a `Dict` where
 `tile,face,i,j` correspond to tile ID, face ID, index ranges.
 
-```
-γ=GridSpec("LatLonCap","GRID_LLC90/")
+```jldoctest
+using MeshArrays
+γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 τ=Tiles(γ,30,30)
+
+isa(τ[1],Dict)
+
+# output
+
+true
 ```
 """
 function Tiles(γ::gcmgrid,ni::Int,nj::Int)
@@ -280,11 +287,18 @@ end
 
 Return an `Array` of tiles which cover `x` according to tile partition `τ`.
 
-```
-γ=GridSpec("LatLonCap","GRID_LLC90/")
+```jldoctest
+using MeshArrays
+γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 d=γ.read(γ.path*"Depth.data",MeshArray(γ,γ.ioPrec))
 τ=Tiles(γ,30,30)
 td=Tiles(τ,d)
+
+isa(td[1],Array)
+
+# output
+
+true
 ```
 """
 function Tiles(τ::Array{Dict},x::MeshArray)
@@ -308,9 +322,17 @@ end
 Compute XW, YW, XS, and YS (vector field locations) from XC, YC (tracer
 field locations) and add them to Γ.
 
-```
-Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
+```jldoctest
+using MeshArrays
+γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+Γ=GridLoad(γ)
 GridAddWS!(Γ)
+
+isa(Γ["XC"],MeshArray)
+
+# output
+
+true
 ```
 """
 function GridAddWS!(Γ::Dict)
