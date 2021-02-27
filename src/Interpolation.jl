@@ -161,7 +161,7 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                                 i_j[pp,:].=[t_j[tt][i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
                                 x_q[:].=x_quad[kk,:]
                                 y_q[:].=y_quad[kk,:]
-                                w[:]=QuadCoeffs(x_q,y_q,[x_trgt],[y_trgt])
+                                QuadCoeffs(x_q,y_q,x_trgt,y_trgt,w)
                                 i_w[pp,:].=w[:]
                                 #
                                 [tmpx[i]=x[i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
@@ -361,7 +361,7 @@ function QuadArrays(x_grid::Array{T,2},y_grid::Array{T,2}) where {T}
 end
 
 """
-    QuadCoeffs(px,py,ox=[],oy=[])
+    QuadCoeffs(px,py,ox=[],oy=[],ow=[])
 
 Compute bilinear interpolation coefficients for `ox,oy` within `px,py`
 by remapping these quadrilaterals to the `unit square`.
@@ -374,7 +374,7 @@ QuadCoeffs([-1., 8., 13., -4.]',[-1., 3., 11., 8.]',0.,6.)
 QuadCoeffs([0., 2., 3., 1.]',[0., 0., 1., 1.]',0.1,0.1)
 ```
 """
-function QuadCoeffs(px,py,ox=[],oy=[])
+function QuadCoeffs(px,py,ox=[],oy=[],ow=[])
         #test case from https://www.particleincell.com/2012/quad-interpolation/
         #  QuadCoeffs([-1., 8., 13., -4.]',[-1., 3., 11., 8.]',0.,6.)
         #However the case of a perfect parallelogram needs special treatment
@@ -391,66 +391,66 @@ function QuadCoeffs(px,py,ox=[],oy=[])
         #  x=a(1)+a(2)*l+a(3)*m+a(2)*l*m;
         #  y=b(1)+b(2)*l+b(3)*m+b(2)*l*m;
 
-        tmp1=px[:,1];
-        tmp2=-px[:,1]+px[:,2];
-        tmp3=-px[:,1]+px[:,4];
-        tmp4=px[:,1]-px[:,2]+px[:,3]-px[:,4];
-        a=[tmp1 tmp2 tmp3 tmp4];
+        a=[px[1] -px[1]+px[2] -px[1]+px[4] px[1]-px[2]+px[3]-px[4]]
         a[findall(abs.(a).<1e-8)].=0.0
 
-        tmp1=py[:,1];
-        tmp2=-py[:,1]+py[:,2];
-        tmp3=-py[:,1]+py[:,4];
-        tmp4=py[:,1]-py[:,2]+py[:,3]-py[:,4];
-        b=[tmp1 tmp2 tmp3 tmp4];
+        b=[py[1] -py[1]+py[2] -py[1]+py[4] py[1]-py[2]+py[3]-py[4]]
         b[findall(abs.(b).<1e-8)].=0.0
 
         #2. select between the two solutions (to 2nd order
         #non-linear problem below) using polygon interior angles
-        angsum=fill(0.0,(size(px,1)))
+        angsum=fill(0.0,1)
         PolygonAngle(px,py,angsum)
-        sgn=NaN*px[:,1];
-        ii=findall(abs.(angsum .-360).<1e-3); sgn[ii].=1.
-        ii=findall(abs.(angsum .+360).<1e-3); sgn[ii].=-1.
-        ii=findall(isnan.(angsum))
+        sgn=fill(NaN,1)
+        isapprox(angsum[1],360.0,rtol=0.01) ? sgn[1]=1.0 : nothing
+        isapprox(angsum[1],-360.0,rtol=0.01) ? sgn[1]=-1.0 : nothing
+        #ii=findall(isnan.(angsum))
         #length(ii)>0 ? println("warning: edge point was found") : nothing
 
         #3. solve non-linear problem for `pl,pm` from `px,py` & `a,b`
         # This defines the mapping from physical `x,y` to logical `l,m`
 
+        a=reshape(a,(size(a,1),1,size(a,2))); 
+        b=reshape(b,(size(b,1),1,size(b,2))); 
+
         # quadratic equation coeffs, `aa*mm^2+bb*m+cc=0`
         if ~isempty(ox);
-                x=[px ox]; y=[py oy];
+                x=ox; y=oy;
         else;
                 x=px; y=py;
+                a=repeat(a,1,size(x,2),1);
+                b=repeat(b,1,size(x,2),1);
+                sgn=repeat(sgn,1,size(x,2));
         end;
-        a=reshape(a,(size(a,1),1,size(a,2))); a=repeat(a,1,size(x,2),1);
-        b=reshape(b,(size(b,1),1,size(b,2))); b=repeat(b,1,size(x,2),1);
-        sgn=repeat(sgn,1,size(x,2));
         #
-        aa = a[:,:,4].*b[:,:,3] -a[:,:,3].*b[:,:,4]
-        bb = a[:,:,4].*b[:,:,1] -a[:,:,1].*b[:,:,4] + a[:,:,2].*b[:,:,3] - a[:,:,3].*b[:,:,2] + x.*b[:,:,4] - y.*a[:,:,4]
-        cc = a[:,:,2].*b[:,:,1] -a[:,:,1].*b[:,:,2] + x.*b[:,:,2] - y.*a[:,:,2]
-
-        #compute `pm = (-b+sqrt(b^2-4ac))/(2a)`
-        det = sqrt.(bb.*bb - 4.0*aa.*cc)
-        pm = (-bb+sgn.*det)./(2.0*aa)
-        #compute `pl` by substitution in equation system
-        pl = (x-a[:,:,1]-a[:,:,3].*pm)./(a[:,:,2]+a[:,:,4].*pm)
-
-        ow=[];
-        if ~isempty(ox);
-                tmp1=(1 .-pl[:,5:end]).*(1 .-pm[:,5:end])
-                tmp2=pl[:,5:end].*(1 .-pm[:,5:end])
-                tmp3=pl[:,5:end].*pm[:,5:end]
-                tmp4=(1 .-pl[:,5:end]).*pm[:,5:end]
-                ow=cat(tmp1,tmp2,tmp3,tmp4; dims=3)
-                #treat pathological cases if needed
-                tmp=ParaCoeffs(px,py,ox,oy)
-                ow[findall((!isfinite).(ow))].=tmp[findall((!isfinite).(ow))]
+        det=fill(0.0,size(x))
+        pm=fill(0.0,size(x))
+        pl=fill(0.0,size(x))
+        for ii=1:size(x,1), jj=1:size(x,2)
+                aa = a[ii,jj,4]*b[ii,jj,3]-a[ii,jj,3]*b[ii,jj,4]
+                bb = a[ii,jj,4]*b[ii,jj,1]-a[ii,jj,1]*b[ii,jj,4]+a[ii,jj,2]*b[ii,jj,3]-a[ii,jj,3]*b[ii,jj,2]+x[ii,jj]*b[ii,jj,4]-y[ii,jj].*a[ii,jj,4]
+                cc = a[ii,jj,2]*b[ii,jj,1]-a[ii,jj,1]*b[ii,jj,2]+x[ii,jj]*b[ii,jj,2]-y[ii,jj].*a[ii,jj,2]
+                #compute `pm = (-b+sqrt(b^2-4ac))/(2a)`
+                det[ii,jj] = sqrt(bb*bb - 4.0*aa*cc)
+                pm[ii,jj]  = (-bb+sgn[ii,jj]*det[ii,jj])/(2.0*aa)
+                #compute `pl` by substitution in equation system
+                pl[ii,jj]  = (x[ii,jj]-a[ii,jj,1]-a[ii,jj,3]*pm[ii,jj])/(a[ii,jj,2]+a[ii,jj,4]*pm[ii,jj])
         end
 
-        return ow
+        if ~isempty(ox);
+                tmp1=(1 .-pl).*(1 .-pm)
+                tmp2=pl.*(1 .-pm)
+                tmp3=pl.*pm
+                tmp4=(1 .-pl).*pm
+                ow[:]=cat(tmp1,tmp2,tmp3,tmp4; dims=3)
+                #ow[:].=cat(tmp1,tmp2,tmp3,tmp4; dims=3)[:]
+                #treat pathological cases if needed
+                tmp=ParaCoeffs(px,py,[ox],[oy])
+                for kk=1:length(ow)
+                        !isfinite(ow[kk]) ? ow[kk]=tmp[kk] : nothing
+                end
+        end
+
 end
 
 """
