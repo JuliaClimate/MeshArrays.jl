@@ -178,8 +178,8 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                                 [tmpy[i]=y[i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
                                 #
                                 j_f[pp]=ff
-                                j_x[pp]=sum(tmpx.*i_w[pp,:])
-                                j_y[pp]=sum(tmpy.*i_w[pp,:])
+                                j_x[pp]=sum(tmpx[:].*i_w[pp,:])
+                                j_y[pp]=sum(tmpy[:].*i_w[pp,:])
                         end
                 end
         end
