@@ -22,14 +22,11 @@ Pkg.test("MeshArrays")
 
 ### Workflow Example
 
-The diffusive smoother presented here as an example uses `MeshArrays.jl` to computes partial derivatives over a global domain by transfering data between neighboring subdomain arrays. 
+The diffusive smoother presented here as an example uses `MeshArrays.jl` to compute partial derivatives over a global domain / grid, which involves transfering data between neighboring subdomain arrays. In this workflow example, we 
 
-
-In this workflow example, we 
-
-1. generate a grid decomposition
-2. seed random noise everywhere
-3. smooth out the noise by applying diffusion globally
+1. generate a global grid decomposition
+2. seed random noise across global domain
+3. smooth out noise by applying diffusion globally
 4. plots the `outer` array of subdomain / `inner` arrays
 
 ```
@@ -49,11 +46,11 @@ heatmap(xo,clims=(-0.25,0.25))
 
 ### Global Grids
 
-The above example uses a basic _doubly periodic domain_ with _16 subdomains_ of _40x40 grid points_ each. However, `MeshArrays.jl` also readily supports more elaborate global grid configurations, such as the ones shown below, which are commonly used in climate models.
+In the previous example we used a basic _doubly periodic_  domain with _16 subdomains_ of _40x40 grid points_ each. However, `MeshArrays.jl` also readily supports more elaborate global grid configurations, such as the ones shown below, which are commonly used in modeling climate.
 
 <img src="docs/images/sphere_all.png" width="40%">
 
-To be able to handle all climate model grids in practical and uniform fashion, `MeshArrays.jl` introduces custom array types that are geared towards climate modeling and analysis applications.
+To be able to handle such climate model grids in practical and uniform fashion, `MeshArrays.jl` introduces custom array types that are geared towards climate science applications.
 
 ```
 struct gcmarray{T, N} <: AbstractMeshArray{T, N}
@@ -68,15 +65,15 @@ end
 
 ### Jupyter Notebooks
 
-The [Global Ocean Notebooks](https://github.com/JuliaClimate/GlobalOceanNotebooks.git) illustrate standard workflows that exploit `MeshArrays.jl` e.g. to:
+The [Global Ocean Notebooks](https://github.com/JuliaClimate/GlobalOceanNotebooks.git) illustrate standard workflows that use `MeshArrays.jl` to, e.g.:
 
 - accurately compute planetary scale transports on a global ocean model [C-grid](https://en.wikipedia.org/wiki/Arakawa_grids)
 - efficiently compute trajectories of ocean plastic, plankton, etc over any supported C-grid configuration using `MeshArrays.jl` along with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
 
 Additional functionalities provided via related packages include:
 
-- reading and writing files incl. [Netcdf](https://en.wikipedia.org/wiki/NetCDF) ([CF-compliant](http://cfconventions.org)) files often used in climate sciences. [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/) readily supports domain decomposition and on the fly interpolation for `MeshArray` data
-- support for the analysis of [MITgcm](https://mitgcm.readthedocs.io/en/latest/) model ouput and its optimizedd ocean state estimate solutions are provided via [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) and [OceanStateEstimation.jl](https://github.com/gaelforget/OceanStateEstimation.jl)
+- reading and writing files in [Netcdf](https://en.wikipedia.org/wiki/NetCDF) ([CF-compliant](http://cfconventions.org)), CSV, or binary formats often used in climate sciences. [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/) readily supports domain decomposition and spatial interpolation when used along with `MeshArray.jl`
+- support for the analysis of [MITgcm](https://mitgcm.readthedocs.io/en/latest/) model ouput and optimized, [state estimate](https://doi.org/10.5194/gmd-8-3071-2015) solutions are provided via [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) and [OceanStateEstimation.jl](https://github.com/gaelforget/OceanStateEstimation.jl), with interfaces in `MeshArray.jl`
 
 _For information about Jupyter notebook, see [Jupyter docs](https://en.wikipedia.org/wiki/Project_Jupyter). Free apps like <https://nbviewer.jupyter.org> and <https://mybinder.org>  let you view them and try them out conveniently in the cloud._
 
