@@ -18,10 +18,10 @@ function read(fil::String,x::MeshArray)
   fid = open(fil)
   xx = Array{eltype(x),2}(undef,(n1*n2,n3))
   read!(fid,xx)
-  xx = hton.(xx)
+  xx = reshape(hton.(xx),(n1,n2,n3))
   close(fid)
 
-  return read(xx,x)
+  return x.grid.read(xx,x)
 
 end
 
@@ -66,7 +66,7 @@ write(xx::Array,x::MeshArray) #to Array
 ```
 """
 function write(fil::String,x::MeshArray)
-  y=write(x)
+  y=x.grid.write(x)
   fid = open(fil,"w")
   write(fid,ntoh.(y))
   close(fid)
