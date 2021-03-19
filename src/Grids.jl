@@ -157,7 +157,7 @@ function GridLoad(γ::gcmgrid)
 
     for ii=1:length(list_n)
         m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii])
-        tmp1=γ.read(γ.path*list_n[ii]*".data",MeshArray(γ,γ.ioPrec;meta=m))
+        tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec;meta=m))
         tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
         Γ[list_n[ii]]=tmp1
@@ -167,7 +167,7 @@ function GridLoad(γ::gcmgrid)
 
     list_n=("DRC","DRF","RC","RF")
     for ii=1:length(list_n)
-        fil=γ.path*list_n[ii]*".data"
+        fil=joinpath(γ.path,list_n[ii]*".data")
         tmp1=stat(fil)
         n3=Int64(tmp1.size/reclen)
 
@@ -181,16 +181,19 @@ function GridLoad(γ::gcmgrid)
         Γ[list_n[ii]]=tmp1
     end
 
+    f=readdir(γ.path)
+    if sum(occursin.("hFacC",f))>0
     list_n=("hFacC","hFacS","hFacW");
     list_u=(1.0,1.0,1.0)
     list_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
     n3=length(Γ["RC"])
     for ii=1:length(list_n)
         m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
-        tmp1=γ.read(γ.path*list_n[ii]*".data",MeshArray(γ,γ.ioPrec,n3;meta=m))
+        tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec,n3;meta=m))
         tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
         Γ[list_n[ii]]=tmp1
+    end
     end
 
     return Γ
