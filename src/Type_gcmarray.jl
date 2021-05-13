@@ -133,6 +133,8 @@ end
 # +
 Base.size(A::gcmarray) = size(A.f)
 Base.size(A::gcmarray, dim::Integer) = size(A)[dim]
+#Base.dataids(A::gcmarray) = Base.dataids(A.f)
+Base.dataids(A::gcmarray) = (Base.dataids(A.f)..., Base.dataids(A.fSize)..., Base.dataids(A.fIndex)...)
 
 # +
 function Base.getindex(A::gcmarray{T, N, Array{T,2}}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
@@ -217,9 +219,9 @@ end
 
 function Base.similar(A::gcmarray;m::varmeta=defaultmeta)
     if ndims(A)==1
-        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex; meta=m)
+        B=gcmarray(A.grid,eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
     else
-        B=gcmarray(A.grid,eltype(A),A.fSize,A.fIndex,size(A,2); meta=m)
+        B=gcmarray(A.grid,eltype(A),copy(A.fSize),copy(A.fIndex),size(A,2); meta=m)
     end
     return B
 end
