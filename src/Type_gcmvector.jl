@@ -98,6 +98,7 @@ end
     findall(A::gcmarray{Bool})
 
 Return a gcmvector of the true indices in A. This allows:
+
 ```
 findall(A.<0) #gcmvector of CartesianIndex{2}
 A[findall(A.<0)] #gcmvector of eltype(A)

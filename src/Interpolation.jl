@@ -235,24 +235,11 @@ end
 
 
 """
-    PolygonAngle(px,py,x=[],y=[])
+    PolygonAngle_deprecated(px,py,x=[],y=[])
 
 Compute sum of interior angles for polygons or points-to-polygons (when
 `px,py,x,y` is provided as input). `px,py` are `MxN` matrices where each line
 specifies one polygon. (optional) `x,y` are position vectors.
-
-```jldoctest
-using MeshArrays
-px=[0. 0. 1. 1.]; py=[0. 1. 1. 0.];
-x=collect(-1.0:0.25:2.0); y=x;
-tmp=MeshArrays.PolygonAngle_deprecated(px,py,x,y)
-
-isa(tmp,Array)
-
-# output
-
-true
-```
 """
 function PolygonAngle_deprecated(px,py,x=[],y=[])
 
@@ -291,6 +278,9 @@ function PolygonAngle_deprecated(px,py,x=[],y=[])
         return angsum
 end
 
+"""
+    PolygonAngle(px::Array,py::Array,angsum::Array)
+"""
 function PolygonAngle(px::Array,py::Array,angsum::Array)
         M=size(px,1)
         N=size(px,2)
@@ -314,12 +304,37 @@ function PolygonAngle(px::Array,py::Array,angsum::Array)
         end
 end
 
+"""
+    function PolygonAngle(px::Array,py::Array,x::Array,y::Array,angsum)
+
+Compute sum of interior angles (`angsum`) for polygons or points-to-polygons (when
+`px,py,x,y,angsum` is provided as input). `px,py` are `MxN` matrices where each line
+specifies one polygon. (optional) `x,y` are position vectors.
+
+```jldoctest
+using MeshArrays
+px=[0. 0. 1. 1.]; py=[0. 1. 1. 0.];
+x=collect(-1.0:0.25:2.0); y=x;
+angsum=fill(0.0,1,length(x))
+MeshArrays.PolygonAngle(px,py,x,y,angsum)
+
+isa(angsum,Array)
+
+# output
+
+true
+```
+
+"""
 function PolygonAngle(px::Array,py::Array,x::Array,y::Array,angsum)
         for ii in 1:length(x)
                 PolygonAngle(px,py,x[ii],y[ii],view(angsum,:,ii))
         end        
 end
 
+"""
+    PolygonAngle(px::Array,py::Array,x::Number,y::Number,angsum)
+"""
 function PolygonAngle(px::Array,py::Array,x::Number,y::Number,angsum)
         M=size(px,1)
         N=size(px,2)
