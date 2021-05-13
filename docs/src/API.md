@@ -24,7 +24,7 @@ exchange
 Tiles
 ```
 
-## 3. Interapolation, etc
+## 3. Interpolation
 
 ```@docs
 knn
