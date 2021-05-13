@@ -9,6 +9,6 @@
 ## Contents
 
 ```@contents
-Pages = ["main.md","start.md","API.md","videos.md","detail.md"]
+Pages = ["start.md","main.md","API.md","videos.md","detail.md"]
 Depth = 2
 ```
