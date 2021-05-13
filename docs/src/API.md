@@ -20,6 +20,8 @@ simple_periodic_domain
 GridLoad
 MeshArrays.read
 MeshArrays.write
+exchange
+Tiles
 ```
 
 ## 3. Interapolation, etc
@@ -29,15 +31,13 @@ knn
 Interpolate
 InterpolationFactors
 StereographicProjection
-Tiles
 ```
 
 ## 4. Vector Fields
 
 ```@docs
-exchange
-convergence
 gradient
+convergence
 smooth
 ScalarPotential
 VectorPotential
