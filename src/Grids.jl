@@ -130,7 +130,11 @@ Based on the MITgcm naming convention, grid variables are:
 
 ```jldoctest
 using MeshArrays
+
 γ = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+#γ = GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+#γ = GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+
 Γ = GridLoad(γ)
 
 isa(Γ["XC"],MeshArray)
@@ -195,6 +199,8 @@ function GridLoad(γ::gcmgrid)
         Γ[list_n[ii]]=tmp1
     end
     end
+
+    GridAddWS!(Γ)
 
     return Γ
 

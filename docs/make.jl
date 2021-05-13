@@ -7,10 +7,11 @@ makedocs(
     modules  = [MeshArrays],
     pages = [
     "Home" => "index.md",
-    "Design" => "main.md",
-    "API" => "API.md",
+    "Main Features" => "main.md",
+    "API documentation" => "API.md",
     "Detail" => "detail.md",
-            ]
+    "Videos" => "videos.md",
+    ]
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.

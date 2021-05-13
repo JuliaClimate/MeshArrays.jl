@@ -1,6 +1,6 @@
-## Main Features
+# Main Features
 
-### Rationale / Design
+## Summary
 
 The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. This setup potentially allows different choices for the outer and inner arrays – for example `DistributedArrays` and `AxisArrays`, respectively, could be an option. `MeshArrays.jl` thus provides a simple but general solution to analyze or e.g. simulate climate system variables. 
 
@@ -8,7 +8,7 @@ The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct contai
 
 Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to keep track of model grid details. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output.
 
-### Data Structures
+## Data Structures
 
 The elements of a `MeshArray` are arrays. These elementary arrays typically represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified `gcmgrid` which is embeded inside each `MeshArray` instance. 
 
@@ -78,7 +78,7 @@ julia> show(exchange(D))
                 (272, 92)
 ```
 
-### Embedded Metadata
+## Embedded Metadata
 
 A `MeshArray` includes a `gcmgrid` specification which can be constructed as outlined below.
 
@@ -106,7 +106,7 @@ varmeta(unit::Union{Unitful.AbstractQuantity,Number},
         name::String,long_name::String)
 ```
 
-### Plotting, Interpolation, etc
+## Interpolation, Plots
 
 The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter` notebooks available in [GlobalOceanNotebooks](https://github.com/juliaclimate/GlobalOceanNotebooks.git)/DataStructures which are also included here in `examples/Demos.jl`. [GlobalOceanNotebooks](https://github.com/juliaclimate/GlobalOceanNotebooks.git)/OceanTransports provides use case examples related to Earth System transports.
 
@@ -133,3 +133,8 @@ contourf(vec(lon[:,1]),vec(lat[1,:]),DD,clims=(0.,6000.))
 ```
 
 ![OceanDepthMap](https://raw.githubusercontent.com/juliaclimate/MeshArrays.jl/master/docs/images/interp_depth.png)
+
+## Vector Fields
+
+!!! note "More on this soon"
+    Please refer to [Vector Fields](@ref)

@@ -67,6 +67,11 @@ InnerArray{T,N}=Array{T,N} where {T,N}
 include("Type_gcmarray.jl");
 include("Type_gcmvector.jl");
 
+"""
+    MeshArray
+
+Alias to `gcmarray` or `gcmfaces` concrete type
+"""
 #MeshArray=gcmfaces
 MeshArray=gcmarray
 
