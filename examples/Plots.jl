@@ -9,8 +9,14 @@ Calls `heatmap` for one elementary array per subplot
 function heatmap(x::MeshArray; args...)
     n=x.grid.nFaces
     isa(x,MeshArrays.gcmarray) ? n=length(x.fIndex) : nothing
+
+    m=Int(sqrt(n))
+    j=collect(1:n)
+    j=reshape(collect(j),(m,m))
+    j=reverse(permutedims(j,(2,1)); dims=2)[:]
+
     p=()
-    for i=1:n; p=(p...,heatmap(x.f[i]; args...)); end
+    for i=1:n; p=(p...,heatmap(x.f[j[i]]; args...)); end
     plot(p...)
 end
 

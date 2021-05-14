@@ -13,11 +13,18 @@ Pkg.test("MeshArrays")
 
 ## Tutorial
 
-Examples below (1) generate a grid configuration, (2) seed a 2D field of random noise, (3) smooth out this field, and (4) plot subdomain arrays. Smoothing is done via a lateral diffusion equation through time to illustrate how `MeshArray` computes partial derivatives & transfers data between neighboring subdomains. Examples 2 & 3 illustrate grid configurations commonly used in global models.
+The sequence of examples in this tutorial is as follows :
+
+1. generate a grid configuration
+1. create a map of random noise
+1. apply diffusion (a transport process)
+1. plot results for each subdomain array
+
+These rely on grid configurations commonly used in global models (see [Earth Grids](@ref)). In step 3, the smoothing is based on integrating a lateral diffusion equation through time over the global domain. This illustrates how `MeshArrays.jl` computes partial derivatives between neighboring subdomains. 
 
 ### 1. Doubly Periodic Domain
 
-Let's setup a doubly periodic domain with 16 subdomains that each contain 20 by 20 grid points.
+Let's setup a doubly periodic domain with 16 subdomains. Each one contains an array of 20 by 20 grid points.
 
 ```
 using MeshArrays; p=dirname(pathof(MeshArrays))
@@ -27,14 +34,14 @@ include(joinpath(p,"../examples/Demos.jl"))
 (xi,xo,_,_)=demo2(Γ);
 show(xo)
 
-using Plots; plotlyjs()
+using Plots
 include(joinpath(p,"../examples/Plots.jl"))
-heatmap(xo,clims=(-0.25,0.25))
+heatmap(xo,clims=(-0.25,0.25),colorbar=false,tickfont = (4, :black))
 ```
 
 Grid scale noise           |  Smoothed noise
 :------------------------------:|:---------------------------------:
-![raw](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/noise_raw_16tiles.png)  |  ![smooth](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/noise_smooth_16tiles.png)
+![raw](https://user-images.githubusercontent.com/20276764/118325229-2d883d80-b4d1-11eb-953b-ddbb11bcfe1b.png)  |  ![smooth](https://user-images.githubusercontent.com/20276764/118325093-f31ea080-b4d0-11eb-8c6e-8cd0cc2cc255.png)
 
 ### 2. Cube Sphere
 

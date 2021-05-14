@@ -39,10 +39,10 @@ show(xo)
 
 using Plots; plotlyjs()
 include(joinpath(p,"../examples/Plots.jl"))
-heatmap(xo,clims=(-0.25,0.25))
+heatmap(xo,clims=(-0.25,0.25),colorbar=false,tickfont = (4, :black))
 ```
 
-<img src="docs/images/noise_smooth_16tiles.png" width="40%">
+<img src="https://user-images.githubusercontent.com/20276764/118325229-2d883d80-b4d1-11eb-953b-ddbb11bcfe1b.png" width="40%"> ===> <img src="https://user-images.githubusercontent.com/20276764/118325093-f31ea080-b4d0-11eb-8c6e-8cd0cc2cc255.png" width="40%">
 
 ### Global Grids
 
