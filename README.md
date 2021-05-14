@@ -37,7 +37,7 @@ include(joinpath(p,"../examples/Demos.jl"))
 (xi,xo,_,_)=demo2(Γ);
 show(xo)
 
-using Plots; plotlyjs()
+using Plots
 include(joinpath(p,"../examples/Plots.jl"))
 heatmap(xo,clims=(-0.25,0.25),colorbar=false,tickfont = (4, :black))
 ```
