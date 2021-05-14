@@ -1,3 +1,6 @@
+
+Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
+
 """
     simple_periodic_domain(np::Integer,nq=missing)
 
@@ -7,7 +10,7 @@ Set up a simple periodic domain of size np x nq
 using MeshArrays
 np=16 #domain size is np x np
 Γ=simple_periodic_domain(np)
-isa(Γ["XC"],MeshArray)
+isa(Γ.XC,MeshArray)
 
 # output
 
@@ -43,7 +46,8 @@ function simple_periodic_domain(np::Integer,nq=missing)
     Γ["XG"][1]=vec(0.0:1.0:np-1.0)*ones(1,nq)
     Γ["YC"][1]=ones(np,1)*transpose(vec(0.5:1.0:nq-0.5))
     Γ["YG"][1]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0))
-    return Γ
+
+    return Dict_to_NamedTuple(Γ)
 end
 
 ## GridSpec function with default GridName argument:
@@ -120,7 +124,7 @@ end
 """
     GridLoad(γ::gcmgrid)
 
-Return a `Dict` of grid variables read from files located in `γ.path` (see `?GridSpec`).
+Return a `NamedTuple` of grid variables read from files located in `γ.path` (see `?GridSpec`).
 
 Based on the MITgcm naming convention, grid variables are:
 
@@ -137,7 +141,7 @@ using MeshArrays
 
 Γ = GridLoad(γ)
 
-isa(Γ["XC"],MeshArray)
+isa(Γ.XC,MeshArray)
 
 # output
 
@@ -202,7 +206,7 @@ function GridLoad(γ::gcmgrid)
 
     GridAddWS!(Γ)
 
-    return Γ
+    return Dict_to_NamedTuple(Γ)
 
 end
 
@@ -250,7 +254,7 @@ function GridOfOnes(grTp,nF,nP)
         Γ[list_n[ii]]=tmp1
     end
 
-    return γ, Γ
+    return γ, Dict_to_NamedTuple(Γ)
 
 end
 
@@ -265,7 +269,7 @@ using MeshArrays
 γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 τ=Tiles(γ,30,30)
 
-isa(τ[1],Dict)
+isa(τ[1],NamedTuple)
 
 # output
 
@@ -288,7 +292,7 @@ function Tiles(γ::gcmgrid,ni::Int,nj::Int)
         end
     end
     #
-    return τ
+    return Dict_to_NamedTuple.(τ)
 end
 
 """
@@ -310,16 +314,16 @@ isa(td[1],Array)
 true
 ```
 """
-function Tiles(τ::Array{Dict},x::MeshArray)
+function Tiles(τ::Array,x::MeshArray)
     nt=length(τ)
     tx=Array{typeof(x[1]),1}(undef,nt)
     dn=size(x[1],1)-x.fSize[1][1]
     for ii=1:nt
-        f=τ[ii]["face"]
-        i0=minimum(τ[ii]["i"])
-        i1=maximum(τ[ii]["i"])
-        j0=minimum(τ[ii]["j"])
-        j1=maximum(τ[ii]["j"])
+        f=τ[ii].face
+        i0=minimum(τ[ii].i)
+        i1=maximum(τ[ii].i)
+        j0=minimum(τ[ii].j)
+        j1=maximum(τ[ii].j)
         tx[ii]=view(x[f],i0:i1+dn,j0:j1+dn)
     end
     return tx
@@ -330,19 +334,6 @@ end
 
 Compute XW, YW, XS, and YS (vector field locations) from XC, YC (tracer
 field locations) and add them to Γ.
-
-```jldoctest
-using MeshArrays
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
-Γ=GridLoad(γ)
-GridAddWS!(Γ)
-
-isa(Γ["XC"],MeshArray)
-
-# output
-
-true
-```
 """
 function GridAddWS!(Γ::Dict)
 

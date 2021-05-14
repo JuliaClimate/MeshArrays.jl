@@ -36,7 +36,7 @@ end
     γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
     Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
     Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
-    Γ=GridLoad(γ); μ =Γ["hFacC"][:,1]
+    Γ=GridLoad(γ); μ =Γ.hFacC[:,1]
     μ[findall(μ.>0.0)].=1.0; μ[findall(μ.==0.0)].=NaN
 
     #Meridional transport integral
@@ -54,8 +54,8 @@ end
     TrspPot=ScalarPotential(TrspCon)
     #Divergent transport component
     (TxD,TyD)=gradient(TrspPot,Γ)
-    TxD=TxD.*Γ["DXC"]
-    TyD=TyD.*Γ["DYC"]
+    TxD=TxD.*Γ.DXC
+    TyD=TyD.*Γ.DYC
     #Rotational transport component
     TxR = Tx-TxD
     TyR = Ty-TyD

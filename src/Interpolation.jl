@@ -9,7 +9,7 @@ Find k nearest neighbors to each point in x,y on xgrid,ygrid
 
 ```
 lon=collect(0.1:0.5:2.1); lat=collect(0.1:0.5:2.1);
-(f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
+(f,i,j,c)=knn(Γ.XC,Γ.YC,lon,lat)
 ```
 """
 function knn(xgrid::MeshArray,ygrid::MeshArray,
@@ -61,7 +61,7 @@ lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 
 Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,vec(lon),vec(lat))
-DD=Interpolate(Γ["Depth"],f,i,j,w)
+DD=Interpolate(Γ.Depth,f,i,j,w)
 
 using Plots
 contourf(vec(lon[:,1]),vec(lat[1,:]),DD,clims=(0.,6000.))
@@ -90,7 +90,7 @@ using MeshArrays
 Γ=GridLoad(γ)
 lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,lon,lat)
-YC=Interpolate(Γ["YC"],f,i,j,w)
+YC=Interpolate(Γ.YC,f,i,j,w)
 extrema(i)==(9,10)
 
 # output
@@ -112,21 +112,21 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         j_y=fill(0.0,length(lon),1)
 
         #ancillary variables
-        (f,i,j,c)=knn(Γ["XC"],Γ["YC"],lon,lat)
+        (f,i,j,c)=knn(Γ.XC,Γ.YC,lon,lat)
 
         #1. tiles and τ        
-        fs=Γ["XC"].fSize
+        fs=Γ.XC.fSize
         s=fill(0,2*length(fs))
         [s[collect(1:2) .+ (i-1)*2]=collect(fs[i]) for i in 1:length(fs)]
-        ni=gcd(s); nj=gcd(s); γ=Γ["XC"].grid
+        ni=gcd(s); nj=gcd(s); γ=Γ.XC.grid
         τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int);
-        [tiles[τ[ii]["face"]][τ[ii]["i"],τ[ii]["j"]].=ii for ii in 1:length(τ)]
+        [tiles[τ[ii].face][τ[ii].i,τ[ii].j].=ii for ii in 1:length(τ)]
 
         #2. t_XC, t_XC, t_f, t_i, t_j        
         t=vec(write(tiles)[c])
         t_list=unique(t)
-        t_XC=Tiles(τ,exchange(Γ["XC"]))
-        t_YC=Tiles(τ,exchange(Γ["YC"]))
+        t_XC=Tiles(τ,exchange(Γ.XC))
+        t_YC=Tiles(τ,exchange(Γ.YC))
 
         t_f=MeshArray(γ,Int); [t_f[ii][:,:].=ii for ii=1:γ.nFaces]
         t_i=MeshArray(γ,Int); [t_i[ii]=collect(1:γ.fSize[ii][1])*ones(Int,1,γ.fSize[ii][2]) for ii=1:γ.nFaces]
@@ -146,17 +146,17 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         for ii=1:length(t_list)
                 tt=t_list[ii]
 
-                ff=τ[tt]["face"]
-                ii0=minimum(τ[tt]["i"])+Int(ni/2)
-                jj0=minimum(τ[tt]["j"])+Int(nj/2)
-                XC0=Γ["XG"].f[ff][ii0,jj0]
-                YC0=Γ["YG"].f[ff][ii0,jj0]
+                ff=τ[tt].face
+                ii0=minimum(τ[tt].i)+Int(ni/2)
+                jj0=minimum(τ[tt].j)+Int(nj/2)
+                XC0=Γ.XG.f[ff][ii0,jj0]
+                YC0=Γ.YG.f[ff][ii0,jj0]
                 #
                 (x_grid,y_grid)=StereographicProjection(XC0,YC0,t_XC[tt],t_YC[tt])
                 (x_quad,y_quad,i_quad,j_quad)=QuadArrays(x_grid,y_grid)
                 #
-                x=minimum(τ[tt]["i"])-0.5 .+collect(-1:ni)*ones(Int,1,nj+2)
-                y=minimum(τ[tt]["j"])-0.5 .+ones(Int,ni+2,1)*collect(-1:nj)'
+                x=minimum(τ[tt].i)-0.5 .+collect(-1:ni)*ones(Int,1,nj+2)
+                y=minimum(τ[tt].j)-0.5 .+ones(Int,ni+2,1)*collect(-1:nj)'
                 #
                 angsum=fill(0.0,size(x_quad,1))
 

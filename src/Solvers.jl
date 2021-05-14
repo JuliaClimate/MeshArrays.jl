@@ -103,7 +103,7 @@ function MatrixForPoisson(TrspCon,mskWet,mskDry,Kvec,Lvec,Kmap,Lmap)
         for ii=1:3; for jj=1:3;
             #1) compute effect of each point on neighboring target point:
             (FLDones,FLDkkFROM)=SeedWetPoints(TrspCon,Kmap,Lmap,aa,ii,jj);
-            (tmpU,tmpV)=gradient(FLDones,Dict(),false)
+            (tmpU,tmpV)=gradient(FLDones,(;),false)
             dFLDdt=convergence(tmpU,tmpV);
             #2) mask `dFLDdt` since we use a **Neumann** boundary condition.
             #Extrapolation uses a **Dirichlet** boundary condition, so mskFreeze should not be applied then.
@@ -160,7 +160,7 @@ Vector potential inversion.
 TrspPot=ScalarPotential(TrspCon)
 ```
 """
-function VectorPotential(TrspX::MeshArray,TrspY::MeshArray,Γ::Dict,method::Int=1)
+function VectorPotential(TrspX::MeshArray,TrspY::MeshArray,Γ::NamedTuple,method::Int=1)
 
     # 1)  streamfunction face by face:
 
@@ -176,8 +176,8 @@ function VectorPotential(TrspX::MeshArray,TrspY::MeshArray,Γ::Dict,method::Int=
     # 2a)  reset one land value per face to zero (method 1)
 
     if method==1
-        mskW=mask(1.0 .+ 0.0 * mask(view(Γ["hFacW"],:,1),NaN,0.0),0.0)
-        mskS=mask(1.0 .+ 0.0 * mask(view(Γ["hFacS"],:,1),NaN,0.0),0.0)
+        mskW=mask(1.0 .+ 0.0 * mask(view(Γ.hFacW,:,1),NaN,0.0),0.0)
+        mskS=mask(1.0 .+ 0.0 * mask(view(Γ.hFacS,:,1),NaN,0.0),0.0)
         (mskW,mskS)=exch_UV(mskW,mskS); mskW=abs.(mskW); mskS=abs.(mskS)
 
         for iF=1:TrspX.grid.nFaces
@@ -253,12 +253,12 @@ function VectorPotential(TrspX::MeshArray,TrspY::MeshArray,Γ::Dict,method::Int=
     tmp1=write(psi)
 
     #all land points:
-    tmp2=write(view(Γ["hFacC"],:,1))
+    tmp2=write(view(Γ.hFacC,:,1))
     tmp2=findall( (tmp2 .== 0.0) .& (!isnan).(tmp1))
 
     #closest to Boston:
-    tmp_lon=write(Γ["XC"])[tmp2]
-    tmp_lat=write(Γ["YC"])[tmp2]
+    tmp_lon=write(Γ.XC)[tmp2]
+    tmp_lat=write(Γ.YC)[tmp2]
     tmp_dis=(tmp_lat .- 42.3601).^2 + (tmp_lon .- 71.0589).^2
     tmp2=tmp2[findall(tmp_dis .== minimum(tmp_dis))]
 
