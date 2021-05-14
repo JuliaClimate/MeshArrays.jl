@@ -39,10 +39,10 @@ function demo1(gridChoice::String,GridParentDir="./")
 
     Γ=GridLoad(γ)
 
-    (dFLDdx, dFLDdy)=gradient(Γ["YC"],Γ)
+    (dFLDdx, dFLDdy)=gradient(Γ.YC,Γ)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
 
-    H=Γ["hFacC"]
+    H=Γ.hFacC
     Ha=γ.write(H)
     Hb=γ.read(Ha,H)
 
@@ -87,30 +87,30 @@ function demo2()
     (Rini,Rend,DXCsm,DYCsm)=demo2(Γ)
 end
 
-function demo2(Γ::Dict)
+function demo2(Γ::NamedTuple)
 
-    γ=Γ["XC"].grid
+    γ=Γ.XC.grid
 
     #initialize 2D field of random numbers
     tmp1=randn(Float32,Tuple(γ.ioSize))
     Rini=γ.read(tmp1,MeshArray(γ,Float32))
 
     #apply land mask
-    if ndims(Γ["hFacC"].f[1])>2
-        tmp1=mask(view(Γ["hFacC"],:,:,1),NaN,0)
-    elseif ndims(Γ["hFacC"].f)>1
-        #tmp1=mask(view(Γ["hFacC"],:,1),NaN,0)
+    if ndims(Γ.hFacC.f[1])>2
+        tmp1=mask(view(Γ.hFacC,:,:,1),NaN,0)
+    elseif ndims(Γ.hFacC.f)>1
+        #tmp1=mask(view(Γ.hFacC,:,1),NaN,0)
         tmp1=similar(Rini)
-        for i=1:length(tmp1.fIndex); tmp1[i]=Γ["hFacC"][i,1]; end;
+        for i=1:length(tmp1.fIndex); tmp1[i]=Γ.hFacC[i,1]; end;
         tmp1=mask(tmp1,NaN,0)
     else
-        tmp1=mask(Γ["hFacC"],NaN,0)
+        tmp1=mask(Γ.hFacC,NaN,0)
     end
     msk=fill(1.,tmp1) + 0. *tmp1;
     Rini=msk*Rini;
 
     #specify smoothing length scales in x, y directions
-    DXCsm=3*Γ["DXC"]; DYCsm=3*Γ["DYC"];
+    DXCsm=3*Γ.DXC; DYCsm=3*Γ.DYC;
 
     #apply smoother
     Rend=smooth(Rini,DXCsm,DYCsm,Γ);
@@ -149,12 +149,12 @@ function demo3()
 
 end
 
-function demo3(U::MeshArray,V::MeshArray,Γ::Dict)
+function demo3(U::MeshArray,V::MeshArray,Γ::NamedTuple)
 
     LC=LatitudeCircles(-89.0:89.0,Γ)
 
     #UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
-    UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y"])
+    UV=NamedTuple("U"=>U,"V"=>V,"dimensions"=>["x","y"])
 
     Tr=Array{Float64,1}(undef,length(LC));
     for i=1:length(LC)
