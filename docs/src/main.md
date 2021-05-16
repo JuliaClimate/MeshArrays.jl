@@ -93,7 +93,7 @@ Importantly, a `gcmgrid` does **not** contain any actual grid data -- hence its 
 
 ```
 using MeshArrays, Unitful
-γ=GridSpec("LatLonCap","GRID_LLC90/")
+γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 m=MeshArrays.varmeta(u"m",fill(0.5,2),"Depth","Depth")
 D=γ.read(γ.path*"Depth.data",MeshArray(γ,Float64;meta=m))
 ```
@@ -125,7 +125,7 @@ heatmap(D,title="Ocean Depth",clims=(0.,6000.))
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 
-Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/"))
+Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
 (f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
 DD=Interpolate(Γ["Depth"],f,i,j,w)
 

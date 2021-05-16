@@ -57,7 +57,6 @@ D=demo2(Γ)
 The [Lat-Lon-Cap grid](http://www.geosci-model-dev.net/8/3071/2015/) (or LLC) is a global ocean model grid which is widely used in the [MITgcm user community](https://mitgcm.readthedocs.io/en/latest/). It has 5 uneven subdomains, variable grid spacing, and continents [(Forget et al 2015)](http://www.geosci-model-dev.net/8/3071/2015/). LLC90's resolution is one degree albeit with modications in the Arctic and along the Equator.
 
 ```
-#run(`git clone https://github.com/gaelforget/GRID_LLC90`)
 Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
 D=demo2(Γ)
 heatmap(D[2],clims=(-0.25,0.25))
