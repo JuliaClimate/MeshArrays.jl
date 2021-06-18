@@ -1,7 +1,7 @@
 # MeshArrays.jl
 
 
-[![Travis Build Status](https://travis-ci.org/juliaclimate/MeshArrays.jl.svg?branch=master)](https://travis-ci.org/juliaclimate/MeshArrays.jl)
+[![Travis Build Status](https://travis-ci.com/juliaclimate/MeshArrays.jl.svg?branch=master)](https://travis-ci.com/juliaclimate/MeshArrays.jl)
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/dev)
 [![codecov](https://codecov.io/gh/juliaclimate/MeshArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/juliaclimate/MeshArrays.jl)
