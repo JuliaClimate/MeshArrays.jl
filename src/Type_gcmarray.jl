@@ -19,6 +19,8 @@ gcmarray(grid::gcmgrid)
 gcmarray(grid::gcmgrid,::Type{T})
 gcmarray(grid::gcmgrid,::Type{T},n3::Int)
 gcmarray(grid::gcmgrid,::Type{T},n3::Int,n4::Int)
+
+gcmarray(A::Array{T,N};meta::varmeta=defaultmeta)
 ```
 """
 struct gcmarray{T, N, AT} <: AbstractMeshArray{T, N}
@@ -28,6 +30,21 @@ struct gcmarray{T, N, AT} <: AbstractMeshArray{T, N}
    fSize::OuterArray{NTuple{2, Int}}
    fIndex::OuterArray{Int,1}
    version::String
+end
+
+function gcmarray(A::Array{T,N};
+  meta::varmeta=defaultmeta) where {T, N}
+  s=size(A)[1:2]
+  fs=Array{NTuple{2, Int},1}(undef,1)
+  fs[1]=s
+  ios=[s[1] s[2]]
+  γ=gcmgrid("","PeriodicDomain",1, fs, ios, T, read, write)
+  if N==2
+    B=γ.read(A,gcmarray(γ,T;meta=meta));
+  else
+    B=γ.read(A,gcmarray(γ,T,size(A)[3];meta=meta));
+  end
+  B
 end
 
 function gcmarray(grid::gcmgrid,f::OuterArray{InnerArray{T,2},N};
