@@ -35,7 +35,7 @@ function simple_periodic_domain(np::Integer,nq=missing)
     list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
     for ii=1:length(list_n);
         tmp1=fill(1.,np,nq*nFaces);
-        m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
+        m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
         tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
         tmp2=Symbol(list_n[ii]);
         @eval (($tmp2) = ($tmp1))
@@ -164,7 +164,7 @@ function GridLoad(γ::gcmgrid)
     end
 
     for ii=1:length(list_n)
-        m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii])
+        m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii])
         tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec;meta=m))
         tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
@@ -196,7 +196,7 @@ function GridLoad(γ::gcmgrid)
     list_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
     n3=length(Γ["RC"])
     for ii=1:length(list_n)
-        m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
+        m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
         tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec,n3;meta=m))
         tmp2=Symbol(list_n[ii])
         @eval (($tmp2) = ($tmp1))
@@ -247,7 +247,7 @@ function GridOfOnes(grTp,nF,nP)
     list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
 
     for ii=1:length(list_n);
-        tmp1=fill(1.,nP,nP*nF); m=varmeta(list_u[ii],list_p[ii],list_n[ii],list_n[ii]);
+        tmp1=fill(1.,nP,nP*nF); m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
         tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
         tmp2=Symbol(list_n[ii]);
         @eval (($tmp2) = ($tmp1))
@@ -343,10 +343,10 @@ function GridAddWS!(Γ::Dict)
     uX=XC.meta.unit
     uY=YC.meta.unit
 
-    XW=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uX,[0.,0.5],"XW","XW"))
-    YW=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uY,[0.,0.5],"YW","YW"))
-    XS=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uX,[0.5,0.],"XS","XS"))
-    YS=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uY,[0.5,0.],"YS","YS"))
+    XW=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uX,[0.,0.5],missing,"XW","XW"))
+    YW=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uY,[0.,0.5],missing,"YW","YW"))
+    XS=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uX,[0.5,0.],missing,"XS","XS"))
+    YS=MeshArrays.gcmarray(XC.grid,eltype(XC);meta=varmeta(uY,[0.5,0.],missing,"YS","YS"))
 
     for ff=1:nFaces
         tmp1=XC[ff][1:end-2,2:end-1]
