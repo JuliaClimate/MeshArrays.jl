@@ -1,5 +1,5 @@
 
-using Unitful
+using Unitful, Dates
 
 """
     AbstractMeshArray{T, N}
@@ -36,28 +36,30 @@ end
     varmeta
 
 varmeta data structure. By default, `unit` is `1.0` (non-dimensional), `position`
-is `fill(0.5,3)` (cell center), and `name` / `long_name` is unknown.
+is `fill(0.5,3)` (cell center), time is missing, and `name` / `long_name` is unknown.
 
 Available constructors:
 
 ```
-varmeta(unit::Union{Unitful.AbstractQuantity,Number},position::Array{Float64,1},
-        name::String,long_name::String)
+varmeta(unit::Union{Unitful.Units,Number,Missing},position::Array{Float64,1},
+        time::Union{DateTime,Missing,Array{DateTime,1}},name::String,long_name::String)
 ```
 
 And:
 
-```defaultmeta = varmeta(1.0,fill(0.5,3),"unknown","unknown")```
+```defaultmeta = varmeta(missing,fill(0.5,3),missing,"unknown","unknown")```
 
 """
 struct varmeta
   unit::Union{Unitful.Units,Number,Missing}
   position::Array{Float64,1}
+  time::Union{DateTime,Missing,Array{DateTime,1}}
   name::String
   long_name::String
+  #time? format?
 end
 
-defaultmeta = varmeta(missing,fill(0.5,3),"unknown","unknown")
+defaultmeta = varmeta(missing,fill(0.5,3),missing,"unknown","unknown")
 
 ## concrete types and MeshArray alias:
 
