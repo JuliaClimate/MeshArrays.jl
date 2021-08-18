@@ -14,10 +14,10 @@ abstract type AbstractMeshArray{T, N} <: AbstractArray{T, N} end
 gcmgrid data structure. Available constructors:
 
 ```
-gcmgrid(path::String, class::String,
-        nFaces::Int, fSize::Array{NTuple{2, Int},1},
-        ioSize::Array{Int64,2}, ioPrec::Type,
-        read::Function, write::Function)
+gcmgrid(path::String, class::String, nFaces::Int, 
+        fSize::Array{NTuple{2, Int},1},
+        ioSize::Union{NTuple{2, Int},Array{Int64,2}},
+        ioPrec::Type, read::Function, write::Function)
 ```
 """
 struct gcmgrid
@@ -25,8 +25,7 @@ struct gcmgrid
   class::String
   nFaces::Int
   fSize::Array{NTuple{2, Int},1}
-#  ioSize::NTuple{2, Int}
-  ioSize::Array{Int64,2}
+  ioSize::Union{NTuple{2, Int},Array{Int64,2}}
   ioPrec::Type
   read::Function
   write::Function
@@ -56,7 +55,6 @@ struct varmeta
   time::Union{DateTime,Missing,Array{DateTime,1}}
   name::String
   long_name::String
-  #time? format?
 end
 
 defaultmeta = varmeta(missing,fill(0.5,3),missing,"unknown","unknown")

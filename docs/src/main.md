@@ -83,10 +83,16 @@ julia> show(exchange(D))
 A `MeshArray` includes a `gcmgrid` specification which can be constructed as outlined below.
 
 ```
-gcmgrid(path::String, class::String, 
-        nFaces::Int, fSize::Array{NTuple{2, Int},1}, 
-        ioSize::Array{Int64,2}, ioPrec::Type, 
-        read::Function, write::Function)
+struct gcmgrid
+  path::String
+  class::String
+  nFaces::Int
+  fSize::Array{NTuple{2, Int},1}
+  ioSize::Union{NTuple{2, Int},Array{Int64,2}}
+  ioPrec::Type
+  read::Function
+  write::Function
+end
 ```
 
 Importantly, a `gcmgrid` does **not** contain any actual grid data -- hence its memory footprint is minimal. Grid variables are instead read to memory only when needed e.g. as shown below. To make this easy, each `gcmgrid` includes a pair of `read` / `write` methods to allow for basic `I/O` at any time. These methods are typically specified by the user although defaults are provided. 
@@ -94,16 +100,20 @@ Importantly, a `gcmgrid` does **not** contain any actual grid data -- hence its 
 ```
 using MeshArrays, Unitful
 γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
-m=MeshArrays.varmeta(u"m",fill(0.5,2),"Depth","Depth")
+m=MeshArrays.varmeta(u"m",fill(0.5,2),missing,"Depth","Depth")
 D=γ.read(γ.path*"Depth.data",MeshArray(γ,Float64;meta=m))
 ```
 
 The above commands define a `MeshArray` called `D` which is the one displayed at the top of this section. A definition of the `varmeta` structure is reported below. The `position` of a `D` point within its grid cell is given as `x ∈ [0. 1.]` in each direction.
 
 ```
-varmeta(unit::Union{Unitful.AbstractQuantity,Number},
-        position::Array{Float64,1},
-        name::String,long_name::String)
+struct varmeta
+  unit::Union{Unitful.Units,Number,Missing}
+  position::Array{Float64,1}
+  time::Union{DateTime,Missing,Array{DateTime,1}}
+  name::String
+  long_name::String
+end
 ```
 
 ## Interpolation, Plots
