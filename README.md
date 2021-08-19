@@ -16,25 +16,30 @@
 ```
 using Pkg
 Pkg.add("MeshArrays")
-Pkg.test("MeshArrays")
 ```
 
 ### Workflow Example
 
-The diffusive smoother presented here as an example uses `MeshArrays.jl` to compute partial derivatives over a global domain / grid, which involves transfering data between neighboring subdomain arrays. In this workflow example, we 
+In this example, we use a _doubly periodic_ domain with _16 subdomains_ of _20x20 grid points_ each. The chosen workflow applies a diffusion-based smoother to a noise field. Thus it demonstrate the use of `MeshArrays.jl` to compute partial derivatives and budgets over a global domain, which notably requires transfering data between neighboring subdomain arrays. 
+
+The workflow example proceeds as follows:
 
 1. generate a global grid decomposition
 2. seed random noise across global domain
 3. smooth out noise by applying diffusion globally
-4. plots the `outer` array of subdomain / `inner` arrays
+4. plots the `outer` array of subdomains / `inner` arrays
 
 ```
-using MeshArrays; p=dirname(pathof(MeshArrays))
-γ,Γ=GridOfOnes("PeriodicDomain",16,20)
+using MeshArrays
 
+(nP,nQ,nF)=(20,20,16)
+γ=gcmgrid("","PeriodicDomain",nF,fill((nP,nQ),nF), 
+			[nP nQ*nF],Float32, read, write)
+Γ=UnitGrid(γ) #step 1
+
+p=dirname(pathof(MeshArrays))
 include(joinpath(p,"../examples/Demos.jl"))
-(xi,xo,_,_)=demo2(Γ);
-show(xo)
+(xi,xo,_,_)=demo2(Γ) #steps 2 & 3
 
 using Plots
 include(joinpath(p,"../examples/Plots.jl"))
@@ -45,7 +50,7 @@ heatmap(xo,clims=(-0.25,0.25),colorbar=false,tickfont = (4, :black))
 
 ### Global Grids
 
-In the previous example we used a basic _doubly periodic_  domain with _16 subdomains_ of _40x40 grid points_ each. However, `MeshArrays.jl` also readily supports more elaborate global grid configurations, such as the ones shown below, which are commonly used in modeling climate.
+`MeshArrays.jl` also readily supports more elaborate global grid configurations, such as the ones shown below, which are commonly used in modeling climate.
 
 <img src="docs/images/sphere_all.png" width="40%">
 
