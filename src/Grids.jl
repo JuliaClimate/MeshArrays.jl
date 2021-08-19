@@ -2,6 +2,40 @@
 Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 
 """
+    UnitGrid(γ::gcmgrid)
+
+Generate a unit grid, where every grid spacing and area is 1, according to γ. 
+"""
+function UnitGrid(γ::gcmgrid)
+    nFaces=γ.nFaces
+    ioSize=(γ.ioSize[1],γ.ioSize[2])
+
+    Γ=Dict()
+    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
+    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+
+    for ii=1:length(list_n);
+        tmp1=fill(1.,(ioSize[:]))
+        m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
+        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
+        Γ[list_n[ii]]=tmp1
+    end
+
+    for i in 1:nFaces
+        (np,nq)=γ.fSize[i]
+        Γ["XC"][i]=vec(0.5:1.0:np-0.5)*ones(1,nq)
+        Γ["XG"][i]=vec(0.0:1.0:np-1.0)*ones(1,nq)
+        Γ["YC"][i]=ones(np,1)*transpose(vec(0.5:1.0:nq-0.5))
+        Γ["YG"][i]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0))
+    end
+
+    return Dict_to_NamedTuple(Γ)
+
+end
+
+"""
     simple_periodic_domain(np::Integer,nq=missing)
 
 Set up a simple periodic domain of size np x nq
@@ -28,26 +62,7 @@ function simple_periodic_domain(np::Integer,nq=missing)
     ioPrec=Float32
     γ=gcmgrid("","PeriodicDomain",1,facesSize, ioSize, ioPrec, read, write)
 
-    Γ=Dict()
-    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
-    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
-    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
-    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
-    for ii=1:length(list_n);
-        tmp1=fill(1.,np,nq*nFaces);
-        m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
-        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
-        tmp2=Symbol(list_n[ii]);
-        @eval (($tmp2) = ($tmp1))
-        Γ[list_n[ii]]=tmp1
-    end
-
-    Γ["XC"][1]=vec(0.5:1.0:np-0.5)*ones(1,nq)
-    Γ["XG"][1]=vec(0.0:1.0:np-1.0)*ones(1,nq)
-    Γ["YC"][1]=ones(np,1)*transpose(vec(0.5:1.0:nq-0.5))
-    Γ["YG"][1]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0))
-
-    return Dict_to_NamedTuple(Γ)
+    return UnitGrid(γ)
 end
 
 ## GridSpec function with default GridName argument:
@@ -240,22 +255,7 @@ function GridOfOnes(grTp,nF,nP)
 
     γ=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
-    Γ=Dict()
-    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
-    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
-    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
-    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
-
-    for ii=1:length(list_n);
-        tmp1=fill(1.,nP,nP*nF); m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
-        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
-        tmp2=Symbol(list_n[ii]);
-        @eval (($tmp2) = ($tmp1))
-        Γ[list_n[ii]]=tmp1
-    end
-
-    return γ, Dict_to_NamedTuple(Γ)
-
+    return γ, UnitGrid(γ)
 end
 
 """
