@@ -34,8 +34,8 @@ end
 """
     varmeta
 
-varmeta data structure. By default, `unit` is `1.0` (non-dimensional), `position`
-is `fill(0.5,3)` (cell center), time is missing, and `name` / `long_name` is unknown.
+varmeta data structure. By default, `unit` is `missing` (non-dimensional), `position`
+is `fill(0.5,3)` (cell center), time is `missing`, and `name` / `long_name` is `unknown`.
 
 Available constructors:
 
