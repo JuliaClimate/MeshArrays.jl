@@ -2,11 +2,11 @@
 
 ## Summary
 
-The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. This setup potentially allows different choices for the outer and inner arrays – for example `DistributedArrays` and `AxisArrays`, respectively, could be an option. `MeshArrays.jl` thus provides a simple but general solution to analyze or e.g. simulate climate system variables. 
+The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. By default, outer and inner arrays are of all of the standard `Array` type. However, this setup potentially allows different choices for the outer and inner arrays – for example `DistributedArrays` and `AxisArrays`, respectively, could be an option. `MeshArrays.jl` thus provides a simple but general solution to analyze or e.g. simulate climate system variables. 
 
-The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array size specifications, and inter-connection rules. A second  lightweight struct, `varmeta`, contains the `MeshArray` variable name, its unit, and position in grid space. A general approach like this is useful because climate models often involve advanced domain decompositions (see *Earth Model Grids*), and many variables, which puts a burden on users. 
+The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array size specifications, and inter-connection rules. A second  lightweight struct, `varmeta`, contains the `MeshArray` variable name, its unit, time, and position in grid space. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Earth Grids](@ref)), and many variables, which can put a burden on users. 
 
-Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to keep track of model grid details. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output.
+Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to invoke model grid details explicitely. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output (see, e.g., [Tutorial](@ref)).
 
 ## Data Structures
 
@@ -83,10 +83,16 @@ julia> show(exchange(D))
 A `MeshArray` includes a `gcmgrid` specification which can be constructed as outlined below.
 
 ```
-gcmgrid(path::String, class::String, 
-        nFaces::Int, fSize::Array{NTuple{2, Int},1}, 
-        ioSize::Array{Int64,2}, ioPrec::Type, 
-        read::Function, write::Function)
+struct gcmgrid
+  path::String
+  class::String
+  nFaces::Int
+  fSize::Array{NTuple{2, Int},1}
+  ioSize::Union{NTuple{2, Int},Array{Int64,2}}
+  ioPrec::Type
+  read::Function
+  write::Function
+end
 ```
 
 Importantly, a `gcmgrid` does **not** contain any actual grid data -- hence its memory footprint is minimal. Grid variables are instead read to memory only when needed e.g. as shown below. To make this easy, each `gcmgrid` includes a pair of `read` / `write` methods to allow for basic `I/O` at any time. These methods are typically specified by the user although defaults are provided. 
@@ -94,16 +100,20 @@ Importantly, a `gcmgrid` does **not** contain any actual grid data -- hence its 
 ```
 using MeshArrays, Unitful
 γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
-m=MeshArrays.varmeta(u"m",fill(0.5,2),"Depth","Depth")
+m=MeshArrays.varmeta(u"m",fill(0.5,2),missing,"Depth","Depth")
 D=γ.read(γ.path*"Depth.data",MeshArray(γ,Float64;meta=m))
 ```
 
 The above commands define a `MeshArray` called `D` which is the one displayed at the top of this section. A definition of the `varmeta` structure is reported below. The `position` of a `D` point within its grid cell is given as `x ∈ [0. 1.]` in each direction.
 
 ```
-varmeta(unit::Union{Unitful.AbstractQuantity,Number},
-        position::Array{Float64,1},
-        name::String,long_name::String)
+struct varmeta
+  unit::Union{Unitful.Units,Number,Missing}
+  position::Array{Float64,1}
+  time::Union{DateTime,Missing,Array{DateTime,1}}
+  name::String
+  long_name::String
+end
 ```
 
 ## Interpolation, Plots
