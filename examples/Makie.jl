@@ -27,7 +27,7 @@ function plot_as_sphere(Γ)
         azimuth = az, elevation = el,)
     for i=1:length(z.fSize)
         surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
-        wireframe!(x[i],y[i],z[i], overdraw = false, linewidth = 1.0,color=c[i])
+        wireframe!(x[i],y[i],z[i], overdraw = false, linewidth = 0.25,color=c[i])
     end
     #hidedecorations!(ax)
     #hidespines!(ax)
@@ -43,13 +43,13 @@ function plot_as_plane(Γ)
     crng=(minimum(d),maximum(d))
     minimum(d)==maximum(d) ? crng=(0.9*crng[1],1.1*crng[1]) : nothing
 
-    c=[:gold,:magenta,:blue,:cyan,:red,:black]
+    c=[:magenta,:gold,:blue,:cyan,:red,:black]
     fig = Figure(resolution = (900,900), backgroundcolor = :grey90)
     ax = Axis3(fig[1,1])
     for i=1:length(x.fSize)
         surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
 		#contourf!(x[i], y[i], d[i], colorrange = (0.0, 5e3), colormap = :grays)
-		wireframe!(x[i],y[i], z[i], overdraw = false, linewidth = 1.0,color=c[i])
+		wireframe!(x[i],y[i], z[i], overdraw = false, linewidth = 0.25,color=c[i])
     end
     #hidedecorations!(ax)
     #hidespines!(ax)
