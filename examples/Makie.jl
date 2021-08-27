@@ -10,6 +10,11 @@
 
 using GLMakie
 
+"""
+    plot_as_sphere(Γ)
+
+Plot mesh (Γ.XC,Γ.YC) and depth (Γ.Depth) on the surface of the sphere in 3D.
+"""
 function plot_as_sphere(Γ)
     yy=pi/2 .-Γ.YC*pi/180
     x=sin.(yy)*cos.(Γ.XC*pi/180)
@@ -35,6 +40,11 @@ function plot_as_sphere(Γ)
     fig
 end
 
+"""
+    plot_as_plane(Γ)
+
+Plot mesh (Γ.XC,Γ.YC) and depth (Γ.Depth) pn a 2D plane.
+"""
 function plot_as_plane(Γ)
     x=Float64.(Γ.XC)
     y=Float64.(Γ.YC)
