@@ -15,7 +15,7 @@ using GLMakie
 
 Plot mesh (Γ.XC,Γ.YC) and depth (Γ.Depth) on the surface of the sphere in 3D.
 """
-function plot_as_sphere(Γ)
+function plot_as_sphere(Γ; title="")
     yy=pi/2 .-Γ.YC*pi/180
     x=sin.(yy)*cos.(Γ.XC*pi/180)
     y=sin.(yy)*sin.(Γ.XC*pi/180)
@@ -27,15 +27,17 @@ function plot_as_sphere(Γ)
     c=[:gold,:magenta,:DeepSkyBlue,:cyan,:red,:black]
     az=Node(0.4π)
     el=Node(0.2π)
-    fig = Figure(resolution = (900,900), backgroundcolor = :grey90)
+
+    fig = Figure(resolution = (600,600), backgroundcolor = :grey90)
     ax = Axis3(fig, aspect = :data, viewmode = :fitzoom, #perspectiveness = 0.5,
-        azimuth = az, elevation = el,)
+        azimuth = az, elevation = el)
     for i=1:length(z.fSize)
         surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
         wireframe!(x[i],y[i],z[i], overdraw = false, linewidth = 0.25,color=c[i])
     end
     #hidedecorations!(ax)
     #hidespines!(ax)
+    ax.title=title
     fig[1,1] = ax
     fig
 end
@@ -43,9 +45,9 @@ end
 """
     plot_as_plane(Γ)
 
-Plot mesh (Γ.XC,Γ.YC) and depth (Γ.Depth) pn a 2D plane.
+Plot mesh (Γ.XC,Γ.YC) and depth (Γ.Depth) on a 2D plane.
 """
-function plot_as_plane(Γ)
+function plot_as_plane(Γ; title="")
     x=Float64.(Γ.XC)
     y=Float64.(Γ.YC)
 	z=0*y
@@ -54,7 +56,8 @@ function plot_as_plane(Γ)
     minimum(d)==maximum(d) ? crng=(0.9*crng[1],1.1*crng[1]) : nothing
 
     c=[:magenta,:gold,:blue,:cyan,:red,:black]
-    fig = Figure(resolution = (900,900), backgroundcolor = :grey90)
+    fig = Figure(resolution = (600,600), backgroundcolor = :grey90)
+
     ax = Axis3(fig[1,1])
     for i=1:length(x.fSize)
         surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
@@ -63,6 +66,31 @@ function plot_as_plane(Γ)
     end
     #hidedecorations!(ax)
     #hidespines!(ax)
+    ax.title=title
+    fig[1,1] = ax
+    fig
+end
+
+
+"""
+    plot_as_scatter(Γ; title="")
+
+Plot mesh (Γ.XC,Γ.YC) as scatter of points.
+"""
+function plot_as_scatter(Γ; title="")
+    x=Float64.(Γ.XC)
+    y=Float64.(Γ.YC)
+
+    fig = Figure(resolution = (600,600), backgroundcolor = :grey90)
+
+    ax = Axis(fig[1,1])
+    for i=1:length(x.fSize)
+        lines!(ax, x[i][:], y[i][:])
+        scatter!(ax, x[i][:], y[i][:],marker = '+')
+    end
+    #hidedecorations!(ax)
+    #hidespines!(ax)
+    ax.title=title
     fig[1,1] = ax
     fig
 end
