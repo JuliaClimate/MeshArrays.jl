@@ -10,30 +10,28 @@
 
 using GLMakie
 
+col=[:blue,:greenyellow,:magenta,:yellow2,:tomato,:black]
+
 """
     plot_as_sphere(Γ)
 
 Plot mesh (Γ.XC,Γ.YC) and depth (Γ.Depth) on the surface of the sphere in 3D.
 """
-function plot_as_sphere(Γ; title="")
+function plot_as_sphere(Γ; title="", az=-0.2π, el=0.2π)
     yy=pi/2 .-Γ.YC*pi/180
     x=sin.(yy)*cos.(Γ.XC*pi/180)
     y=sin.(yy)*sin.(Γ.XC*pi/180)
     z=cos.(yy)
     d=Γ.Depth
     crng=(minimum(d),maximum(d))
-    minimum(d)==maximum(d) ? crng=(0.9*crng[1],1.1*crng[1]) : nothing
+    minimum(d)==maximum(d) ? crng=(0.8*crng[1],1.1*crng[1]) : nothing
 
-    c=[:gold,:magenta,:DeepSkyBlue,:cyan,:red,:black]
-    az=Node(0.4π)
-    el=Node(0.2π)
-
-    fig = Figure(resolution = (600,600), backgroundcolor = :grey90)
+    fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
     ax = Axis3(fig, aspect = :data, viewmode = :fitzoom, #perspectiveness = 0.5,
         azimuth = az, elevation = el)
     for i=1:length(z.fSize)
         surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
-        wireframe!(x[i],y[i],z[i], overdraw = false, linewidth = 0.25,color=c[i])
+        wireframe!(x[i],y[i],z[i], overdraw = false, linewidth = 0.25,color=col[i])
     end
     #hidedecorations!(ax)
     #hidespines!(ax)
@@ -53,16 +51,15 @@ function plot_as_plane(Γ; title="")
 	z=0*y
     d=Float64.(Γ.Depth)
     crng=(minimum(d),maximum(d))
-    minimum(d)==maximum(d) ? crng=(0.9*crng[1],1.1*crng[1]) : nothing
+    minimum(d)==maximum(d) ? crng=(0.8*crng[1],1.1*crng[1]) : nothing
 
-    c=[:magenta,:gold,:blue,:cyan,:red,:black]
-    fig = Figure(resolution = (600,600), backgroundcolor = :grey90)
+    fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
 
     ax = Axis3(fig[1,1])
     for i=1:length(x.fSize)
         surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
 		#contourf!(x[i], y[i], d[i], colorrange = (0.0, 5e3), colormap = :grays)
-		wireframe!(x[i],y[i], z[i], overdraw = false, linewidth = 0.25,color=c[i])
+		wireframe!(x[i],y[i], z[i], overdraw = false, linewidth = 0.25,color=col[i])
     end
     #hidedecorations!(ax)
     #hidespines!(ax)
@@ -81,12 +78,12 @@ function plot_as_scatter(Γ; title="")
     x=Float64.(Γ.XC)
     y=Float64.(Γ.YC)
 
-    fig = Figure(resolution = (600,600), backgroundcolor = :grey90)
+    fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
 
     ax = Axis(fig[1,1])
     for i=1:length(x.fSize)
-        lines!(ax, x[i][:], y[i][:])
-        scatter!(ax, x[i][:], y[i][:],marker = '+')
+        lines!(ax, x[i][:], y[i][:], color = col[i])
+        scatter!(ax, x[i][:], y[i][:], color = col[i], marker = 'o')
     end
     #hidedecorations!(ax)
     #hidespines!(ax)
