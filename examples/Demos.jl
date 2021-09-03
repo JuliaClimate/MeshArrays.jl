@@ -10,7 +10,7 @@ etc.). Call sequence:
 ```
 !isdir("GRID_LLC90") ? error("missing files") : nothing
 
-(D,Dexch,Darr,DD)=demo1("LatLonCap","GRID_LLC90/");
+(D,Dexch,Darr,DD)=demo1("LatLonCap",MeshArrays.GRID_LLC90);
 ```
 """
 function demo1(gridChoice::String,GridParentDir="./")
@@ -82,7 +82,7 @@ heatmap(Rini,title="raw noise",clims=(-0.5,0.5))
 function demo2()
 
     #Pre-requisite: either load predefined grid using `demo1` or call `GridOfOnes`
-    isdir("GRID_LLC90") ? Γ=GridLoad(GridSpec("LatLonCap","GRID_LLC90/")) : (γ,Γ)=GridOfOnes("CubeSphere",6,100)
+    isdir("GRID_LLC90") ? Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90)) : (γ,Γ)=GridOfOnes("CubeSphere",6,100)
 
     (Rini,Rend,DXCsm,DYCsm)=demo2(Γ)
 end
@@ -136,7 +136,7 @@ heatmap(1e-6*UV["V"],title="V comp. in Sv",clims=(-10,10))
 """
 function demo3()
 
-    γ=GridSpec("LatLonCap","GRID_LLC90/")
+    γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
     Γ=GridLoad(γ)
 
     TrspX=γ.read(γ.path*"TrspX.bin",MeshArray(γ,Float32))
