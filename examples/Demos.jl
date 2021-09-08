@@ -8,7 +8,7 @@ Demonstrate basic functionalities (load grid, arithmetic, exchange, gradient,
 etc.). Call sequence:
 
 ```
-!isdir("GRID_LLC90") ? error("missing files") : nothing
+!isdir(MeshArrays.GRID_LLC90) ? error("missing files") : nothing
 
 (D,Dexch,Darr,DD)=demo1("LatLonCap",MeshArrays.GRID_LLC90);
 ```
@@ -82,7 +82,7 @@ heatmap(Rini,title="raw noise",clims=(-0.5,0.5))
 function demo2()
 
     #Pre-requisite: either load predefined grid using `demo1` or call `GridOfOnes`
-    isdir("GRID_LLC90") ? Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90)) : (γ,Γ)=GridOfOnes("CubeSphere",6,100)
+    isdir(MeshArrays.GRID_LLC90) ? Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90)) : (γ,Γ)=GridOfOnes("CubeSphere",6,100)
 
     (Rini,Rend,DXCsm,DYCsm)=demo2(Γ)
 end
