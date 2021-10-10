@@ -124,6 +124,7 @@ end
     MeshArrays.getindexetc(tmp1,2,1)
 end
 
+MeshArrays.GRID_LL360_download()
 @testset "doctests" begin
     doctest(MeshArrays; manual = false)
 end
