@@ -176,6 +176,10 @@ true
 """
 function GridLoad(γ::gcmgrid;option="minimal")
 
+    γ.path==GRID_CS32 ? GRID_CS32_download() : nothing
+    γ.path==GRID_LL360 ? GRID_LL360_download() : nothing
+    γ.path==GRID_LLC90 ? GRID_LLC90_download() : nothing
+
     Γ=Dict()
 
     pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];

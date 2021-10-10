@@ -1,5 +1,6 @@
 [GRID_CS32]
 git-tree-sha1 = "e425ca76b87758101e7f7543eee62d34f7b4553f"
+lazy = true
 
     [[GRID_CS32.download]]
     sha256 = "574f3cb7d38e044526410284514b0fd3dcd87f4f2e5a7cdbaf8b4f5b6e9c137b"
@@ -7,6 +8,7 @@ git-tree-sha1 = "e425ca76b87758101e7f7543eee62d34f7b4553f"
 
 [GRID_LL360]
 git-tree-sha1 = "2618ab8eead29b9a88cf9aff1c536cb6e0bd4e0a"
+lazy = true
 
     [[GRID_LL360.download]]
     sha256 = "90d5e4a07014e7958e4ec6d461fa78fa72d81d09589a8b951cd392dd74ecc7cb"
@@ -14,6 +16,7 @@ git-tree-sha1 = "2618ab8eead29b9a88cf9aff1c536cb6e0bd4e0a"
 
 [GRID_LLC90]
 git-tree-sha1 = "0a62225e81fc22f37aefcf57465676c4cc934b11"
+lazy = true
 
     [[GRID_LLC90.download]]
     sha256 = "a19886a646bfc19dd66d2955d26cb693c91dfe3d75bcb890d6ebf8fdb17356f5"
