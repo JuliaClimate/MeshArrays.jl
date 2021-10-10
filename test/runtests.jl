@@ -33,7 +33,7 @@ end
 
 @testset "Transport computations:" begin
     #Load grid and transport / vector field
-    GRID_LLC90_download()
+    MeshArrays.GRID_LLC90_download()
     γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
     Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
     Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
@@ -72,7 +72,7 @@ end
 end
 
 @testset "gcmfaces type:" begin
-    GRID_CS32_download()
+    MeshArrays.GRID_CS32_download()
     γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
 
     MeshArrays.gcmfaces(γ)
