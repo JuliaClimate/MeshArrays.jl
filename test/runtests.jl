@@ -12,7 +12,7 @@ include(joinpath(p,"../examples/Demos.jl"))
         elseif nTopo==4; grTopo="PeriodicDomain"; nFaces=1; N=400;
         end;
         Npt=nFaces*N*N
-        γ,Γ=GridOfOnes(grTopo,nFaces,N)
+        γ,Γ=GridOfOnes(grTopo,nFaces,N;option="full")
         @test γ.class == grTopo
         Rini= 0.; Rend= 0.;
         (Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
@@ -36,8 +36,11 @@ end
     γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
     Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
     Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
-    Γ=GridLoad(γ); μ =Γ.hFacC[:,1]
-    μ[findall(μ.>0.0)].=1.0; μ[findall(μ.==0.0)].=NaN
+    Γ=GridLoad(γ;option="full")
+    
+    μ =Γ.hFacC[:,1]
+    μ[findall(μ.>0.0)].=1.0
+    μ[findall(μ.==0.0)].=NaN
 
     #Meridional transport integral
     uv=Dict("U"=>Tx,"V"=>Ty,"dimensions"=>["x","y"])

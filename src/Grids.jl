@@ -2,19 +2,26 @@
 Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 
 """
-    UnitGrid(γ::gcmgrid)
+    UnitGrid(γ::gcmgrid;option="minimal")
 
 Generate a unit grid, where every grid spacing and area is 1, according to γ. 
 """
-function UnitGrid(γ::gcmgrid)
+function UnitGrid(γ::gcmgrid;option="minimal")
     nFaces=γ.nFaces
     ioSize=(γ.ioSize[1],γ.ioSize[2])
 
     Γ=Dict()
-    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
-    list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
+
     pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
-    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    if option=="full"
+        list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
+        list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
+        list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    else
+        list_n=("XC","YC");
+        list_u=(u"°",u"°")
+        list_p=(pc,pc)
+    end
 
     for ii=1:length(list_n);
         tmp1=fill(1.,(ioSize[:]))
@@ -26,9 +33,9 @@ function UnitGrid(γ::gcmgrid)
     for i in 1:nFaces
         (np,nq)=γ.fSize[i]
         Γ["XC"][i]=vec(0.5:1.0:np-0.5)*ones(1,nq)
-        Γ["XG"][i]=vec(0.0:1.0:np-1.0)*ones(1,nq)
+        option=="full" ? Γ["XG"][i]=vec(0.0:1.0:np-1.0)*ones(1,nq) : nothing
         Γ["YC"][i]=ones(np,1)*transpose(vec(0.5:1.0:nq-0.5))
-        Γ["YG"][i]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0))
+        option=="full" ? Γ["YG"][i]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0)) : nothing
     end
 
     return Dict_to_NamedTuple(Γ)
@@ -137,9 +144,13 @@ end
 ## GridLoad function
 
 """
-    GridLoad(γ::gcmgrid)
+    GridLoad(γ::gcmgrid;option="minimal")
 
 Return a `NamedTuple` of grid variables read from files located in `γ.path` (see `?GridSpec`).
+
+By default, option="minimal" means that only grid cell center positions (XC, YC) are loaded. 
+
+The "full" option provides a complete set of grid variables. 
 
 Based on the MITgcm naming convention, grid variables are:
 
@@ -154,7 +165,7 @@ using MeshArrays
 #γ = GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 #γ = GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
 
-Γ = GridLoad(γ)
+Γ = GridLoad(γ;option="full")
 
 isa(Γ.XC,MeshArray)
 
@@ -163,16 +174,22 @@ isa(Γ.XC,MeshArray)
 true
 ```
 """
-function GridLoad(γ::gcmgrid)
+function GridLoad(γ::gcmgrid;option="minimal")
 
     Γ=Dict()
 
-    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth");
-    list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m")
     pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
-    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc)
+    if option=="full"
+        list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth");
+        list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m")
+        list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc)
+    else
+        list_n=("XC","YC");
+        list_u=(u"°",u"°")
+        list_p=(pc,pc)
+    end
 
-    if !isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path)))
+    if (option=="full")&&(!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
         list_n=(list_n...,"AngleCS","AngleSN");
         list_u=(list_u...,1.0,1.0)
         list_p=(list_p...,pc,pc)
@@ -188,7 +205,11 @@ function GridLoad(γ::gcmgrid)
 
     γ.ioPrec==Float64 ? reclen=8 : reclen=4
 
-    list_n=("DRC","DRF","RC","RF")
+    if option=="full"
+        list_n=("DRC","DRF","RC","RF")
+    else
+        list_n=()
+    end
     for ii=1:length(list_n)
         fil=joinpath(γ.path,list_n[ii]*".data")
         tmp1=stat(fil)
@@ -205,28 +226,28 @@ function GridLoad(γ::gcmgrid)
     end
 
     f=readdir(γ.path)
-    if sum(occursin.("hFacC",f))>0
-    list_n=("hFacC","hFacS","hFacW");
-    list_u=(1.0,1.0,1.0)
-    list_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
-    n3=length(Γ["RC"])
-    for ii=1:length(list_n)
-        m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
-        tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec,n3;meta=m))
-        tmp2=Symbol(list_n[ii])
-        @eval (($tmp2) = ($tmp1))
-        Γ[list_n[ii]]=tmp1
-    end
+    if (option=="full")&&(sum(occursin.("hFacC",f))>0)
+        list_n=("hFacC","hFacS","hFacW");
+        list_u=(1.0,1.0,1.0)
+        list_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+        n3=length(Γ["RC"])
+        for ii=1:length(list_n)
+            m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
+            tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec,n3;meta=m))
+            tmp2=Symbol(list_n[ii])
+            @eval (($tmp2) = ($tmp1))
+            Γ[list_n[ii]]=tmp1
+        end
     end
 
-    GridAddWS!(Γ)
+    option=="full" ? GridAddWS!(Γ) : nothing
 
     return Dict_to_NamedTuple(Γ)
 
 end
 
 """
-    GridOfOnes(grTp,nF,nP)
+    GridOfOnes(grTp,nF,nP;option="minimal")
 
 Define all-ones grid variables instead of using `GridSpec` & `GridLoad`. E.g.
 
@@ -234,7 +255,7 @@ Define all-ones grid variables instead of using `GridSpec` & `GridLoad`. E.g.
 γ,Γ=GridOfOnes("CubeSphere",6,20);
 ```
 """
-function GridOfOnes(grTp,nF,nP)
+function GridOfOnes(grTp,nF,nP;option="minimal")
 
     grDir=""
     grTopo=grTp
@@ -255,7 +276,7 @@ function GridOfOnes(grTp,nF,nP)
 
     γ=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 
-    return γ, UnitGrid(γ)
+    return γ, UnitGrid(γ;option=option)
 end
 
 """
