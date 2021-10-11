@@ -15,10 +15,12 @@ makedocs(
 )
 
 lst=("basics.jl",)
+pth=("start",)
 
-for i in lst
+for ii in 1:length(lst)
+    i=lst[ii]
     fil_in=joinpath(@__DIR__,"..", "examples",i)
-    fil_out=joinpath(@__DIR__,"build", "main",i[1:end-2]*"html")
+    fil_out=joinpath(@__DIR__,"build", pth[ii] ,i[1:end-2]*"html")
     PlutoSliderServer.export_notebook(fil_in)
     mv(fil_in[1:end-2]*"html",fil_out)
     cp(fil_in,fil_out[1:end-4]*"jl")
