@@ -8,7 +8,10 @@
 #    XC=γ.read(γ.write(Γ.XC),MeshArray(γ,Float64))
 #    YC=γ.read(γ.write(Γ.YC),MeshArray(γ,Float64))
 
-using GLMakie
+using MeshArrays
+import Meshes, MeshViz
+import GLMakie as Mkie
+#import CairoMakie as Mkie
 
 col=[:blue,:greenyellow,:magenta,:yellow2,:tomato,:black]
 
@@ -26,15 +29,16 @@ function plot_as_sphere(Γ; title="", az=-0.2π, el=0.2π)
     crng=(minimum(d),maximum(d))
     minimum(d)==maximum(d) ? crng=(0.8*crng[1],1.1*crng[1]) : nothing
 
-    fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
-    ax = Axis3(fig, aspect = :data, viewmode = :fitzoom, #perspectiveness = 0.5,
+    fig = Mkie.Figure(resolution = (900,900), backgroundcolor = :grey95)
+    ax = Mkie.Axis3(fig, aspect = :data, viewmode = :fitzoom, #perspectiveness = 0.5,
         azimuth = az, elevation = el)
     for i=1:length(z.fSize)
-        surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
-        wireframe!(x[i],y[i],z[i], overdraw = false, linewidth = 0.25,color=col[i])
+        MMkiesurface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
+        Mkie.wireframe!(x[i],y[i],z[i], overdraw = false, linewidth = 0.25,color=col[i])
     end
-    #hidedecorations!(ax)
-    #hidespines!(ax)
+    
+    Mkie.hidedecorations!(ax)
+    Mkie.hidespines!(ax)
     ax.title=title
     fig[1,1] = ax
     fig
@@ -53,13 +57,13 @@ function plot_as_plane(Γ; title="")
     crng=(minimum(d),maximum(d))
     minimum(d)==maximum(d) ? crng=(0.8*crng[1],1.1*crng[1]) : nothing
 
-    fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+    fig = Mkie.Figure(resolution = (900,900), backgroundcolor = :grey95)
 
-    ax = Axis3(fig[1,1])
+    ax = Mkie.Axis(fig[1,1])
     for i=1:length(x.fSize)
-        surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
+        Mkie.surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
 		#contourf!(x[i], y[i], d[i], colorrange = (0.0, 5e3), colormap = :grays)
-		wireframe!(x[i],y[i], z[i], overdraw = false, linewidth = 0.25,color=col[i])
+		Mkie.wireframe!(x[i],y[i], z[i], overdraw = false, linewidth = 0.25,color=col[i])
     end
     #hidedecorations!(ax)
     #hidespines!(ax)
@@ -90,4 +94,52 @@ function plot_as_scatter(Γ; title="")
     ax.title=title
     fig[1,1] = ax
     fig
+end
+
+#Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
+function plot_as_plane_b()
+    Mkie.set_theme!(Mkie.theme_light())
+    fig = Mkie.Figure(resolution = (900,600),markersize=0.1)
+    ax = Mkie.Axis(fig[1,1],xlabel="longitude",ylabel="latitude")
+
+    col=[:red,:green,:blue,:magenta,:cyan,:black]
+
+    for f in 1:length(Γ.XC)
+        tmp=[Meshes.Point2(Γ.XC[f][i],Γ.YC[f][i]) for i in eachindex(Γ.XC[f])]
+        MeshViz.viz!(ax,tmp,elementcolor=col[f],markersize=2.0)
+    end
+
+    fig,ax
+end
+
+#Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
+function plot_as_sphere_b()
+    Mkie.set_theme!(Mkie.theme_light())
+    fig = Mkie.Figure(resolution = (900,600),markersize=0.1)
+    ax = Mkie.Axis3(fig[1,1])
+
+    col=[:red,:green,:blue,:magenta,:cyan,:black]
+
+    yy=pi/2 .-Γ.YC*pi/180
+    x=sin.(yy)*cos.(Γ.XC*pi/180)
+    y=sin.(yy)*sin.(Γ.XC*pi/180)
+    z=cos.(yy)
+    #d=Γ.Depth
+
+    #sphr=sample(Meshes.Sphere((0.0,0.0,0.0), 0.99), Meshes.RegularSampling(360, 180))
+    #sphr=Meshes.Sphere((0.0,0.0,0.0), 0.99)
+    #MeshViz.viz!(ax,sphr)
+
+    sphere = Mkie.Sphere(Mkie.Point3f(0.0), 0.99)
+    Mkie.mesh!(ax,sphere, color=:white)
+
+    for f in 1:length(Γ.XC)
+        tmp=[Meshes.Point3(x[f][i],y[f][i],z[f][i]) for i in eachindex(Γ.XC[f])]
+        MeshViz.viz!(ax,tmp,elementcolor=col[f],markersize=1000.0)
+    end
+
+    Mkie.hidedecorations!(ax)
+    Mkie.hidespines!(ax)
+
+    fig,ax
 end

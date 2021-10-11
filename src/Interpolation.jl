@@ -59,7 +59,7 @@ using MeshArrays
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 
-Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
+Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90); option="full")
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,vec(lon),vec(lat))
 DD=Interpolate(Γ.Depth,f,i,j,w)
 
@@ -87,7 +87,7 @@ Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
 ```jldoctest
 using MeshArrays
 γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
-Γ=GridLoad(γ)
+Γ=GridLoad(γ; option="full")
 lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,lon,lat)
 YC=Interpolate(Γ.YC,f,i,j,w)

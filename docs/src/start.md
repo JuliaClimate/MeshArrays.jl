@@ -110,7 +110,7 @@ In this case, the grid variables are read from files found in the `MeshArrays.GR
 
 ```
 γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
-Γ=GridLoad(γ)
+Γ=GridLoad(γ;option="full")
 D=demo2(Γ)
 ```
 
