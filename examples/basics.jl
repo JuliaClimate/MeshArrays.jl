@@ -7,7 +7,7 @@ using InteractiveUtils
 # ╔═╡ 1a714fba-2a8e-11ec-182f-8f85cc17b02a
 begin
 	using Pkg
-	Pkg.activate()
+	Pkg.activate("../docs")
 	using MeshArrays, Plots
 end
 
