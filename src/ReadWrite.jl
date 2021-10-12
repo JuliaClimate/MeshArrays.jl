@@ -4,10 +4,12 @@ import Base: read, write
 """
     read(fil::String,x::MeshArray)
 
-Read binary file to MeshArray. Other methods:
+Read file / array into MeshArray. Methods:
 
 ```
+read(fil::String,x::MeshArray) #from File
 read(xx::Array,x::MeshArray) #from Array
+read(xx::Array,γ::gcmgrid) #from Array
 ```
 """
 function read(fil::String,x::MeshArray)
@@ -23,6 +25,11 @@ function read(fil::String,x::MeshArray)
 
   return x.grid.read(xx,x)
 
+end
+
+function read(xx::Array,γ::gcmgrid)
+  n3=Int(round(prod(size(xx))/prod(γ.ioSize)))
+  read(xx,MeshArray(γ,γ.ioPrec,n3))
 end
 
 function read(xx::Array,x::MeshArray)

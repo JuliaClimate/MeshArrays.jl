@@ -32,11 +32,11 @@ function UnitGrid(γ::gcmgrid;option="minimal")
 
     Γ=Dict_to_NamedTuple(Γ)
 
-	Γ.XC[:]=read([i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],Γ.XC)
-	Γ.YC[:]=read([j-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],Γ.XC)
+	Γ.XC[:]=read([i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+	Γ.YC[:]=read([j-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
     if option=="full"
-        Γ.XG[:]=read([i-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],Γ.XC)
-        Γ.YG[:]=read([j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],Γ.XC)
+        Γ.XG[:]=read([i-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+        Γ.YG[:]=read([j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
     end
 
     return Γ
