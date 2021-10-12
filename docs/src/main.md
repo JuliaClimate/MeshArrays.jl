@@ -1,10 +1,15 @@
 # Main Features
 
+- `MeshArray`, `gcmgrid`, `varmeta`
+- full Earth grid examples (C-grids)
+- vector fields, transports, budgets
+- interpolation, distances, collocation
+
 ## Summary
 
 The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. By default, outer and inner arrays are of all of the standard `Array` type. However, this setup potentially allows different choices for the outer and inner arrays – for example `DistributedArrays` and `AxisArrays`, respectively, could be an option. `MeshArrays.jl` thus provides a simple but general solution to analyze or e.g. simulate climate system variables. 
 
-The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array size specifications, and inter-connection rules. A second  lightweight struct, `varmeta`, contains the `MeshArray` variable name, its unit, time, and position in grid space. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Earth Grids](@ref)), and many variables, which can put a burden on users. 
+The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array size specifications, and inter-connection rules. A second  lightweight struct, `varmeta`, contains the `MeshArray` variable name, its unit, time, and position in grid space. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Grids](@ref)), and many variables, which can put a burden on users. 
 
 Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to invoke model grid details explicitely. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output (see, e.g., [Tutorial](@ref)).
 
@@ -118,10 +123,7 @@ end
 
 ## Interpolation, Plots
 
-The [JuliaCon-2018 presentation](https://youtu.be/RDxAy_zSUvg) relied on two `Jupyter` notebooks available in [GlobalOceanNotebooks](https://github.com/juliaclimate/GlobalOceanNotebooks.git)/DataStructures which are also included here in `examples/Demos.jl`. [GlobalOceanNotebooks](https://github.com/juliaclimate/GlobalOceanNotebooks.git)/OceanTransports provides use case examples related to Earth System transports.
-
-
-A simple way to plot a `MeshArray` consists in plotting each elementary array separately. Other methods that e.g. produce global maps and projections are illustrated in the notebooks. A simple one is shown below that demonstrates the included interpolation scheme.
+A simple way to plot a `MeshArray` consists in plotting each elementary array separately. 
 
 ```
 p=dirname(pathof(MeshArrays));
@@ -130,6 +132,8 @@ heatmap(D,title="Ocean Depth",clims=(0.,6000.))
 ```
 
 ![OceanDepthMap](https://raw.githubusercontent.com/juliaclimate/MeshArrays.jl/master/docs/images/ocean_depth.png)
+
+Other methods that e.g. produce global maps and projections are illustrated in the notebooks. A simple one is shown below that demonstrates the included interpolation scheme (see [this notebook](https://nbviewer.org/github/JuliaClimate/GlobalOceanNotebooks/blob/master/DataStructures/04_interpolation.ipynb) for more).
 
 ```
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
@@ -147,5 +151,7 @@ contourf(vec(lon[:,1]),vec(lat[1,:]),DD,clims=(0.,6000.))
 
 ## Vector Fields
 
-!!! note "More on this soon"
-    Please refer to [Vector Fields](@ref)
+[The JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provides a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets, as well as Lagrangian trajectories computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl).
+
+![OceanMOC](https://github.com/JuliaClimate/GlobalOceanNotebooks/raw/master/OceanTransports/MOC.png)
+
