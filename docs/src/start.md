@@ -19,19 +19,24 @@ using MeshArrays
 tmp=MeshArray(randn(20,10))
 ```
 
-[The extended tutorial](basics.html) further illustrate how `MeshArrays.jl` let's the user write generic code that is readily applicable to whole grid families. 
+## Tutorial
 
-It focuses on a global, smoothing, workflow that requires communication across the entire gridded domain -- a key feature provided by `MeshArrays.jl`.
+[The extended tutorial](basics.html) illustrates how the `MeshArrays.jl` data structures let us write generic code that is readily applicable to whole families of grids. 
 
-The same workflow is repeated three times, for different grid configurations commonly used in numerical models (see Earth Grids below). 
+It focuses on a global workflow (smoothing) that requires communication across the entire gridded domain -- a key feature provided by `MeshArrays.jl`.
+
+The same workflow is repeated three times, for different grid configurations commonly used in numerical models.
 
 Grid scale noise           |  Smoothed noise
 :------------------------------:|:---------------------------------:
 ![raw](https://user-images.githubusercontent.com/20276764/118325229-2d883d80-b4d1-11eb-953b-ddbb11bcfe1b.png)  |  ![smooth](https://user-images.githubusercontent.com/20276764/118325093-f31ea080-b4d0-11eb-8c6e-8cd0cc2cc255.png)
 
-## Earth Grids
+## Grids
 
-Here we visualize a subset of grid lines in a cube sphere (top right), LLC (bottom right), and two other grids.
+Below we visualize a subset of grid lines in a cube sphere (top right), LLC (bottom right), and two other grids. 
+
+Three such grids are available directly via this package 
+ the examples (`GRID_LL360`, `GRID_CS32`, and `GRID_LLC90`).
 
 ![EarthGrids](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/sphere_all.png)
 
