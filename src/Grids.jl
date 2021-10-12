@@ -30,15 +30,16 @@ function UnitGrid(γ::gcmgrid;option="minimal")
         Γ[list_n[ii]]=tmp1
     end
 
-    for i in 1:nFaces
-        (np,nq)=γ.fSize[i]
-        Γ["XC"][i]=vec(0.5:1.0:np-0.5)*ones(1,nq)
-        option=="full" ? Γ["XG"][i]=vec(0.0:1.0:np-1.0)*ones(1,nq) : nothing
-        Γ["YC"][i]=ones(np,1)*transpose(vec(0.5:1.0:nq-0.5))
-        option=="full" ? Γ["YG"][i]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0)) : nothing
+    Γ=Dict_to_NamedTuple(Γ)
+
+	Γ.XC[:]=read([i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+	Γ.YC[:]=read([j-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+    if option=="full"
+        Γ.XG[:]=read([i-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+        Γ.YG[:]=read([j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
     end
 
-    return Dict_to_NamedTuple(Γ)
+    return Γ
 
 end
 
@@ -273,6 +274,8 @@ function GridOfOnes(grTp,nF,nP;option="minimal")
     elseif grTopo=="PeriodicDomain"
         nFsqrt=Int(sqrt(nF))
         ioSize=[nP*nFsqrt nP*nFsqrt]
+    else
+        error("unknown configuration (grTopo)")
     end
     facesSize=Array{NTuple{2, Int},1}(undef,nFaces)
     facesSize[:].=[(nP,nP)]
