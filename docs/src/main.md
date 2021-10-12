@@ -121,7 +121,7 @@ struct varmeta
 end
 ```
 
-## Interpolation, Plots
+## Interpolation, Plotting
 
 A simple way to plot a `MeshArray` consists in plotting each elementary array separately. 
 
