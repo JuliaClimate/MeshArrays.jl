@@ -10,9 +10,11 @@ begin
 	Pkg.activate("../docs")
 	
 	using MeshArrays
+	
 	import PlutoUI
 	import CairoMakie as Mkie
 	toc=PlutoUI.TableOfContents()
+	
 	md"""
 	$(toc)
 	## Julia Packages Being Used
@@ -22,7 +24,7 @@ end
 
 # ╔═╡ 0dbf6e21-2dd7-497f-9b0b-f67707f2e7e0
 module myDemos
-	using Plots, MeshArrays
+	using MeshArrays
 	p=dirname(pathof(MeshArrays))
 	include(joinpath(p,"../examples/Demos.jl"))
 end
