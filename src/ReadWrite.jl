@@ -107,3 +107,62 @@ function write(x::MeshArray)
   return y
 
 end
+
+## 
+
+function read_tiles(fil::String,x::MeshArray)
+
+  (n1,n2)=x.grid.ioSize
+  (nFaces,n3)=nFacesEtc(x)
+
+  fid = open(fil)
+  xx = Array{eltype(x),2}(undef,(n1*n2,n3))
+  read!(fid,xx)
+  xx = reshape(hton.(xx),(n1,n2,n3))
+  close(fid)
+
+  return x.grid.read(xx,x)
+
+end
+
+function read_tiles(xx::Array,γ::gcmgrid)
+  n3=Int(round(prod(size(xx))/prod(γ.ioSize)))
+  read_tiles(xx,MeshArray(γ,γ.ioPrec,n3))
+end
+
+function read_tiles(xx::Array,x::MeshArray)
+	tmp=similar(x)
+	s=x.grid.ioSize
+	(n1,n2)=x.grid.fSize[1]
+	ni=Int(s[1]/n1)
+	nj=Int(s[2]/n2)
+	ii=[0]
+	for j in 1:nj, i in 1:ni
+		ii[1]+=1
+		tmp[ii[1]]=xx[(i-1)*n1 .+ collect(1:n1),(j-1)*n2 .+ collect(1:n2)]
+	end
+	tmp
+end
+
+function write_tiles(x::MeshArray)
+  tmp = Array{eltype(x),2}(undef,x.grid.ioSize)
+	s=x.grid.ioSize
+	(n1,n2)=x.grid.fSize[1]
+	ni=Int(s[1]/n1)
+	nj=Int(s[2]/n2)
+	ii=[0]
+	for j in 1:nj, i in 1:ni
+		ii[1]+=1
+		tmp[(i-1)*n1 .+ collect(1:n1),(j-1)*n2 .+ collect(1:n2)].=x[ii[1]]
+	end
+	tmp
+end
+
+function write_tiles(fil::String,x::MeshArray)
+  y=x.grid.write(x)
+  fid = open(fil,"w")
+  write(fid,ntoh.(y))
+  close(fid)
+end
+
+##

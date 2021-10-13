@@ -30,17 +30,46 @@ function UnitGrid(γ::gcmgrid;option="minimal")
         Γ[list_n[ii]]=tmp1
     end
 
-    Γ=Dict_to_NamedTuple(Γ)
-
-	Γ.XC[:]=read([i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
-	Γ.YC[:]=read([j-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
-    if option=="full"
-        Γ.XG[:]=read([i-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
-        Γ.YG[:]=read([j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+    for i in 1:nFaces
+        (np,nq)=γ.fSize[i]
+        Γ["XC"][i]=vec(0.5:1.0:np-0.5)*ones(1,nq)
+        option=="full" ? Γ["XG"][i]=vec(0.0:1.0:np-1.0)*ones(1,nq) : nothing
+        Γ["YC"][i]=ones(np,1)*transpose(vec(0.5:1.0:nq-0.5))
+        option=="full" ? Γ["YG"][i]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0)) : nothing
     end
+    
+    Γ=Dict_to_NamedTuple(Γ)
 
     return Γ
 
+end
+
+"""
+    UnitGrid(ioSize, tileSize; option="minimal")
+  
+Generate a unit grid, where every grid spacing and area is 1, according to `ioSize, tileSize`. 
+
+Since `ioSize, tileSize` defines a one to one mapping from global to tiled array, here we use 
+`read_tiles, write_tiles` instead of the default `read, write`. And we overwrite local `XC,YC`
+etc accordingly with global `XC,YC` etc . 
+"""
+function UnitGrid(ioSize::NTuple{2, Int},tileSize::NTuple{2, Int}; option="minimal")
+
+    nF=div(prod(ioSize),prod(tileSize))
+    fSize=fill(tileSize,nF)
+
+    γ=gcmgrid("","PeriodicDomain",nF,fSize, ioSize, Float32, 
+        MeshArrays.read_tiles, MeshArrays.write_tiles)
+    Γ=UnitGrid(γ;option=option)
+
+    Γ.XC[:]=γ.read([i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+    Γ.YC[:]=γ.read([j-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+    if option=="full"
+        Γ.XG[:]=γ.read([i-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+        Γ.YG[:]=γ.read([j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
+    end
+
+    return Γ,γ
 end
 
 """
