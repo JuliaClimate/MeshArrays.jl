@@ -93,7 +93,7 @@ function exch_T_N_dpdo(fld::MeshArray,N::Integer)
 
 fillval=0.0
 
-ni,nj=Int.(transpose(fld.grid.ioSize)./fld.grid.fSize[1])
+ni,nj=Int.(fld.grid.ioSize[:]./fld.grid.fSize[1][:])
 s=fld.fSize
 FLD=similar(fld;m=fld.meta);
 
@@ -152,7 +152,7 @@ function exch_UV_dpdo(fldU,fldV);
 
 fillval=0.0
 
-ni,nj=Int.(transpose(fldU.grid.ioSize)./fldU.grid.fSize[1])
+ni,nj=Int.(fldU.grid.ioSize[:]./fldU.grid.fSize[1][:])
 s=fldU.fSize
 FLDU=similar(fldU;m=fldU.meta)
 FLDV=similar(fldV;m=fldV.meta)
