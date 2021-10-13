@@ -4,6 +4,15 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        el
+    end
+end
+
 # ╔═╡ 1a714fba-2a8e-11ec-182f-8f85cc17b02a
 begin
 	using Pkg
@@ -67,15 +76,28 @@ Below, this example is repeated for three different grid configurations commonly
 """
 
 # ╔═╡ 54030bff-45f7-43b1-b19f-7c0cd05a02ae
-md"""### 1. Doubly Periodic Domain
-
-Let's start with a doubly periodic domain split into `nF=8` subdomains. Each subdomain corresponds to an array of `nP=20` by `nQ=30` grid points. 
-The `UnitGrid()` function is used to generate such a grid configuration.
-"""
+begin
+	nP_s = @bind nP PlutoUI.NumberField(10:20:30, default=20)
+	nQ_s = @bind nQ PlutoUI.NumberField(10:20:30, default=30)
+	mP_s = @bind mP PlutoUI.NumberField(1:4, default=4)
+	mQ_s = @bind mQ PlutoUI.NumberField(1:4, default=2)
+	md"""### 1. Doubly Periodic Domain
+	
+	Let's start with a doubly periodic domain split into `mP*mQ` subdomains. 
+	Each subdomain corresponds to an array of `nP,nQ` grid points. 
+	The `UnitGrid()` function is used to generate such a grid configuration.
+	
+	nP x mP = $(nP_s) x $(mP_s)
+		
+	nQ x mQ = $(nQ_s) x $(mQ_s)
+	
+	`(Γ,γ)=UnitGrid( (nP*mP,nQ*mQ) , (nP,nQ) ; option="full")`
+	"""
+end
 
 # ╔═╡ 1fc99fca-3440-4765-b11d-e10eb560aff7
 begin
-	(Γ,γ)=UnitGrid( (20*4,30*2) , (20,30) ; option="full")
+	(Γ,γ)=UnitGrid( (nP*mP,nQ*mQ) , (nP,nQ) ; option="full")
 	
 	PlutoUI.with_terminal() do
 		show(Γ.XC)
@@ -94,10 +116,10 @@ begin
 	#apply smoother
 	zout=smooth(zin,Lx,Ly,Γ)
 
-	md"""Then we do steps 2 (`zin`) and 3 (`zout`) in this code cell. 
+	md"""Then we do steps 2 (`zin`) and 3 (`zout`) in this code cell, and plot results in the next. 
 
 	!!! note
-	    The `heatmap` display should reflect that `zout` is smoother (and therefore muted) than is `zin`.
+	    The `heatmap` display should reflect that `zout` (r.h.s.) is smoother, and therefore more muted, than is `zin` (l.h.s).
 	"""
 end
 
@@ -171,7 +193,7 @@ TBD
 # ╠═1a714fba-2a8e-11ec-182f-8f85cc17b02a
 # ╟─a0a7637f-f115-4257-a140-06dc48dd5fba
 # ╟─54030bff-45f7-43b1-b19f-7c0cd05a02ae
-# ╠═1fc99fca-3440-4765-b11d-e10eb560aff7
+# ╟─1fc99fca-3440-4765-b11d-e10eb560aff7
 # ╟─cef83984-80dc-4196-8edd-314885fa9448
 # ╟─2573fda7-66cb-484f-9d06-a9bb85a26a9e
 # ╠═7c514f3b-f04d-49e3-9640-d17fdef392e6
