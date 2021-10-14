@@ -118,6 +118,21 @@ The [Lat-Lon-Cap grid](http://www.geosci-model-dev.net/8/3071/2015/) (or LLC) is
 Here, grid variables are read from the `MeshArrays.GRID_LLC90` folder by the `GridLoad` function. The `GridSpec` function provides the corresponding subdomain sizes. Again we call `comp()` which combines steps 2 and 3, and `viz()` to visualize. 
 """
 
+# ╔═╡ 0865dd0f-c43e-43a7-aa65-74aba4f4460d
+md"""### 4. Plotting
+
+Methods that show subdomain arrays in their native, local `x,y`, coordinate systems have already been illustrated. In presenting analysis results though, it can be prefereable to interpolate to a different grid. And maybe use geographic projection. Here is one method to do that.
+
+!!! note
+	For a deeper dive into the interpolation method and geographic projections, see e.g. the [Julia Climate Nodetbooks](https://juliaclimate.github.io/GlobalOceanNotebooks/)
+"""
+
+# ╔═╡ 2c29ba59-ffc9-4763-8405-250029016ca5
+md"""### 5. MeshArray Operations
+
+The cell below demonstrates array operations, indexing methods, and exchange functions.
+"""
+
 # ╔═╡ 58f95665-9687-4b4f-af99-1239818f71a3
 md"""## Helper Functions
 
@@ -164,7 +179,7 @@ let
 	#x=0.5:ioSize[1]-0.5
 	#y=0.5:ioSize[2]-0.5
 	
-	fig = Mkie.Figure(resolution = (900,900), backgroundcolor = :grey95)
+	fig = Mkie.Figure(resolution = (600,600), backgroundcolor = :grey95)
 
 	ax1 = Mkie.Axis(fig[1,1])
 	hm1=Mkie.heatmap!(ax1,x,y,γ.write(Rini_a),clims=(-0.25,0.25),tickfont = (4, :black))
@@ -205,47 +220,69 @@ begin
 	end
 end
 
-# ╔═╡ 2c29ba59-ffc9-4763-8405-250029016ca5
+# ╔═╡ 5a454424-30a9-40c1-9161-9ad62d51afb6
 begin
-	let
-		γ=γ_c
-		Γ=Γ_c
-		D=γ.read(γ.path*"Depth.data",MeshArray(γ,γ.ioPrec))
+	lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
+	lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
+	(f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ_c,vec(lon),vec(lat))
+	"Done with interpolation coefficients"
+end
 
-		#Array operations
-		1000 .+ D
-		D .+ 1000
-		D+D
-		D .- 1000
-		1000 .- D
-		D-D
-		1000*D
-		D*1000
-		D*D
-		D/1000
-		1000 ./ D
-		D/D
-		
-		#Indexing methods
-		H=Γ.hFacC
-		typeof(H)
-	    size(H)
-		eltype(H)
-		H.f[1,40]
-		H.f[:,40]
-		view(H,:,40)
-		
-		#Exchange funtions
-		Dexch=exchange(D,4)
-		(dDdx, dDdy)=gradient(D,Γ)
-		(dDdxEx,dDdyEx)=exchange(dDdx,dDdy,4)
+# ╔═╡ 8f7ad783-f81e-4904-b848-3089216ab6e5
+begin
+	DD=Interpolate(Γ_c.Depth,f,i,j,w)
+	DD=reshape(DD,size(lon))
+	DD[findall(DD.==0.0)].=NaN
+
+	fig = Mkie.Figure(resolution = (900,900), backgroundcolor = :grey95)
+	ax = Mkie.Axis(fig[1,1], title="Ocean Depth in m",xlabel="longitude",ylabel="latitude")
+	hm1=Mkie.contourf!(ax,lon[:,1],lat[1,:],DD,clims=(-0.25,0.25),tickfont = (4, :black))
+	fig
+end
+
+# ╔═╡ 169f9cdd-28f1-4574-ade4-237eab46a541
+let
+	γ=γ_c
+	Γ=Γ_c
+	H=Γ.hFacC
+	D=γ.read(γ.path*"Depth.data",MeshArray(γ,γ.ioPrec))
+
+	#Array operations
+	1000 .+ D
+	D .+ 1000
+	D+D
+	D .- 1000
+	1000 .- D
+	D-D
+	1000*D
+	D*1000
+	D*D
+	D/1000
+	1000 ./ D
+	D/D
+	tmp=cos.(D)
+
+	#Indexing methods
+	typeof(H)
+	size(H)
+	eltype(H)
+
+	H.f[1,40]
+	H.f[:,40]
+	view(H,:,40)
+	D[1]=0.0 .+ D[1]
+	D[findall(D .> 300.)] .= NaN
+	D[findall(D .< 1.)] .= NaN
+
+	#Exchange funtions
+	Dexch=exchange(D,4)
+	(dDdx, dDdy)=gradient(D,Γ)
+	(dDdxEx,dDdyEx)=exchange(dDdx,dDdy,4)
+	
+	PlutoUI.with_terminal() do
+	println("\n The result of `exchange()` may look like this: \n\n ")
+		show(Dexch)
 	end
-	
-	md"""### 4. Array Operations
-	
-	This cell demonstrates array operations, indexing methods, and exchange functions.
-	
-	"""
 end
 
 # ╔═╡ 5c755d83-6729-4de4-8038-8619b53795ff
@@ -264,7 +301,7 @@ begin
 		Tr=Array{Float64,1}(undef,length(LC));
 		[Tr[i]=ThroughFlow(UV,LC[i],Γ) for i=1:length(LC)]
 		
-		fig = Mkie.Figure(resolution = (900,900), backgroundcolor = :grey95)
+		fig = Mkie.Figure(resolution = (600,400), backgroundcolor = :grey95)
 		ax = Mkie.Axis(fig[1,1], title="Meridional Ocean Transport", 
 				ylabel="Sv (1 Sv = 10^6 m^3/s)",xlabel="latitude")
 		Mkie.lines!(ax,la,Tr/1e6)
@@ -273,9 +310,12 @@ begin
 	
 	fig_Tr=demo_Tr(γ_c,Γ_c)
 		
-	md"""### 4. Transport Computations.
+	md"""### 6. Transport Computations.
 	
 	This cell demonstrates methods that compute transports within the Earth System. Accurate transport computations involve factoring in the correct grid scaling factors, and integrating along non-trivial grid line paths [Forget et al 2015](https://doi.org/10.5194/gmd-8-3071-2015).
+	
+	!!! note
+		For a deeper dive into transport computations with `MeshArrays.jl`, see e.g. the [Julia Climate Nodetbooks](https://juliaclimate.github.io/GlobalOceanNotebooks/)
 	
 	$(fig_Tr)
 	"""
@@ -314,7 +354,10 @@ begin
 end
 
 # ╔═╡ aa95e258-f9d0-4137-8842-e878833740a6
-viz(Rend_b)
+begin
+	f6=viz(Rend_b)
+	Mkie.save("smooth_cs32.png", f6) 
+end
 
 # ╔═╡ 1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
 viz(Rend_c)
@@ -331,11 +374,15 @@ viz(Rend_c)
 # ╟─e34de61b-8630-43f8-84ba-ce7a99d673ab
 # ╟─2ee0a449-fd98-43e1-90b4-b4e15f237d67
 # ╟─dacc2261-1d75-4d68-b82c-174e4fae3631
-# ╟─aa95e258-f9d0-4137-8842-e878833740a6
+# ╠═aa95e258-f9d0-4137-8842-e878833740a6
 # ╟─d37ae153-8646-44ae-abd9-7e0e7d479275
 # ╟─23198b8d-6bf0-4af9-91d0-7886c9574f81
 # ╟─1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
-# ╠═2c29ba59-ffc9-4763-8405-250029016ca5
+# ╟─0865dd0f-c43e-43a7-aa65-74aba4f4460d
+# ╟─5a454424-30a9-40c1-9161-9ad62d51afb6
+# ╟─8f7ad783-f81e-4904-b848-3089216ab6e5
+# ╟─2c29ba59-ffc9-4763-8405-250029016ca5
+# ╠═169f9cdd-28f1-4574-ade4-237eab46a541
 # ╟─5c755d83-6729-4de4-8038-8619b53795ff
 # ╟─58f95665-9687-4b4f-af99-1239818f71a3
 # ╠═62f2dc32-456e-4e8a-8c4a-3a0ae236af13
