@@ -13,32 +13,17 @@ The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct contai
 
 Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to invoke model grid details explicitely. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output (see, e.g., [Tutorial](@ref)).
 
+![smooth_cs32](https://user-images.githubusercontent.com/20276764/137231635-fdd12de0-29fe-45d4-9045-60621668e353.png)
+
 ## Data Structures
 
 The elements of a `MeshArray` are arrays. These elementary arrays typically represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified `gcmgrid` which is embeded inside each `MeshArray` instance. 
 
 `Interpolate` can be used to interpolate a `MeshArray` to any location (i.e. arbitrary longitude, latitude pair). `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output. 
 
-The current default for `MeshArray` is the `gcmarray` type and an instance `H` is shown below. This example is based on a grid known as `LatLonCap` where each global map is associated with 5 subdomains. Hence, `H.f` is a `(5, 50)` array when `H` represents a gridded variable on `50` depth levels, and elements of  `H.f` are arrays of size `(90, 270)`, `(90, 90)`, or `(270, 90)`. 
+The current default for `MeshArray` is the `gcmarray` type, with various examples provided in the [Tutorial](@ref) notebook.
 
-```
-julia> show(D)
-  name        = Depth
-  unit        = m
-  data type   = Float64
-  cell pos.   = [0.5, 0.5]
-
-  tile array  = (5,)
-  tile sizes  = (90, 270)
-                (90, 270)
-                (90, 90)
-                (270, 90)
-                (270, 90)
-
-  grid class  = LatLonCap
-  MeshArray   = gcmarray 
-  version     = 0.2.7 
-```
+One of the examples is based on a grid known as `LatLonCap` where each global map is associated with 5 subdomains of different sizes. The grid has `50` depth levels. Such a `MeshArray` has a size of `(5, 50)` (see [Tutorial](@ref)).
 
 The underlying, `MeshArray`, data structure is:
 
@@ -53,35 +38,10 @@ struct gcmarray{T, N} <: AbstractMeshArray{T, N}
 end
 ```
 
-A `MeshArray` generally behaves just like an `Array` including for operations listed below. The _broadcasting_ function has been customized so that it reaches elements of each elementary array.
+A `MeshArray` generally behaves just like an `Array` and the _broadcasting_ of operations has notably been customized so that it reaches elements of each elementary array (i.e. within `f[i]` for each index of `f`).
 
-```
-size(D)
-eltype(D)
-view(D,:)
+In addition, `Mesharray` specific functions like `exchange` can alter the internal structure of a `MeshArray` by adding rows and columns at the periphery of subdomains. 
 
-D .* 1.0
-D .* D
-1000*D
-D*1000
-
-D[findall(D .> 300.)] .= NaN
-D[findall(D .< 1.)] .= NaN
-
-D[1]=0.0 .+ D[1]
-tmp=cos.(D)
-```
-
-In addition, `Mesharray` specific functions like `exchange` can alter the internal structure of a `MeshArray`. Elementary array sizes are thus larger in `show(exchange(D))` than `show(D)`.
-
-```
-julia> show(exchange(D))
-  tile sizes  = (92, 272)
-                (92, 272)
-                (92, 92)
-                (272, 92)
-                (272, 92)
-```
 
 ## Embedded Metadata
 
@@ -121,37 +81,11 @@ struct varmeta
 end
 ```
 
-## Interpolation, Plotting
-
-A simple way to plot a `MeshArray` consists in plotting each elementary array separately. 
-
-```
-p=dirname(pathof(MeshArrays));
-using Plots; include(joinpath(p,"../examples/Plots.jl"));
-heatmap(D,title="Ocean Depth",clims=(0.,6000.))
-```
-
-![OceanDepthMap](https://raw.githubusercontent.com/juliaclimate/MeshArrays.jl/master/docs/images/ocean_depth.png)
-
-Other methods that e.g. produce global maps and projections are illustrated in the notebooks. A simple one is shown below that demonstrates the included interpolation scheme (see [this notebook](https://nbviewer.org/github/JuliaClimate/GlobalOceanNotebooks/blob/master/DataStructures/04_interpolation.ipynb) for more).
-
-```
-lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
-lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
-
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
-Γ=GridLoad(γ;option="full")
-(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
-DD=Interpolate(Γ.Depth,f,i,j,w)
-
-contourf(vec(lon[:,1]),vec(lat[1,:]),DD,clims=(0.,6000.))
-```
-
 ![OceanDepthMap](https://raw.githubusercontent.com/juliaclimate/MeshArrays.jl/master/docs/images/interp_depth.png)
 
-## Vector Fields
+## Plotting, Transports, And More
 
-[The JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provides a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets, as well as Lagrangian trajectories computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl).
+A simple way to plot a `MeshArray` consists in plotting each elementary array separately. This method is illustrated in the [Tutorial](@ref) along with others that produce global maps. [The JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide additional examples and a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets, as well as Lagrangian trajectories computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl). Another set of examples shows that `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest) with I/O routines provided by [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) as a
+lso demontrated in [the JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/).
 
 ![OceanMOC](https://github.com/JuliaClimate/GlobalOceanNotebooks/raw/master/OceanTransports/MOC.png)
-
