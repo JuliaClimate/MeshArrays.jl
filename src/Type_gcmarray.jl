@@ -209,14 +209,14 @@ end
 function Base.show(io::IO, z::gcmarray{T, N, Array{T,2}}) where {T,N}
     if ~isa(z.meta.unit,Missing)
       printstyled(io, "  name        = ",color=:normal)
-      printstyled(io, "$(z.meta.name)\n",color=:blue)
+      printstyled(io, "$(z.meta.name)\n",color=:magenta)
       printstyled(io, "  unit        = ",color=:normal)
-      printstyled(io, "$(z.meta.unit)\n",color=:blue)
+      printstyled(io, "$(z.meta.unit)\n",color=:magenta)
     end
     printstyled(io, "  data type   = ",color=:normal)
-    printstyled(io, "$(eltype(z))\n",color=:blue)
+    printstyled(io, "$(eltype(z))\n",color=:magenta)
     printstyled(io, "  cell pos.   = ",color=:normal)
-    printstyled(io, "$(z.meta.position)\n",color=:blue)
+    printstyled(io, "$(z.meta.position)\n",color=:magenta)
     printstyled(io, "  tile array  = ",color=:normal)
     printstyled(io, "$(size(z))\n",color=:cyan)
     printstyled(io, "  tile sizes  = ",color=:normal)
