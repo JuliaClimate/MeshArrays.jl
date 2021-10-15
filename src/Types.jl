@@ -19,6 +19,17 @@ gcmgrid(path::String, class::String, nFaces::Int,
         ioSize::Union{NTuple{2, Int},Array{Int64,2}},
         ioPrec::Type, read::Function, write::Function)
 ```
+
+The `class` can be set to "LatLonCap", "CubeSphere", "PeriodicChannel", "PeriodicDomain".
+
+For example, A periodic channel (periodic in the x direction) of size 360 by 160, can be defined as follows.
+
+```
+gcmgrid(pth,"PeriodicChannel",1,facesSize, ioSize, 
+		Float32, read, write)
+```
+
+Please refer to `GridSpec` and `UnitGrid` for more info related to these options.
 """
 struct gcmgrid
   path::String
