@@ -60,11 +60,15 @@ struct gcmgrid
 end
 ```
 
-The grid `class` can be set to "LatLonCap", "CubeSphere", "PeriodicChannel", or "PeriodicDomain". For example, A periodic channel (periodic in the x direction) of size 360 by 160, can be defined as follows.
+The grid `class` can be set to _LatLonCap_, _CubeSphere_, _PeriodicChannel_, or _PeriodicDomain_. For example, A _PeriodicChannel_ (periodic in the x direction) of size 360 by 160, can be defined as follows.
 
 ```
-gcmgrid(pth,"PeriodicChannel",1,facesSize, ioSize, 
-		Float32, read, write)
+pth=MeshArrays.GRID_LL360
+class="PeriodicChannel"
+ioSize=(360, 160)
+ioPrec=Float32
+
+γ=gcmgrid(pth,"PeriodicChannel",1,[ioSize], ioSize, ioPrec, read, write)
 ```
 
 Importantly, a `gcmgrid` does **not** contain any actual grid data -- hence its memory footprint is minimal. Grid variables are instead read to memory only when needed e.g. as shown below. To make this easy, each `gcmgrid` includes a pair of `read` / `write` methods to allow for basic `I/O` at any time. These methods are typically specified by the user although defaults are provided. 
