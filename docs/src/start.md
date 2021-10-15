@@ -21,7 +21,7 @@ tmp=MeshArray(randn(20,10))
 
 ## Tutorial
 
-[The extended tutorial](basics.html) illustrates how the `MeshArrays.jl` data structures let us write generic code that is readily applicable to whole families of grids. 
+[The extended tutorial](basics.html) ([code link](https://raw.githubusercontent.com/JuliaClimate/MeshArrays.jl/master/examples/basics.jl)) illustrates how the `MeshArrays.jl` data structures let us write generic code that is readily applicable to whole families of grids. 
 
 It focuses on a global workflow (smoothing) that requires communication across the entire gridded domain -- a key feature provided by `MeshArrays.jl`.
 

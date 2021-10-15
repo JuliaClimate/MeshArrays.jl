@@ -17,7 +17,7 @@ Encoding the grid specification inside the `MeshArray` data type allows user to 
 
 ## Data Structures
 
-The elements of a `MeshArray` are arrays. These elementary arrays typically represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified `gcmgrid` which is embeded inside each `MeshArray` instance. 
+The elements of a `MeshArray` are arrays. These elementary arrays typically represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified [gcmgrid](@ref) which is embeded inside each [MeshArray](@ref) instance. 
 
 `Interpolate` can be used to interpolate a `MeshArray` to any location (i.e. arbitrary longitude, latitude pair). `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output. 
 
@@ -45,7 +45,7 @@ In addition, `Mesharray` specific functions like `exchange` can alter the intern
 
 ## Embedded Metadata
 
-A `MeshArray` includes a `gcmgrid` specification which can be constructed as outlined below.
+A [MeshArray](@ref) includes a [gcmgrid](@ref) specification which can be constructed as outlined below.
 
 ```
 struct gcmgrid
@@ -58,6 +58,17 @@ struct gcmgrid
   read::Function
   write::Function
 end
+```
+
+The grid `class` can be set to _LatLonCap_, _CubeSphere_, _PeriodicChannel_, or _PeriodicDomain_. For example, A _PeriodicChannel_ (periodic in the x direction) of size 360 by 160, can be defined as follows.
+
+```
+pth=MeshArrays.GRID_LL360
+class="PeriodicChannel"
+ioSize=(360, 160)
+ioPrec=Float32
+
+γ=gcmgrid(pth,"PeriodicChannel",1,[ioSize], ioSize, ioPrec, read, write)
 ```
 
 Importantly, a `gcmgrid` does **not** contain any actual grid data -- hence its memory footprint is minimal. Grid variables are instead read to memory only when needed e.g. as shown below. To make this easy, each `gcmgrid` includes a pair of `read` / `write` methods to allow for basic `I/O` at any time. These methods are typically specified by the user although defaults are provided. 
