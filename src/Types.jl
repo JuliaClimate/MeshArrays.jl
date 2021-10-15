@@ -30,7 +30,7 @@ class="PeriodicChannel"
 ioSize=(360, 160)
 ioPrec=Float32
 
-γ=gcmgrid(pth,"PeriodicChannel",1,[ioSize], ioSize, ioPrec, read, write)
+γ=gcmgrid(pth, class, 1, [ioSize], ioSize, ioPrec, read, write)
 
 Γ=GridLoad(γ)    
 ```
