@@ -2,10 +2,11 @@
 
 module MeshArrays
 
-using Pkg, Pkg.Artifacts
+import Pkg
 thistoml=joinpath(dirname(pathof(MeshArrays)), "..", "Project.toml")
 thisversion=Pkg.TOML.parsefile(thistoml)["version"]
 
+using LazyArtifacts
 p=dirname(pathof(MeshArrays))
 artifact_toml = joinpath(p, "../Artifacts.toml")
 
