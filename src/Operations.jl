@@ -322,3 +322,39 @@ function LatitudeCircles(LatValues,Γ::NamedTuple)
 end
 
 ##
+
+nanmean(x) = mean(filter(!isnan,x))
+nanmean(x,y) = mapslices(nanmean,x,dims=y)
+
+"""
+  UVtoUEVN(u,v,G::NamedTuple)
+    1. Interpolate to grid cell centers (uC,vC)
+    2. Convert to `Eastward/Northward` components (uE,vN)
+"""
+function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
+    u[findall(G.hFacW[:,1].==0)].=NaN
+    v[findall(G.hFacS[:,1].==0)].=NaN
+
+    (u,v)=exch_UV(u,v); uC=similar(u); vC=similar(v)
+    for iF=1:u.grid.nFaces
+        tmp1=u[iF][1:end-1,:]; tmp2=u[iF][2:end,:]
+        uC[iF]=reshape(nanmean([tmp1[:] tmp2[:]],2),size(tmp1))
+        tmp1=v[iF][:,1:end-1]; tmp2=v[iF][:,2:end]
+        vC[iF]=reshape(nanmean([tmp1[:] tmp2[:]],2),size(tmp1))
+    end
+
+    return uC.*G.AngleCS-vC.*G.AngleSN, uC.*G.AngleSN+vC.*G.AngleCS
+end
+
+#Convert Velocity (m/s) to transport (m^3/s)
+function UVtoTransport(U::MeshArray,V::MeshArray,G::NamedTuple)
+  uTr=deepcopy(U)
+  vTr=deepcopy(V)
+  for i in eachindex(U)
+      tmp1=U[i]; tmp1[(!isfinite).(tmp1)] .= 0.0
+      tmp1=V[i]; tmp1[(!isfinite).(tmp1)] .= 0.0
+      uTr[i]=G.DRF[i[2]]*U[i].*G.DYG[i[1]]
+      vTr[i]=G.DRF[i[2]]*V[i].*G.DXG[i[1]]
+  end
+  return uTr,vTr
+end
