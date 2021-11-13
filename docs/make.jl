@@ -1,5 +1,8 @@
 using Documenter, PlutoSliderServer, MeshArrays
 
+import OceanStateEstimation
+OceanStateEstimation.get_ecco_velocity_if_needed()
+
 makedocs(
     sitename = "MeshArrays",
     format   = Documenter.HTML(),
