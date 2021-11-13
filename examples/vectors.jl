@@ -66,6 +66,17 @@ The maps below reflect the native velocity field orientation. Note how this diff
     Normally before interpolation one wants to apply rotation to convert to Eastward U , Northward V (see at the top of this notebook). The plot below reflects what happens if one doesn't.
 """
 
+# ╔═╡ 0611986f-3d6e-4236-b68a-747b6018d381
+md"""## Gradient And Curl"""
+
+# ╔═╡ 87a4a232-d8eb-4612-8cc5-dc9d1c16dbe8
+md"""## Particle Tracking
+
+Materials and particles that tend to follow ocean currents or atmospheric winds can be analyzed in terms of trajectories. These are simply computed by integrating velocities over time within a [Lagrangian framework](https://en.wikipedia.org/wiki/Lagrangian_and_Eulerian_specification_of_the_flow_field).
+
+When vector fields are represented using [MeshArrays.jl](https://github.com/JuliaClimate/MeshArrays.jl), as done in this tutorial, this is easily done via the [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) package as shown in [these examples](https://juliaclimate.github.io/IndividualDisplacements.jl/dev/examples/).
+"""
+
 # ╔═╡ a8ebbe41-1ac8-44da-b8c4-cbfd4d422227
 md"""## Preliminary Steps
 
@@ -146,7 +157,7 @@ end
 
 # ╔═╡ 60bda89f-5452-4f89-b4a4-a89568d45a6b
 let
-		fig1 = Mkie.Figure(resolution = (900,600),markersize=0.1)
+		fig1 = Mkie.Figure(resolution = (900,400),markersize=0.1)
 		ax1 = Mkie.Axis(fig1[1,1], title="Eastward velocity (in m/s)")
 		hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],uI,levels=(-0.5:0.1:0.5)./2.0,clims=(-0.5,0.5)./2.0)
 		Mkie.Colorbar(fig1[1,2], hm1, height = Mkie.Relative(0.65))
@@ -155,7 +166,7 @@ end
 
 # ╔═╡ 99e7e24b-578e-47be-818a-623c8e9e4381
 let
-		fig1 = Mkie.Figure(resolution = (900,600),markersize=0.1)
+		fig1 = Mkie.Figure(resolution = (900,400),markersize=0.1)
 		ax1 = Mkie.Axis(fig1[1,1], title="Northward velocity (in m/s)")
 		hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],vI,levels=(-0.5:0.1:0.5)./5.0,clims=(-0.5,0.5)./5.0)
 		Mkie.Colorbar(fig1[1,2], hm1, height = Mkie.Relative(0.65))
@@ -184,7 +195,7 @@ let
 	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:end-1])); #coordinate variables
 	z=reverse(ov,dims=2); z[z.==0.0].=NaN
 
-	fig1 = Mkie.Figure(resolution = (900,600),markersize=0.1)
+	fig1 = Mkie.Figure(resolution = (900,400),markersize=0.1)
 	ax1 = Mkie.Axis(fig1[1,1], title="Meridional Overturning Streamfunction (in Sv)")
 	hm1=Mkie.contourf!(ax1,x,y,1e-6*z,levels=(-40.0:5.0:40.0),clims=(-40,40))
 	Mkie.Colorbar(fig1[1,2], hm1, height = Mkie.Relative(0.65))
@@ -208,7 +219,7 @@ end
 # ╔═╡ 2d6c1787-3c30-4daf-8575-b51211f8e860
 let
 	x=vec(-89.0:89.0)
-	fig1 = Mkie.Figure(resolution = (900,600),markersize=0.1)
+	fig1 = Mkie.Figure(resolution = (900,400),markersize=0.1)
 	ax1 = Mkie.Axis(fig1[1,1], title="Northward Volume Transport (in Sv)")
 	hm1=Mkie.lines!(x,1e-6*MT,xlabel="latitude",ylabel="Transport (in Sv)",label="ECCO estimate")
 	fig1
@@ -248,7 +259,7 @@ end
 let
 		z=reshape(Interpolate(TrspCon,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
-		fig1 = Mkie.Figure(resolution = (900,600),markersize=0.1)
+		fig1 = Mkie.Figure(resolution = (900,400),markersize=0.1)
 		ax1 = Mkie.Axis(fig1[1,1], title="Evaporation - Precipitation - Runoff (in Sv; inferred)")
 		hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],z,levels=(-1.0:0.25:1.0).*800.0,clims=(-1.0,1.0).*800.0)
 		Mkie.Colorbar(fig1[1,2], hm1, height = Mkie.Relative(0.65))
@@ -259,16 +270,30 @@ end
 let
 	z=reshape(Interpolate(1e-6*TrspPsi,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
-	fig1 = Mkie.Figure(resolution = (900,600),markersize=0.1)
+	fig1 = Mkie.Figure(resolution = (900,400),markersize=0.1)
 	ax1 = Mkie.Axis(fig1[1,1], title="Streamfunction (in Sv)")
 	hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],z,levels=(-1.0:0.25:1.0).*40.0,clims=(-1.0,1.0).*40.0)
 	Mkie.Colorbar(fig1[1,2], hm1, height = Mkie.Relative(0.65))
 	fig1
 end
 
+# ╔═╡ 210b5414-ada8-49a1-8ac4-9115ed33e285
+let
+	(dDdx, dDdy)=gradient(TrspPot,Γ)
+	dDdx=reshape(Interpolate(μ.*dDdx,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
+	dDdy=reshape(Interpolate(μ.*dDdy,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
+
+	fig1 = Mkie.Figure(resolution = (900,600),markersize=0.1)
+	ax1 = Mkie.Axis(fig1[1,1], title="Gradient of scalar potential in x-direction (in 1/s)")
+	hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdx,levels=(-1.0:0.25:1.0).*0.1)
+	ax1 = Mkie.Axis(fig1[2,1], title="Gradient of scalar potential in y-direction (in 1/s)")
+	hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdy,levels=(-1.0:0.25:1.0).*0.1)
+	Mkie.Colorbar(fig1[1:2,2], hm1, height = Mkie.Relative(0.65))
+	fig1
+end
+
 # ╔═╡ e033825c-019c-44b6-86dd-30fff79f8339
 let
-	#(dDdx, dDdy)=gradient(1e6*TrspCon,Γ)
 	dDdx=U[:,1]
 	dDdy=V[:,1]
 
@@ -282,7 +307,7 @@ let
 	DD[findall(DD.==0.0)].=NaN
 	dDdy_i=DD
 
-	fig = Mkie.Figure(resolution = (900,900), backgroundcolor = :grey95)
+	fig = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95)
 	ax = Mkie.Axis(fig[1,1], title="x-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
 	hm1=Mkie.heatmap!(ax,λ.lon[:,1],λ.lat[1,:],dDdx_i,colorrange=(-1.0,1.0).*0.2)
 	ax = Mkie.Axis(fig[2,1], title="y-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
@@ -291,13 +316,20 @@ let
 	fig
 end
 
-# ╔═╡ 87a4a232-d8eb-4612-8cc5-dc9d1c16dbe8
-md"""## Particle Tracking
+# ╔═╡ 0888db7a-ff14-44c0-9c20-fed722f7e41e
+let
+	u=U[:,1]
+	v=V[:,1]
+	tmp=curl(u,v,Γ)
 
-Materials and particles that tend to follow ocean currents or atmospheric winds can be analyzed in terms of trajectories. These are simply computed by integrating velocities over time within a [Lagrangian framework](https://en.wikipedia.org/wiki/Lagrangian_and_Eulerian_specification_of_the_flow_field).
+	z=reshape(Interpolate(μ.*tmp,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
-When vector fields are represented using [MeshArrays.jl](https://github.com/JuliaClimate/MeshArrays.jl), as done in this tutorial, this is easily done via the [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) package as shown in [these examples](https://juliaclimate.github.io/IndividualDisplacements.jl/dev/examples/).
-"""
+	fig1 = Mkie.Figure(resolution = (900,400),markersize=0.1)
+	ax1 = Mkie.Axis(fig1[1,1], title="Curl Of velocity Field (in 1/s)")
+	hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],z,levels=(-1.0:0.25:1.0).*1e-11)
+	Mkie.Colorbar(fig1[1,2], hm1, height = Mkie.Relative(0.65))
+	fig1
+end
 
 # ╔═╡ Cell order:
 # ╟─7046b9b2-06bf-4ed8-80a3-79d2c52dacaf
@@ -317,6 +349,9 @@ When vector fields are represented using [MeshArrays.jl](https://github.com/Juli
 # ╟─c3b3a104-a1d6-4692-ae0c-2e55821afd03
 # ╟─e59c1819-52fd-49eb-8b0c-63fbbc0baffb
 # ╟─e033825c-019c-44b6-86dd-30fff79f8339
+# ╟─0611986f-3d6e-4236-b68a-747b6018d381
+# ╟─210b5414-ada8-49a1-8ac4-9115ed33e285
+# ╟─0888db7a-ff14-44c0-9c20-fed722f7e41e
 # ╟─87a4a232-d8eb-4612-8cc5-dc9d1c16dbe8
 # ╟─a8ebbe41-1ac8-44da-b8c4-cbfd4d422227
 # ╟─71b1447b-39d9-46e2-966d-a1e6e8dcccc6

@@ -31,11 +31,11 @@ include("Interpolation.jl")
 include("VerticalDimension.jl")
 
 export AbstractMeshArray, MeshArray, InnerArray, OuterArray, varmeta
-export gcmgrid, exchange, gradient, convergence, smooth, mask
+export gcmgrid, exchange, convergence, smooth, mask, isosurface
 export UnitGrid, simple_periodic_domain, GridSpec, GridLoad, GridOfOnes, GridAddWS!
 export Tiles, Interpolate, InterpolationFactors, knn
 export ScalarPotential, VectorPotential, ThroughFlow
-export isosurface, UVtoUEVN, UVtoTransport
+export UVtoUEVN, UVtoTransport, gradient, curl
 export StereographicProjection, LatitudeCircles
 
 export location_is_out, NeighborTileIndices_dpdo, NeighborTileIndices_cs, RelocationFunctions_cs

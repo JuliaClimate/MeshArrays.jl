@@ -56,6 +56,42 @@ end
 return dFLDdx, dFLDdy
 end
 
+##
+
+"""
+    curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+
+Compute curl of a velocity field.
+"""
+function curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+
+	uvcurl=similar(Γ.XC)
+	fac=exchange(1.0 ./Γ.RAZ,1)
+	(U,V)=exchange(u,v,1)
+    (DXC,DYC)=exchange(Γ.DXC,Γ.DYC,1)
+	[DXC[i].=abs.(DXC[i]) for i in eachindex(U)]
+	[DYC[i].=abs.(DYC[i]) for i in eachindex(V)]
+
+	for i in eachindex(U)
+    ucur=U[i][2:end,:]
+    vcur=V[i][:,2:end]        
+    tmpcurl=ucur[:,1:end-1]-ucur[:,2:end]
+    tmpcurl=tmpcurl-(vcur[1:end-1,:]-vcur[2:end,:])
+    tmpcurl=tmpcurl.*fac[i][1:end-1,1:end-1]
+
+		##still needed:
+		##- deal with corners
+		##- if putCurlOnTpoints
+
+		tmpcurl=1/4*(tmpcurl[1:end-1,2:end]+tmpcurl[1:end-1,1:end-1]+
+					tmpcurl[2:end,2:end]+tmpcurl[2:end,1:end-1])
+
+		uvcurl[i]=tmpcurl
+	end
+	
+	return uvcurl
+end
+
 ## mask methods
 
 function mask(fld::MeshArray)

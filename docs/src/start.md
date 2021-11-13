@@ -19,13 +19,16 @@ using MeshArrays
 tmp=MeshArray(randn(20,10))
 ```
 
-## Tutorial
+## Tutorials
 
-[The extended tutorial](basics.html) ([code link](https://raw.githubusercontent.com/JuliaClimate/MeshArrays.jl/master/examples/basics.jl)) illustrates how the `MeshArrays.jl` data structures let us write generic code that is readily applicable to whole families of grids. 
+[The basics tutorial](basics.html) ([code link](https://raw.githubusercontent.com/JuliaClimate/MeshArrays.jl/master/examples/basics.jl)) illustrates how the `MeshArrays.jl` data structures let us write generic code readily applicable to whole families of grids. 
 
-It focuses on a global workflow (smoothing) that requires communication across the entire gridded domain -- a key feature provided by `MeshArrays.jl`.
-
+It focuses on a global workflow (smoothing) that requires communication across the entire gridded domain -- a key feature provided by `MeshArrays.jl`. 
 The same workflow is repeated three times, for different grid configurations commonly used in numerical models.
+
+[The vectors tutorial](vectors.html) ([code link](https://raw.githubusercontent.com/JuliaClimate/MeshArrays.jl/master/examples/vectors.jl)) illustrates how `MeshArrays.jl` represents gridded, vector fields. This enables
+ analyses of various quantities, like heat, flow with oceanic currents and atmospheric winds within the climate system. 
+
 
 Grid scale noise           |  Smoothed noise
 :------------------------------:|:---------------------------------:
