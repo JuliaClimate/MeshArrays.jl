@@ -227,7 +227,7 @@ begin
 end
 
 # ╔═╡ 8f7ad783-f81e-4904-b848-3089216ab6e5
-begin
+let
 	DD=Interpolate(Γ_c.Depth,f,i,j,w)
 	DD=reshape(DD,size(lon))
 	DD[findall(DD.==0.0)].=NaN
@@ -281,42 +281,6 @@ let
 	println("\n The result of `exchange()` may look like this: \n\n ")
 		show(Dexch)
 	end
-end
-
-# ╔═╡ 5c755d83-6729-4de4-8038-8619b53795ff
-begin 
-	function demo_Tr(γ,Γ)
-		TrspX=γ.read(γ.path*"TrspX.bin",MeshArray(γ,Float32))
-		TrspY=γ.read(γ.path*"TrspY.bin",MeshArray(γ,Float32))
-		#TauX=γ.read(γ.path*"TauX.bin",MeshArray(γ,Float32))
-		#TauY=γ.read(γ.path*"TauY.bin",MeshArray(γ,Float32))
-		#SSH=γ.read(γ.path*"SSH.bin",MeshArray(γ,Float32))
-
-		la=-89.0:89.0
-	    LC=LatitudeCircles(la,Γ)
-	    UV=Dict("U"=>TrspX,"V"=>TrspY,"dimensions"=>["x","y"])
-
-		Tr=Array{Float64,1}(undef,length(LC));
-		[Tr[i]=ThroughFlow(UV,LC[i],Γ) for i=1:length(LC)]
-		
-		fig = Mkie.Figure(resolution = (600,400), backgroundcolor = :grey95)
-		ax = Mkie.Axis(fig[1,1], title="Meridional Ocean Transport", 
-				ylabel="Sv (1 Sv = 10^6 m^3/s)",xlabel="latitude")
-		Mkie.lines!(ax,la,Tr/1e6)
-		fig
-	end
-	
-	fig_Tr=demo_Tr(γ_c,Γ_c)
-		
-	md"""### 6. Transport Computations.
-	
-	This cell demonstrates methods that compute transports within the Earth System. Accurate transport computations involve factoring in the correct grid scaling factors, and integrating along non-trivial grid line paths [Forget et al 2015](https://doi.org/10.5194/gmd-8-3071-2015).
-	
-	!!! note
-		For a deeper dive into transport computations with `MeshArrays.jl`, see e.g. the [Julia Climate Nodetbooks](https://juliaclimate.github.io/GlobalOceanNotebooks/)
-	
-	$(fig_Tr)
-	"""
 end
 
 # ╔═╡ 4bb0c25c-336c-4438-87df-a93344ea3cfb
@@ -1505,7 +1469,6 @@ version = "3.5.0+0"
 # ╟─8f7ad783-f81e-4904-b848-3089216ab6e5
 # ╟─2c29ba59-ffc9-4763-8405-250029016ca5
 # ╠═169f9cdd-28f1-4574-ade4-237eab46a541
-# ╟─5c755d83-6729-4de4-8038-8619b53795ff
 # ╟─58f95665-9687-4b4f-af99-1239818f71a3
 # ╠═62f2dc32-456e-4e8a-8c4a-3a0ae236af13
 # ╠═4bb0c25c-336c-4438-87df-a93344ea3cfb
