@@ -56,6 +56,42 @@ end
 return dFLDdx, dFLDdy
 end
 
+##
+
+"""
+    curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+
+Compute curl of a velocity field.
+"""
+function curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+
+	uvcurl=similar(Γ.XC)
+	fac=exchange(1.0 ./Γ.RAZ,1)
+	(U,V)=exchange(u,v,1)
+    (DXC,DYC)=exchange(Γ.DXC,Γ.DYC,1)
+	[DXC[i].=abs.(DXC[i]) for i in eachindex(U)]
+	[DYC[i].=abs.(DYC[i]) for i in eachindex(V)]
+
+	for i in eachindex(U)
+    ucur=U[i][2:end,:]
+    vcur=V[i][:,2:end]        
+    tmpcurl=ucur[:,1:end-1]-ucur[:,2:end]
+    tmpcurl=tmpcurl-(vcur[1:end-1,:]-vcur[2:end,:])
+    tmpcurl=tmpcurl.*fac[i][1:end-1,1:end-1]
+
+		##still needed:
+		##- deal with corners
+		##- if putCurlOnTpoints
+
+		tmpcurl=1/4*(tmpcurl[1:end-1,2:end]+tmpcurl[1:end-1,1:end-1]+
+					tmpcurl[2:end,2:end]+tmpcurl[2:end,1:end-1])
+
+		uvcurl[i]=tmpcurl
+	end
+	
+	return uvcurl
+end
+
 ## mask methods
 
 function mask(fld::MeshArray)
@@ -322,3 +358,39 @@ function LatitudeCircles(LatValues,Γ::NamedTuple)
 end
 
 ##
+
+nanmean(x) = mean(filter(!isnan,x))
+nanmean(x,y) = mapslices(nanmean,x,dims=y)
+
+"""
+  UVtoUEVN(u,v,G::NamedTuple)
+    1. Interpolate to grid cell centers (uC,vC)
+    2. Convert to `Eastward/Northward` components (uE,vN)
+"""
+function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
+    u[findall(G.hFacW[:,1].==0)].=NaN
+    v[findall(G.hFacS[:,1].==0)].=NaN
+
+    (u,v)=exch_UV(u,v); uC=similar(u); vC=similar(v)
+    for iF=1:u.grid.nFaces
+        tmp1=u[iF][1:end-1,:]; tmp2=u[iF][2:end,:]
+        uC[iF]=reshape(nanmean([tmp1[:] tmp2[:]],2),size(tmp1))
+        tmp1=v[iF][:,1:end-1]; tmp2=v[iF][:,2:end]
+        vC[iF]=reshape(nanmean([tmp1[:] tmp2[:]],2),size(tmp1))
+    end
+
+    return uC.*G.AngleCS-vC.*G.AngleSN, uC.*G.AngleSN+vC.*G.AngleCS
+end
+
+#Convert Velocity (m/s) to transport (m^3/s)
+function UVtoTransport(U::MeshArray,V::MeshArray,G::NamedTuple)
+  uTr=deepcopy(U)
+  vTr=deepcopy(V)
+  for i in eachindex(U)
+      tmp1=U[i]; tmp1[(!isfinite).(tmp1)] .= 0.0
+      tmp1=V[i]; tmp1[(!isfinite).(tmp1)] .= 0.0
+      uTr[i]=G.DRF[i[2]]*U[i].*G.DYG[i[1]]
+      vTr[i]=G.DRF[i[2]]*V[i].*G.DXG[i[1]]
+  end
+  return uTr,vTr
+end

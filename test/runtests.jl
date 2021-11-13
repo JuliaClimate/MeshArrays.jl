@@ -31,6 +31,20 @@ include(joinpath(p,"../examples/Demos.jl"))
     end
 end
 
+@testset "Vertical Dimension:" begin
+    γ=GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+    Γ=GridLoad(γ;option="full")
+    θ=Float64.(Γ.hFacC)
+    nk=length(Γ.RC)
+    #[θ[:,k]=cosd.((nk-k)/nk*Γ.YC) for k in 1:nk]
+    #why fail? [θ[:,k]=(nk-k) .+ cosd.(0.5*Γ.YC[:]) for k in 1:nk]
+    [θ[1,k]=0.01*(nk-k) .+ cosd.(Γ.YC[1]) for k in 1:nk]
+    θ[findall(Γ.hFacC.==0.0)].=NaN
+    d=isosurface(θ,1.1,Γ)
+
+    @test isapprox(d[1][180,90],-2204.8384919029777)
+end
+
 @testset "Transport computations:" begin
     #Load grid and transport / vector field
     MeshArrays.GRID_LLC90_download()

@@ -11,7 +11,7 @@ The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` wher
 
 The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array size specifications, and inter-connection rules. A second  lightweight struct, `varmeta`, contains the `MeshArray` variable name, its unit, time, and position in grid space. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Grids](@ref)), and many variables, which can put a burden on users. 
 
-Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to invoke model grid details explicitely. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output (see, e.g., [Tutorial](@ref)).
+Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to invoke model grid details explicitely. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output (see, e.g., [Tutorials](@ref)).
 
 ![smooth_cs32](https://user-images.githubusercontent.com/20276764/137231635-fdd12de0-29fe-45d4-9045-60621668e353.png)
 
@@ -21,9 +21,9 @@ The elements of a `MeshArray` are arrays. These elementary arrays typically repr
 
 `Interpolate` can be used to interpolate a `MeshArray` to any location (i.e. arbitrary longitude, latitude pair). `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output. 
 
-The current default for `MeshArray` is the `gcmarray` type, with various examples provided in the [Tutorial](@ref) notebook.
+The current default for `MeshArray` is the `gcmarray` type, with various examples provided in the [Tutorials](@ref).
 
-One of the examples is based on a grid known as `LatLonCap` where each global map is associated with 5 subdomains of different sizes. The grid has `50` depth levels. Such a `MeshArray` has a size of `(5, 50)` (see [Tutorial](@ref)).
+One of the examples is based on a grid known as `LatLonCap` where each global map is associated with 5 subdomains of different sizes. The grid has `50` depth levels. Such a `MeshArray` has a size of `(5, 50)` (see [Tutorials](@ref)).
 
 The underlying, `MeshArray`, data structure is:
 
@@ -96,7 +96,6 @@ end
 
 ## Plotting, Transports, And More
 
-A simple way to plot a `MeshArray` consists in plotting each elementary array separately. This method is illustrated in the [Tutorial](@ref) along with others that produce global maps. [The JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide additional examples and a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets, as well as Lagrangian trajectories computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl). Another set of examples shows that `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest) with I/O routines provided by [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) as a
-lso demontrated in [the JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/).
+A simple way to plot a `MeshArray` consists in plotting each elementary array separately. This method is illustrated in the [Tutorial](@ref) along with others that produce global maps. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide additional examples and a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets, as well as Lagrangian trajectories computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl). Another set of examples shows that `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest) with I/O routines provided by [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) as also demontrated in [ClimateModels.jl](https://github.com/gaelforget/ClimateModels.jl) and the [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/).
 
 ![OceanMOC](https://github.com/JuliaClimate/GlobalOceanNotebooks/raw/master/OceanTransports/MOC.png)
