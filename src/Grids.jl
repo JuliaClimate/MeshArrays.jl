@@ -212,72 +212,82 @@ function GridLoad(γ::gcmgrid;option="minimal")
 
     Γ=Dict()
 
-    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
     if option=="full"
         list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth");
-        list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m")
-        list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc)
+        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
+            list_n=(list_n...,"AngleCS","AngleSN");
+        end
+        list_n=(list_n...,"DRC","DRF","RC","RF")
+        list_n=(list_n...,"hFacC","hFacS","hFacW");
     else
         list_n=("XC","YC");
-        list_u=(u"°",u"°")
-        list_p=(pc,pc)
     end
 
-    if (option=="full")&&(!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
-        list_n=(list_n...,"AngleCS","AngleSN");
-        list_u=(list_u...,1.0,1.0)
-        list_p=(list_p...,pc,pc)
-    end
+    [Γ[ii]=GridLoadVar(ii,γ) for ii in list_n]
+    option=="full" ? GridAddWS!(Γ) : nothing
+    return Dict_to_NamedTuple(Γ)
+end
 
-    for ii=1:length(list_n)
+"""
+    GridLoadVar(nam::String,γ::gcmgrid)
+
+Return a grid variable read from files located in `γ.path` (see `?GridSpec`, `?GridLoad`).
+
+Based on the MITgcm naming convention, grid variables are:
+
+- XC, XG, YC, YG, AngleCS, AngleSN, hFacC, hFacS, hFacW, Depth.
+- RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
+- DRC, DRF, RC, RF (one-dimensional)
+
+```jldoctest
+using MeshArrays
+
+γ = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+XC = GridLoadVar("XC",γ)
+
+isa(XC,MeshArray)
+
+# output
+
+true
+```
+"""
+function GridLoadVar(nam::String,γ::gcmgrid)
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","AngleCS","AngleSN")
+    list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0)
+    list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,pc,pc)
+    #
+    list3d_n=("hFacC","hFacS","hFacW");
+    list3d_u=(1.0,1.0,1.0)
+    list3d_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    #
+    list1d_n=("DRC","DRF","RC","RF")
+
+    if sum(nam.==list_n)==1
+        ii=findall(nam.==list_n)[1]
         m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii])
         tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec;meta=m))
-        tmp2=Symbol(list_n[ii])
-        @eval (($tmp2) = ($tmp1))
-        Γ[list_n[ii]]=tmp1
-    end
-
-    γ.ioPrec==Float64 ? reclen=8 : reclen=4
-
-    if option=="full"
-        list_n=("DRC","DRF","RC","RF")
-    else
-        list_n=()
-    end
-    for ii=1:length(list_n)
-        fil=joinpath(γ.path,list_n[ii]*".data")
-        tmp1=stat(fil)
-        n3=Int64(tmp1.size/reclen)
+    elseif sum(nam.==list1d_n)==1
+        fil=joinpath(γ.path,nam*".data")
+        γ.ioPrec==Float64 ? reclen=8 : reclen=4
+        n3=Int64(stat(fil).size/reclen)
 
         fid = open(fil)
         tmp1 = Array{γ.ioPrec,1}(undef,n3)
         read!(fid,tmp1)
         tmp1 = hton.(tmp1)
+    elseif sum(nam.==list3d_n)==1
+        fil=joinpath(γ.path,"RC.data")
+        γ.ioPrec==Float64 ? reclen=8 : reclen=4
+        n3=Int64(stat(fil).size/reclen)
 
-        tmp2=Symbol(list_n[ii])
-        @eval (($tmp2) = ($tmp1))
-        Γ[list_n[ii]]=tmp1
+        ii=findall(nam.==list3d_n)[1]
+        m=varmeta(list3d_u[ii],list3d_p[ii],missing,list3d_n[ii],list3d_n[ii]);
+        tmp1=γ.read(joinpath(γ.path,list3d_n[ii]*".data"),MeshArray(γ,γ.ioPrec,n3;meta=m))
+    else
+        tmp1=missing
     end
-
-    f=readdir(γ.path)
-    if (option=="full")&&(sum(occursin.("hFacC",f))>0)
-        list_n=("hFacC","hFacS","hFacW");
-        list_u=(1.0,1.0,1.0)
-        list_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
-        n3=length(Γ["RC"])
-        for ii=1:length(list_n)
-            m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
-            tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec,n3;meta=m))
-            tmp2=Symbol(list_n[ii])
-            @eval (($tmp2) = ($tmp1))
-            Γ[list_n[ii]]=tmp1
-        end
-    end
-
-    option=="full" ? GridAddWS!(Γ) : nothing
-
-    return Dict_to_NamedTuple(Γ)
-
 end
 
 """
