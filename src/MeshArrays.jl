@@ -32,7 +32,8 @@ include("VerticalDimension.jl")
 
 export AbstractMeshArray, MeshArray, InnerArray, OuterArray, varmeta
 export gcmgrid, exchange, convergence, smooth, mask, isosurface
-export UnitGrid, simple_periodic_domain, GridSpec, GridLoad, GridOfOnes, GridAddWS!
+export UnitGrid, simple_periodic_domain, GridOfOnes 
+export GridSpec, GridLoad, GridLoadVar, GridAddWS!
 export Tiles, Interpolate, InterpolationFactors, knn
 export ScalarPotential, VectorPotential, ThroughFlow
 export UVtoUEVN, UVtoTransport, gradient, curl
