@@ -313,48 +313,73 @@ end
 Compute integration paths that follow latitude circles
 """
 function LatitudeCircles(LatValues,Γ::NamedTuple)
-
     LatitudeCircles=Array{NamedTuple}(undef,length(LatValues))
-
     for j=1:length(LatValues)
         mskCint=1*(Γ.YC .>= LatValues[j])
-        mskC=similar(mskCint)
-        mskW=similar(mskCint)
-        mskS=similar(mskCint)
-
-        mskCint=exchange(mskCint,1)
-
-        for i=1:mskCint.grid.nFaces
-            tmp1=mskCint.f[i]
-            # tracer mask:
-            tmp2=tmp1[2:end-1,1:end-2]+tmp1[2:end-1,3:end]+
-            tmp1[1:end-2,2:end-1]+tmp1[3:end,2:end-1]
-            mskC.f[i]=1((tmp2.>0).&(tmp1[2:end-1,2:end-1].==0))
-            # velocity masks:
-            mskW.f[i]=tmp1[2:end-1,2:end-1] - tmp1[1:end-2,2:end-1]
-            mskS.f[i]=tmp1[2:end-1,2:end-1] - tmp1[2:end-1,1:end-2]
-        end
-
-        function MskToTab(msk::MeshArray)
-          n=Int(sum(msk .!= 0)); k=0
-          tab=Array{Int,2}(undef,n,4)
-          for i=1:msk.grid.nFaces
-            a=msk.f[i]
-            b=findall( a .!= 0)
-            for ii in eachindex(b)
-              k += 1
-              tab[k,:]=[i,b[ii][1],b[ii][2],a[b[ii]]]
-            end
-          end
-          return tab
-        end
-
+        mskC,mskW,mskS=edge_mask(mskCint)
         LatitudeCircles[j]=(lat=LatValues[j],
         tabC=MskToTab(mskC),tabW=MskToTab(mskW),tabS=MskToTab(mskS))
     end
-
     return LatitudeCircles
+end
 
+function MskToTab(msk::MeshArray)
+  n=Int(sum(msk .!= 0)); k=0
+  tab=Array{Int,2}(undef,n,4)
+  for i in eachindex(msk)
+    a=msk[i]
+    b=findall( a .!= 0)
+    for ii in eachindex(b)
+      k += 1
+      tab[k,:]=[i,b[ii][1],b[ii][2],a[b[ii]]]
+    end
+  end
+  return tab
+end
+
+function edge_mask(mskCint::MeshArray)
+  mskCint=1.0*mskCint
+
+  #treat the case of blank tiles:
+  #mskCint[findall(RAC.==0)].=NaN
+  
+  mskC=similar(mskCint)
+  mskW=similar(mskCint)
+  mskS=similar(mskCint)
+
+  mskCint=exchange(mskCint,1)
+
+  for i in eachindex(mskCint)
+      tmp1=mskCint[i]
+      # tracer mask:
+      tmp2=tmp1[2:end-1,1:end-2]+tmp1[2:end-1,3:end]+
+      tmp1[1:end-2,2:end-1]+tmp1[3:end,2:end-1]
+      mskC[i]=1((tmp2.>0).&(tmp1[2:end-1,2:end-1].==0))
+      # velocity masks:
+      mskW[i]=tmp1[2:end-1,2:end-1] - tmp1[1:end-2,2:end-1]
+      mskS[i]=tmp1[2:end-1,2:end-1] - tmp1[2:end-1,1:end-2]
+  end
+
+  #treat the case of blank tiles:
+  #mskC[findall(isnan.(mskC))].=0.0
+  #mskW[findall(isnan.(mskW))].=0.0
+  #mskS[findall(isnan.(mskS))].=0.0
+
+  return mskC,mskW,mskS
+end
+
+##
+
+function Transect(name,lons,lats,Γ)
+  x0,y0,z0,R=rotate_points(lons,lats)
+  x,y,z=rotate_XCYC(Γ,R)
+  mskCint=1.0*(z.>0)
+  mskCedge,mskWedge,mskSedge=edge_mask(mskCint)
+  mskCedge,mskWedge,mskSedge=shorter_paths!((x,y,z),(x0,y0,z0),(mskCedge,mskWedge,mskSedge))
+  tabC=MskToTab(mskCedge)
+  tabW=MskToTab(mskWedge)
+  tabS=MskToTab(mskSedge)
+  return (name=name,tabC=tabC,tabW=tabW,tabS=tabS)
 end
 
 ##

@@ -22,6 +22,7 @@ GRID_CS32_download() = artifact"GRID_CS32"
 
 include("Types.jl")
 include("Grids.jl")
+include("GridPaths.jl")
 include("Operations.jl")
 include("Exchanges.jl")
 include("ReadWrite.jl")
@@ -37,7 +38,7 @@ export GridSpec, GridLoad, GridLoadVar, GridAddWS!
 export Tiles, Interpolate, InterpolationFactors, knn
 export ScalarPotential, VectorPotential, ThroughFlow
 export UVtoUEVN, UVtoTransport, gradient, curl
-export StereographicProjection, LatitudeCircles
+export StereographicProjection, LatitudeCircles, Transect
 
 export location_is_out, NeighborTileIndices_dpdo, NeighborTileIndices_cs, RelocationFunctions_cs
 export update_location_cs!, update_location_llc!, update_location_dpdo!
