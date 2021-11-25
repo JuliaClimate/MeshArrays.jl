@@ -34,6 +34,7 @@ function rotate_XCYC(Γ,R)
 	z=sind.(lat)
 
 	#rotation R:
+    γ=Γ.XC.grid
 	tmpx=γ.write(x); tmpy=γ.write(y); tmpz=γ.write(z)
 	tmp1=findall((!isnan).(tmpx))
 	tmpx2=tmpx[tmp1]; tmpy2=tmpy[tmp1]; tmpz2=tmpz[tmp1]
@@ -59,6 +60,7 @@ function shorter_paths!(xyz,xyz0,msk_in)
 	theta[1]=atan(y0[1],x0[1])
 	theta[2]=atan(y0[2],x0[2])
 
+    γ=msk_in[1].grid
 	tmpx=γ.write(x); tmpy=γ.write(y); tmpz=γ.write(z);
 	tmptheta=atan.(tmpy,tmpx)
 	if theta[2]<0;
