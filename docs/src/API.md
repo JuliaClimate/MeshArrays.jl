@@ -15,9 +15,11 @@ varmeta
 
 ```@docs
 GridSpec
+GridLoad
+GridLoadVar
+UnitGrid
 GridOfOnes
 simple_periodic_domain
-GridLoad
 MeshArrays.read
 MeshArrays.write
 exchange
