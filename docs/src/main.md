@@ -94,8 +94,10 @@ end
 
 ![OceanDepthMap](https://raw.githubusercontent.com/juliaclimate/MeshArrays.jl/master/docs/images/interp_depth.png)
 
-## Plotting, Transports, And More
+## Visualization, Particles, Transports
 
-A simple way to plot a `MeshArray` consists in plotting each elementary array separately. This method is illustrated in the [Tutorial](@ref) along with others that produce global maps. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide additional examples and a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets, as well as Lagrangian trajectories computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl). Another set of examples shows that `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest) with I/O routines provided by [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) as also demontrated in [ClimateModels.jl](https://github.com/gaelforget/ClimateModels.jl) and the [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/).
+A simple way to plot a `MeshArray` consists in plotting each elementary array separately. This method is illustrated in the [Tutorial](@ref) along with others that produce global maps. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide additional examples and a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets.
+
+Lagrangian trajectories are readily computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) when velocity fields are provided as `MeshArray`s. Another set of examples shows that `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest) with I/O routines provided by [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) as also demontrated in [ClimateModels.jl](https://github.com/gaelforget/ClimateModels.jl) and the [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/).
 
 ![OceanMOC](https://github.com/JuliaClimate/GlobalOceanNotebooks/raw/master/OceanTransports/MOC.png)
