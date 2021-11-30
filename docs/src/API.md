@@ -4,26 +4,36 @@
 
 ```@docs
 AbstractMeshArray
+MeshArray
+gcmgrid
+varmeta
+```
+
+More : 
+
+```@docs
 MeshArrays.gcmarray
 MeshArrays.gcmvector
 MeshArrays.gcmfaces
-gcmgrid
-varmeta
 ```
 
 ## 2. Grids And I/O
 
 ```@docs
+UnitGrid
+simple_periodic_domain
 GridSpec
 GridLoad
 GridLoadVar
-UnitGrid
-GridOfOnes
-simple_periodic_domain
+```
+
+More : 
+
+```@docs
+Tiles
+exchange
 MeshArrays.read
 MeshArrays.write
-exchange
-Tiles
 ```
 
 ## 3. Interpolation
@@ -38,20 +48,20 @@ StereographicProjection
 ## 4. Vector Fields
 
 ```@docs
-gradient
+curl
 convergence
-smooth
+gradient
 ScalarPotential
 VectorPotential
-LatitudeCircles
 ThroughFlow
+UVtoTransport
+UVtoUEVN
 ```
 
-## 5. Various
+## 5. Other
 
 ```@docs
-MeshArrays.getindexetc
-MeshArrays.nFacesEtc
-findall
-mask
+LatitudeCircles
+Transect
+isosurface
 ```

@@ -12,7 +12,7 @@ include(joinpath(p,"../examples/Demos.jl"))
         elseif nTopo==4; grTopo="PeriodicDomain"; nFaces=1; N=400;
         end;
         Npt=nFaces*N*N
-        γ,Γ=GridOfOnes(grTopo,nFaces,N;option="full")
+        γ,Γ=MeshArrays.GridOfOnes(grTopo,nFaces,N;option="full")
         @test γ.class == grTopo
         Rini= 0.; Rend= 0.;
         (Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
