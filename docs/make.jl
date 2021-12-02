@@ -19,7 +19,7 @@ makedocs(
 )
 
 lst=("basics.jl","vectors.jl")
-pth=("start","start")
+pth=("tutorials","tutorials")
 
 for ii in 1:length(lst)
     i=lst[ii]

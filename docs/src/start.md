@@ -21,11 +21,19 @@ tmp=MeshArray(randn(20,10))
 
 ## Grids
 
-Below we visualize a subset of grid lines in a cube sphere (top right), LLC (bottom right), and two other grids. 
+Three grids are available directly via this package the examples (`GRID_LL360`, `GRID_CS32`, and `GRID_LLC90`).
 
-Three such grids are available directly via this package 
- the examples (`GRID_LL360`, `GRID_CS32`, and `GRID_LLC90`).
+```
+using MeshArrays
 
-![EarthGrids](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/sphere_all.png)
+#γ=GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+#γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 
+Γ=GridLoad(γ);
+```
+
+| Lat-lon | Cube Sphere | Lat-Lon-Cap |
+|:-------------------------------------:|:-------------------------------------:|:-------------------------------------:|
+![Lat-Lon](https://user-images.githubusercontent.com/20276764/144249858-df986169-8f4a-4c42-bf64-45bc97c34ca8.png) | ![Cube Sphere](https://user-images.githubusercontent.com/20276764/144249876-a37ba2da-7258-4f01-b438-0b3efbf75c2d.png) | ![Lat-Lon-Cap](https://user-images.githubusercontent.com/20276764/144249899-4d94980a-87aa-4bfb-a6d6-6145f9f0324f.png)
 
