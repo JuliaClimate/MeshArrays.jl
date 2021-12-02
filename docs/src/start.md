@@ -19,28 +19,21 @@ using MeshArrays
 tmp=MeshArray(randn(20,10))
 ```
 
-## Tutorials
-
-[The basics tutorial](basics.html) ([code link](https://raw.githubusercontent.com/JuliaClimate/MeshArrays.jl/master/examples/basics.jl)) illustrates how the `MeshArrays.jl` data structures let us write generic code readily applicable to whole families of grids. 
-
-It focuses on a global workflow (smoothing) that requires communication across the entire gridded domain -- a key feature provided by `MeshArrays.jl`. 
-The same workflow is repeated three times, for different grid configurations commonly used in numerical models.
-
-[The vectors tutorial](vectors.html) ([code link](https://raw.githubusercontent.com/JuliaClimate/MeshArrays.jl/master/examples/vectors.jl)) illustrates how `MeshArrays.jl` represents gridded, vector fields. This enables
- analyses of various quantities, like heat, flow with oceanic currents and atmospheric winds within the climate system. 
-
-
-Grid scale noise           |  Smoothed noise
-:------------------------------:|:---------------------------------:
-![raw](https://user-images.githubusercontent.com/20276764/118325229-2d883d80-b4d1-11eb-953b-ddbb11bcfe1b.png)  |  ![smooth](https://user-images.githubusercontent.com/20276764/118325093-f31ea080-b4d0-11eb-8c6e-8cd0cc2cc255.png)
-
 ## Grids
 
-Below we visualize a subset of grid lines in a cube sphere (top right), LLC (bottom right), and two other grids. 
+Three grids are available directly via this package the examples (`GRID_LL360`, `GRID_CS32`, and `GRID_LLC90`).
 
-Three such grids are available directly via this package 
- the examples (`GRID_LL360`, `GRID_CS32`, and `GRID_LLC90`).
+```
+using MeshArrays
 
-![EarthGrids](https://raw.githubusercontent.com/gaelforget/MeshArrays.jl/master/docs/images/sphere_all.png)
+#γ=GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+#γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 
+Γ=GridLoad(γ);
+```
+
+| Lat-lon | Cube Sphere | Lat-Lon-Cap |
+|:-------------------------------------:|:-------------------------------------:|:-------------------------------------:|
+![Lat-Lon](https://user-images.githubusercontent.com/20276764/144249858-df986169-8f4a-4c42-bf64-45bc97c34ca8.png) | ![Cube Sphere](https://user-images.githubusercontent.com/20276764/144249876-a37ba2da-7258-4f01-b438-0b3efbf75c2d.png) | ![Lat-Lon-Cap](https://user-images.githubusercontent.com/20276764/144249899-4d94980a-87aa-4bfb-a6d6-6145f9f0324f.png)
 

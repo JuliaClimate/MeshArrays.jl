@@ -102,9 +102,9 @@ function demo2(Γ::NamedTuple)
         #tmp1=mask(view(Γ.hFacC,:,1),NaN,0)
         tmp1=similar(Rini)
         for i=1:length(tmp1.fIndex); tmp1[i]=Γ.hFacC[i,1]; end;
-        tmp1=mask(tmp1,NaN,0)
+        tmp1=MeshArrays.mask(tmp1,NaN,0)
     else
-        tmp1=mask(Γ.hFacC,NaN,0)
+        tmp1=MeshArrays.mask(Γ.hFacC,NaN,0)
     end
     msk=fill(1.,tmp1) + 0. *tmp1;
     Rini=msk*Rini;
@@ -113,7 +113,7 @@ function demo2(Γ::NamedTuple)
     DXCsm=3*Γ.DXC; DYCsm=3*Γ.DYC;
 
     #apply smoother
-    Rend=smooth(Rini,DXCsm,DYCsm,Γ);
+    Rend=MeshArrays.smooth(Rini,DXCsm,DYCsm,Γ);
 
     return (Rini,Rend,DXCsm,DYCsm)
 

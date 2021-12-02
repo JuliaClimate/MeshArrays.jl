@@ -33,7 +33,7 @@ function plot_as_sphere(Γ; title="", az=-0.2π, el=0.2π)
     ax = Mkie.Axis3(fig, aspect = :data, viewmode = :fitzoom, #perspectiveness = 0.5,
         azimuth = az, elevation = el)
     for i=1:length(z.fSize)
-        MMkiesurface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
+        Mkie.surface!(ax, x[i], y[i], z[i], color = d[i], colorrange = crng, colormap = :grays)
         Mkie.wireframe!(x[i],y[i],z[i], overdraw = false, linewidth = 0.25,color=col[i])
     end
     
@@ -135,11 +135,14 @@ function plot_as_sphere_b()
 
     for f in 1:length(Γ.XC)
         tmp=[Meshes.Point3(x[f][i],y[f][i],z[f][i]) for i in eachindex(Γ.XC[f])]
-        MeshViz.viz!(ax,tmp,elementcolor=col[f],markersize=1000.0)
+        MeshViz.viz!(ax,tmp,color=col[f],pointsize=1000.0)
     end
 
     Mkie.hidedecorations!(ax)
     Mkie.hidespines!(ax)
-
+    Mkie.ylims!(-0.7,0.7)
+    Mkie.xlims!(-0.7,0.7)
+    Mkie.zlims!(-0.7,0.7)
+    
     fig,ax
 end

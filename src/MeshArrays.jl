@@ -31,19 +31,23 @@ include("ReIndexing.jl")
 include("Interpolation.jl")
 include("VerticalDimension.jl")
 
-export AbstractMeshArray, MeshArray, InnerArray, OuterArray, varmeta
-export gcmgrid, exchange, convergence, smooth, mask, isosurface
-export UnitGrid, simple_periodic_domain, GridOfOnes 
-export GridSpec, GridLoad, GridLoadVar, GridAddWS!
-export Tiles, Interpolate, InterpolationFactors, knn
-export ScalarPotential, VectorPotential, ThroughFlow
-export UVtoUEVN, UVtoTransport, gradient, curl
-export StereographicProjection, LatitudeCircles, Transect
-
-export location_is_out, NeighborTileIndices_dpdo, NeighborTileIndices_cs, RelocationFunctions_cs
-export update_location_cs!, update_location_llc!, update_location_dpdo!
-
+export AbstractMeshArray, MeshArray, gcmgrid, varmeta
+export GridSpec, GridLoad, GridLoadVar, UnitGrid, simple_periodic_domain
+export exchange, Tiles, Interpolate, InterpolationFactors, knn
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
+
+#export InnerArray, OuterArray
+#export smooth, mask
+#export GridOfOnes 
+#export GridAddWS!
+
+export ScalarPotential, VectorPotential
+export UVtoUEVN, UVtoTransport, gradient, curl, convergence
+export LatitudeCircles, Transect, ThroughFlow
+export StereographicProjection, isosurface
+
+#export location_is_out, NeighborTileIndices_dpdo, NeighborTileIndices_cs, RelocationFunctions_cs
+#export update_location_cs!, update_location_llc!, update_location_dpdo!
 
 end # module
