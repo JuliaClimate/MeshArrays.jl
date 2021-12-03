@@ -84,7 +84,7 @@ end
 
 Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
 
-```jldoctest
+```jldoctest; output = false
 using MeshArrays
 γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
 Γ=GridLoad(γ; option="full")
@@ -311,7 +311,7 @@ Compute sum of interior angles (`angsum`) for polygons or points-to-polygons (wh
 `px,py,x,y,angsum` is provided as input). `px,py` are `MxN` matrices where each line
 specifies one polygon. (optional) `x,y` are position vectors.
 
-```jldoctest
+```jldoctest; output = false
 using MeshArrays
 px=[0. 0. 1. 1.]; py=[0. 1. 1. 0.];
 x=collect(-1.0:0.25:2.0); y=x;

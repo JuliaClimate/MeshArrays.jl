@@ -7,7 +7,7 @@
 
 ## Summary
 
-The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. By default, outer and inner arrays are of all of the standard `Array` type. However, this setup potentially allows different choices for the outer and inner arrays – for example `DistributedArrays` and `AxisArrays`, respectively, could be an option. `MeshArrays.jl` thus provides a simple but general solution to analyze or e.g. simulate climate system variables. 
+The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. By default, outer and inner arrays are of all of the standard `Array` type. However, this setup potentially allows different choices for the outer and inner arrays – for example `DistributedArrays` and `AxisArrays`, respectively, could be an option. `MeshArrays.jl` thus provides a simple but general solution to analyze or e.g. simulate climate system variables. By default the `MeshArray` type is an alias to the [`MeshArrays.gcmarray`](@ref) type.
 
 The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array size specifications, and inter-connection rules. A second  lightweight struct, `varmeta`, contains the `MeshArray` variable name, its unit, time, and position in grid space. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Grids](@ref)), and many variables, which can put a burden on users. 
 
@@ -17,7 +17,7 @@ Encoding the grid specification inside the `MeshArray` data type allows user to 
 
 ## Data Structures
 
-The elements of a `MeshArray` are arrays. These elementary arrays typically represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified [gcmgrid](@ref) which is embeded inside each [MeshArray](@ref) instance. 
+The elements of a `MeshArray` /  are arrays. These elementary arrays typically represent subdomains inter-connected at their edges. The organization and connections between subdomains is determined by a user-specified [`gcmgrid`](@ref) which is embeded inside each [`MeshArrays.gcmarray`](@ref) instance. 
 
 `Interpolate` can be used to interpolate a `MeshArray` to any location (i.e. arbitrary longitude, latitude pair). `Exchange` methods transfer data between neighboring arrays to extend computational subdomains -- this is often needed in analyses of climate or ocean model output. 
 
@@ -45,7 +45,7 @@ In addition, `Mesharray` specific functions like `exchange` can alter the intern
 
 ## Embedded Metadata
 
-A [MeshArray](@ref) includes a [gcmgrid](@ref) specification which can be constructed as outlined below.
+A [`MeshArrays.gcmarray`](@ref) includes a [`gcmgrid`](@ref) specification which can be constructed as outlined below.
 
 ```
 struct gcmgrid
@@ -96,7 +96,7 @@ end
 
 ## Visualization, Particles, Transports
 
-A simple way to plot a `MeshArray` consists in plotting each elementary array separately. This method is illustrated in the [Tutorial](@ref) along with others that produce global maps. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide additional examples and a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets.
+A simple way to plot a `MeshArray` consists in plotting each elementary array separately. This method is illustrated in the [Tutorials](@ref) along with others that produce global maps. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide additional examples and a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets.
 
 Lagrangian trajectories are readily computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) when velocity fields are provided as `MeshArray`s. Another set of examples shows that `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest) with I/O routines provided by [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) as also demontrated in [ClimateModels.jl](https://github.com/gaelforget/ClimateModels.jl) and the [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/).
 

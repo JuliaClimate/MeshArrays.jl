@@ -89,7 +89,6 @@ include("Type_gcmvector.jl");
 
 Alias to `gcmarray` or `gcmfaces` concrete type
 """
-#MeshArray=gcmfaces
 MeshArray=gcmarray
 
 ## Methods that apply to all AbstractMeshArray types

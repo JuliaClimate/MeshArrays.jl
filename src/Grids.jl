@@ -77,7 +77,7 @@ end
 
 Set up a simple periodic domain of size np x nq
 
-```jldoctest
+```jldoctest; output = false
 using MeshArrays
 np=16 #domain size is np x np
 Γ=simple_periodic_domain(np)
@@ -123,7 +123,7 @@ Possible choices for `GridName`:
 - `"CubeSphere"`
 - `"LatLonCap"``
 
-```jldoctest
+```jldoctest; output = false
 using MeshArrays
 g = GridSpec()
 g = GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
@@ -188,7 +188,7 @@ Based on the MITgcm naming convention, grid variables are:
 - RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
 - DRC, DRF, RC, RF (one-dimensional)
 
-```jldoctest
+```jldoctest; output = false
 using MeshArrays
 
 γ = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
@@ -239,7 +239,7 @@ Based on the MITgcm naming convention, grid variables are:
 - RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
 - DRC, DRF, RC, RF (one-dimensional)
 
-```jldoctest
+```jldoctest; output = false
 using MeshArrays
 
 γ = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
@@ -331,7 +331,7 @@ end
 Define sudomain `tiles` of size `ni,nj`. Each tile is defined by a `Dict` where
 `tile,face,i,j` correspond to tile ID, face ID, index ranges.
 
-```jldoctest
+```jldoctest; output = false
 using MeshArrays
 γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 τ=Tiles(γ,30,30)
@@ -367,7 +367,7 @@ end
 
 Return an `Array` of tiles which cover `x` according to tile partition `τ`.
 
-```jldoctest
+```jldoctest; output = false
 using MeshArrays
 γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 d=γ.read(γ.path*"Depth.data",MeshArray(γ,γ.ioPrec))
