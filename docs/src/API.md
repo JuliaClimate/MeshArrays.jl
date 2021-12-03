@@ -2,9 +2,11 @@
 
 ## 1. Data Structures 
 
+By default, the `MeshArray` type is an alias to [`MeshArrays.gcmarray`](@ref).
+
 ```@docs
 AbstractMeshArray
-MeshArray
+MeshArrays.gcmarray
 gcmgrid
 varmeta
 ```
@@ -12,7 +14,6 @@ varmeta
 More : 
 
 ```@docs
-MeshArrays.gcmarray
 MeshArrays.gcmvector
 MeshArrays.gcmfaces
 ```

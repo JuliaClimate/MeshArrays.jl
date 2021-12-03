@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.17.1
+# v0.17.2
 
 using Markdown
 using InteractiveUtils
@@ -360,13 +360,14 @@ end
 # ╔═╡ 210b5414-ada8-49a1-8ac4-9115ed33e285
 let
 	(dDdx, dDdy)=gradient(TrspPot,Γ)
+	(dDdx, dDdy)=UVtoUEVN(dDdx, dDdy,Γ)
 	dDdx=reshape(Interpolate(μ.*dDdx,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 	dDdy=reshape(Interpolate(μ.*dDdy,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
 	fig1 = Mkie.Figure(resolution = (900,600),markersize=0.1)
-	ax1 = Mkie.Axis(fig1[1,1], title="Gradient of scalar potential in x-direction (in 1/s)")
+	ax1 = Mkie.Axis(fig1[1,1], title="Gradient of scalar potential in Eastward direction (in 1/s)")
 	hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdx,levels=(-1.0:0.25:1.0).*0.1)
-	ax1 = Mkie.Axis(fig1[2,1], title="Gradient of scalar potential in y-direction (in 1/s)")
+	ax1 = Mkie.Axis(fig1[2,1], title="Gradient of scalar potential in Northward direction (in 1/s)")
 	hm1=Mkie.contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdy,levels=(-1.0:0.25:1.0).*0.1)
 	Mkie.Colorbar(fig1[1:2,2], hm1, height = Mkie.Relative(0.65))
 	fig1
@@ -1097,9 +1098,9 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[Libffi_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "761a393aeccd6aa92ec3515e428c26bf99575b3b"
+git-tree-sha1 = "0b4a5d71f3e5200a7dff793393e09dfc2d874290"
 uuid = "e9f186c6-92d2-5b65-8a66-fee21dc1b490"
-version = "3.2.2+0"
+version = "3.2.2+1"
 
 [[Libgcrypt_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libgpg_error_jll", "Pkg"]

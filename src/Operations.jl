@@ -337,6 +337,12 @@ function MskToTab(msk::MeshArray)
   return tab
 end
 
+"""
+    edge_mask(mskCint::MeshArray)
+
+Compute edge mask (mskC,mskW,mskS) from domain interior mask (mskCint). 
+This is used in `LatitudeCircles` and `Transect`.
+"""
 function edge_mask(mskCint::MeshArray)
   mskCint=1.0*mskCint
 
@@ -370,6 +376,11 @@ end
 
 ##
 
+"""
+    Transect(name,lons,lats,Γ)
+
+Compute integration paths that follow a great circle between two geolocations give by `lons`, `lats`.
+"""
 function Transect(name,lons,lats,Γ)
   x0,y0,z0,R=rotate_points(lons,lats)
   x,y,z=rotate_XCYC(Γ,R)
@@ -388,9 +399,10 @@ nanmean(x) = mean(filter(!isnan,x))
 nanmean(x,y) = mapslices(nanmean,x,dims=y)
 
 """
-  UVtoUEVN(u,v,G::NamedTuple)
-    1. Interpolate to grid cell centers (uC,vC)
-    2. Convert to `Eastward/Northward` components (uE,vN)
+    UVtoUEVN(u,v,G::NamedTuple)
+
+1. Interpolate to grid cell centers (uC,vC)
+2. Convert to `Eastward/Northward` components (uE,vN)
 """
 function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
     u[findall(G.hFacW[:,1].==0)].=NaN
@@ -407,7 +419,11 @@ function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
     return uC.*G.AngleCS-vC.*G.AngleSN, uC.*G.AngleSN+vC.*G.AngleCS
 end
 
-#Convert Velocity (m/s) to transport (m^3/s)
+"""
+    UVtoTransport(U,V,G::NamedTuple)
+
+Convert e.g. velocity (m/s) to transport (m^3/s) by multiplying by `DRF` and `DXG`,`DYG`.
+"""
 function UVtoTransport(U::MeshArray,V::MeshArray,G::NamedTuple)
   uTr=deepcopy(U)
   vTr=deepcopy(V)
