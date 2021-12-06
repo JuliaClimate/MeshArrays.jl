@@ -21,8 +21,8 @@ makedocs(
     ]
 )
 
-lst=("basics.jl","vectors.jl")
-pth=("tutorials","tutorials")
+lst=("basics.jl","geography.jl","vectors.jl")
+pth=("tutorials","tutorials","tutorials")
 
 for ii in 1:length(lst)
     i=lst[ii]

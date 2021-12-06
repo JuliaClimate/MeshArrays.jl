@@ -65,7 +65,7 @@ function shorter_paths!(xyz,xyz0,msk_in)
 	tmptheta=atan.(tmpy,tmpx)
 	if theta[2]<0;
 		tmp00=findall(tmptheta.<=theta[2])
-		tmptheta[tmp00].=tmptheta[tmp00]+2*pi
+		tmptheta[tmp00].=tmptheta[tmp00].+2*pi
 		theta[2]=theta[2]+2*pi
 	end
 
