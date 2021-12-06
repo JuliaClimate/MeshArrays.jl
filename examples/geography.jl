@@ -232,14 +232,16 @@ end
 let
 	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)")
 	data=(lon=λ.lon,lat=λ.lat,var=DD,meta=meta)
-	Proj4_heatmap(data)
+	fig_proj=Proj4_heatmap(data)
+	save("fig_proj.png",fig_proj)
+	fig_proj
 end
 
 
 # ╔═╡ ed36a2a5-44ea-43a7-a3bd-13f234b6580d
 let	
-	fig = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95)
-	ax = Mkie.Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="Ocean Depth Shown in Colors (interpolated Γ.Depth)")
+	fig_path = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95)
+	ax = Mkie.Axis(fig_path[1,1],xlabel="longitude",ylabel="latitude",title="Ocean Depth Shown in Colors (interpolated Γ.Depth)")
 	hm1=Mkie.heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=:spring,colorrange=(0.0,6000.0))
 
 	Mkie.scatter!(ax,locCwhole.lon[:],locCwhole.lat[:],color=:blue,markersize=2.0)
@@ -248,9 +250,10 @@ let
 
 	#Mkie.scatter!(ax,locClat.lon[:],locClat.lat[:],color=:cyan,markersize=4.0)
 
-	Mkie.Colorbar(fig[1,2], hm1, height = Mkie.Relative(0.65))
+	Mkie.Colorbar(fig_path[1,2], hm1, height = Mkie.Relative(0.65))
 
-	fig
+	#save("fig_path.png",fig_path)
+	fig_path
 end
 
 # ╔═╡ 1477cd5d-7ee3-4af8-95cc-13309db00520
