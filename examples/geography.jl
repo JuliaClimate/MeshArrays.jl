@@ -23,6 +23,62 @@ begin
 	"Done with packages"
 end
 
+# ╔═╡ 0b188f96-87b1-41e4-ba66-1fa4d5252bd8
+begin
+	using GeoJSON, GeoMakie, Proj4
+	
+	function Proj4_heatmap(dat)	
+		lons = dat.lon[:,1]
+		lats = dat.lat[1,:]
+		field = dat.var
+	
+		trans = Proj4.Transformation("+proj=longlat +datum=WGS84", "+proj=wintri", always_xy=true) 
+	
+		ptrans = Makie.PointTrans{2}(trans)
+		fig = Figure(resolution = (1200,800), fontsize = 22)
+		ax = Axis(fig[1,1], aspect = DataAspect(), title = dat.meta.ttl)
+		# all input data coordinates are projected using this function
+		ax.scene.transformation.transform_func[] = ptrans
+		# add some limits, still it needs to be manual  
+		points = [Point2f0(lon, lat) for lon in lons, lat in lats]
+		rectLimits = FRect2D(Makie.apply_transform(ptrans, points))
+		limits!(ax, rectLimits)
+	
+		hm1 = surface!(ax, lons, lats, field, shading = false, overdraw = false, 
+		colorrange=dat.meta.colorrange, colormap=dat.meta.cmap)
+	
+		hm2 = lines!(ax, GeoMakie.coastlines(), color = :black, overdraw = true)
+	
+		##
+		lonrange = -180:60:180
+		latrange = -90.0:30:90
+	
+		lonlines = [Point2f0(j,i) for i in lats, j in lonrange]
+		latlines = [Point2f0(j,i) for j in lons, i in latrange]
+	
+		[lines!(ax, lonlines[:,i], color = (:black,0.25), 
+		 linestyle = :dash, overdraw = true) for i in 1:size(lonlines)[2]]
+		[lines!(ax, latlines[:,i], color = (:black,0.25), linestyle = :dash, 
+		 overdraw = true) for i in 1:size(latlines)[2]]
+	
+		xticks = first.(trans.(Point2f0.(lonrange, -90))) 
+		yticks = last.(trans.(Point2f0.(-180,latrange)))
+		ax.xticks = (xticks, string.(lonrange, 'ᵒ'))
+		ax.yticks = (yticks, string.(latrange, 'ᵒ'))
+	
+		#add colorbar
+		Colorbar(fig[1,2], hm1, height = Relative(0.65))
+	
+		# hide just original grid 
+		hidedecorations!(ax, ticks = false, label = false, ticklabels=false)
+		hidespines!(ax)
+	
+		##		
+	
+		fig
+	end
+end
+
 # ╔═╡ cc3e9d0c-8b71-432b-b68d-a8b832ca5f26
 md"""# Geography and Visualization
 
@@ -35,13 +91,10 @@ TableOfContents()
 # ╔═╡ ca8a8f1b-a225-46c4-93c1-ce1a4b016461
 md"""## Interpolation scheme
 
-Here we interpolate from the global grid (a `MeshArray`) to a set of arbitary locations (longitude, latitude pairs) as is commonly done e.g. to compare climate models to sparse field observations, or simply to plot gridded fields in geographic coordinates as done below for ocean depth.
+Here we interpolate from the global grid (see [MeshArrays.jl](https://github.com/JuliaClimate/MeshArrays.jl)) to a set of arbitary locations (longitude, latitude pairs) as is commonly done, for example, to plot gridded fields in geographic coordinates (example below shows Ocean bottom depth) or to compare climate models to sparse field observations (e.g., [Argo profiles](https://github.com/JuliaOcean/ArgoData.jl)).
 
-Later in this notebook, we break down the `MeshArrays.Interpolate` function. In brief, the program finds a grid point quadrilateral (4 grid points) that encloses the chosen location. Computation is chuncked in subdomains (tiles) to allow for parallelism. `MeshArrays.InterpolationFactors` outputs interpolation coefficients -- reusing those is easy and fast.
+Later in this notebook, we break down the `MeshArrays.Interpolate` function into several steps. In brief, the program finds a grid point quadrilateral (4 grid points) that encloses the target location. Computation is chuncked in subdomains (tiles) to allow for parallelism. `MeshArrays.InterpolationFactors` outputs interpolation coefficients, which can then be reused repeatedly -- e.g. to speed up calls to `MeshArrays.Interpolate` in loops that generate animations.
 """
-
-# ╔═╡ 2a02b528-5d8e-47a3-9fa9-83872d57ee6f
-@doc MeshArrays.Interpolate
 
 # ╔═╡ 6aab5feb-06b6-4fbd-8732-83b70f397f00
 begin
@@ -51,11 +104,11 @@ begin
 	lon2_slct = @bind lon2 Select(-179.0:180.0;default=-63.0)
 	lat1_slct = @bind lat1 Select(-89.0:89.0;default=-20.0)
 	lat2_slct = @bind lat2 Select(-89.0:89.0;default=-66.0)
-	md"""## Shortest Path (A to B)
+	md"""## Grid Line Paths
 
-The shortest path between two locations on the surface of a sphere is the one that follows a [great circle](https://en.wikipedia.org/wiki/Great-circle_distance). The method used below identifies the path along grid cell edges that corresponds closely to the great circle path.
+The shortest path between two locations on the surface of a sphere is the one that follows a [great circle](https://en.wikipedia.org/wiki/Great-circle_distance). The method used in `MeshArrays.jl` identifies the path along grid cell edges that corresponds closely to the great circle path.
 
-In `MeshArrays.jl`, we provide the `Transect` function to this end. It relies on the `MeshArrays.edge_mask` function, which can also be used find paths that approximate circles of constant latitude, or delineate a subdomain for example.
+`MeshArrays.jl` provides the `Transect` function to this end, which relies on the `MeshArrays.edge_mask` function. `MeshArrays.edge_mask` can also be used find paths that approximate circles of constant latitude, or delineate a subdomain for example.
 
 | Location 1         | Location 2         | 
 |:------------------:|:------------------:|
@@ -64,16 +117,13 @@ In `MeshArrays.jl`, we provide the `Transect` function to this end. It relies on
 	"""
 end
 
-# ╔═╡ 0cfd749e-af65-4716-86c0-0a587b9647f9
-@doc MeshArrays.edge_mask
-
 # ╔═╡ c81ad3bb-a924-4393-bc73-0607cfebf75f
 begin
 	faceID_slct = @bind faceID Select(1:5;default=1)
 	
-	md"""## Grid Cells and Areas
+	md"""## Grid Cell Areas
 
-	When the goal is to compute averages or integrals over a subdomain or e.g. the whole Ocean, it is important to account for the corresponding land mask and grid cell areas. Here we visualize variations in grid cell areas for a specific global grid. Details will differ for other grids, but should not be overlooked.
+	When the goal is to compute averages or integrals over a subdomain or e.g. the whole Ocean, it is important to account for the corresponding land mask and grid cell areas. Here we visualize variations in grid cell areas for a specific global grid. Here the grid resolution is increased towards the Equator and at high latitudes. Details will differ for other grids, but they should not be overlooked in computing e.g. global means or zonal averages.
 	
 	- select a grid subdomain : $(faceID_slct)
 	"""
@@ -81,25 +131,6 @@ end
 
 # ╔═╡ 25144e1b-21fc-4cc9-b63d-7b26eab1a673
 md"""## Appendices"""
-
-# ╔═╡ 75c98143-dd36-4446-adfa-c440fdf8aab1
-function setup_interp(Γ)
-	μ =Γ.hFacC[:,1]
-	μ[findall(μ.>0.0)].=1.0
-	μ[findall(μ.==0.0)].=NaN
-
-	if !isfile(joinpath(tempdir(),"interp_coeffs_halfdeg.jld2"))
-		lon=[i for i=-179.75:0.5:179.75, j=-89.75:0.5:89.75]
-		lat=[j for i=-179.75:0.5:179.75, j=-89.75:0.5:89.75]
-		
-		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
-		jldsave(joinpath(tempdir(),"interp_coeffs_halfdeg.jld2"); 
-			lon=lon, lat=lat, f=f, i=i, j=j, w=w, μ=μ)
-	end
-
-	λ = load(joinpath(tempdir(),"interp_coeffs_halfdeg.jld2"))
-	λ = MeshArrays.Dict_to_NamedTuple(λ)
-end
 
 # ╔═╡ 39924391-38ce-46a1-877f-80a7975340a0
 begin
@@ -115,15 +146,6 @@ begin
 		"Timor Sea","East China Sea","Red Sea","Gulf","Baffin Bay","GIN Seas","Barents Sea"]
 
 	"Done with grid"
-end
-
-# ╔═╡ be38ff51-3526-44a0-9d8c-9209355e4a4a
-begin
-	λ=setup_interp(Γ)
-	DD=Interpolate(λ.μ*Γ.Depth,λ.f,λ.i,λ.j,λ.w)
-	DD=reshape(DD,size(λ.lon))
-	#DD[findall(DD.==0.0)].=NaN
-	"Done with interpolating Γ.Depth"
 end
 
 # ╔═╡ 963e421c-43fb-43d3-b667-1b9912f940b8
@@ -152,6 +174,68 @@ begin
 	"Done with transport line masks"
 end
 
+# ╔═╡ 897a49b2-9763-4020-a476-5e0fccda1cfb
+begin
+	(Γ.XW,Γ.YW)
+	LC=LatitudeCircles(79.0,Γ)
+	aa=LC[1].tabC
+	locClat=( lon=[Γ.XC[aa[i,1]][aa[i,2],aa[i,3]] for i in 1:size(aa,1)],
+				lat=[Γ.YC[aa[i,1]][aa[i,2],aa[i,3]] for i in 1:size(aa,1)])
+
+	"Done with latitude line"
+end
+
+# ╔═╡ b0d576fc-971a-47c7-9a57-f2c788083bcd
+begin
+
+	basin_slct = @bind basin_nam Select(basin_list;default=basin_list[1])
+
+	#basinID_slct = @bind basinID Select(1:maximum(basins);default=1)
+	
+	md"""## Regional Masks
+
+	There are many ways to split up the global domain into Oceans, Seas, etc. Here is one example.
+	
+	- select a basin nam : $(basin_slct)
+	"""
+end
+
+# ╔═╡ 75c98143-dd36-4446-adfa-c440fdf8aab1
+function setup_interp(Γ)
+	μ =Γ.hFacC[:,1]
+	μ[findall(μ.>0.0)].=1.0
+	μ[findall(μ.==0.0)].=NaN
+
+	if !isfile(joinpath(tempdir(),"interp_coeffs_halfdeg.jld2"))
+		lon=[i for i=-179.75:0.5:179.75, j=-89.75:0.5:89.75]
+		lat=[j for i=-179.75:0.5:179.75, j=-89.75:0.5:89.75]
+		
+		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
+		jldsave(joinpath(tempdir(),"interp_coeffs_halfdeg.jld2"); 
+			lon=lon, lat=lat, f=f, i=i, j=j, w=w, μ=μ)
+	end
+
+	λ = load(joinpath(tempdir(),"interp_coeffs_halfdeg.jld2"))
+	λ = MeshArrays.Dict_to_NamedTuple(λ)
+end
+
+# ╔═╡ be38ff51-3526-44a0-9d8c-9209355e4a4a
+begin
+	λ=setup_interp(Γ)
+	DD=Interpolate(λ.μ*Γ.Depth,λ.f,λ.i,λ.j,λ.w)
+	DD=reshape(DD,size(λ.lon))
+	#DD[findall(DD.==0.0)].=NaN
+	"Done with interpolating Γ.Depth"
+end
+
+# ╔═╡ 41960267-fff9-4bc4-a7bc-aceea2217c63
+let
+	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)")
+	data=(lon=λ.lon,lat=λ.lat,var=DD,meta=meta)
+	Proj4_heatmap(data)
+end
+
+
 # ╔═╡ ed36a2a5-44ea-43a7-a3bd-13f234b6580d
 let	
 	fig = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95)
@@ -164,56 +248,31 @@ let
 
 	#Mkie.scatter!(ax,locClat.lon[:],locClat.lat[:],color=:cyan,markersize=4.0)
 
-	#Mkie.Colorbar(fig[1,2], hm1, height = Mkie.Relative(0.65))
+	Mkie.Colorbar(fig[1,2], hm1, height = Mkie.Relative(0.65))
 
 	fig
-end
-
-# ╔═╡ 897a49b2-9763-4020-a476-5e0fccda1cfb
-begin
-	(Γ.XW,Γ.YW)
-	LC=LatitudeCircles(79.0,Γ)
-	aa=LC[1].tabC
-	locClat=( lon=[Γ.XC[aa[i,1]][aa[i,2],aa[i,3]] for i in 1:size(aa,1)],
-				lat=[Γ.YC[aa[i,1]][aa[i,2],aa[i,3]] for i in 1:size(aa,1)])
-
-	"Done with latitude line"
 end
 
 # ╔═╡ 1477cd5d-7ee3-4af8-95cc-13309db00520
 begin
-	fig = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95)
-	ax = Mkie.Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area")
+	fig = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
+	ax = Mkie.Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area (log10 of m^2)")
 
-	mx=maximum(Γ.RAC)
+	rng=(0.0, maximum(Γ.RAC))
+	rng=(8.8,10.2)
 	for ff in 1:length(Γ.RAC)
-		col=λ.μ[ff][:].*Γ.RAC[ff][:]
+		col=log10.(λ.μ[ff][:].*Γ.RAC[ff][:])
 		kk=findall((!isnan).(col))
 		if ff==faceID
 			Mkie.scatter!(ax,Γ.XC[ff][kk],Γ.YC[ff][kk],color=col[kk],
-				colorrange = (0.0, mx),markersize=2.0)
+				colorrange = rng,markersize=2.0,colormap=:thermal)
 		else
 			Mkie.scatter!(ax,Γ.XC[ff][kk],Γ.YC[ff][kk],color=:gray,markersize=2.0)
 		end
 	end
-	Mkie.Colorbar(fig[1,2], colorrange=(0.0, mx), height = Mkie.Relative(0.65))
+	Mkie.Colorbar(fig[1,2], colorrange=rng, height = Mkie.Relative(0.65))
 
 	fig
-end
-
-# ╔═╡ b0d576fc-971a-47c7-9a57-f2c788083bcd
-begin
-
-	basin_slct = @bind basin_nam Select(basin_list;default=basin_list[1])
-
-	#basinID_slct = @bind basinID Select(1:maximum(basins);default=1)
-	
-	md"""## Ocean Basins / Regions
-
-	There are many ways to split up the global domain into Seas and Oceans. Here is one example.
-	
-	- select a basin nam : $(basin_slct)
-	"""
 end
 
 # ╔═╡ 31756b2e-20df-47c9-aaa8-5583e6a81267
@@ -230,9 +289,9 @@ let
 		!isempty(kk) ? Mkie.scatter!(ax,Γ.XC[ff][kk],Γ.YC[ff][kk],color=:red,markersize=2.0) : nothing
 		kk=findall((col.==0.0).*(!isnan).(λ.μ[ff][:]))
 		!isempty(kk) ? Mkie.scatter!(ax,Γ.XC[ff][kk],Γ.YC[ff][kk],color=basins[ff][kk],
-			colorrange=(0.0,mx),markersize=2.0) : nothing
+			colorrange=(0.0,mx),markersize=2.0,colormap=:lisbon) : nothing
 	end
-	Mkie.Colorbar(fig[1,2], colorrange=(0.0, mx), height = Mkie.Relative(0.65))
+	Mkie.Colorbar(fig[1,2], colormap=:lisbon, colorrange=(0.0, mx), height = Mkie.Relative(0.65))
 
 	fig
 end
@@ -292,21 +351,21 @@ end
 # ╟─cc3e9d0c-8b71-432b-b68d-a8b832ca5f26
 # ╟─39788eec-dd8b-4d65-a0f9-ea73a2d6690c
 # ╟─ca8a8f1b-a225-46c4-93c1-ce1a4b016461
+# ╟─41960267-fff9-4bc4-a7bc-aceea2217c63
 # ╟─be38ff51-3526-44a0-9d8c-9209355e4a4a
-# ╟─2a02b528-5d8e-47a3-9fa9-83872d57ee6f
 # ╟─6aab5feb-06b6-4fbd-8732-83b70f397f00
 # ╟─ed36a2a5-44ea-43a7-a3bd-13f234b6580d
 # ╟─963e421c-43fb-43d3-b667-1b9912f940b8
-# ╟─0cfd749e-af65-4716-86c0-0a587b9647f9
 # ╟─897a49b2-9763-4020-a476-5e0fccda1cfb
 # ╟─c81ad3bb-a924-4393-bc73-0607cfebf75f
 # ╟─1477cd5d-7ee3-4af8-95cc-13309db00520
 # ╟─b0d576fc-971a-47c7-9a57-f2c788083bcd
 # ╟─31756b2e-20df-47c9-aaa8-5583e6a81267
 # ╟─25144e1b-21fc-4cc9-b63d-7b26eab1a673
-# ╟─75c98143-dd36-4446-adfa-c440fdf8aab1
 # ╟─d123161e-49f1-11ec-1c1b-51871624545d
 # ╟─39924391-38ce-46a1-877f-80a7975340a0
+# ╟─75c98143-dd36-4446-adfa-c440fdf8aab1
+# ╟─0b188f96-87b1-41e4-ba66-1fa4d5252bd8
 # ╟─94b8ba05-dfb8-4075-a260-7968e8fdd78f
 # ╟─2507c335-2886-42b5-b6b8-63279a2d60fe
 # ╟─6cc62cf0-cb30-4d93-aad6-2ab16f60f95f
