@@ -32,11 +32,17 @@ This tutorial focuses on the relation between the gridded space in [MeshArrays.j
 TableOfContents()
 
 # ╔═╡ ca8a8f1b-a225-46c4-93c1-ce1a4b016461
-md"""## Interpolation scheme
+md"""## Interpolation
 
 Here we interpolate from the global grid (see [MeshArrays.jl](https://github.com/JuliaClimate/MeshArrays.jl)) to a set of arbitary locations (longitude, latitude pairs) as is commonly done, for example, to plot gridded fields in geographic coordinates (example below shows Ocean bottom depth) or to compare climate models to sparse field observations (e.g., [Argo profiles](https://github.com/JuliaOcean/ArgoData.jl)).
 
 Later in this notebook, we break down the `MeshArrays.Interpolate` function into several steps. In brief, the program finds a grid point quadrilateral (4 grid points) that encloses the target location. Computation is chuncked in subdomains (tiles) to allow for parallelism. `MeshArrays.InterpolationFactors` outputs interpolation coefficients, which can then be reused repeatedly -- e.g. to speed up calls to `MeshArrays.Interpolate` in loops that generate animations.
+"""
+
+# ╔═╡ 85aac4c5-bf04-4f9a-a233-a3f24231762e
+md"""## Projection
+
+See `Proj4_heatmap` function (in appendices), which uses `Proj4.jl` and `GeoMakie.jl`.
 """
 
 # ╔═╡ 6aab5feb-06b6-4fbd-8732-83b70f397f00
@@ -295,7 +301,7 @@ end
 
 
 # ╔═╡ 94b8ba05-dfb8-4075-a260-7968e8fdd78f
-md"""#### Compute All Paths"""
+md"""#### Compute All Transect Paths"""
 
 # ╔═╡ 2507c335-2886-42b5-b6b8-63279a2d60fe
 begin
@@ -344,6 +350,125 @@ let
 
 	readdir(pth_trsp)
 end
+
+# ╔═╡ 8d2e6d5f-7d89-4a27-82cb-0a587914d717
+md"""#### Interpolation Method
+
+
+The Interpolation Code? Let's Break It Down:
+
+- find nearest neighbor (`MeshArray` & `set`)
+- define subdomain tiles (`MeshArray` -> `tiles`)
+- exchange and start loop (`tile` & `subset`)
+    - local stereographic projection
+    - define array of quadrilaterals
+    - find enclosing quadrilaterals
+    - compute interpolation coefficients
+"""
+
+# ╔═╡ e76c02c3-bae6-4110-b26c-3f6b7547453e
+function interp_example()
+	lon=collect(0.1:0.5:2.1); lat=collect(0.1:0.5:2.1);
+	#lon=[66.75]; lat=[-69.75];
+
+	(f,i,j,w,_,_,_)=InterpolationFactors(Γ,vec(lon),vec(lat))
+	Depth_int=Interpolate(Γ.Depth,f,i,j,w)
+
+	#find nearest neighbor (`MeshArray` & `set`)
+	(f,i,j,c)=knn(Γ.XC,Γ.YC,lon,lat)
+	[write(Γ.XC)[c] write(Γ.YC)[c]]
+
+	#define subdomain tiles (`MeshArray` -> `tiles`)
+	ni=30; nj=30;
+	τ=Tiles(γ,ni,nj)
+
+	tiles=MeshArray(γ,Int);
+	[tiles[τ[i].face][τ[i].i,τ[i].j].=i for i in 1:length(τ)]
+
+	#
+
+	XCtiles=Tiles(τ,exchange(Γ.XC))
+	YCtiles=Tiles(τ,exchange(Γ.YC))
+
+	iiTile=tiles[f[1]][i[1],j[1]]; iiFace=τ[iiTile].face
+
+	ii0=minimum(τ[iiTile].i)+Int(ni/2); jj0=minimum(τ[iiTile].j)+Int(nj/2)
+	XC0=Γ.XG.f[iiFace][ii0,jj0]; YC0=Γ.YG.f[iiFace][ii0,jj0]
+	#XC0=66.5000; YC0=-64.4201
+
+	#
+	
+	fig1 = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95)
+	ax1 = Mkie.Axis(fig1[1,1],xlabel="longitude",ylabel="latitude")
+
+	Mkie.scatter!(ax1,XCtiles[iiTile][:],YCtiles[iiTile][:],marker=:+,c=:blue)
+	Mkie.scatter!(ax1,[XC0],[YC0],c=:red)
+	Mkie.scatter!(ax1,lon[:],lat[:],c=:green)
+
+	#Local Stereographic Projection
+	(x_grid,y_grid)=StereographicProjection(XC0,YC0,XCtiles[iiTile],YCtiles[iiTile])
+	(x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon,lat)
+	~isa(x_trgt,Array) ? x_trgt=[x_trgt] : nothing
+	~isa(y_trgt,Array) ? y_trgt=[y_trgt] : nothing
+
+	#Identify Enclosing Quadrilaterals
+	(x_quad,y_quad,i_quad,j_quad)=MeshArrays.QuadArrays(x_grid,y_grid)
+	angsum=zeros(size(x_quad,1),size(x_trgt,1))
+	MeshArrays.PolygonAngle(x_quad,y_quad,x_trgt,y_trgt,angsum)
+	ii=findall(angsum.>180.)
+	ii=[ii[j].I[1] for j in 1:length(ii)]
+
+	#Interpolation Coefficients
+	px=permutedims(x_quad[ii[1],:]); py=permutedims(y_quad[ii[1],:])
+	ox=x_trgt[1]; oy=y_trgt[1]; ow=zeros(4)
+	MeshArrays.QuadCoeffs(px,py,ox,oy,ow);
+
+	#
+
+	fig2 = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95)
+	ax2 = Mkie.Axis(fig2[1,1],xlabel="x",ylabel="y")
+
+	Mkie.scatter!(ax2,x_grid[:],y_grid[:],marker=:+,c=:blue)
+	Mkie.scatter!(ax2,[0.],[0.],c=:red)
+	Mkie.scatter!(ax2,x_quad[ii,:][:],y_quad[ii,:][:],c=:orange)
+	Mkie.scatter!(ax2,x_trgt,y_trgt,c=:green)
+
+	#
+
+	(f,i,j,w)=InterpolationFactors(Γ,lon,lat)
+
+	lon_a=NaN*similar(lon)
+	lat_a=NaN*similar(lat)
+	for jj=1:length(lon)
+	    if !isnan(sum(w[jj,:]))
+	        x=[Γ.XC[f[jj,ii]][i[jj,ii],j[jj,ii]] for ii=1:4]
+	        y=[Γ.YC[f[jj,ii]][i[jj,ii],j[jj,ii]] for ii=1:4]
+	        lon_a[jj]=sum(w[jj,:].*x)
+	        lat_a[jj]=sum(w[jj,:].*y)
+	    end
+	end
+	
+	#or equivalently:
+	lon_b=Interpolate(Γ.XC,f,i,j,w)
+	lat_b=Interpolate(Γ.YC,f,i,j,w)
+
+	#
+	
+	fig3 = Mkie.Figure(resolution = (900,600), backgroundcolor = :grey95)
+	ax3 = Mkie.Axis(fig3[1,1],xlabel="longitude",ylabel="latitude")
+
+	Mkie.scatter!(ax3,XCtiles[iiTile][:],YCtiles[iiTile][:],marker=:+,c=:blue)
+	Mkie.scatter!(ax3,[XC0],[YC0],color=:red,marker=:diamond,markersize=24.0)
+	Mkie.scatter!(ax3,lon,lat,color=:orange,markersize=24.0)
+	Mkie.scatter!(ax3,lon_a,lat_a,color=:black,marker=:star4,markersize=24.0)
+	#Mkie.scatter!(ax3,lon_b,lat_b,color=:black,marker=:star4,markersize=24.0)
+	#Mkie.scatter!(ax3,lon_c,lat_c,color=:black,marker=:star4,markersize=24.0)
+	
+	fig1,fig2,fig3
+end
+
+# ╔═╡ 6b72d272-eefc-45f2-9442-ef38057e4f09
+interp_example()
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1605,8 +1730,9 @@ version = "3.5.0+0"
 # ╟─cc3e9d0c-8b71-432b-b68d-a8b832ca5f26
 # ╟─39788eec-dd8b-4d65-a0f9-ea73a2d6690c
 # ╟─ca8a8f1b-a225-46c4-93c1-ce1a4b016461
-# ╟─41960267-fff9-4bc4-a7bc-aceea2217c63
 # ╟─be38ff51-3526-44a0-9d8c-9209355e4a4a
+# ╟─85aac4c5-bf04-4f9a-a233-a3f24231762e
+# ╟─41960267-fff9-4bc4-a7bc-aceea2217c63
 # ╟─6aab5feb-06b6-4fbd-8732-83b70f397f00
 # ╟─ed36a2a5-44ea-43a7-a3bd-13f234b6580d
 # ╟─963e421c-43fb-43d3-b667-1b9912f940b8
@@ -1623,5 +1749,8 @@ version = "3.5.0+0"
 # ╟─94b8ba05-dfb8-4075-a260-7968e8fdd78f
 # ╟─2507c335-2886-42b5-b6b8-63279a2d60fe
 # ╟─6cc62cf0-cb30-4d93-aad6-2ab16f60f95f
+# ╟─8d2e6d5f-7d89-4a27-82cb-0a587914d717
+# ╟─e76c02c3-bae6-4110-b26c-3f6b7547453e
+# ╟─6b72d272-eefc-45f2-9442-ef38057e4f09
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
