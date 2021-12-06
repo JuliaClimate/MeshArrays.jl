@@ -20,7 +20,7 @@ Grid scale noise           |  Smoothed noise
 
 Ocean Depth Map          |  Great Circle Path
 :------------------------------:|:---------------------------------:
-![raw](https://user-images.githubusercontent.com/20276764/144878637-1412679c-f1e6-4491-a8f1-43d729aa224d.png)  |  ![smooth](https://user-images.githubusercontent.com/20276764/144878668-5b681d5e-79b1-45e0-99d0-f80d2afeba8c.png)
+![map projection](https://user-images.githubusercontent.com/20276764/144878637-1412679c-f1e6-4491-a8f1-43d729aa224d.png)  |  ![great circle](https://user-images.githubusercontent.com/20276764/144878668-5b681d5e-79b1-45e0-99d0-f80d2afeba8c.png)
 
 
 ## Vector Fields
