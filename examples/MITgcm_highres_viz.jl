@@ -53,22 +53,43 @@ function grid_highres_load(pth="./")
     γ,Γ
 end
 
-## display one face data
+## Helper functions
 
-function plot_grad(SSH)
-    tmp2=SSH[5];
-    tmp2[tmp2.==0].=NaN;
-    tmp3=sqrt.(diff(tmp2,dims=1)[:,1:end-1].^2+diff(tmp2,dims=2)[1:end-1,:].^2);
-    ii=findall((!isnan).(log10.(tmp3)));
-    scatter(x[ii],y[ii],color=log10.(tmp3)[ii],colorrange=(-3.0,-1.0),markersize=0.1)
+landmsk!(SSH) = SSH[findall(SSH.==0.0)].=NaN
+
+function to_logvel(u,v)
+    vel=sqrt.(u.^2 + v.^2)
+    γ.read(log10.(γ.write(vel)),vel)
 end
 
-function plot_scatter(Γ,dD)
-    x=Float64.(Γ.XC[5])
-    y=Float64.(Γ.YC[5])
-    ii=findall((!isnan).(dD[5]))
-    ii=shuffle(ii)[1:1000000]
-    scatter(x[ii],y[ii],color=log10.(dD[5][ii]),colorrange=(-7.0,-5.0),markersize=2.0)
+#save("vel_ocn.png",fig)
+function plot_vel_ocn()
+    u=γ.read(joinpath(pth,"U.0000700720.data"),MeshArray(γ))
+    landmsk!(u)
+    v=γ.read(joinpath(pth,"V.0000700720.data"),MeshArray(γ))
+    landmsk!(v)
+
+    (u, v)=UVtoUEVN(u, v,Γ)
+    logvel=to_logvel(u,v)
+    logvel_lonlat=reshape(Interpolate_knn(logvel,f,i,j),size(lon))
+    earth_view(logvel_lonlat,(-2.0,0.0))
+end
+
+#save("vel_atm.png",fig)
+function plot_vel_atm()
+    u=γ.read(joinpath(pth,"geo5_u10m.0000700720.data"),MeshArray(γ))
+    v=γ.read(joinpath(pth,"geo5_v10m.0000700720.data"),MeshArray(γ))
+
+    logvel=to_logvel(u,v)
+    logvel_lonlat=reshape(Interpolate_knn(logvel,f,i,j),size(lon))
+    earth_view(logvel_lonlat,(0.0,1.2))
+end
+
+#save("sst_ocn.png",fig)
+function plot_sst_ocn()
+    Θ=γ.read(joinpath(pth,"THETA.0000700720.data"),MeshArray(γ))
+    Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
+    earth_view(Θ_lonlat,(12.0,30.0))
 end
 
 ## interpolate / knn
@@ -128,3 +149,22 @@ function earth_view(tmp,rng=(-7.0,-5.0))
     fig
 end
 
+
+
+## display one face data
+
+function plot_grad(SSH)
+    tmp2=SSH[5];
+    tmp2[tmp2.==0].=NaN;
+    tmp3=sqrt.(diff(tmp2,dims=1)[:,1:end-1].^2+diff(tmp2,dims=2)[1:end-1,:].^2);
+    ii=findall((!isnan).(log10.(tmp3)));
+    scatter(x[ii],y[ii],color=log10.(tmp3)[ii],colorrange=(-3.0,-1.0),markersize=0.1)
+end
+
+function plot_scatter(Γ,dD)
+    x=Float64.(Γ.XC[5])
+    y=Float64.(Γ.YC[5])
+    ii=findall((!isnan).(dD[5]))
+    ii=shuffle(ii)[1:1000000]
+    scatter(x[ii],y[ii],color=log10.(dD[5][ii]),colorrange=(-7.0,-5.0),markersize=2.0)
+end
