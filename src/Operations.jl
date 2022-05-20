@@ -403,10 +403,10 @@ nanmean(x,y) = mapslices(nanmean,x,dims=y)
 
 1. Interpolate to grid cell centers (uC,vC)
 2. Convert to `Eastward/Northward` components (uE,vN)
+
+Note: land masking `u,v` with `NaN`s preemptively can be adequate.
 """
 function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
-    u[findall(G.hFacW[:,1].==0)].=NaN
-    v[findall(G.hFacS[:,1].==0)].=NaN
 
     (u,v)=exch_UV(u,v); uC=similar(u); vC=similar(v)
     for iF=1:u.grid.nFaces
