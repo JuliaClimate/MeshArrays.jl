@@ -112,7 +112,7 @@ GridSpec() = GridSpec("PeriodicDomain","./")
     GridSpec(GridName,GridParentDir="./")
 
 Select one of the pre-defined grids (by `GridName`) and return 
-the corresponding `gmcgrid` -- a global grid specification 
+the corresponding `gcmgrid` -- a global grid specification 
 which contains the grid files location (`GridParentDir`).
     
 
