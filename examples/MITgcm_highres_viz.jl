@@ -8,26 +8,21 @@ Main workflow.
 #grid and SSH field
 pth="MITgcm_highres_sample/"
 γ,Γ=grid_highres_load(pth)
-SSH=γ.read(joinpath(pth,"SSH.0000700720.data"),MeshArray(γ))
 
-#land masking
-SSH[findall(SSH.==0.0)].=NaN;
-
-#compute gradient magnitude
-(dDdx, dDdy)=gradient(SSH,Γ)
-(dDdx, dDdy)=UVtoUEVN(dDdx, dDdy,Γ)
-dD=sqrt.(dDdx.^2 + dDdy.^2)
-logdD=γ.read(log10.(γ.write(dD)),dD)
-
-#interpolate for plotting
+#interpolation coefficients for plotting
 dx=0.1; 
 lat=[j for i=-179.95:dx:179.95, j=-89.95:dx:89.95]; 
 lon=[i for i=-179.95:dx:179.95, j=-89.95:dx:89.95];
 (f,i,j,c)=knn(Γ.XC,Γ.YC,vec(lon),vec(lat));
-logdD_lonlat=reshape(Interpolate_knn(logdD,f,i,j),size(lon));
+
+
+log_grad=calc_log_grad("THETA")
+
+#interpolate for plotting
+log_grad_lonlat=reshape(Interpolate_knn(log_grad,f,i,j),size(lon));
 
 #plotting
-fig=earth_view(logdD_lonlat,(-7.0,-5.0))
+fig=earth_view(log_grad_lonlat,(-7.0,-5.0))
 ```
 """
 function grid_highres(pth="./")
@@ -88,8 +83,33 @@ end
 #save("sst_ocn.png",fig)
 function plot_sst_ocn()
     Θ=γ.read(joinpath(pth,"THETA.0000700720.data"),MeshArray(γ))
+    landmsk!(Θ)
     Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
-    earth_view(Θ_lonlat,(12.0,30.0))
+    earth_view(Θ_lonlat,(2.0,30.0))
+end
+
+#save("sss_ocn.png",fig)
+function plot_sss_ocn()
+    Θ=γ.read(joinpath(pth,"SALT.0000700720.data"),MeshArray(γ))
+    landmsk!(Θ)
+    Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
+    earth_view(Θ_lonlat,(32.0,36.0))
+end
+
+function calc_log_grad(v="SSH")
+    #read variable
+    SSH=γ.read(joinpath(pth,v*".0000700720.data"),MeshArray(γ))
+
+    #land masking
+    SSH[findall(SSH.==0.0)].=NaN;
+
+    #compute gradient magnitude
+    (dDdx, dDdy)=gradient(SSH,Γ)
+    (dDdx, dDdy)=UVtoUEVN(dDdx, dDdy,Γ)
+    dD=sqrt.(dDdx.^2 + dDdy.^2)
+
+    #return log10
+    γ.read(log10.(γ.write(dD)),dD)
 end
 
 ## interpolate / knn
@@ -153,7 +173,7 @@ end
 
 ## display one face data
 
-function plot_grad(SSH)
+function plot_face_grad(SSH)
     tmp2=SSH[5];
     tmp2[tmp2.==0].=NaN;
     tmp3=sqrt.(diff(tmp2,dims=1)[:,1:end-1].^2+diff(tmp2,dims=2)[1:end-1,:].^2);
@@ -161,7 +181,7 @@ function plot_grad(SSH)
     scatter(x[ii],y[ii],color=log10.(tmp3)[ii],colorrange=(-3.0,-1.0),markersize=0.1)
 end
 
-function plot_scatter(Γ,dD)
+function plot_face_scatter(Γ,dD)
     x=Float64.(Γ.XC[5])
     y=Float64.(Γ.YC[5])
     ii=findall((!isnan).(dD[5]))
