@@ -308,8 +308,8 @@ begin
 	Tx=0.0*Utr[:,1]
 	Ty=0.0*Vtr[:,1]
 	for z=1:nz
-		Tx=Tx+Utr[:,z]
-		Ty=Ty+Vtr[:,z]
+		Tx.=Tx+Utr[:,z]
+		Ty.=Ty+Vtr[:,z]
 	end
 
 	#convergence & land mask
