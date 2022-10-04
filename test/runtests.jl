@@ -60,6 +60,15 @@ end
     μ[findall(μ.>0.0)].=1.0
     μ[findall(μ.==0.0)].=NaN
 
+    lons=[-68 -63]; lats=[-54 -66]; name="Drake Passage"
+    Trsct=Transect(name,lons,lats,Γ)
+
+    #Various vector operations
+    U=0*Γ.hFacW; V=0*Γ.hFacS;
+    UVtoTransport(U,V,Γ)
+    UVtoUEVN(U[:,1],V[:,1],Γ)
+    curl(U[:,1],V[:,1],Γ)
+    
     #Meridional transport integral
     uv=Dict("U"=>Tx,"V"=>Ty,"dimensions"=>["x","y"])
     L=-85.0:5.0:85.0; LC=LatitudeCircles(L,Γ)
@@ -138,6 +147,23 @@ end
     tmp1=MeshArray(γ,Float32,3)
     MeshArray(γ,tmp1.f,meta=tmp1.meta)
     MeshArrays.getindexetc(tmp1,2,1)
+end
+
+@testset "UnitGrid:" begin
+    (Γ,γ)=UnitGrid( (80,90) , (20,30) ; option="full")
+    @test isa(γ,gcmgrid)
+
+    tmp=UnitGrid(γ)
+    @test isa(tmp,NamedTuple)
+
+    #various read/write functions
+    read(write(Γ.XC),γ)
+    tmp=tempname()
+    write(tmp,Γ.XC)
+    MeshArrays.read_tiles(tmp,Γ.XC)
+    MeshArrays.write_tiles(Γ.XC)
+    MeshArrays.write_tiles(tmp,Γ.XC)    
+    @test isfile(tmp)
 end
 
 @testset "doctests" begin
