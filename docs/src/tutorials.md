@@ -30,4 +30,4 @@ Ocean Depth Map          |  Great Circle Path
 
 Horizontal Streamfunction          |  Vertical Streamfunction
 :------------------------------:|:---------------------------------:
-![raw](https://github.com/JuliaClimate/GlobalOceanNotebooks/raw/master/OceanTransports/Streamfunction.png)  |  ![smooth](https://github.com/JuliaClimate/GlobalOceanNotebooks/raw/master/OceanTransports/MOC.png)
+![raw](https://github.com/JuliaClimate/Notebooks/raw/master/page/figures/Streamfunction.png)  |  ![smooth](https://github.com/JuliaClimate/Notebooks/raw/master/page/figures/MOC.png)
