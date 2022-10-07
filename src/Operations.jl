@@ -474,7 +474,7 @@ function calc_bolus(GM_PsiX,GM_PsiY, Γ)
     for k in 1:nr
         (tmpU,tmpV)=exch_UV(tmp_x[:, k],tmp_y[:, k])
         for a=1:tmpU.grid.nFaces
-            (s1,s2)=size(tmp_x.f[a, k])
+            (s1,s2)=size(tmpU.f[a])
             tmpU1=view(tmpU.f[a],1:s1,1:s2)
             tmpU2=view(tmpU.f[a],2:s1+1,1:s2)
             tmpV1=view(tmpV.f[a],1:s1,1:s2)
