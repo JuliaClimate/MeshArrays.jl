@@ -435,3 +435,56 @@ function UVtoTransport(U::MeshArray,V::MeshArray,G::NamedTuple)
   end
   return uTr,vTr
 end
+
+"""
+compute bolus velocty field (bolusU,bolusV,bolusW) 
+	from gm streamfunction (GM_PsiX,GM_PsiY)
+"""
+function calc_bolus(GM_PsiX,GM_PsiY, Γ)
+    nr=length(Γ.RC);
+    mskW = 0 .*Γ.hFacW; mskS = 0 .*Γ.hFacS; 
+    mskC = 0 .*Γ.hFacC;
+    for ff in eachindex(mskC)
+        mskW.f[ff][Γ.hFacW.f[ff] .> 0] .= 1
+        mskS.f[ff][Γ.hFacS.f[ff] .> 0] .= 1;
+        mskC.f[ff][Γ.hFacC.f[ff] .> 0] .= 1;
+    end
+
+    GM_PsiX[findall((!isfinite).(GM_PsiX))]=0;
+    GM_PsiY[findall((!isfinite).(GM_PsiY))]=0;
+    
+    bolusU=0*Γ.hFacW;
+    bolusV=0*Γ.hFacS;
+    for k=1:nr-1;
+        bolusU.f[:,k].=(GM_PsiX.f[:,k+1].-GM_PsiX.f[:,k])/Γ.DRF[k];
+        bolusV.f[:,k].=(GM_PsiY.f[:,k+1].-GM_PsiY.f[:,k])/Γ.DRF[k];
+    end;
+    bolusU.f[:, nr] .= 0. -GM_PsiX.f[:,nr]./Γ.DRF[nr];
+    bolusV.f[:, nr] .= 0. -GM_PsiY.f[:,nr]./Γ.DRF[nr];
+
+    bolusU=bolusU.*mskW;
+    bolusV=bolusV.*mskS;
+    
+    #and its vertical part
+    #   (seems correct, leading to 0 divergence)
+    tmp_x=GM_PsiX.*Γ.DYG
+    tmp_y=GM_PsiY.*Γ.DXG
+    tmp_w=0*tmp_x
+
+    for k in 1:nr
+        (tmpU,tmpV)=exch_UV(tmp_x[:, k],tmp_y[:, k])
+        for a=1:tmpU.grid.nFaces
+            (s1,s2)=size(tmpU.f[a])
+            tmpU1=view(tmpU.f[a],1:s1,1:s2)
+            tmpU2=view(tmpU.f[a],2:s1+1,1:s2)
+            tmpV1=view(tmpV.f[a],1:s1,1:s2)
+            tmpV2=view(tmpV.f[a],1:s1,2:s2+1)
+            tmp_w.f[a, k] = tmpU2 - tmpU1+tmpV2 -tmpV1
+            tmp_w.f[a, k] = tmp_w.f[a, k] ./ Γ.RAC.f[a]
+        end
+    end
+
+    bolusW=tmp_w.*mskC;
+
+    return bolusU, bolusV, bolusW
+end
