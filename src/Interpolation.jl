@@ -141,6 +141,7 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         tmpx=fill(0.0,1,4)
         tmpy=fill(0.0,1,4)
         w=fill(0.0,1,4)
+        angsum=fill(0.0,prod(size(t_f[1])))
 
         #main loop
         for ii=1:length(t_list)
@@ -157,8 +158,6 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 #
                 x=minimum(τ[tt].i)-0.5 .+collect(-1:ni)*ones(Int,1,nj+2)
                 y=minimum(τ[tt].j)-0.5 .+ones(Int,ni+2,1)*collect(-1:nj)'
-                #
-                angsum=fill(0.0,size(x_quad,1))
 
                 for pp in findall(t.==tt)
                         (x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon[pp],lat[pp])
