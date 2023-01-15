@@ -91,7 +91,7 @@ function sss_ocn()
     Θ=γ.read(joinpath(pth,"mit_output","SALT","SALT.0000700720.data"),MeshArray(γ))
     landmsk!(Θ)
     Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
-    Θ_lonlat,(32.0,36.0)
+    Θ_lonlat,(33.0,37.0)
 end
 
 function oceQnet()
@@ -99,7 +99,7 @@ function oceQnet()
       "oceQnet.0000700720.data"),MeshArray(γ))
     landmsk!(Θ)
     Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
-    Θ_lonlat,(-1.0,1.0)
+    Θ_lonlat,200.0.*(-1.0,1.0)
 end
 
 function SSH()
@@ -107,7 +107,7 @@ function SSH()
       "SSH.0000700720.data"),MeshArray(γ))
     landmsk!(Θ)
     Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
-    Θ_lonlat,(-1.0,1.0)
+    Θ_lonlat,(-1.2,1.0)
 end
 
 function calc_log_grad(v="SSH")
@@ -127,7 +127,7 @@ function calc_log_grad(v="SSH")
     elseif v=="THETA"
       rng=(-6.0,-4.0)
     elseif v=="SALT"
-      rng=(-7.0,-5.0)
+      rng=(-6.0,-4.0)
     else
       error("unknown color range")
     end
@@ -207,7 +207,7 @@ function latlon_view(tmp,rng)
 
     fig = Figure(resolution = (1200, 800), backgroundcolor = :grey80)
     ax = Axis(fig[1, 1])
-    image!(ax,lon[:,1],lat[1,:],Gray.(earth_tmp))
+    image!(ax,lon[:,1],lat[1,:],Gray.(earth_img))
     heatmap!(ax,lon[:,1], lat[1,:], tmp; colorrange=rng, colormap=:thermal)
 
     #hidedecorations!(current_axis())
