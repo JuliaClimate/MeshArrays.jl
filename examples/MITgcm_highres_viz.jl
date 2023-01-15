@@ -94,6 +94,22 @@ function sss_ocn()
     Θ_lonlat,(32.0,36.0)
 end
 
+function oceQnet()
+    Θ=γ.read(joinpath(pth,"mit_output","oceQnet",
+      "oceQnet.0000700720.data"),MeshArray(γ))
+    landmsk!(Θ)
+    Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
+    Θ_lonlat,(-1.0,1.0)
+end
+
+function SSH()
+    Θ=γ.read(joinpath(pth,"mit_output","SSH",
+      "SSH.0000700720.data"),MeshArray(γ))
+    landmsk!(Θ)
+    Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
+    Θ_lonlat,(-1.0,1.0)
+end
+
 function calc_log_grad(v="SSH")
     #read variable
     SSH=γ.read(joinpath(pth,"mit_output",v,v*".0000700720.data"),MeshArray(γ))
