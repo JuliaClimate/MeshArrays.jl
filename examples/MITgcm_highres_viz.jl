@@ -151,7 +151,9 @@ using Downloads: download
 
 function earth_view(tmp,rng=(-7.0,-5.0))
     earth_tmp=reverse(permutedims(tmp),dims=1)
-    earth_img = load(download("https://upload.wikimedia.org/wikipedia/commons/5/56/Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"))
+    #earth_img = load(download("https://upload.wikimedia.org/wikipedia/commons/5/56/Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"))
+    earth_img=load(joinpath(pth,"images",
+      "Blue_Marble_Next_Generation_topography_bathymetry.jpg"))
     n = 1024 ÷ 4 # 2048
     θ = LinRange(0, π, n)
     φ = LinRange(0, 2π, 2 * n)
