@@ -198,6 +198,23 @@ function earth_view(tmp,rng)
     fig
 end
 
+function latlon_view(tmp,rng)
+    isa(tmp,MeshArray) ? tmp=reshape(Interpolate_knn(tmp,f,i,j),size(lon)) : nothing
+
+    earth_img=load(joinpath(pth,"images",
+      "Blue_Marble_Next_Generation_topography_bathymetry.jpg"))
+    earth_img=reverse(permutedims(earth_img),dims=2)
+
+    fig = Figure(resolution = (1200, 800), backgroundcolor = :grey80)
+    ax = Axis(fig[1, 1])
+    image!(ax,lon[:,1],lat[1,:],Gray.(earth_tmp))
+    heatmap!(ax,lon[:,1], lat[1,:], tmp; colorrange=rng, colormap=:thermal)
+
+    #hidedecorations!(current_axis())
+    hidedecorations!(ax)
+
+    fig
+end
 
 
 ## display one face data
