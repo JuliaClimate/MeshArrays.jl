@@ -15,14 +15,14 @@ lat=[j for i=-179.95:dx:179.95, j=-89.95:dx:89.95];
 lon=[i for i=-179.95:dx:179.95, j=-89.95:dx:89.95];
 (f,i,j,c)=knn(Γ.XC,Γ.YC,vec(lon),vec(lat));
 
-
-log_grad=calc_log_grad("THETA")
-
-#interpolate for plotting
-log_grad_lonlat=reshape(Interpolate_knn(log_grad,f,i,j),size(lon));
+#get data and color range
+log_grad_rng=calc_log_grad("THETA")
 
 #plotting
-fig=earth_view(log_grad_lonlat,(-7.0,-5.0))
+fig=earth_view(log_grad_rng...)
+
+#saving to file
+save(joinpath(tempdir(),"tmp.png"),fig)
 ```
 """
 function grid_highres(pth="./")
@@ -57,43 +57,41 @@ function to_logvel(u,v)
     γ.read(log10.(γ.write(vel)),vel)
 end
 
-#save("vel_ocn.png",fig)
-function plot_vel_ocn()
-    u=γ.read(joinpath(pth,"U.0000700720.data"),MeshArray(γ))
+function vel_ocn()
+    u=γ.read(joinpath(pth,"mit_output","U","U.0000700720.data"),MeshArray(γ))
     landmsk!(u)
-    v=γ.read(joinpath(pth,"V.0000700720.data"),MeshArray(γ))
+    v=γ.read(joinpath(pth,"mit_output","V","V.0000700720.data"),MeshArray(γ))
     landmsk!(v)
 
     (u, v)=UVtoUEVN(u, v,Γ)
     logvel=to_logvel(u,v)
     logvel_lonlat=reshape(Interpolate_knn(logvel,f,i,j),size(lon))
-    earth_view(logvel_lonlat,(-2.0,0.0))
+    logvel_lonlat,(-2.0,0.0)
 end
 
-#save("vel_atm.png",fig)
-function plot_vel_atm()
-    u=γ.read(joinpath(pth,"geo5_u10m.0000700720.data"),MeshArray(γ))
-    v=γ.read(joinpath(pth,"geo5_v10m.0000700720.data"),MeshArray(γ))
+function vel_atm()
+    u=γ.read(joinpath(pth,"mit_output","geo5_u10m",
+      "geo5_u10m.0000700720.data"),MeshArray(γ))
+    v=γ.read(joinpath(pth,"mit_output","geo5_v10m",
+      "geo5_v10m.0000700720.data"),MeshArray(γ))
 
     logvel=to_logvel(u,v)
     logvel_lonlat=reshape(Interpolate_knn(logvel,f,i,j),size(lon))
-    earth_view(logvel_lonlat,(0.0,1.2))
+    logvel_lonlat,(0.0,1.2)
 end
 
-#save("sst_ocn.png",fig)
-function plot_sst_ocn()
-    Θ=γ.read(joinpath(pth,"THETA.0000700720.data"),MeshArray(γ))
+function sst_ocn()
+    Θ=γ.read(joinpath(pth,"mit_output","THETA","THETA.0000700720.data"),MeshArray(γ))
     landmsk!(Θ)
     Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
-    earth_view(Θ_lonlat,(2.0,30.0))
+    Θ_lonlat,(2.0,30.0)
 end
 
-#save("sss_ocn.png",fig)
-function plot_sss_ocn()
-    Θ=γ.read(joinpath(pth,"SALT.0000700720.data"),MeshArray(γ))
+function sss_ocn()
+    Θ=γ.read(joinpath(pth,"mit_output","SALT","SALT.0000700720.data"),MeshArray(γ))
     landmsk!(Θ)
     Θ_lonlat=reshape(Interpolate_knn(Θ,f,i,j),size(lon))
-    earth_view(Θ_lonlat,(32.0,36.0))
+    Θ_lonlat,(32.0,36.0)
 end
 
 function calc_log_grad(v="SSH")
@@ -108,8 +106,18 @@ function calc_log_grad(v="SSH")
     (dDdx, dDdy)=UVtoUEVN(dDdx, dDdy,Γ)
     dD=sqrt.(dDdx.^2 + dDdy.^2)
 
+    if v=="SSH"
+      rng=(-7.0,-5.0)
+    elseif v=="THETA"
+      rng=(-6.0,-4.0)
+    elseif v=="SALT"
+      rng=(-7.0,-5.0)
+    else
+      error("unknown color range")
+    end
+
     #return log10
-    γ.read(log10.(γ.write(dD)),dD)
+    γ.read(log10.(γ.write(dD)),dD),rng
 end
 
 ## interpolate / knn
@@ -149,7 +157,10 @@ end
 using GLMakie, FileIO
 using Downloads: download
 
-function earth_view(tmp,rng=(-7.0,-5.0))
+function earth_view(tmp,rng)
+
+    isa(tmp,MeshArray) ? tmp=reshape(Interpolate_knn(tmp,f,i,j),size(lon)) : nothing
+
     earth_tmp=reverse(permutedims(tmp),dims=1)
     #earth_img = load(download("https://upload.wikimedia.org/wikipedia/commons/5/56/Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"))
     earth_img=load(joinpath(pth,"images",
