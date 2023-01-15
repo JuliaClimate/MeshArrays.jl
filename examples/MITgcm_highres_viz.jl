@@ -36,14 +36,14 @@ function grid_highres(pth="./")
 end
 
 function grid_highres_load(pth="./")
-    γ=grid_highres(pth)
+    γ=grid_highres(joinpath(pth,"grid"))
     Γ=GridLoad(γ) #,option="full"
-    DXC=γ.read(joinpath(pth,"DXC.data"),MeshArray(γ))
-    DYC=γ.read(joinpath(pth,"DYC.data"),MeshArray(γ))
-    AngleCS=γ.read(joinpath(pth,"AngleCS.data"),MeshArray(γ))
-    AngleSN=γ.read(joinpath(pth,"AngleSN.data"),MeshArray(γ))
-    XG=γ.read(joinpath(pth,"XG.data"),MeshArray(γ))
-    YG=γ.read(joinpath(pth,"YG.data"),MeshArray(γ))
+    DXC=γ.read(joinpath(pth,"grid","DXC.data"),MeshArray(γ))
+    DYC=γ.read(joinpath(pth,"grid","DYC.data"),MeshArray(γ))
+    AngleCS=γ.read(joinpath(pth,"grid","AngleCS.data"),MeshArray(γ))
+    AngleSN=γ.read(joinpath(pth,"grid","AngleSN.data"),MeshArray(γ))
+    XG=γ.read(joinpath(pth,"grid","XG.data"),MeshArray(γ))
+    YG=γ.read(joinpath(pth,"grid","YG.data"),MeshArray(γ))
     Γ=merge(Γ,(DXC=DXC,DYC=DYC,AngleCS=AngleCS,AngleSN=AngleSN,XG=XG,YG=YG))
     γ,Γ
 end
@@ -98,7 +98,7 @@ end
 
 function calc_log_grad(v="SSH")
     #read variable
-    SSH=γ.read(joinpath(pth,v*".0000700720.data"),MeshArray(γ))
+    SSH=γ.read(joinpath(pth,"mit_output",v,v*".0000700720.data"),MeshArray(γ))
 
     #land masking
     SSH[findall(SSH.==0.0)].=NaN;
