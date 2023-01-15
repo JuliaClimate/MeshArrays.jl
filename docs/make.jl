@@ -2,6 +2,7 @@ using Documenter, PlutoSliderServer, MeshArrays
 
 import OceanStateEstimation
 OceanStateEstimation.get_ecco_velocity_if_needed()
+
 MeshArrays.GRID_LL360_download()
 MeshArrays.GRID_LLC90_download()
 MeshArrays.GRID_CS32_download()
@@ -13,11 +14,11 @@ makedocs(
     pages = [
     "Home" => "index.md",
     "Get Started" => "start.md",
-    "Tutorials" => "tutorials.md",
+    "Notebook Tutorials" => "tutorials.md",
+    "Video Examples" => "videos.md",
     "Main Features" => "main.md",
     "API documentation" => "API.md",
     "Miscellaneous" => "detail.md",
-    "Video Examples" => "videos.md",
     ]
 )
 

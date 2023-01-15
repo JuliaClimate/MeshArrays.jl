@@ -163,7 +163,6 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
                 for pp in findall(t.==tt)
                         (x_trgt,y_trgt)=StereographicProjection(XC0,YC0,lon[pp],lat[pp])
                         PolygonAngle(x_quad,y_quad,x_trgt,y_trgt,angsum)
-                        #angsum=PolygonAngle_deprecated(x_quad,y_quad,x_trgt,y_trgt)
                         if sum(angsum.>180.)>0
                                 kk=findall(angsum.>180.)[end]
                                 i_f[pp,:].=[t_f[tt][i_quad[kk,i]+1,j_quad[kk,i]+1] for i=1:4]
@@ -231,51 +230,6 @@ function StereographicProjection(XC0::Number,YC0::Number,XC,YC)
         #msk=1+0*nrm; msk(nrm>tan(pi/4/2))=NaN;%mask points outside of pi/4 cone
 
         return xx,yy
-end
-
-
-"""
-    PolygonAngle_deprecated(px,py,x=[],y=[])
-
-Compute sum of interior angles for polygons or points-to-polygons (when
-`px,py,x,y` is provided as input). `px,py` are `MxN` matrices where each line
-specifies one polygon. (optional) `x,y` are position vectors.
-"""
-function PolygonAngle_deprecated(px,py,x=[],y=[])
-
-        M=size(px,1); N=size(px,2); P=1;
-        doPointsInPolygon=false
-        if length(x)>0;
-                doPointsInPolygon=true
-                x=reshape(x,1,length(x))
-                y=reshape(y,1,length(y))
-                P=length(x)
-        end;
-
-        angsum=zeros(M,P)
-        for ii=0:N-1
-                ppx=circshift(px,[0 -ii])
-                ppy=circshift(py,[0 -ii])
-                if ~doPointsInPolygon
-                        #compute sum of corner angles
-                        v1x=ppx[:,2]-ppx[:,1]
-                        v1y=ppy[:,2]-ppy[:,1]
-                        v2x=ppx[:,4]-ppx[:,1]
-                        v2y=ppy[:,4]-ppy[:,1]
-                else;
-                        #compute sum of sector angles
-                        v1x=ppx[:,1]*ones(1,P)-ones(M,1)*x
-                        v1y=ppy[:,1]*ones(1,P)-ones(M,1)*y
-                        v2x=ppx[:,2]*ones(1,P)-ones(M,1)*x
-                        v2y=ppy[:,2]*ones(1,P)-ones(M,1)*y
-                end
-                tmp=( v1x.*v2x+v1y.*v2y )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
-                g_acos=acos.( min.(max.(tmp,-1.0),1.0) )
-                g_sin= ( v1x.*v2y-v1y.*v2x )./sqrt.( v1x.*v1x+v1y.*v1y )./sqrt.( v2x.*v2x+v2y.*v2y )
-                angsum=angsum+rad2deg.(g_acos.*sign.(g_sin));
-        end;
-
-        return angsum
 end
 
 """

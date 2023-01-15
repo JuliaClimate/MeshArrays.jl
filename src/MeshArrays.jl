@@ -20,13 +20,6 @@ GRID_CS32_hash = artifact_hash("GRID_CS32", artifact_toml)
 GRID_CS32 = joinpath(artifact_path(GRID_CS32_hash)*"/","GRID_CS32-1.1/")
 GRID_CS32_download() = artifact"GRID_CS32"
 
-using Downloads
-function GRID_LLC90_interp_download()
-    url="https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2?download=1"
-    fil=joinpath(GRID_LLC90,"interp_coeffs_halfdeg.jld2")
-    !isfile(fil) ? Downloads.download(url,fil) : nothing
-end
-
 include("Types.jl")
 include("Grids.jl")
 include("GridPaths.jl")

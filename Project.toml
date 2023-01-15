@@ -1,12 +1,11 @@
 name = "MeshArrays"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.2.31"
+version = "0.2.32"
 
 [deps]
 CatViews = "81a5f4ea-a946-549a-aa7e-2a7f63a27d31"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
-Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 LazyArtifacts = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"

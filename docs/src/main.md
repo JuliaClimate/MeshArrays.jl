@@ -100,4 +100,4 @@ A simple way to plot a `MeshArray` consists in plotting each elementary array se
 
 Lagrangian trajectories are readily computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) when velocity fields are provided as `MeshArray`s. Another set of examples shows that `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest) with I/O routines provided by [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) as also demontrated in [ClimateModels.jl](https://github.com/gaelforget/ClimateModels.jl) and the [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/).
 
-![OceanMOC](https://github.com/JuliaClimate/GlobalOceanNotebooks/raw/master/OceanTransports/MOC.png)
+![OceanMOC](https://github.com/JuliaClimate/Notebooks/raw/master/page/figures/MOC.png)
