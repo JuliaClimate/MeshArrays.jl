@@ -30,6 +30,8 @@ lat=[j for i=-180.0:dx:180.0, j=-90.0:dx:90.0]
 lon=[i for i=-180.0:dx:180.0, j=-90.0:dx:90.0]
 (f,i,j,c)=knn(Γ.XC,Γ.YC,vec(lon),vec(lat))
 
+save(joinpath(tempdir(),"knn_tmp.jld2"),f,i,j,c)
+
 o(3)
 
 ## rescale to 0-1 range mapped to z0-z1
@@ -52,7 +54,7 @@ nodes=(-180.0:dx:180.0, -90.0:dx:90.0)
 itp = Interpolations.interpolate(nodes, z_latlon, 
     Interpolations.Gridded(Interpolations.Linear()))
 
-save("itp_logvel.jld2","nodes",nodes,"z",z_latlon,"itp",itp)
+save(joinpath(tempdir(),"itp_tmp.jld2"),"itp",itp)
 
 o(5)
 
