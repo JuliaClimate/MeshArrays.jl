@@ -25,12 +25,13 @@ o(2)
 
 ## interpolation coefficients (to lat-lon grid)
 
-dx=0.02
+dx=0.1
 lat=[j for i=-180.0:dx:180.0, j=-90.0:dx:90.0] 
 lon=[i for i=-180.0:dx:180.0, j=-90.0:dx:90.0]
 (f,i,j,c)=knn(Γ.XC,Γ.YC,vec(lon),vec(lat))
 
-save(joinpath(tempdir(),"knn_tmp.jld2"),f,i,j,c)
+knn_file=joinpath(tempdir(),"knn_tmp.jld2")
+save(knn_file,"lon",lon,"lat",lat,"dx",dx,"f",f,"i",i,"j",j,"c",c)
 
 o(3)
 
@@ -50,8 +51,8 @@ o(4)
 ## prepare for interpolation
 
 import Interpolations
-nodes=(-180.0:dx:180.0, -90.0:dx:90.0)
-itp = Interpolations.interpolate(nodes, z_latlon, 
+nodes=(Float32.(-180.0:dx:180.0), Float32.(-90.0:dx:90.0))
+itp = Interpolations.interpolate(nodes, Float32.(reverse(z_latlon,dims=2)), 
     Interpolations.Gridded(Interpolations.Linear()))
 
 save(joinpath(tempdir(),"itp_tmp.jld2"),"itp",itp)
