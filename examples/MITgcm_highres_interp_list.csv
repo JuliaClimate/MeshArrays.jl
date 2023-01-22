@@ -1,0 +1,9 @@
+filename,command
+itp_SSH.jld2,SSH
+itp_logvel.jld2,logvel
+itp_oceQnet.jld2,oceQnet
+itp_sss_ocn.jld2,sss_ocn
+itp_sst_ocn.jld2,sst_ocn
+itp_vel_atm.jld2,vel_atm
+itp_vel_ocn.jld2,vel_ocn
+itp_log_grad_rng.jld2,log_grad_rng
