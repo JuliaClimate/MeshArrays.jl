@@ -1,5 +1,3 @@
-include("MITgcm_highres_viz.jl")
-import Interpolations, JLD2
 
 pth="MITgcm_highres_sample/"
 γ,Γ=grid_highres_load(pth)
@@ -7,12 +5,19 @@ pth="MITgcm_highres_sample/"
 knn_file=joinpath(tempdir(),"knn_tmp.jld2")
 knn_api =JLD2.jldopen(knn_file, "r");
 
+(i,j,f,c,lon,lat)=(knn_api["i"],knn_api["j"],knn_api["f"],knn_api["c"],
+            knn_api["lon"],knn_api["lat"])
+
+include("MITgcm_highres_viz.jl")
+import Interpolations, JLD2
+
 """
 ```
-to_itp(sst_ocn,"itp_sst_ocn.jld2")
+to_itp(log_grad_rng,"itp_log_grad_rng.jld2")
 ```
 """
 function to_itp(in_func,out_file)
+
     filename=joinpath(tempdir(),out_file)
     (z,(z0,z1))=in_func();
 

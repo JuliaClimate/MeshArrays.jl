@@ -16,7 +16,7 @@ lon=[i for i=-179.95:dx:179.95, j=-89.95:dx:89.95];
 (f,i,j,c)=knn(Γ.XC,Γ.YC,vec(lon),vec(lat));
 
 #get data and color range
-log_grad_rng=calc_log_grad("THETA")
+log_grag_rng=log_grad_rng()
 
 #plotting
 fig=earth_view(log_grad_rng...)
@@ -110,7 +110,9 @@ function SSH()
     Θ_lonlat,(-1.2,1.0)
 end
 
-function calc_log_grad(v="SSH")
+log_grad_rng(v="THETA")=calc_log_grad(v)
+
+function calc_log_grad(v="THETA")
     #read variable
     SSH=γ.read(joinpath(pth,"mit_output",v,v*".0000700720.data"),MeshArray(γ))
 
@@ -133,7 +135,10 @@ function calc_log_grad(v="SSH")
     end
 
     #return log10
-    γ.read(log10.(γ.write(dD)),dD),rng
+    landmsk!(dD)
+    dD=reshape(Interpolate_knn(dD,f,i,j),size(lon))
+
+    log10.(dD),rng
 end
 
 ## interpolate / knn
