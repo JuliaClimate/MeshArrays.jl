@@ -11,8 +11,8 @@
 
 module LineSplitting
 
-	import GeoMakie.LineString
-	import GeoMakie.Observable
+	import GeometryBasics.LineString
+	import Observables.Observable
 	import Base.split
 	
 	function regroup(tmp::Vector)
