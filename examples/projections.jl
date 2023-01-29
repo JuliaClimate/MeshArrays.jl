@@ -1,15 +1,15 @@
 module ProjMakie
 
-using GLMakie, Proj
+using CairoMakie, Proj
 
 """
-    projmap(dat,fil,proj=1)
+    projmap(dat,proj=1)
 
 See `ClimateModels.jl/examples/IPCC.jl` for example/use case.
 """
-function projmap(dat,fil,proj=1)
+function projmap(dat,proj=1)
 	
-	proj==1 ? dx=-Int(size(dat.lon,1)/2) : dx=-20
+	dx=dat.meta.shift
 	lons = circshift(dat.lon[:,1],dx)
 	lats = dat.lat[1,:]
 	field = circshift(dat.var,(dx,0))
@@ -37,9 +37,8 @@ function projmap(dat,fil,proj=1)
     y=reshape(y,size(lon))
 
 	f = Figure()
-	ttl=dat.meta.ttl*" (at $(split(fil,"_")[end][1:end-3]))"
-    ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = ttl)
-
+    ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = dat.meta.ttl)
+    
     surf = surface!(ax,x,y,0*x; color=field, 
 	colorrange=dat.meta.colorrange, colormap=dat.meta.cmap,
         shading = false)
