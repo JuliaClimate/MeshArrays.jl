@@ -19,7 +19,7 @@ begin
 	using Pkg; Pkg.activate()
 	using MeshArrays, OceanStateEstimation
 	using PlutoUI, Statistics, JLD2
-	import CairoMakie
+	using CairoMakie
 	using Proj
 	"Done with packages"
 end
@@ -479,11 +479,11 @@ function interp_example()
 	#scatter!(ax3,lon_b,lat_b,color=:black,marker=:star4,markersize=24.0)
 	#scatter!(ax3,lon_c,lat_c,color=:black,marker=:star4,markersize=24.0)
 	
-	fig1,fig2,fig3
+	(fig1,fig2,fig3)
 end
 
 # ╔═╡ 6b72d272-eefc-45f2-9442-ef38057e4f09
-interp_example()
+#(fig1,fig2,fig3)=interp_example()
 
 # ╔═╡ Cell order:
 # ╟─cc3e9d0c-8b71-432b-b68d-a8b832ca5f26
@@ -505,7 +505,7 @@ interp_example()
 # ╟─b0d576fc-971a-47c7-9a57-f2c788083bcd
 # ╟─31756b2e-20df-47c9-aaa8-5583e6a81267
 # ╟─25144e1b-21fc-4cc9-b63d-7b26eab1a673
-# ╟─d123161e-49f1-11ec-1c1b-51871624545d
+# ╠═d123161e-49f1-11ec-1c1b-51871624545d
 # ╟─39924391-38ce-46a1-877f-80a7975340a0
 # ╟─75c98143-dd36-4446-adfa-c440fdf8aab1
 # ╟─0b188f96-87b1-41e4-ba66-1fa4d5252bd8
@@ -515,4 +515,4 @@ interp_example()
 # ╟─6cc62cf0-cb30-4d93-aad6-2ab16f60f95f
 # ╟─8d2e6d5f-7d89-4a27-82cb-0a587914d717
 # ╟─e76c02c3-bae6-4110-b26c-3f6b7547453e
-# ╟─6b72d272-eefc-45f2-9442-ef38057e4f09
+# ╠═6b72d272-eefc-45f2-9442-ef38057e4f09
