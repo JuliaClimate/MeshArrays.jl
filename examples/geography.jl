@@ -52,17 +52,18 @@ Later in this notebook, we break down the `MeshArrays.Interpolate` function into
 begin
 	list=["wintri","natearth2","longlat"]
 	proj_bind = @bind proj Select(list)
+	lon0_bind = @bind lon0 Select(collect(-160:40:160),default=0)
 	md"""## Projection
 	
 	See `simple_heatmap` function (in appendices), which uses `Proj.jl` and `Makie.jl`.
 	
 	$(proj_bind)
-	
+	$(lon0_bind)
 	"""
 end
 
 # ╔═╡ 52241906-6260-402c-b5a9-b27804114e7f
-jj=findall(list.==proj)[1]
+proj_ID=findall(list.==proj)[1]
 
 # ╔═╡ 6aab5feb-06b6-4fbd-8732-83b70f397f00
 begin
@@ -218,13 +219,14 @@ end
 
 # ╔═╡ 41960267-fff9-4bc4-a7bc-aceea2217c63
 begin
-	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",shift=320)
+	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",lon0=lon0)
 	data=(lon=λ.lon,lat=λ.lat,var=DD,meta=meta)
+	show(data)
 end
 
 # ╔═╡ d448431e-13a9-440c-9463-9174d7400cf1
 #simple_heatmap(data)
-projections.ProjMakie.projmap(data,jj)
+projections.ProjMakie.projmap(data,proj_ID)
 
 # ╔═╡ ed36a2a5-44ea-43a7-a3bd-13f234b6580d
 let	
@@ -490,8 +492,8 @@ interp_example()
 # ╟─be38ff51-3526-44a0-9d8c-9209355e4a4a
 # ╟─41960267-fff9-4bc4-a7bc-aceea2217c63
 # ╟─85aac4c5-bf04-4f9a-a233-a3f24231762e
-# ╠═52241906-6260-402c-b5a9-b27804114e7f
-# ╠═d448431e-13a9-440c-9463-9174d7400cf1
+# ╟─52241906-6260-402c-b5a9-b27804114e7f
+# ╟─d448431e-13a9-440c-9463-9174d7400cf1
 # ╟─6aab5feb-06b6-4fbd-8732-83b70f397f00
 # ╟─ed36a2a5-44ea-43a7-a3bd-13f234b6580d
 # ╟─963e421c-43fb-43d3-b667-1b9912f940b8
@@ -513,4 +515,4 @@ interp_example()
 # ╟─6cc62cf0-cb30-4d93-aad6-2ab16f60f95f
 # ╟─8d2e6d5f-7d89-4a27-82cb-0a587914d717
 # ╟─e76c02c3-bae6-4110-b26c-3f6b7547453e
-# ╠═6b72d272-eefc-45f2-9442-ef38057e4f09
+# ╟─6b72d272-eefc-45f2-9442-ef38057e4f09
