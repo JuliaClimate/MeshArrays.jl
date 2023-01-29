@@ -10,7 +10,6 @@
 #This is needed to fix e.g. coast line displays when lon_0 is not 0 but cutting polygons at lon_0+-180.
 
 module LineSplitting
-
 	import GeometryBasics.LineString
 	import Observables.Observable
 	import Base.split
@@ -71,8 +70,7 @@ end
 
 module PolygonReading
 
-    using Downloads, GeoJSON, GeoInterface, Shapefile, GLMakie
-
+    using Downloads, GeoJSON, GeoInterface, Shapefile, GeometryBasics
 
     ## read data from file
 
@@ -85,20 +83,13 @@ module PolygonReading
         GeoJSON.read(jsonbytes)
     end
 
-    tmp1=get_land_geo_json()
-    tmp1a=GeoInterface.coordinates(tmp1[1])[1]
-
     #url="https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
     #fil=joinpath(tempdir(),"ne_110m_admin_0_countries.shp")
     #Downloads.download(url,fil)
-    function get_land_geo_shp()
-        fil=joinpath(tempdir(),"ne_110m_admin_0_countries.shp")
+    function get_land_geo_shp(fil)
         table = Shapefile.Table(fil)
         geoms = Shapefile.shapes(table)
     end
-
-    tmp2=get_land_geo_shp()
-    tmp2a=GeoInterface.coordinates(tmp2[1])[1][1]
 
     ## convert to GeometryBasics
 
@@ -122,14 +113,27 @@ module PolygonReading
         end
     end
 
-    tmp1b=geo2basic(tmp1a)
-    tmp2b=geo2basic(tmp2a)
+    function download_tmp()
+        url="https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
+        fil=joinpath(tempdir(),"ne_110m_admin_0_countries.shp")
+        !isfile(fil) ? Downloads.download(url,fil) : nothing
+        fil
+    end
+    
+    function read_tmp()
+        #tmp1=get_land_geo_json()
+        #tmp1a=GeoInterface.coordinates(tmp1[1])[1]
+        #tmp1b=geo2basic(tmp1a)
 
-    ## Plot with Makie
+        fil=download_tmp()
+        tmp2=get_land_geo_shp(fil)
+#        tmp2a=GeoInterface.coordinates(tmp2[1])[1]
+#        [geo2basic(i) for i in tmp2a]
+        tmp2=[GeoInterface.coordinates(a) for a in tmp2]
+        tmp22=Vector{Point2{Float64}}[]
+        [[[push!(tmp22,geo2basic(l3)) for l3 in l2] for l2 in l1] for l1 in tmp2]
+        tmp22
 
-    lines(tmp1b,color=:black)
-    lines!(tmp2b,color=:red)
-
-    example_fig=current_figure()
+end
 
 end #module PolygonReading

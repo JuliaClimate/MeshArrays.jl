@@ -64,11 +64,12 @@ function projmap(data,proj=1)
     hidespines!(ax)
     hidedecorations!.(ax)
 
-#	all_lines=demo.LineSplit(GeoMakie.coastlines(),lon0)
-#	[lines!(ax, l,color=:black,linewidth=1.0) for l in all_lines]
-	
+    po=data.polygons #LineSplitting.LineSplit(data.polygons,lon0)
+    po=[[Point2(trans(p[1],p[2])) for p in k] for k in po]
+    [lines!(ax,l,color=:black,linewidth=0.5) for l in po]
+
 	#add colorbar
-	Colorbar(f[1,2], surf, height = Relative(0.5))
+    Colorbar(f[1,2], surf, height = Relative(0.5))
 
 	f
 end

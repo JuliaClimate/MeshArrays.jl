@@ -31,6 +31,14 @@ module projections
 	include(fil)
 end
 
+# ╔═╡ 0c1448a9-52e7-41c9-b19a-e548d92db948
+module polygons
+	using Downloads, GeoJSON, GeoInterface, Shapefile
+	using GeometryBasics, Observables, MeshArrays
+	fil=joinpath(dirname(pathof(MeshArrays)),"..","examples","polygons.jl")
+	include(fil)
+end
+
 # ╔═╡ cc3e9d0c-8b71-432b-b68d-a8b832ca5f26
 md"""# Geography and Visualization
 
@@ -217,17 +225,6 @@ begin
 	"Done with interpolating Γ.Depth"
 end
 
-# ╔═╡ 41960267-fff9-4bc4-a7bc-aceea2217c63
-begin
-	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",lon0=lon0)
-	data=(lon=λ.lon,lat=λ.lat,var=DD,meta=meta)
-	show(data)
-end
-
-# ╔═╡ d448431e-13a9-440c-9463-9174d7400cf1
-#simple_heatmap(data)
-projections.ProjMakie.projmap(data,proj_ID)
-
 # ╔═╡ ed36a2a5-44ea-43a7-a3bd-13f234b6580d
 let	
 	fig_path = Figure(resolution = (900,600), backgroundcolor = :grey95)
@@ -311,6 +308,31 @@ function simple_heatmap(dat)
 	Colorbar(fig[1,2], hm1, height = Relative(0.65))
 
 	fig
+end
+
+# ╔═╡ 229d395f-f3b4-40df-a482-264d540be875
+begin
+	l=polygons.PolygonReading.read_tmp()
+	"Done With Reading Country Polygons"
+end
+
+# ╔═╡ 41960267-fff9-4bc4-a7bc-aceea2217c63
+begin
+	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",lon0=lon0)
+	data=(lon=λ.lon,lat=λ.lat,var=DD,meta=meta,polygons=l)
+	summary(data)
+end
+
+# ╔═╡ d448431e-13a9-440c-9463-9174d7400cf1
+#simple_heatmap(data)
+projections.ProjMakie.projmap(data,proj_ID)
+
+# ╔═╡ 54f6cb2f-025e-40e4-97a8-0f8ad4b35278
+begin
+	f1=Figure()
+	ax1=Axis(f1[1,1])
+	[lines!(ax1,l1,color = :black, linewidth = 0.5) for l1 in l]
+	f1
 end
 
 # ╔═╡ 94b8ba05-dfb8-4075-a260-7968e8fdd78f
@@ -505,11 +527,14 @@ end
 # ╟─b0d576fc-971a-47c7-9a57-f2c788083bcd
 # ╟─31756b2e-20df-47c9-aaa8-5583e6a81267
 # ╟─25144e1b-21fc-4cc9-b63d-7b26eab1a673
-# ╠═d123161e-49f1-11ec-1c1b-51871624545d
+# ╟─d123161e-49f1-11ec-1c1b-51871624545d
 # ╟─39924391-38ce-46a1-877f-80a7975340a0
 # ╟─75c98143-dd36-4446-adfa-c440fdf8aab1
 # ╟─0b188f96-87b1-41e4-ba66-1fa4d5252bd8
 # ╟─5f1085c7-f78a-433f-853e-0e3505fd99f9
+# ╟─0c1448a9-52e7-41c9-b19a-e548d92db948
+# ╟─229d395f-f3b4-40df-a482-264d540be875
+# ╟─54f6cb2f-025e-40e4-97a8-0f8ad4b35278
 # ╟─94b8ba05-dfb8-4075-a260-7968e8fdd78f
 # ╟─2507c335-2886-42b5-b6b8-63279a2d60fe
 # ╟─6cc62cf0-cb30-4d93-aad6-2ab16f60f95f
