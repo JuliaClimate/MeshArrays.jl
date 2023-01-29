@@ -14,7 +14,7 @@ module polygons
 	include(fil)
 end
 
-fil=polygons.download_data_if_needed("ne_110m_admin_0_countries.shp")
+fil=polygons.PolygonReading.download_data_if_needed("ne_110m_admin_0_countries.shp")
 
 makedocs(
     sitename = "MeshArrays",
