@@ -7,6 +7,15 @@ MeshArrays.GRID_LL360_download()
 MeshArrays.GRID_LLC90_download()
 MeshArrays.GRID_CS32_download()
 
+module polygons
+	using Downloads, GeoJSON, GeoInterface, Shapefile
+	using GeometryBasics, Observables, MeshArrays
+	fil=joinpath(dirname(pathof(MeshArrays)),"..","examples","polygons.jl")
+	include(fil)
+end
+
+fil=polygons.download_data_if_needed("ne_110m_admin_0_countries.shp")
+
 makedocs(
     sitename = "MeshArrays",
     format   = Documenter.HTML(),
