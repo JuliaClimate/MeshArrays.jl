@@ -1,29 +1,28 @@
 module ProjMakie
 
-using GLMakie, Proj
+using CairoMakie, Proj
 
 """
-    projmap(dat,fil,proj=1)
+    projmap(dat,proj=1)
 
 See `ClimateModels.jl/examples/IPCC.jl` for example/use case.
 """
-function projmap(dat,fil,proj=1)
+function projmap(data,proj=1)
 	
-	proj==1 ? dx=-Int(size(dat.lon,1)/2) : dx=-20
-	lons = circshift(dat.lon[:,1],dx)
-	lats = dat.lat[1,:]
-	field = circshift(dat.var,(dx,0))
+    lon0=data.meta.lon0
+	dx=-calc_shift(data.lon[:,1],data.meta.lon0)
+
+    lons = circshift(data.lon[:,1],dx)
+	lats = data.lat[1,:]
+	field = circshift(data.var,(dx,0))
 
 	source="+proj=longlat +datum=WGS84"
 	if proj==2 
-		dest="+proj=eqearth +lon_0=200.0 +lat_1=0.0 +x_0=0.0 +y_0=0.0 +ellps=GRS80"
-		lon0=-160.0 #or 200.0 ?
+		dest="+proj=eqearth +lon_0=$(lon0) +lat_1=0.0 +x_0=0.0 +y_0=0.0 +ellps=GRS80"
 	elseif proj==1
-		dest="+proj=wintri"
-		lon0=0.0
+		dest="+proj=wintri +lon_0=$(lon0) "
 	elseif proj==3
-		dest="+proj=longlat +datum=WGS84 +lon_0=-160.0"
-		lon0=-160.0
+		dest="+proj=longlat +datum=WGS84 +lon_0=$(lon0)"
 	end
 	trans = Proj.Transformation(source,dest, always_xy=true) 
 
@@ -37,11 +36,10 @@ function projmap(dat,fil,proj=1)
     y=reshape(y,size(lon))
 
 	f = Figure()
-	ttl=dat.meta.ttl*" (at $(split(fil,"_")[end][1:end-3]))"
-    ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = ttl)
-
+    ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = data.meta.ttl)
+    
     surf = surface!(ax,x,y,0*x; color=field, 
-	colorrange=dat.meta.colorrange, colormap=dat.meta.cmap,
+	colorrange=data.meta.colorrange, colormap=data.meta.cmap,
         shading = false)
 
 	ii=[i for i in -180:45:180, j in -78.5:1.0:78.5]';
@@ -53,13 +51,7 @@ function projmap(dat,fil,proj=1)
 	yl=[a[2] for a in tmp]
     proj<3 ? lines!(xl,yl, color = :black, linewidth = 0.5) : nothing
 
-	if proj==2 
-	    tmp=circshift(-179.5:1.0:179.5,(-200))
-	elseif proj==1
-	    tmp=(-179.5:1.0:179.5)
-	elseif proj==3
-	    tmp=circshift(-179.5:1.0:179.5,(-200))
-	end
+    tmp=circshift(-179.5:1.0:179.5,-lon0)
     ii=[i for i in tmp, j in -75:15:75];
     jj=[j for i in tmp, j in -75:15:75];
     xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
@@ -72,13 +64,20 @@ function projmap(dat,fil,proj=1)
     hidespines!(ax)
     hidedecorations!.(ax)
 
-#	all_lines=demo.LineSplit(GeoMakie.coastlines(),lon0)
-#	[lines!(ax, l,color=:black,linewidth=1.0) for l in all_lines]
-	
+    po=data.polygons #LineSplitting.LineSplit(data.polygons,lon0)
+    po=[[Point2(trans(p[1],p[2])) for p in k] for k in po]
+    [lines!(ax,l,color=:black,linewidth=0.5) for l in po]
+
 	#add colorbar
-	Colorbar(f[1,2], surf, height = Relative(0.5))
+    Colorbar(f[1,2], surf, height = Relative(0.5))
 
 	f
+end
+
+function calc_shift(lo,lo0)
+	lon_size=length(lo)
+	lon_range=(lo[1,1],lo[end,1])
+	Int(lon_size/360)*(360+lo0)
 end
 
 end #module GeoProjMakie

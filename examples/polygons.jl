@@ -10,7 +10,6 @@
 #This is needed to fix e.g. coast line displays when lon_0 is not 0 but cutting polygons at lon_0+-180.
 
 module LineSplitting
-
 	import GeometryBasics.LineString
 	import Observables.Observable
 	import Base.split
@@ -24,12 +23,13 @@ module LineSplitting
 		coastlines_custom
 	end
 	
-	function split(tmp::Vector,lon0=-160.0)
+	function split(tmp::Vector{<:LineString},lon0::Real)
 		[split(a,lon0) for a in tmp]
 	end
 	
-	function split(tmp::LineString,lon0=-160.0)
-		lon0<0.0 ? lon1=lon0+180 : lon1=lon0-180 
+    #function split(tmp::Vector{Vector{Float64}},lon0::Float64)
+    function split(tmp::LineString,lon0::Real)
+        lon0<0.0 ? lon1=lon0+180 : lon1=lon0-180 
 		np=length(tmp)
 		tmp2=fill(0,np)
 		for p in 1:np
@@ -39,14 +39,15 @@ module LineSplitting
 		if sum(tmp2.==3)==0
 			[tmp]
 		else
+            #println("splitting here")
 			jj=[0;findall(tmp2.==3)...;np+1]
 			[LineString(tmp[jj[ii]+1:jj[ii+1]-1]) for ii in 1:length(jj)-1]
 		end
 	end
 
-	split(tmp::Vector,dest::Observable) = tmp
+	split(tmp::Vector{<:LineString},dest::Observable) = tmp
 
-	function split(tmp::Vector,dest::String)
+	function split(tmp::Vector{<:LineString},dest::String)
 		if occursin("+lon_0",dest)
 			tmp1=split(dest)
 			tmp2=findall(occursin.(Ref("+lon_0"),tmp1))[1]
@@ -71,34 +72,48 @@ end
 
 module PolygonReading
 
-    using Downloads, GeoJSON, GeoInterface, Shapefile, GLMakie
-
+    using Downloads, GeoJSON, GeoInterface, Shapefile, GeometryBasics
 
     ## read data from file
 
-    #fil=joinpath(tempdir(),"countries.geojson")
-    #url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/countries.geojson"
-    #Downloads.download(url,fil)
-    function get_land_geo_json()
-        fil=joinpath(tempdir(),"countries.geojson")
+    function read_json(fil)
         jsonbytes = read(fil)
         GeoJSON.read(jsonbytes)
     end
 
-    tmp1=get_land_geo_json()
-    tmp1a=GeoInterface.coordinates(tmp1[1])[1]
-
-    #url="https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
-    #fil=joinpath(tempdir(),"ne_110m_admin_0_countries.shp")
-    #Downloads.download(url,fil)
-    function get_land_geo_shp()
-        fil=joinpath(tempdir(),"ne_110m_admin_0_countries.shp")
+    function read_shp(fil)
         table = Shapefile.Table(fil)
         geoms = Shapefile.shapes(table)
     end
 
-    tmp2=get_land_geo_shp()
-    tmp2a=GeoInterface.coordinates(tmp2[1])[1][1]
+    function process_json(ID="countries.geojson")
+        fil=download_data_if_needed(ID)
+        tmp2=read_json(fil)
+        #tmp2=GeoInterface.coordinates(tmp2)
+        tmp2=[GeoInterface.coordinates(a) for a in tmp2]
+
+        tmp22=Vector{Point2{Float64}}[]
+        for l1 in tmp2
+            if isa(l1[1][1],Vector{Float64})
+                push!(tmp22,geo2basic(l1[1]))
+            else
+                for l2 in l1
+                    push!(tmp22,geo2basic(l2[1]))
+                end
+            end
+        end
+        tmp22
+    end
+
+    function process_shp(ID="ne_110m_admin_0_countries.shp")
+        fil=download_data_if_needed(ID)
+        tmp2=read_shp(fil)
+        tmp2=[GeoInterface.coordinates(a) for a in tmp2]
+
+        tmp22=Vector{Point2{Float64}}[]
+        [[[push!(tmp22,geo2basic(l3)) for l3 in l2] for l2 in l1] for l1 in tmp2]
+        tmp22
+    end
 
     ## convert to GeometryBasics
 
@@ -122,14 +137,22 @@ module PolygonReading
         end
     end
 
-    tmp1b=geo2basic(tmp1a)
-    tmp2b=geo2basic(tmp2a)
+    # Download data if needed
 
-    ## Plot with Makie
-
-    lines(tmp1b,color=:black)
-    lines!(tmp2b,color=:red)
-
-    example_fig=current_figure()
-
+    function download_data_if_needed(ID::String)
+        if ID=="ne_110m_admin_0_countries.shp"
+            url="https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
+            fil=joinpath(tempdir(),"ne_110m_admin_0_countries.shp")
+        elseif ID=="countries.geojson"
+            fil=joinpath(tempdir(),"countries.geojson")
+            url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/countries.geojson"
+        else
+            println("unknown file")
+            fil="unknown"
+            url="unknown"
+        end
+        !isfile(fil) ? Downloads.download(url,fil) : nothing
+        fil
+    end
+    
 end #module PolygonReading
