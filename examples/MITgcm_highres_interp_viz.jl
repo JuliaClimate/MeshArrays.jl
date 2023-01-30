@@ -1,10 +1,12 @@
 
 using Revise
-using Tyler, GLMakie, JLD2
+using Tyler, GLMakie
+using JLD2, CSV, DataFrames
 
 #file="MITgcm_highres_sample/mit_output_Interpolations/itp_sss_ocn.jld2"
 #file=joinpath(tempdir(),"itp_sst_ocn.jld2")
 
+ii=1
 pth0="MITgcm_highres_sample/mit_output_Interpolations/"
 list0=CSV.read("MITgcm_highres_interp_list.csv",DataFrame)
 file=joinpath(pth0,list0.filename[ii])

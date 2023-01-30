@@ -5,6 +5,7 @@ using MeshArrays, GLMakie, Colors
 Main workflow.
 
 ```
+begin
 #grid and SSH field
 pth="MITgcm_highres_sample/"
 γ,Γ=grid_highres_load(pth)
@@ -14,12 +15,13 @@ dx=0.1;
 lat=[j for i=-179.95:dx:179.95, j=-89.95:dx:89.95]; 
 lon=[i for i=-179.95:dx:179.95, j=-89.95:dx:89.95];
 (f,i,j,c)=knn(Γ.XC,Γ.YC,vec(lon),vec(lat));
+end
 
 #get data and color range
-log_grag_rng=log_grad_rng()
+tmp=log_grad_rng()
 
 #plotting
-fig=earth_view(log_grad_rng...)
+fig=earth_view(tmp...)
 
 #saving to file
 save(joinpath(tempdir(),"tmp.png"),fig)
