@@ -26,6 +26,8 @@ end
 Some features and related packages:
 
 - interpolate to geographic coordinates and visualize as maps
+- visualize on the sphere, in geographic coordinates, in various projections, or on the native grid
+- examples include interaction and animation using `Makie.jl` and `Pluto.jl`
 - accurately derive planetary scale transports on a global ocean model [C-grid](https://en.wikipedia.org/wiki/Arakawa_grids)
 - efficiently compute trajectories of ocean plastic, plankton, etc over any supported C-grid configuration using `MeshArrays.jl` along with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
 - reading and writing files in [Netcdf](https://en.wikipedia.org/wiki/NetCDF) ([CF-compliant](http://cfconventions.org)), CSV, or binary formats often used in climate sciences. [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/) readily supports domain decomposition with `MeshArray.jl`
@@ -36,6 +38,6 @@ Some features and related packages:
 | | | |
 |:-------------------------------------:|:-------------------------------------:|:-------------------------------------:|
 | <img src="https://user-images.githubusercontent.com/20276764/84893715-abe42180-b06d-11ea-92d3-173b678a701e.png" width="200" height="120"> | <img src="https://user-images.githubusercontent.com/20276764/137231635-fdd12de0-29fe-45d4-9045-60621668e353.png" width="200" height="120"> | <img src="https://user-images.githubusercontent.com/20276764/144332405-ed8d163f-04b9-408a-8fd0-08d91e9be91b.png" width="200" height="120"> |
-| <img src="https://user-images.githubusercontent.com/20276764/144249899-4d94980a-87aa-4bfb-a6d6-6145f9f0324f.png" width="150" height="120"> | <img src="https://user-images.githubusercontent.com/20276764/144878637-1412679c-f1e6-4491-a8f1-43d729aa224d.png" width="150" height="120"> | <img src="https://user-images.githubusercontent.com/20276764/144878668-5b681d5e-79b1-45e0-99d0-f80d2afeba8c.png" width="150" height="120">
+| <img src="https://user-images.githubusercontent.com/20276764/215533819-d0fe6709-6040-4a71-ad50-cfd5c43e6030.png" width="120" height="120"> | <img src="https://user-images.githubusercontent.com/20276764/144878637-1412679c-f1e6-4491-a8f1-43d729aa224d.png" width="150" height="120"> | <img src="https://user-images.githubusercontent.com/20276764/144878668-5b681d5e-79b1-45e0-99d0-f80d2afeba8c.png" width="150" height="120">
 
 

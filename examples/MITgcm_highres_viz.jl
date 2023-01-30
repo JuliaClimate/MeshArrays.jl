@@ -6,15 +6,15 @@ Main workflow.
 
 ```
 begin
-#grid and SSH field
-pth="MITgcm_highres_sample/"
-γ,Γ=grid_highres_load(pth)
+  #grid and SSH field
+  pth="MITgcm_highres_sample/"
+  γ,Γ=grid_highres_load(pth)
 
-#interpolation coefficients for plotting
-dx=0.1; 
-lat=[j for i=-179.95:dx:179.95, j=-89.95:dx:89.95]; 
-lon=[i for i=-179.95:dx:179.95, j=-89.95:dx:89.95];
-(f,i,j,c)=knn(Γ.XC,Γ.YC,vec(lon),vec(lat));
+  #interpolation coefficients for plotting
+  dx=0.1; 
+  lat=[j for i=-179.95:dx:179.95, j=-89.95:dx:89.95]; 
+  lon=[i for i=-179.95:dx:179.95, j=-89.95:dx:89.95];
+  (f,i,j,c)=knn(Γ.XC,Γ.YC,vec(lon),vec(lat));
 end
 
 #get data and color range
