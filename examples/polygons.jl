@@ -166,6 +166,7 @@ module PolygonReading
             unzip(fil)
             fil=unzipfil
         end
+        fil
     end
     
     """
