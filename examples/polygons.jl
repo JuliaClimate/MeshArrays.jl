@@ -72,7 +72,8 @@ end
 
 module PolygonReading
 
-    using Downloads, GeoJSON, GeoInterface, Shapefile, GeometryBasics
+    using Downloads, ZipFile, GeoJSON, Shapefile
+    using GeoInterface, GeometryBasics
 
     ## read data from file
 
@@ -120,6 +121,11 @@ module PolygonReading
     to_point2(a::Vector{<: T}) where T = Point2{T}(a[1], a[2])
     to_point2(a::AbstractVector{T}) where T <: Number = Point2{T}(a[1], a[2])
 
+    """
+        function geo2basic(vector::AbstractVector{<:AbstractVector})
+
+    Source : @SimonDanisch , https://github.com/MakieOrg/GeoMakie.jl/pull/125
+    """
     function geo2basic(vector::AbstractVector{<:AbstractVector})
         if isempty(vector)
             return Point{2, Float64}[]
@@ -140,11 +146,15 @@ module PolygonReading
     # Download data if needed
 
     function download_data_if_needed(ID::String)
+        pth=joinpath(tempdir(),"MeshArrays_Polygons")
+        !ispath(pth) ? mkdir(pth) : nothing
+        unzipfil="" #if provided then need to unzip + return this file name
         if ID=="ne_110m_admin_0_countries.shp"
             url="https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
-            fil=joinpath(tempdir(),"ne_110m_admin_0_countries.shp")
+            fil=joinpath(pth,"ne_110m_admin_0_countries.zip")
+            unzipfil=joinpath(pth,"ne_110m_admin_0_countries.shp")
         elseif ID=="countries.geojson"
-            fil=joinpath(tempdir(),"countries.geojson")
+            fil=joinpath(pth,"countries.geojson")
             url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/countries.geojson"
         else
             println("unknown file")
@@ -152,7 +162,32 @@ module PolygonReading
             url="unknown"
         end
         !isfile(fil) ? Downloads.download(url,fil) : nothing
-        fil
+        if !isempty(unzipfil)
+            unzip(fil)
+            fil=unzipfil
+        end
     end
     
+    """
+    function unzip(file,exdir="")
+        
+    Source : @sylvaticus, https://discourse.julialang.org/t/how-to-extract-a-file-in-a-zip-archive-without-using-os-specific-tools/34585/5
+    """
+    function unzip(file,exdir="")
+        fileFullPath = isabspath(file) ?  file : joinpath(pwd(),file)
+        basePath = dirname(fileFullPath)
+        outPath = (exdir == "" ? basePath : (isabspath(exdir) ? exdir : joinpath(pwd(),exdir)))
+        isdir(outPath) ? "" : mkdir(outPath)
+        zarchive = ZipFile.Reader(fileFullPath)
+        for f in zarchive.files
+            fullFilePath = joinpath(outPath,f.name)
+            if (endswith(f.name,"/") || endswith(f.name,"\\"))
+                mkdir(fullFilePath)
+            else
+                write(fullFilePath, read(f))
+            end
+        end
+        close(zarchive)
+    end
+
 end #module PolygonReading

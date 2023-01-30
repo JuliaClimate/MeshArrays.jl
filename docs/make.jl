@@ -8,8 +8,9 @@ MeshArrays.GRID_LLC90_download()
 MeshArrays.GRID_CS32_download()
 
 module polygons
-	using Downloads, GeoJSON, GeoInterface, Shapefile
-	using GeometryBasics, Observables, MeshArrays
+    using Downloads, ZipFile, GeoJSON, Shapefile
+    using GeoInterface, GeometryBasics
+    using Observables, MeshArrays
 	fil=joinpath(dirname(pathof(MeshArrays)),"..","examples","polygons.jl")
 	include(fil)
 end
