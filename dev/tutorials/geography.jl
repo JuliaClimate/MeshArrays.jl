@@ -16,17 +16,15 @@ end
 
 # ╔═╡ 5f1085c7-f78a-433f-853e-0e3505fd99f9
 module projections
-	using CairoMakie, Proj, MeshArrays
-	fil=joinpath(dirname(pathof(MeshArrays)),"..","examples","projections.jl")
-	include(fil)
+	using CairoMakie, Proj
+	include("projections.jl")
 end
 
 # ╔═╡ 0c1448a9-52e7-41c9-b19a-e548d92db948
 module polygons
 	using Downloads, GeoJSON, GeoInterface, Shapefile
-	using GeometryBasics, Observables, MeshArrays
-	fil=joinpath(dirname(pathof(MeshArrays)),"..","examples","polygons.jl")
-	include(fil)
+	using GeometryBasics, Observables, ZipFile
+	include("polygons.jl")
 end
 
 # ╔═╡ d123161e-49f1-11ec-1c1b-51871624545d
@@ -545,6 +543,7 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
 Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [compat]
 CairoMakie = "~0.10.2"
@@ -558,6 +557,7 @@ OceanStateEstimation = "~0.3.1"
 PlutoUI = "~0.7.49"
 Proj = "~1.4.0"
 Shapefile = "~0.9.0"
+ZipFile = "~0.10.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -566,7 +566,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "2625f39c33ff4844bc102d1b7e4eb376f8d6fe2a"
+project_hash = "6bb42f0ce1f2a670bccb468127335580df087c77"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -2058,6 +2058,12 @@ git-tree-sha1 = "79c31e7844f6ecf779705fbc12146eb190b7d845"
 uuid = "c5fb5394-a638-5e4d-96e5-b29de1b5cf10"
 version = "1.4.0+3"
 
+[[deps.ZipFile]]
+deps = ["Libdl", "Printf", "Zlib_jll"]
+git-tree-sha1 = "f492b7fe1698e623024e873244f10d89c95c340a"
+uuid = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
+version = "0.10.1"
+
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
@@ -2147,7 +2153,7 @@ version = "3.5.0+0"
 # ╟─85aac4c5-bf04-4f9a-a233-a3f24231762e
 # ╟─9c30b8df-b95d-40e1-b7e3-2dacbdda49ed
 # ╟─303b2f54-a446-4dbe-a9a4-e6f424003722
-# ╠═d9a53bc6-19e2-48d9-b9c3-f76c3a533197
+# ╟─d9a53bc6-19e2-48d9-b9c3-f76c3a533197
 # ╟─6aab5feb-06b6-4fbd-8732-83b70f397f00
 # ╟─ed36a2a5-44ea-43a7-a3bd-13f234b6580d
 # ╟─b0d576fc-971a-47c7-9a57-f2c788083bcd
@@ -2161,7 +2167,7 @@ version = "3.5.0+0"
 # ╟─bf537ab9-b0b0-43f8-a6ad-61798e7b5016
 # ╟─54f6cb2f-025e-40e4-97a8-0f8ad4b35278
 # ╟─25144e1b-21fc-4cc9-b63d-7b26eab1a673
-# ╠═41960267-fff9-4bc4-a7bc-aceea2217c63
+# ╟─41960267-fff9-4bc4-a7bc-aceea2217c63
 # ╟─39924391-38ce-46a1-877f-80a7975340a0
 # ╟─963e421c-43fb-43d3-b667-1b9912f940b8
 # ╟─6cc62cf0-cb30-4d93-aad6-2ab16f60f95f
