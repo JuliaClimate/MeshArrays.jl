@@ -1,12 +1,6 @@
 # MeshArrays.jl
 
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/dev)
-[![codecov](https://codecov.io/gh/juliaclimate/MeshArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/juliaclimate/MeshArrays.jl)
-[![CI](https://github.com/juliaclimate/MeshArrays.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/juliaclimate/MeshArrays.jl/actions/workflows/ci.yml)
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/JuliaClimate/MeshArrays.jl/master)
-[![DOI](https://zenodo.org/badge/143987632.svg)](https://zenodo.org/badge/latestdoi/143987632)
-
+[![](https://img.shields.io/badge/documentation-blue.svg)](https://juliaclimate.github.io/MeshArrays.jl/dev)
 
 **MeshArrays.jl** defines the `MeshArray` data structure (or type) that can contain, distribute, etc., collections of inter-connected arrays as generally done in climate models. This provides a simple yet efficient and general way to e.g. analyze climate system simulations and manipulate their output.
 
@@ -22,6 +16,11 @@ end
 ```
 
 Please refer to the [Docs](https://juliaclimate.github.io/MeshArrays.jl/dev/), [Tutorials](https://juliaclimate.github.io/MeshArrays.jl/dev/tutorials/), and [videos](https://juliaclimate.github.io/MeshArrays.jl/dev/videos/) for more information.
+
+[![CI](https://github.com/juliaclimate/MeshArrays.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/juliaclimate/MeshArrays.jl/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/juliaclimate/MeshArrays.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/juliaclimate/MeshArrays.jl)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/JuliaClimate/MeshArrays.jl/master)
+[![DOI](https://zenodo.org/badge/143987632.svg)](https://zenodo.org/badge/latestdoi/143987632)
 
 Some features and related packages:
 
