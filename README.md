@@ -10,8 +10,6 @@
 
 **MeshArrays.jl** defines the `MeshArray` data structure (or type) that can contain, distribute, etc., collections of inter-connected arrays as generally done in climate models. This provides a simple yet efficient and general way to e.g. analyze climate system simulations and manipulate their output.
 
-See the [Docs](https://juliaclimate.github.io/MeshArrays.jl/dev/) and [Tutorials](https://juliaclimate.github.io/MeshArrays.jl/dev/tutorials/) for more detailed information.
-
 ```
 struct gcmarray{T, N} <: AbstractMeshArray{T, N}
    grid::gcmgrid
@@ -22,6 +20,8 @@ struct gcmarray{T, N} <: AbstractMeshArray{T, N}
    version::String
 end
 ```
+
+Please refer to the [Docs](https://juliaclimate.github.io/MeshArrays.jl/dev/), [Tutorials](https://juliaclimate.github.io/MeshArrays.jl/dev/tutorials/), and [videos](https://juliaclimate.github.io/MeshArrays.jl/dev/videos/) for more information.
 
 Some features and related packages:
 
