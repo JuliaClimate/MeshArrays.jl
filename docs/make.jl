@@ -24,8 +24,8 @@ makedocs(
     pages = [
     "Home" => "index.md",
     "Get Started" => "start.md",
-    "Notebook Tutorials" => "tutorials.md",
     "Video Examples" => "videos.md",
+    "Notebook Tutorials" => "tutorials.md",
     "Main Features" => "main.md",
     "API documentation" => "API.md",
     "Miscellaneous" => "detail.md",
