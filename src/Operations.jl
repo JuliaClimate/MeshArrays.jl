@@ -429,13 +429,26 @@ Convert e.g. velocity (m/s) to transport (m^3/s) by multiplying by `DRF` and `DX
 function UVtoTransport(U::MeshArray,V::MeshArray,G::NamedTuple)
   uTr=deepcopy(U)
   vTr=deepcopy(V)
-  for i in eachindex(U)
-      tmp1=U[i]; tmp1[(!isfinite).(tmp1)] .= 0.0
-      tmp1=V[i]; tmp1[(!isfinite).(tmp1)] .= 0.0
-      uTr[i]=G.DRF[i[2]]*U[i].*G.DYG[i[1]]
-      vTr[i]=G.DRF[i[2]]*V[i].*G.DXG[i[1]]
-  end
+  UVtoTransport!(uTr,vTr,G)
   return uTr,vTr
+end
+
+"""
+    UVtoTransport!(U,V,G::NamedTuple)
+
+Convert e.g. velocity (m/s) to transport (m^3/s) by multiplying by `DRF` and `DXG`,`DYG`.
+
+(in place)
+"""
+function UVtoTransport!(U::MeshArray,V::MeshArray,G::NamedTuple)
+  for i in eachindex(U)
+      for j in eachindex(U[i])
+          !isfinite(U[i][j]) ? U[i][j]=0.0 : nothing
+          !isfinite(V[i][j]) ? V[i][j]=0.0 : nothing
+          U[i][j]=G.DRF[i[2]]*U[i][j].*G.DYG[i[1]][j]
+          V[i][j]=G.DRF[i[2]]*V[i][j].*G.DXG[i[1]][j]
+      end
+  end
 end
 
 """
