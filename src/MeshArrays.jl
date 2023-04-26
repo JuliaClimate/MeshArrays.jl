@@ -43,7 +43,8 @@ export exch_UV
 #export GridAddWS!
 
 export ScalarPotential, VectorPotential
-export UVtoUEVN, UVtoTransport, gradient, curl, convergence
+export UVtoUEVN, UVtoTransport, UVtoTransport!
+export gradient, curl, convergence
 export LatitudeCircles, Transect, ThroughFlow
 export StereographicProjection, isosurface
 
