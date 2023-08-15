@@ -374,6 +374,9 @@ d=γ.read(γ.path*"Depth.data",MeshArray(γ,γ.ioPrec))
 τ=Tiles(γ,30,30)
 td=Tiles(τ,d)
 
+D=similar(d)
+Tiles!(τ,td,D)
+
 isa(td[1],Array)
 
 # output
@@ -394,6 +397,24 @@ function Tiles(τ::Array,x::MeshArray)
         tx[ii]=view(x[f],i0:i1+dn,j0:j1+dn)
     end
     return tx
+end
+
+"""
+    Tiles!(τ::Array,tx::Array,x::MeshArrays)
+
+Map tiles in `tx` according to tile partition `τ` into `x`.
+"""
+function Tiles!(T::Array,tx::Array,x::MeshArray)
+    nt=length(T)
+    dn=size(x[1],1)-x.fSize[1][1]
+    for ii=1:nt
+        f=T[ii].face
+        i0=minimum(T[ii].i)
+        i1=maximum(T[ii].i)
+        j0=minimum(T[ii].j)
+        j1=maximum(T[ii].j)
+        x[f][i0:i1+dn,j0:j1+dn].=tx[ii]
+    end
 end
 
 """

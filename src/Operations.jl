@@ -1,4 +1,9 @@
 
+## basic handling of NaNs that are commonly used in masks
+
+nansum(x) = sum(filter(!isnan,x))
+nansum(x,y) = mapslices(nansum,x,dims=y)
+
 ## gradient methods
 
 """

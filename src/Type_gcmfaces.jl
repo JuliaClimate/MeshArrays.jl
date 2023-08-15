@@ -62,14 +62,14 @@ function gcmfaces(grid::gcmgrid,::Type{T},
   gcmfaces{T,N}(grid,f,fSize,aSize)
 end
 
-function gcmfaces(grid::gcmgrid,::Type{T}) where {T,N}
+function gcmfaces(grid::gcmgrid,::Type{T}) where {T}
   nFaces=grid.nFaces
   fSize=grid.fSize
   aSize=(prod(grid.ioSize),1)
   gcmfaces(grid,T,fSize,aSize)
 end
 
-function gcmfaces(grid::gcmgrid,::Type{T},n3::Int) where {T,N}
+function gcmfaces(grid::gcmgrid,::Type{T},n3::Int) where {T}
   nFaces=grid.nFaces
   fSize=Array{NTuple{3, Int},1}(undef,nFaces)
   for a=1:nFaces

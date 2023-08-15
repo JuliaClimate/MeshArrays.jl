@@ -33,9 +33,10 @@ include("VerticalDimension.jl")
 
 export AbstractMeshArray, MeshArray, gcmgrid, varmeta
 export GridSpec, GridLoad, GridLoadVar, UnitGrid, simple_periodic_domain
-export exchange, Tiles, Interpolate, InterpolationFactors, knn
+export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
+export nansum
 
 #export InnerArray, OuterArray
 #export smooth, mask

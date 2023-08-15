@@ -32,8 +32,10 @@ More :
 
 ```@docs
 Tiles
+Tiles!
 exchange
 MeshArrays.read
+MeshArrays.read!
 MeshArrays.write
 ```
 

@@ -1,15 +1,12 @@
 
-import Base: read, write
+import Base: read, write, read!
 
 """
     read(fil::String,x::MeshArray)
 
-Read file / array into MeshArray. Methods:
+Read array from file and return as a MeshArray. 
 
-```
-read(fil::String,x::MeshArray) #from File
-read(xx::Array,x::MeshArray) #from Array
-read(xx::Array,γ::gcmgrid) #from Array
+_The second argument (MeshArray or gcmgrid) provides the grid specifications (x.grid.ioSize)._
 ```
 """
 function read(fil::String,x::MeshArray)
@@ -24,7 +21,6 @@ function read(fil::String,x::MeshArray)
   close(fid)
 
   return x.grid.read(xx,x)
-
 end
 
 function read(xx::Array,γ::gcmgrid)
@@ -33,6 +29,17 @@ function read(xx::Array,γ::gcmgrid)
 end
 
 function read(xx::Array,x::MeshArray)
+  y=similar(x; m=x.meta)
+  read!(xx,y)
+  return y
+end
+  
+"""
+    read!(xx::Array,x::MeshArray)
+
+Reformat array into MeshArray and write into `x`.
+"""
+function read!(xx::Array,x::MeshArray)
 
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
@@ -40,7 +47,6 @@ function read(xx::Array,x::MeshArray)
 
   size(xx)!=(n1*n2,n3) ? xx=reshape(xx,(n1*n2,n3)) : nothing
 
-  y=similar(x; m=x.meta)
   i0=0; i1=0;
   for iFace=1:nFaces
     i0=i1+1;
@@ -48,17 +54,15 @@ function read(xx::Array,x::MeshArray)
     i1=i1+nn*mm;
 
     if n3>1 && ndims(x.f)==1
-      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3))
+      x.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3))
     elseif n3>1 && ndims(x.f)==2
       for i3=1:n3
-        y.f[iFace,i3]=reshape(xx[i0:i1,i3],(nn,mm))
+        x.f[iFace,i3]=reshape(xx[i0:i1,i3],(nn,mm))
       end
     else
-      y.f[iFace]=reshape(xx[i0:i1,:],(nn,mm))
+      x.f[iFace]=reshape(xx[i0:i1,:],(nn,mm))
     end
   end
-
-  return y
 
 end
 
