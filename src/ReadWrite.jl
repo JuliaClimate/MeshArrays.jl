@@ -4,12 +4,9 @@ import Base: read, write, read!
 """
     read(fil::String,x::MeshArray)
 
-Read file / array into MeshArray. Methods:
+Read array from file and return as a MeshArray. 
 
-```
-read(fil::String,x::MeshArray) #from File
-read(xx::Array,x::MeshArray) #from Array
-read(xx::Array,γ::gcmgrid) #from Array
+_The second argument (MeshArray or gcmgrid) provides the grid specifications (x.grid.ioSize)._
 ```
 """
 function read(fil::String,x::MeshArray)
@@ -24,7 +21,6 @@ function read(fil::String,x::MeshArray)
   close(fid)
 
   return x.grid.read(xx,x)
-
 end
 
 function read(xx::Array,γ::gcmgrid)
@@ -38,6 +34,11 @@ function read(xx::Array,x::MeshArray)
   return y
 end
   
+"""
+    read!(xx::Array,x::MeshArray)
+
+Reformat array into MeshArray and write into `x`.
+"""
 function read!(xx::Array,x::MeshArray)
 
   facesSize=x.grid.fSize
