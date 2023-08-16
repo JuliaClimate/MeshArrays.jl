@@ -48,6 +48,10 @@ struct gcmgrid
   write::Function
 end
 
+copy_if_isarray(x) = isa(x,Array) ? copy(x) : x
+
+Base.similar(g::gcmgrid)=gcmgrid(g.path, g.class, g.nFaces, copy(g.fSize), copy_if_isarray(g.ioSize), g.ioPrec, g.read, g.write)
+
 """
     varmeta
 
