@@ -32,6 +32,14 @@ function examples_plot(ID=Symbol,stuff...)
 		smoothing_demo1(stuff...)
 	elseif ID==:smoothing_demo2
 		smoothing_demo2(stuff...)
+	elseif ID==:northward_transport
+		northward_transport(stuff...)
+	elseif ID==:meriodional_overturning
+		meriodional_overturning(stuff...)
+	elseif ID==:gradient_EN
+		gradient_EN(stuff...)
+	elseif ID==:gradient_xy
+		gradient_xy(stuff...)
 	else
 		println("unknown plot ID")
 	end
@@ -60,10 +68,10 @@ function heatmap(MS::MeshArray,λ;
     DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
 	DD=reshape(DD,size(λ.lon))
 
-    fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
+    fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
     if !isempty(colorrange) 
-        hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=cr)
+        hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=colorrange)
     else
         hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap)
     end
@@ -110,7 +118,6 @@ function land_mask(Γ)
     μ
 end
 
-
 function plot_cell_area(Γ,λ,faceID)
 	fig = Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
 	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area (log10 of m^2)")
@@ -129,6 +136,50 @@ function plot_cell_area(Γ,λ,faceID)
 	end
 	Colorbar(fig[1,2], colorrange=rng, height = Relative(0.65))
 
+	fig
+end
+
+##
+
+function northward_transport(MT)
+	x=vec(-89.0:89.0)
+	fig1 = Figure(resolution = (900,400),markersize=0.1)
+	ax1 = Axis(fig1[1,1], title="Northward Volume Transport (in Sv)")
+	hm1=lines!(x,1e-6*MT,xlabel="latitude",ylabel="Transport (in Sv)",label="ECCO estimate")
+	fig1
+end
+
+function meriodional_overturning(Γ,ov)
+	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:end-1])); #coordinate variables
+	z=reverse(ov,dims=2); z[z.==0.0].=NaN
+
+	fig1 = Figure(resolution = (900,400),markersize=0.1)
+	ax1 = Axis(fig1[1,1], title="Meridional Overturning Streamfunction (in Sv)")
+	hm1=contourf!(ax1,x,y,1e-6*z,levels=(-40.0:5.0:40.0),clims=(-40,40))
+	Colorbar(fig1[1,2], hm1, height = Relative(0.65))
+	fig1
+	#savefig("MOC_mean.png")
+end
+
+##
+
+function gradient_EN(λ,dDdx,dDdy)
+	fig1 = Figure(resolution = (900,600),markersize=0.1)
+	ax1 = Axis(fig1[1,1], title="Gradient of scalar potential in Eastward direction (in 1/s)")
+	hm1=contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdx,levels=(-1.0:0.25:1.0).*0.1)
+	ax1 = Axis(fig1[2,1], title="Gradient of scalar potential in Northward direction (in 1/s)")
+	hm1=contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdy,levels=(-1.0:0.25:1.0).*0.1)
+	Colorbar(fig1[1:2,2], hm1, height = Relative(0.65))
+	fig1
+end
+
+function gradient_xy(λ,dDdx_i,dDdy_i)
+	fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
+	ax = Axis(fig[1,1], title="x-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],dDdx_i,colorrange=(-1.0,1.0).*0.2)
+	ax = Axis(fig[2,1], title="y-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],dDdy_i,colorrange=(-1.0,1.0).*0.2)
+	Colorbar(fig[1:2,2], hm1, height = Relative(0.65))
 	fig
 end
 
