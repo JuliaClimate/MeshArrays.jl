@@ -35,8 +35,11 @@ demo_sections = ["JLD2"]
 
 [compat]
 CatViews = "1.0"
+GeoJSON = "0.6, 0.7"
 Makie = "0.19"
 NearestNeighbors = "0.4"
 Proj = "1"
+Shapefile = "0.10"
 Unitful = "1"
+ZipFile = "0.10"
 julia = "^1.5"
