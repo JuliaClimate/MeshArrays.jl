@@ -4,7 +4,7 @@ module demo_sections
     ## the following does not use JLD2; should move to src?
 
     using MeshArrays
-    import MeshArrays: ocean_sections, one_section, interpolation_setup
+    import MeshArrays: ocean_sections, one_section, ocean_basins, interpolation_setup
 
     """
         ocean_sections()
@@ -104,6 +104,19 @@ module demo_sections
         ( 	lon=[Γ.XC[tabC[i,1]][tabC[i,2],tabC[i,3]] for i in 1:size(tabC,1)],
             lat=[Γ.YC[tabC[i,1]][tabC[i,2],tabC[i,3]] for i in 1:size(tabC,1)])
     end
+
+    ##
+
+    function ocean_basins()        
+        γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+        fil_basin=joinpath(MeshArrays.GRID_LLC90,"v4_basin.bin")
+        basins=(map=read(fil_basin,MeshArray(γ,Float32)),
+            name=["Pacific","Atlantic","indian","Arctic","Bering Sea","South China Sea","Gulf of Mexico",
+            "Okhotsk Sea","Hudson Bay","Mediterranean Sea","Java Sea","North Sea","Japan Sea",
+            "Timor Sea","East China Sea","Red Sea","Gulf","Baffin Bay","GIN Seas","Barents Sea"])
+    end
+
+    ##
 
     function interpolation_setup(fil::String)
         λ = MeshArrays.read_JLD2(fil)

@@ -3,12 +3,47 @@ module MeshArraysMakieExt
 
 using MeshArrays, Makie
 
-import MeshArrays: plot_ocean_basins, plot_one_section, land_mask, plot_cell_area
-import MeshArrays: projmap, interpolation_demo, read_polygons
+import MeshArrays: land_mask
+import MeshArrays: read_polygons
+import MeshArrays: examples_plot
 
 import Makie: heatmap
 LineString=Makie.LineString
 Observable=Makie.Observable
+
+function examples_plot(ID=Symbol,stuff...)
+	if ID==:ocean_basins
+		plot_ocean_basins(stuff...)
+	elseif ID==:cell_area
+		plot_cell_area(stuff...)
+	elseif ID==:interpolation_demo
+		interpolation_demo(stuff...)
+	elseif ID==:one_section
+		plot_one_section(stuff...)
+	elseif ID==:projmap
+		projmap(stuff...)
+	elseif ID==:simple_heatmap
+		simple_heatmap(stuff...)
+	elseif ID==:tiled_example
+		tiled_example(stuff...)
+	elseif ID==:tiled_viz
+		tiled_viz(stuff...)
+	elseif ID==:smoothing_demo1
+		smoothing_demo1(stuff...)
+	elseif ID==:smoothing_demo2
+		smoothing_demo2(stuff...)
+	elseif ID==:northward_transport
+		northward_transport(stuff...)
+	elseif ID==:meriodional_overturning
+		meriodional_overturning(stuff...)
+	elseif ID==:gradient_EN
+		gradient_EN(stuff...)
+	elseif ID==:gradient_xy
+		gradient_xy(stuff...)
+	else
+		println("unknown plot ID")
+	end
+end
 
 """
     MeshArrays.plot(c::MeshArray)
@@ -33,10 +68,10 @@ function heatmap(MS::MeshArray,λ;
     DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
 	DD=reshape(DD,size(λ.lon))
 
-    fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
+    fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
     if !isempty(colorrange) 
-        hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=cr)
+        hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=colorrange)
     else
         hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap)
     end
@@ -83,7 +118,6 @@ function land_mask(Γ)
     μ
 end
 
-
 function plot_cell_area(Γ,λ,faceID)
 	fig = Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
 	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area (log10 of m^2)")
@@ -107,6 +141,96 @@ end
 
 ##
 
+function northward_transport(MT)
+	x=vec(-89.0:89.0)
+	fig1 = Figure(resolution = (900,400),markersize=0.1)
+	ax1 = Axis(fig1[1,1], title="Northward Volume Transport (in Sv)")
+	hm1=lines!(x,1e-6*MT,xlabel="latitude",ylabel="Transport (in Sv)",label="ECCO estimate")
+	fig1
+end
+
+function meriodional_overturning(Γ,ov)
+	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:end-1])); #coordinate variables
+	z=reverse(ov,dims=2); z[z.==0.0].=NaN
+
+	fig1 = Figure(resolution = (900,400),markersize=0.1)
+	ax1 = Axis(fig1[1,1], title="Meridional Overturning Streamfunction (in Sv)")
+	hm1=contourf!(ax1,x,y,1e-6*z,levels=(-40.0:5.0:40.0),clims=(-40,40))
+	Colorbar(fig1[1,2], hm1, height = Relative(0.65))
+	fig1
+	#savefig("MOC_mean.png")
+end
+
+##
+
+function gradient_EN(λ,dDdx,dDdy)
+	fig1 = Figure(resolution = (900,600),markersize=0.1)
+	ax1 = Axis(fig1[1,1], title="Gradient of scalar potential in Eastward direction (in 1/s)")
+	hm1=contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdx,levels=(-1.0:0.25:1.0).*0.1)
+	ax1 = Axis(fig1[2,1], title="Gradient of scalar potential in Northward direction (in 1/s)")
+	hm1=contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdy,levels=(-1.0:0.25:1.0).*0.1)
+	Colorbar(fig1[1:2,2], hm1, height = Relative(0.65))
+	fig1
+end
+
+function gradient_xy(λ,dDdx_i,dDdy_i)
+	fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
+	ax = Axis(fig[1,1], title="x-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],dDdx_i,colorrange=(-1.0,1.0).*0.2)
+	ax = Axis(fig[2,1], title="y-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],dDdy_i,colorrange=(-1.0,1.0).*0.2)
+	Colorbar(fig[1:2,2], hm1, height = Relative(0.65))
+	fig
+end
+
+##
+
+function tiled_example(λ,Depth,XC,YC,Depth_tiled,ii)
+	fig = Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
+	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area (log10 of m^2)")
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],Depth,colormap=:grayC,colorrange=(0.0,4000.0))
+	sc1=scatter!(ax,XC[ii][:],YC[ii][:],color=Depth_tiled[ii][:],
+		markersize=4.0,colormap=:thermal,colorrange=(0.0,6000.0))
+	fig
+end
+
+function tiled_viz(fld)
+	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+	nf=length(fld.fSize)
+	nn=Int(ceil(nf/2))
+	ii=[i for j in 1:2, i in 1:nn]
+	jj=[j for j in 1:2, i in 1:nn]
+	
+	for f in 1:nf
+		ax = Axis(fig[ii[f],jj[f]], title="face $(f)")
+
+		s=fld.fSize[f]		
+		x=collect(0.5:s[1]-0.5)
+		y=collect(0.5:s[2]-0.5)
+		z=fld[f]
+
+		hm1=heatmap!(ax,x,y,z,clims=(-0.25,0.25),tickfont = (4, :black))
+	end
+	
+	Colorbar(fig[1:3,3], limits=(-0.25,0.25), height = Relative(0.65))
+	
+	fig
+end
+
+##
+
+function simple_heatmap(dat)	
+	lons = dat.lon[:,1]
+	lats = dat.lat[1,:]
+	field = dat.var
+
+	fig = Figure(resolution = (1200,800), fontsize = 22)
+	ax = Axis(fig[1,1])
+	hm1 = heatmap!(ax, lons, lats, field, colorrange=dat.meta.colorrange, colormap=dat.meta.cmap)
+	Colorbar(fig[1,2], hm1, height = Relative(0.65))
+
+	fig
+end
 
 """
     projmap(data,trans; omit_lines=false)
@@ -286,6 +410,34 @@ function interpolation_demo(Γ)
 	#scatter!(ax3,lon_c,lat_c,color=:black,marker=:star4,markersize=24.0)
 	
 	(fig1,fig2,fig3)
+end
+
+##
+
+function smoothing_demo1(Γ,Rini_a,Rend_a)
+	γ=Γ.XC.grid
+	#visualize
+	x=γ.write(Γ.XC)[:,1]
+	y=γ.write(Γ.YC)[1,:]
+	#x=0.5:ioSize[1]-0.5
+	#y=0.5:ioSize[2]-0.5
+	
+	fig = Figure(resolution = (600,600), backgroundcolor = :grey95)
+
+	ax1 = Axis(fig[1,1])
+	hm1=heatmap!(ax1,x,y,γ.write(Rini_a),clims=(-0.25,0.25),tickfont = (4, :black))
+	ax2 = Axis(fig[1,2])
+	hm2=heatmap!(ax2,x,y,γ.write(Rend_a),clims=(-0.25,0.25),tickfont = (4, :black))
+	Colorbar(fig[1,3], hm1, height = Relative(0.65))
+	
+	fig
+end
+
+function smoothing_demo2(lon,lat,DD)
+	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+	ax = Axis(fig[1,1], title="Ocean Depth in m",xlabel="longitude",ylabel="latitude")
+	hm1=contourf!(ax,lon[:,1],lat[1,:],DD,clims=(-0.25,0.25),tickfont = (4, :black))
+	fig
 end
 
 ##
