@@ -52,4 +52,21 @@ export StereographicProjection, isosurface
 #export location_is_out, NeighborTileIndices_dpdo, NeighborTileIndices_cs, RelocationFunctions_cs
 #export update_location_cs!, update_location_llc!, update_location_dpdo!
 
+function unzip end
+function projmap end
+function read_polygons end
+function read_shp end
+function read_json end
+function read_JLD2 end
+function write_JLD2 end
+function download_polygons end
+function ocean_sections end
+function one_section end
+function interpolation_demo end
+function plot_one_section end
+function plot_ocean_basins end
+function interpolation_setup end
+function land_mask end
+function plot_cell_area end
+
 end # module
