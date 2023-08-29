@@ -3,12 +3,33 @@ module MeshArraysMakieExt
 
 using MeshArrays, Makie
 
-import MeshArrays: plot_ocean_basins, plot_one_section, land_mask, plot_cell_area
-import MeshArrays: projmap, interpolation_demo, read_polygons
+import MeshArrays: land_mask
+import MeshArrays: read_polygons
+import MeshArrays: examples_plot
 
 import Makie: heatmap
 LineString=Makie.LineString
 Observable=Makie.Observable
+
+function examples_plot(ID=Symbol,stuff...)
+	if ID==:ocean_basins
+		plot_ocean_basins(stuff...)
+	elseif ID==:cell_area
+		plot_cell_area(stuff...)
+	elseif ID==:interpolation_demo
+		interpolation_demo(stuff...)
+	elseif ID==:one_section
+		plot_one_section(stuff...)
+	elseif ID==:projmap
+		projmap(stuff...)
+	elseif ID==:simple_heatmap
+		simple_heatmap(stuff...)
+	elseif ID==:tiled_example
+		tiled_example(stuff...)
+	else
+		println("unknown plot ID")
+	end
+end
 
 """
     MeshArrays.plot(c::MeshArray)
@@ -107,6 +128,29 @@ end
 
 ##
 
+function tiled_example(λ,Depth,XC,YC,Depth_tiled,ii)
+	fig = Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
+	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area (log10 of m^2)")
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],Depth,colormap=:grayC,colorrange=(0.0,4000.0))
+	sc1=scatter!(ax,XC[ii][:],YC[ii][:],color=Depth_tiled[ii][:],
+		markersize=4.0,colormap=:thermal,colorrange=(0.0,6000.0))
+	fig
+end
+
+##
+
+function simple_heatmap(dat)	
+	lons = dat.lon[:,1]
+	lats = dat.lat[1,:]
+	field = dat.var
+
+	fig = Figure(resolution = (1200,800), fontsize = 22)
+	ax = Axis(fig[1,1])
+	hm1 = heatmap!(ax, lons, lats, field, colorrange=dat.meta.colorrange, colormap=dat.meta.cmap)
+	Colorbar(fig[1,2], hm1, height = Relative(0.65))
+
+	fig
+end
 
 """
     projmap(data,trans; omit_lines=false)
