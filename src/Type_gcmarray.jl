@@ -236,9 +236,9 @@ end
 
 function Base.similar(A::gcmarray;m::varmeta=defaultmeta)
     if ndims(A)==1
-        B=gcmarray(A.grid,eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
+        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
     else
-        B=gcmarray(A.grid,eltype(A),copy(A.fSize),copy(A.fIndex),size(A,2); meta=m)
+        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex),size(A,2); meta=m)
     end
     return B
 end
@@ -252,9 +252,9 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmarray}},
   A = find_gcmarray(bc)
   # Create the gcmarray output:
   if ndims(A)==1
-        B=gcmarray(A.grid,ElType,A.fSize,A.fIndex)
+        B=gcmarray(similar(A.grid),ElType,copy(A.fSize),copy(A.fIndex))
   else
-        B=gcmarray(A.grid,ElType,A.fSize,A.fIndex,size(A,2))
+        B=gcmarray(similar(A.grid),ElType,copy(A.fSize),copy(A.fIndex),size(A,2))
   end
   return B
 end

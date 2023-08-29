@@ -65,7 +65,7 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmvector}}
   # Scan the inputs for the gcmarray:
   A = find_gcmvector(bc)
   # Create the gcmvector output:
-  return gcmvector{ElType,ndims(A)}(A.grid,similar(A.f),A.fSize,A.fIndex)
+  return gcmvector{ElType,ndims(A)}(A.grid,similar(A.f),copy(A.fSize),copy(A.fIndex))
 end
 
 find_gcmvector(bc::Base.Broadcast.Broadcasted) = find_gcmvector(bc.args)
