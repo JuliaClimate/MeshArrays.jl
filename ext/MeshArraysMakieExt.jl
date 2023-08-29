@@ -26,6 +26,12 @@ function examples_plot(ID=Symbol,stuff...)
 		simple_heatmap(stuff...)
 	elseif ID==:tiled_example
 		tiled_example(stuff...)
+	elseif ID==:tiled_viz
+		tiled_viz(stuff...)
+	elseif ID==:smoothing_demo1
+		smoothing_demo1(stuff...)
+	elseif ID==:smoothing_demo2
+		smoothing_demo2(stuff...)
 	else
 		println("unknown plot ID")
 	end
@@ -134,6 +140,29 @@ function tiled_example(λ,Depth,XC,YC,Depth_tiled,ii)
 	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],Depth,colormap=:grayC,colorrange=(0.0,4000.0))
 	sc1=scatter!(ax,XC[ii][:],YC[ii][:],color=Depth_tiled[ii][:],
 		markersize=4.0,colormap=:thermal,colorrange=(0.0,6000.0))
+	fig
+end
+
+function tiled_viz(fld)
+	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+	nf=length(fld.fSize)
+	nn=Int(ceil(nf/2))
+	ii=[i for j in 1:2, i in 1:nn]
+	jj=[j for j in 1:2, i in 1:nn]
+	
+	for f in 1:nf
+		ax = Axis(fig[ii[f],jj[f]], title="face $(f)")
+
+		s=fld.fSize[f]		
+		x=collect(0.5:s[1]-0.5)
+		y=collect(0.5:s[2]-0.5)
+		z=fld[f]
+
+		hm1=heatmap!(ax,x,y,z,clims=(-0.25,0.25),tickfont = (4, :black))
+	end
+	
+	Colorbar(fig[1:3,3], limits=(-0.25,0.25), height = Relative(0.65))
+	
 	fig
 end
 
@@ -330,6 +359,34 @@ function interpolation_demo(Γ)
 	#scatter!(ax3,lon_c,lat_c,color=:black,marker=:star4,markersize=24.0)
 	
 	(fig1,fig2,fig3)
+end
+
+##
+
+function smoothing_demo1(Γ,Rini_a,Rend_a)
+	γ=Γ.XC.grid
+	#visualize
+	x=γ.write(Γ.XC)[:,1]
+	y=γ.write(Γ.YC)[1,:]
+	#x=0.5:ioSize[1]-0.5
+	#y=0.5:ioSize[2]-0.5
+	
+	fig = Figure(resolution = (600,600), backgroundcolor = :grey95)
+
+	ax1 = Axis(fig[1,1])
+	hm1=heatmap!(ax1,x,y,γ.write(Rini_a),clims=(-0.25,0.25),tickfont = (4, :black))
+	ax2 = Axis(fig[1,2])
+	hm2=heatmap!(ax2,x,y,γ.write(Rend_a),clims=(-0.25,0.25),tickfont = (4, :black))
+	Colorbar(fig[1,3], hm1, height = Relative(0.65))
+	
+	fig
+end
+
+function smoothing_demo2(lon,lat,DD)
+	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+	ax = Axis(fig[1,1], title="Ocean Depth in m",xlabel="longitude",ylabel="latitude")
+	hm1=contourf!(ax,lon[:,1],lat[1,:],DD,clims=(-0.25,0.25),tickfont = (4, :black))
+	fig
 end
 
 ##
