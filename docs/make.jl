@@ -8,7 +8,7 @@ MeshArrays.GRID_LLC90_download()
 MeshArrays.GRID_CS32_download()
 
 using Downloads, ZipFile
-fil=MeshArrays.download_polygons("ne_110m_admin_0_countries.shp")
+fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
 
 makedocs(
     sitename = "MeshArrays",

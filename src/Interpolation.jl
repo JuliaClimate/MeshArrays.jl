@@ -188,6 +188,41 @@ end
 InterpolationFactors(Γ,lon::Number,lat::Number) = InterpolationFactors(Γ,[lon],[lat])
 
 """
+    interpolation_setup(fil::String)
+
+Read e.g. `interp_coeffs_halfdeg.jld2`
+    
+```
+file_int=MeshArrays.interpolation_setup()
+λ=MeshArrays.interpolation_setup(file_int)
+```
+"""
+function interpolation_setup(fil::String)
+        λ = MeshArrays.read_JLD2(fil)
+        λ = MeshArrays.Dict_to_NamedTuple(λ)
+end
+
+"""
+    interpolation_setup(;path=tempdir())
+    
+Download e.g. `interp_coeffs_halfdeg.jld2`
+
+```
+file_int=MeshArrays.interpolation_setup()
+λ=MeshArrays.interpolation_setup(file_int)
+```
+"""
+function interpolation_setup(;
+        path=tempdir(),
+        url="https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2")
+    fil=joinpath(tempdir(),basename(url))
+    !isfile(fil) ? MeshArrays.download_file(url, fil) : nothing
+    fil
+end
+
+##
+
+"""
     StereographicProjection(XC0,YC0,XC,YC)
 
 Apply stereographic projection that puts `XC0,YC0` at `0.0,0.0`

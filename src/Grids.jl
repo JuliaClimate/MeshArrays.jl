@@ -2,6 +2,18 @@
 Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 
 """
+    land_mask(Γ)
+
+Define land mask from `Γ.hFacC[:,1]`
+"""
+function land_mask(Γ)
+    μ =Γ.hFacC[:,1]
+    μ[findall(μ.>0.0)].=1.0
+    μ[findall(μ.==0.0)].=NaN
+    μ
+end
+
+"""
     UnitGrid(γ::gcmgrid;option="minimal")
 
 Generate a unit grid, where every grid spacing and area is 1, according to γ. 
