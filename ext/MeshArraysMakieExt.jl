@@ -38,22 +38,16 @@ end
 ##
 
 """
-    scatter(XC::MeshArray,YC::MeshArray;axis_params::NamedTuple)
+    scatter(XC::MeshArray,YC::MeshArray;color=:black,colorrange=[],colorbar=true,title="",kwargs...)
 
 ```
-scatter(Γ.XC,Γ.YC,axis_params=(color=:black,))
+scatter(Γ.XC,Γ.YC,color=:black)
 MS=log10.(Γ.RAC)*μ
-scatter(Γ.XC,Γ.YC,axis_params=(color=MS,))
+scatter(Γ.XC,Γ.YC,color=MS)
 ```
 """
-function scatter(XC::MeshArray,YC::MeshArray;axis_params::NamedTuple=NamedTuple())
-
-	haskey(axis_params,:colorrange) ? colorrange=axis_params.colorrange : colorrange=[]
-	haskey(axis_params,:colorbar) ? colorbar=axis_params.colorbar : colorbar=true
-	haskey(axis_params,:colormap) ? colormap=axis_params.colormap : colormap=:viridis
-	haskey(axis_params,:color) ? color=axis_params.color : color=:gray
-#	haskey(axis_params,:projection) ? projection=axis_params.projection : projection=nothing
-	haskey(axis_params,:title) ? title=axis_params.title : title=""
+function scatter(XC::MeshArray,YC::MeshArray;
+	color=:black,colorrange=[],colorbar=true,title="",kwargs...)
 
 	if isa(color,MeshArray)
 		γ=color.grid
@@ -66,8 +60,8 @@ function scatter(XC::MeshArray,YC::MeshArray;axis_params::NamedTuple=NamedTuple(
 
 	fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
 	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
-	scatter!(ax,XC::MeshArray,YC::MeshArray;color=color, colormap=colormap, colorrange=cr)
-	colorbar&&isa(color,MeshArray) ? Colorbar(fig[1,2], colorrange=cr, height = Relative(0.65)) : nothing
+	scatter!(ax,XC::MeshArray,YC::MeshArray; 
+	color=color, colorrange=colorrange, colorbar=colorbar, kwargs...)
 
 	fig
 end
@@ -76,99 +70,90 @@ end
     scatter!(ax,XC::MeshArray,YC::MeshArray;color=:black,colorrange=[],colormap=:viridis)
 
 ```
-fig=heatmap(Γ.Depth,axis_params=(interpolation=λ,))
+fig=heatmap(Γ.Depth,interpolation=λ)
 scatter!(current_axis(),Γ.XC,Γ.YC,color=:red)
 fig
 ```
 """	
-function scatter!(ax,XC::MeshArray,YC::MeshArray;color=:black,colorrange=[],colormap=:viridis)
+function scatter!(ax,XC::MeshArray,YC::MeshArray;
+	color=:black,colorrange=[],colorbar=true,kwargs...)
 
-	if isa(color,MeshArray)
+	if isa(color,MeshArray)&&isempty(colorrange)
 		γ=color.grid
 		DD=γ.write(color)	
 		!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
 		cr[1]==cr[2] ? cr=(cr[1]-eps(),cr[2]+eps()) : nothing
 	else
-		cr=[]
+		cr=colorrange
 	end
 
 	for ff in eachindex(XC)
 		if isa(color,Symbol)
-			scatter!(ax,XC[ff][:],YC[ff][:],color=color,markersize=2.0)
+			scatter!(ax,XC[ff][:],YC[ff][:];color=color,kwargs...)
 		else
 			kk=findall((!isnan).(color[ff]))
-			#println(typeof(color[ff][kk]))
-			scatter!(ax,XC[ff][kk],YC[ff][kk],color=color[ff][kk],markersize=2.0,colorrange = cr,colormap=colormap)
+			scatter!(ax,XC[ff][kk],YC[ff][kk];color=color[ff][kk],colorrange = cr,kwargs...)
 		end
 	end
+
+	fig=current_figure()
+	colorbar&&isa(color,MeshArray) ? Colorbar(fig[1,2], colorrange=cr, height = Relative(0.65)) : nothing
+
 end
 
 """
-    heatmap(MS::MeshArray;axis_params=NamedTuple)
+    heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,colorbar=true,title="",kwargs...)
 
 ```
 heatmap(MS)
-heatmap(MS,axis_params=(interpolation=λ))
-heatmap(MS,axis_params=(interpolation=λ,title="ocean depth"))
+heatmap(MS,interpolation=λ)
+heatmap(MS,interpolation=λ,title="ocean depth")
 ```
 """
-function heatmap(MS::MeshArray;axis_params::NamedTuple=NamedTuple())
-
-	haskey(axis_params,:colorrange) ? colorrange=axis_params.colorrange : colorrange=[]
-	haskey(axis_params,:colorbar) ? colorbar=axis_params.colorbar : colorbar=true
-	haskey(axis_params,:colormap) ? colormap=axis_params.colormap : colormap=:viridis
-	haskey(axis_params,:interpolation) ? interpolation=axis_params.interpolation : interpolation=nothing
-#	haskey(axis_params,:projection) ? projection=axis_params.projection : projection=nothing
-	haskey(axis_params,:title) ? title=axis_params.title : title=""
-	haskey(axis_params,:globalmap) ? globalmap=axis_params.globalmap : globalmap=false
-
+function heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,colorbar=true,title="",kwargs...)
+	
 	if !isnothing(interpolation)
-		heatmap_interpolation(MS,interpolation,
-		title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
+		heatmap_interpolation(MS,interpolation;colorbar=colorbar,title=title,kwargs...)
 	elseif globalmap
-		heatmap_globalmap(MS,
-		title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
+		heatmap_globalmap(MS;colorbar=colorbar,title=title,kwargs...)
 	else
-		heatmap_tiled(MS,title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
+		heatmap_tiled(MS;colorbar=colorbar,title=title,kwargs...)
 	end
 end
 
-function heatmap_globalmap!(ax,MS::MeshArray;colorrange=[],colormap=:viridis)
+function heatmap_globalmap!(ax,MS::MeshArray;kwargs...)
 	γ=MS.grid
 	DD=γ.write(MS)	
-	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
-	hm1=heatmap!(ax,DD,colormap=colormap,colorrange=cr)
+#	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
+	hm1=heatmap!(ax,DD;kwargs...)
 end
 
-function heatmap_globalmap(MS::MeshArray;
-    title="",colorrange=[],colormap=:viridis,colorbar=true)
+function heatmap_globalmap(MS::MeshArray;title="",colorbar=true,kwargs...)
 
     fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="i index",ylabel="j index",title=title)
-	hm1=heatmap_globalmap!(ax,MS,colormap=colormap,colorrange=colorrange)
+	hm1=heatmap_globalmap!(ax,MS;kwargs...)
     colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
     fig
 end
 
-function heatmap_interpolation!(ax,MS::MeshArray,λ::NamedTuple;colorrange=[],colormap=:viridis)
+function heatmap_interpolation!(ax,MS::MeshArray,λ::NamedTuple;kwargs...)
     DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
 	DD=reshape(DD,size(λ.lon))
-	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
-	cr[1]==cr[2] ? cr=(cr[1]-eps(),cr[2]+eps()) : nothing
-	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=cr)
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD;kwargs...)
 end
 
-function heatmap_interpolation(MS::MeshArray,λ::NamedTuple;
-    title="",colorrange=[],colormap=:viridis,colorbar=true)
+function heatmap_interpolation(MS::MeshArray,λ::NamedTuple;title="",colorbar=true,kwargs...)
 
     fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
-	hm1=heatmap_interpolation!(ax,MS,λ,colormap=colormap,colorrange=colorrange)
+	hm1=heatmap_interpolation!(ax,MS,λ;kwargs...)
     colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
     fig
 end
 
-function heatmap_tiled(MS::MeshArray;title="",colorrange=[],colormap=:viridis,colorbar=true)
+function heatmap_tiled(MS::MeshArray;title="",
+	colorbar=true,colorrange=[],colormap=:viridis,kwargs...)
 	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
 	nf=length(MS.fSize)
 	nn=Int(ceil(nf/2))
@@ -186,7 +171,7 @@ function heatmap_tiled(MS::MeshArray;title="",colorrange=[],colormap=:viridis,co
 		y=collect(0.5:s[2]-0.5)
 		z=MS[f]
 
-		hm1=heatmap!(ax,x,y,z,clims=cr,colormap=colormap,tickfont = (4, :black))
+		hm1=heatmap!(ax,x,y,z;colorrange=cr,colormap=colormap,kwargs...)
 	end
 
 	colorbar ? Colorbar(fig[1:3,3], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
