@@ -72,6 +72,15 @@ function scatter(XC::MeshArray,YC::MeshArray;axis_params::NamedTuple=NamedTuple(
 	fig
 end
 
+"""
+    scatter!(ax,XC::MeshArray,YC::MeshArray;color=:black,colorrange=[],colormap=:viridis)
+
+```
+fig=heatmap(Γ.Depth,axis_params=(interpolation=λ,))
+scatter!(current_axis(),Γ.XC,Γ.YC,color=:red)
+fig
+```
+"""	
 function scatter!(ax,XC::MeshArray,YC::MeshArray;color=:black,colorrange=[],colormap=:viridis)
 
 	if isa(color,MeshArray)
