@@ -124,16 +124,16 @@ begin
 	γ=GridSpec("LatLonCap",pth)
 	Γ=GridLoad(γ;option="full")	
 	#LC=LatitudeCircles(-89.0:89.0,Γ)
-	basins=demo.ocean_basins()
-	sections,path_sec=demo.ocean_sections(Γ)
+	basins=MeshArrays.ocean_basins()
+	sections,path_sec=MeshArrays.ocean_sections(Γ)
 	"Done with grid"
 end
 
 # ╔═╡ be38ff51-3526-44a0-9d8c-9209355e4a4a
 begin
-	file_int=interpolation_setup()
-	λ=interpolation_setup(file_int)
-	μ=land_mask(Γ)
+	file_int=MeshArrays.interpolation_setup()
+	λ=MeshArrays.interpolation_setup(file_int)
+	μ=MeshArrays.land_mask(Γ)
 	
 	Depth_interpolated=Interpolate(λ.μ*Γ.Depth,λ.f,λ.i,λ.j,λ.w)
 	Depth_interpolated=reshape(Depth_interpolated,size(λ.lon))
@@ -152,8 +152,8 @@ begin
 	tileID_select = @bind ii NumberField(1:mm*mm*13,default=oo)
 
 	τ=Tiles(γ,nn,nn)
-	XC_tiled=Tiles(τ,Γ.XC)
-	YC_tiled=Tiles(τ,Γ.YC)
+	XC=Tiles(τ,Γ.XC)
+	YC=Tiles(τ,Γ.YC)
 	Depth_tiled=Tiles(τ,Γ.Depth)
 
 	md"""
@@ -170,28 +170,20 @@ begin
 end
 
 # ╔═╡ d9a53bc6-19e2-48d9-b9c3-f76c3a533197
-begin
-    fig_tile=heatmap(Γ.Depth,axis_params=(interpolation=λ,colormap=:grayC,colorbar=false))
-    scatter!(current_axis(),XC_tiled[ii][:],YC_tiled[ii][:],color=Depth_tiled[ii][:],
-            markersize=4.0,colormap=:thermal,colorrange=(0.0,6000.0))
-    fig_tile
-end
+MeshArrays.examples_plot(:tiled_example,λ,Depth_interpolated,XC,YC,Depth_tiled,ii)
 
 # ╔═╡ 42562cd8-04c5-4aef-87dc-5d0f87a9d204
 begin
 		lons=[lon1 lon2]
 		lats=[lat1 lat2]
-		my_section=demo.one_section(Γ,lons,lats)
+		my_section=MeshArrays.one_section(Γ,lons,lats)
 end
 
 # ╔═╡ 794d822e-2101-41ba-8780-fac95fc02075
 begin
-	fig_section=heatmap(λ.μ*Γ.Depth,axis_params=(interpolation=λ,colormap=:spring))
-    ax=current_axis(fig_section)
-	scatter!(ax,my_section.lon[:],my_section.lat[:],color=:blue,markersize=2.0)
-	scatter!(ax,my_section.lon[:],my_section.lat[:],color=:black,markersize=4.0)
-	scatter!(ax,lons[:],lats[:],color=:blue)
-	fig_section
+	fig1=heatmap(λ.μ*Γ.Depth,λ)
+	MeshArrays.examples_plot(:one_section,fig1,lons,lats,my_section)
+	fig1
 end
 
 # ╔═╡ b0d576fc-971a-47c7-9a57-f2c788083bcd
@@ -210,25 +202,13 @@ begin
 end
 
 # ╔═╡ 2afc6934-9e07-46bf-a4f1-df33ce5a6fe9
-begin
-    fig_basins=scatter(Γ.XC,Γ.YC,axis_params=(color=basins.map*μ,colormap=:lisbon))
-    basin_ID=findall(basins.name.==basin_nam)[1]
-    jj=findall(basins.map.==basin_ID)
-    [scatter!(current_axis(),Γ.XC[jj][k],Γ.YC[jj][k],color=:red,markersize=3) for k in 1:length(jj)] 
-    fig_basins
-end
+MeshArrays.examples_plot(:ocean_basins,Γ,λ,basins,basin_nam)
 
 # ╔═╡ a8defb50-fce4-4a0b-ac33-deb95f0b826b
-begin
-    fig_area=scatter(Γ.XC,Γ.YC,axis_params=(color=:black,))
-    MS=log10.(Γ.RAC)*μ
-    scatter!(current_axis(),Γ.XC[faceID][:],Γ.YC[faceID][:],color=MS[faceID][:],
-				colorrange = (8.8,10.2),markersize=2.0,colormap=:thermal)
-    fig_area
-end
+MeshArrays.examples_plot(:cell_area,Γ,λ,1)
 
 # ╔═╡ 6b72d272-eefc-45f2-9442-ef38057e4f09
-(fig1,fig2,fig3)=plot_examples(:interpolation_demo,Γ)
+(fig01,fig2,fig3)=MeshArrays.examples_plot(:interpolation_demo,Γ)
 
 # ╔═╡ 897a49b2-9763-4020-a476-5e0fccda1cfb
 begin
@@ -244,9 +224,9 @@ end
 # ╔═╡ 229d395f-f3b4-40df-a482-264d540be875
 begin
 	if source==:shp_example
-		fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
+		fil=MeshArrays.download_polygons("ne_110m_admin_0_countries.shp")
 	elseif source==:json_example
-		fil=demo.download_polygons("countries.geojson")
+		fil=MeshArrays.download_polygons("countries.geojson")
 	end
 	l=MeshArrays.read_polygons(fil)
 	"Done With Reading Country Polygons"
@@ -254,10 +234,10 @@ end
 
 # ╔═╡ 54f6cb2f-025e-40e4-97a8-0f8ad4b35278
 begin
-	fig_polygons=Figure()
-	ax1=Axis(fig_polygons[1,1])
+	f1=Figure()
+	ax1=Axis(f1[1,1])
 	[lines!(ax1,l1,color = :black, linewidth = 0.5) for l1 in l]
-	fig_polygons
+	f1
 end
 
 # ╔═╡ d448431e-13a9-440c-9463-9174d7400cf1
@@ -276,11 +256,10 @@ end
 
 # ╔═╡ 9c30b8df-b95d-40e1-b7e3-2dacbdda49ed
 #simple_heatmap(data)
-plot_examples(:projmap,data,trans)
+MeshArrays.examples_plot(:projmap,data,trans)
 
 # ╔═╡ 7fc02644-b037-425a-b660-cc6904a95037
 md"""#### Code"""
-
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -301,7 +280,7 @@ ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 CairoMakie = "~0.10.8"
 GeoJSON = "~0.7.2"
 JLD2 = "~0.4.33"
-MeshArrays = "~0.2.41"
+MeshArrays = "~0.2.39"
 OceanStateEstimation = "~0.3.4"
 PlutoUI = "~0.7.52"
 Proj = "~1.4.0"
@@ -1388,9 +1367,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "0eee26a2165d7965cfb33b2e878f4cdebf19a274"
+git-tree-sha1 = "95a9e8b52d5b4ea72072c908904f174b10ed29cf"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.40"
+version = "0.2.39"
 weakdeps = ["Downloads", "GeoJSON", "JLD2", "Makie", "Proj", "Shapefile", "ZipFile"]
 
     [deps.MeshArrays.extensions]
@@ -1401,6 +1380,7 @@ weakdeps = ["Downloads", "GeoJSON", "JLD2", "Makie", "Proj", "Shapefile", "ZipFi
     MeshArraysProjExt = ["Proj"]
     MeshArraysShapefileExt = ["Shapefile"]
     MeshArraysZipFileExt = ["ZipFile"]
+    demo_sections = ["JLD2"]
 
 [[deps.Missings]]
 deps = ["DataAPI"]
