@@ -178,7 +178,7 @@ end
 
 # ╔═╡ 2573fda7-66cb-484f-9d06-a9bb85a26a9e
 let	
-	fig=plot_examples(:smoothing_demo1,Γ,Rini_a,Rend_a)
+	fig=plot_examples(:smoothing_demo,Rini_a,Rend_a)
 	md"""#### Visualize Global Domain
 	
 	The `heatmap` display should reflect that `Rend` (R.H.S.) is smoother, and therefore more muted, than is `Rini` (L.H.S.).
@@ -232,7 +232,7 @@ heatmap(Rend_c)
 L=setup_interpolation(Γ_c)
 
 # ╔═╡ 6dfd7770-0197-4e74-ab27-bb666709c5d6
-heatmap(Γ_c.Depth,axis_params=(interpolation=L,colormap=:viridis))
+heatmap(Γ_c.Depth,interpolation=L,colormap=:viridis)
 
 # ╔═╡ 169f9cdd-28f1-4574-ade4-237eab46a541
 let
@@ -293,7 +293,7 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.10.8"
-MeshArrays = "~0.2.39"
+MeshArrays = "~0.2.41"
 PlutoUI = "~0.7.52"
 """
 
@@ -1190,7 +1190,6 @@ version = "0.2.40"
     MeshArraysProjExt = ["Proj"]
     MeshArraysShapefileExt = ["Shapefile"]
     MeshArraysZipFileExt = ["ZipFile"]
-    demo_sections = ["JLD2"]
 
     [deps.MeshArrays.weakdeps]
     Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
