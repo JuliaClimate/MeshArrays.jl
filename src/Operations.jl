@@ -3,6 +3,12 @@
 
 nansum(x) = sum(filter(!isnan,x))
 nansum(x,y) = mapslices(nansum,x,dims=y)
+nanmean(x) = mean(filter(!isnan,x))
+nanmean(x,y) = mapslices(nanmean,x,dims=y)
+nanmax(x) = maximum(filter(!isnan,x))
+nanmax(x,y) = mapslices(nanmax,x,dims=y)
+nanmin(x) = minimum(filter(!isnan,x))
+nanmin(x,y) = mapslices(nanmin,x,dims=y)
 
 ## gradient methods
 
@@ -399,9 +405,6 @@ function Transect(name,lons,lats,Γ)
 end
 
 ##
-
-nanmean(x) = mean(filter(!isnan,x))
-nanmean(x,y) = mapslices(nanmean,x,dims=y)
 
 """
     UVtoUEVN(u,v,G::NamedTuple)
