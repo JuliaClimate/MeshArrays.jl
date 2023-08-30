@@ -89,7 +89,7 @@ function heatmap(MS::MeshArray;axis_params::NamedTuple=NamedTuple())
 	end
 end
 
-function heatmap(MS::MeshArray,λ;
+function heatmap(MS::MeshArray,λ::NamedTuple;
     title="",colorrange=[],colormap=:spring,colorbar=true)
     DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
 	DD=reshape(DD,size(λ.lon))
