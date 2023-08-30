@@ -36,7 +36,7 @@ export GridSpec, GridLoad, GridLoadVar, UnitGrid, simple_periodic_domain
 export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
-export nansum
+export nansum, nanmean, nanmax, nanmin
 
 #export InnerArray, OuterArray
 #export smooth, mask
@@ -65,6 +65,7 @@ function ocean_basins end
 function interpolation_setup end
 function land_mask end
 
-function examples_plot end
+function plot_examples end; export plot_examples
+examples_plot=plot_examples
 
 end # module
