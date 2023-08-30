@@ -4,6 +4,7 @@ module demo
     import MeshArrays: write_JLD2, Transect, rotate_points, rotate_XCYC
     import MeshArrays: edge_mask, MskToTab, shorter_paths!
     import MeshArrays: GRID_LLC90, GridSpec, MeshArray
+    import MeshArrays: download_file, unzip
 
     """
         ocean_sections()
@@ -122,6 +123,37 @@ module demo
             name=["Pacific","Atlantic","indian","Arctic","Bering Sea","South China Sea","Gulf of Mexico",
             "Okhotsk Sea","Hudson Bay","Mediterranean Sea","Java Sea","North Sea","Japan Sea",
             "Timor Sea","East China Sea","Red Sea","Gulf","Baffin Bay","GIN Seas","Barents Sea"])
+    end
+
+    """
+        download_polygons(ID::String)
+
+    Download data and unzip (if needed) to `tempdir()`. Only works for predefined `ID`:
+
+    - `ne_110m_admin_0_countries.shp`
+    - `countries.geojson`
+    """
+    function download_polygons(ID::String)
+        pth=tempdir()
+        unzipfil="" #if provided then need to unzip + return this file name
+        if ID=="ne_110m_admin_0_countries.shp"
+            url="https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
+            fil=joinpath(pth,"ne_110m_admin_0_countries.zip")
+            unzipfil=joinpath(pth,"ne_110m_admin_0_countries.shp")
+        elseif ID=="countries.geojson"
+            fil=joinpath(pth,"countries.geojson")
+            url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/countries.geojson"
+        else
+            println("unknown file")
+            fil="unknown"
+            url="unknown"
+        end
+        !isfile(fil) ? download_file(url,fil) : nothing
+        if !isempty(unzipfil)
+            unzip(fil)
+            fil=unzipfil
+        end
+        fil
     end
 
 end
