@@ -145,10 +145,10 @@ begin
 end
 
 # ╔═╡ 8e3bb50d-42e1-4c33-b8ac-7b87591f7379
-heatmap(uE,λ, title="Eastward velocity (in m/s)",colormap=:viridis,colorrange=(-0.5,0.5)./2.0)
+heatmap(uE,axis_params=(interpolation=λ, title="Eastward velocity (in m/s)",colormap=:viridis,colorrange=(-0.5,0.5)./2.0))
 
 # ╔═╡ 99e7e24b-578e-47be-818a-623c8e9e4381
-heatmap(vN,λ, title="Northward velocity (in m/s)",colormap=:viridis,colorrange=(-0.5,0.5)./5.0)
+heatmap(vN,axis_params=(interpolation=λ, title="Northward velocity (in m/s)",colormap=:viridis,colorrange=(-0.5,0.5)./5.0))
 
 # ╔═╡ 09dff33d-1c16-4fa6-a5af-8eb3c15816f3
 begin
@@ -168,7 +168,7 @@ begin
 end
 
 # ╔═╡ a6f70839-b79f-42e1-bf4a-8c8978e6618e
-MeshArrays.examples_plot(:meriodional_overturning,Γ,ov)
+plot_examples(:meriodional_overturning,Γ,ov)
 
 # ╔═╡ 923568dc-85f3-43c1-a631-d408a1662fb3
 begin
@@ -184,7 +184,7 @@ begin
 end
 
 # ╔═╡ 2d6c1787-3c30-4daf-8575-b51211f8e860
-fig1=MeshArrays.examples_plot(:northward_transport,MT)
+fig1=plot_examples(:northward_transport,MT)
 
 # ╔═╡ 3a3ac112-cd2b-4ac9-9029-b79b8b5fa8b4
 begin
@@ -217,12 +217,12 @@ begin
 end
 
 # ╔═╡ 9928d59f-0733-4ad9-93e7-f1a8622afd1f
-heatmap(TrspCon,λ, title="Evaporation - Precipitation - Runoff (in Sv; inferred)",
-	colormap=:viridis,colorrange=(-1.0,1.0).*800.0)
+heatmap(TrspCon, axis_params=(interpolation=λ, title="Evaporation - Precipitation - Runoff (in Sv; inferred)",
+	colormap=:viridis,colorrange=(-1.0,1.0).*800.0))
 
 # ╔═╡ c3b3a104-a1d6-4692-ae0c-2e55821afd03
-heatmap(1e-6*TrspPsi,λ, title="Streamfunction (in Sv)",
-	colormap=:viridis,colorrange=(-1.0,1.0).*40.0)
+heatmap(1e-6*TrspPsi, axis_params=(interpolation=λ, title="Streamfunction (in Sv)",
+	colormap=:viridis,colorrange=(-1.0,1.0).*40.0))
 
 # ╔═╡ 210b5414-ada8-49a1-8ac4-9115ed33e285
 let
@@ -231,7 +231,7 @@ let
 	dDdx=reshape(Interpolate(μ.*dDdx,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 	dDdy=reshape(Interpolate(μ.*dDdy,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
-	MeshArrays.examples_plot(:gradient_EN,λ,dDdx,dDdy)
+	plot_examples(:gradient_EN,λ,dDdx,dDdy)
 end
 
 # ╔═╡ e033825c-019c-44b6-86dd-30fff79f8339
@@ -249,7 +249,7 @@ let
 	DD[findall(DD.==0.0)].=NaN
 	dDdy_i=DD
 
-	MeshArrays.examples_plot(:gradient_xy,λ,dDdx_i,dDdy_i)
+	plot_examples(:gradient_xy,λ,dDdx_i,dDdy_i)
 end
 
 # ╔═╡ 0888db7a-ff14-44c0-9c20-fed722f7e41e
@@ -258,11 +258,12 @@ let
 	v=V[:,1]
 	tmp=curl(u,v,Γ)
 
-	heatmap(μ.*tmp,λ, title="Curl Of velocity Field (in 1/s)",
-		colormap=:viridis,colorrange=(-1.0,1.0).*1e-11)
+	heatmap(μ.*tmp,axis_params=(interpolation=λ, title="Curl Of velocity Field (in 1/s)",
+		colormap=:viridis,colorrange=(-1.0,1.0).*1e-11))
 end
 
 # ╔═╡ cee6124a-3043-447e-a3a3-780cadca7fd1
+
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1316,9 +1317,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "95a9e8b52d5b4ea72072c908904f174b10ed29cf"
+git-tree-sha1 = "0eee26a2165d7965cfb33b2e878f4cdebf19a274"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.39"
+version = "0.2.40"
 
     [deps.MeshArrays.extensions]
     MeshArraysDownloadsExt = ["Downloads"]
@@ -2208,7 +2209,7 @@ version = "3.5.0+0"
 # ╟─0888db7a-ff14-44c0-9c20-fed722f7e41e
 # ╟─87a4a232-d8eb-4612-8cc5-dc9d1c16dbe8
 # ╟─a8ebbe41-1ac8-44da-b8c4-cbfd4d422227
-# ╠═71b1447b-39d9-46e2-966d-a1e6e8dcccc6
+# ╟─71b1447b-39d9-46e2-966d-a1e6e8dcccc6
 # ╟─3c2de9d4-b091-464b-9210-aa84f3d4c5f1
 # ╟─c2788db6-3ab4-4c22-abf0-ae701a57e94d
 # ╟─cf99ec64-d142-42ff-9767-3d851229024e
