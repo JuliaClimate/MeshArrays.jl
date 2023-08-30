@@ -178,7 +178,7 @@ end
 
 # ╔═╡ 2573fda7-66cb-484f-9d06-a9bb85a26a9e
 let	
-	fig=plot_examples(:smoothing_demo1,Γ,Rini_a,Rend_a)
+	fig=plot_examples(:smoothing_demo,Rini_a,Rend_a)
 	md"""#### Visualize Global Domain
 	
 	The `heatmap` display should reflect that `Rend` (R.H.S.) is smoother, and therefore more muted, than is `Rini` (L.H.S.).

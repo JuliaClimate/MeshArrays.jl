@@ -18,20 +18,12 @@ function plot_examples(ID=Symbol,stuff...)
 		plot_cell_area(stuff...)
 	elseif ID==:interpolation_demo
 		interpolation_demo(stuff...)
-	elseif ID==:one_section
-		plot_one_section(stuff...)
 	elseif ID==:projmap
 		projmap(stuff...)
 	elseif ID==:simple_heatmap
 		simple_heatmap(stuff...)
-	elseif ID==:tiled_example
-		tiled_example(stuff...)
-	elseif ID==:tiled_viz
-		tiled_viz(stuff...)
-	elseif ID==:smoothing_demo1
-		smoothing_demo1(stuff...)
-	elseif ID==:smoothing_demo2
-		smoothing_demo2(stuff...)
+	elseif ID==:smoothing_demo
+		smoothing_demo(stuff...)
 	elseif ID==:northward_transport
 		northward_transport(stuff...)
 	elseif ID==:meriodional_overturning
@@ -45,22 +37,6 @@ function plot_examples(ID=Symbol,stuff...)
 	else
 		println("unknown plot ID")
 	end
-end
-
-"""
-    MeshArrays.plot(c::MeshArray)
-
-This is a test.
-
-```
-using MeshArrays, GLMakie
-
-Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90))
-
-plot(Γ.YC,facet=3)
-"""
-function Makie.plot(c::MeshArray;facet=1)
-    heatmap(c[facet])
 end
 
 ##
@@ -82,34 +58,75 @@ function heatmap(MS::MeshArray;axis_params::NamedTuple=NamedTuple())
 	haskey(axis_params,:interpolation) ? interpolation=axis_params.interpolation : interpolation=nothing
 #	haskey(axis_params,:projection) ? projection=axis_params.projection : projection=nothing
 	haskey(axis_params,:title) ? title=axis_params.title : title=""
+	haskey(axis_params,:globalmap) ? globalmap=axis_params.globalmap : globalmap=false
 
-	if isnothing(interpolation)
-			tiled_viz(MS,title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
+	if !isnothing(interpolation)
+		heatmap_interpolation(MS,interpolation,
+		title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
+	elseif globalmap
+		heatmap_globalmap(MS,
+		title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
 	else
-			heatmap(MS,interpolation,
-			title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
+		heatmap_tiled(MS,title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
 	end
 end
 
-function heatmap(MS::MeshArray,λ::NamedTuple;
-    title="",colorrange=[],colormap=:spring,colorbar=true)
-    DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
-	DD=reshape(DD,size(λ.lon))
-
+function heatmap_globalmap!(ax,MS::MeshArray;colorrange=[],colormap=:viridis)
+	γ=MS.grid
+	DD=γ.write(MS)	
 	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
+	hm1=heatmap!(ax,DD,colormap=colormap,colorrange=cr)
+end
 
-    fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
-    ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
-	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=cr)
+function heatmap_globalmap(MS::MeshArray;
+    title="",colorrange=[],colormap=:viridis,colorbar=true)
+
+    fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+    ax = Axis(fig[1,1],xlabel="i index",ylabel="j index",title=title)
+	hm1=heatmap_globalmap!(ax,MS,colormap=colormap,colorrange=colorrange)
     colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
     fig
 end
 
-function plot_one_section(fig,lons,lats,my_section)	
-    ax=current_axis(fig)
-	scatter!(ax,my_section.lon[:],my_section.lat[:],color=:blue,markersize=2.0)
-	scatter!(ax,my_section.lon[:],my_section.lat[:],color=:black,markersize=4.0)
-	scatter!(ax,lons[:],lats[:],color=:blue)
+function heatmap_interpolation!(ax,MS::MeshArray,λ::NamedTuple;colorrange=[],colormap=:viridis)
+    DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
+	DD=reshape(DD,size(λ.lon))
+	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=cr)
+end
+
+function heatmap_interpolation(MS::MeshArray,λ::NamedTuple;
+    title="",colorrange=[],colormap=:viridis,colorbar=true)
+
+    fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
+    ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
+	hm1=heatmap_interpolation!(ax,MS,λ,colormap=colormap,colorrange=colorrange)
+    colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
+    fig
+end
+
+function heatmap_tiled(MS::MeshArray;title="",colorrange=[],colormap=:viridis,colorbar=true)
+	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+	nf=length(MS.fSize)
+	nn=Int(ceil(nf/2))
+	ii=[i for j in 1:2, i in 1:nn]
+	jj=[j for j in 1:2, i in 1:nn]
+	
+	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(write(MS)),nanmax(write(MS)))
+
+	for f in 1:nf
+		ax = Axis(fig[ii[f],jj[f]], title=title*" face $(f)")
+
+		s=MS.fSize[f]		
+		x=collect(0.5:s[1]-0.5)
+		y=collect(0.5:s[2]-0.5)
+		z=MS[f]
+
+		hm1=heatmap!(ax,x,y,z,clims=cr,colormap=colormap,tickfont = (4, :black))
+	end
+
+	colorbar ? Colorbar(fig[1:3,3], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
+	
 	fig
 end
 
@@ -199,42 +216,6 @@ function gradient_xy(λ,dDdx_i,dDdy_i)
 	ax = Axis(fig[2,1], title="y-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
 	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],dDdy_i,colorrange=(-1.0,1.0).*0.2)
 	Colorbar(fig[1:2,2], hm1, height = Relative(0.65))
-	fig
-end
-
-##
-
-function tiled_example(λ,Depth,XC,YC,Depth_tiled,ii)
-	fig = Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
-	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area (log10 of m^2)")
-	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],Depth,colormap=:grayC,colorrange=(0.0,4000.0))
-	sc1=scatter!(ax,XC[ii][:],YC[ii][:],color=Depth_tiled[ii][:],
-		markersize=4.0,colormap=:thermal,colorrange=(0.0,6000.0))
-	fig
-end
-
-function tiled_viz(fld::MeshArray;title="",colorrange=[],colormap=:spring,colorbar=true)
-	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
-	nf=length(fld.fSize)
-	nn=Int(ceil(nf/2))
-	ii=[i for j in 1:2, i in 1:nn]
-	jj=[j for j in 1:2, i in 1:nn]
-	
-	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(write(fld)),nanmax(write(fld)))
-
-	for f in 1:nf
-		ax = Axis(fig[ii[f],jj[f]], title=title*" face $(f)")
-
-		s=fld.fSize[f]		
-		x=collect(0.5:s[1]-0.5)
-		y=collect(0.5:s[2]-0.5)
-		z=fld[f]
-
-		hm1=heatmap!(ax,x,y,z,clims=cr,colormap=colormap,tickfont = (4, :black))
-	end
-
-	colorbar ? Colorbar(fig[1:3,3], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
-	
 	fig
 end
 
@@ -435,29 +416,15 @@ end
 
 ##
 
-function smoothing_demo1(Γ,Rini_a,Rend_a)
-	γ=Γ.XC.grid
-	#visualize
-	x=γ.write(Γ.XC)[:,1]
-	y=γ.write(Γ.YC)[1,:]
-	#x=0.5:ioSize[1]-0.5
-	#y=0.5:ioSize[2]-0.5
-	
+function smoothing_demo(Rini_a,Rend_a)	
 	fig = Figure(resolution = (600,600), backgroundcolor = :grey95)
 
 	ax1 = Axis(fig[1,1])
-	hm1=heatmap!(ax1,x,y,γ.write(Rini_a),clims=(-0.25,0.25),tickfont = (4, :black))
+	hm1=heatmap_globalmap!(ax1,Rini_a,colorrange=(-0.25,0.25))
 	ax2 = Axis(fig[1,2])
-	hm2=heatmap!(ax2,x,y,γ.write(Rend_a),clims=(-0.25,0.25),tickfont = (4, :black))
-	Colorbar(fig[1,3], hm1, height = Relative(0.65))
+	hm2=heatmap_globalmap!(ax2,Rend_a,colorrange=(-0.25,0.25))
+	Colorbar(fig[1,3], hm2, height = Relative(0.65))
 	
-	fig
-end
-
-function smoothing_demo2(lon,lat,DD)
-	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
-	ax = Axis(fig[1,1], title="Ocean Depth in m",xlabel="longitude",ylabel="latitude")
-	hm1=contourf!(ax,lon[:,1],lat[1,:],DD,clims=(-0.25,0.25),tickfont = (4, :black))
 	fig
 end
 

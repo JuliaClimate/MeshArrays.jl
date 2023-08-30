@@ -152,8 +152,8 @@ begin
 	tileID_select = @bind ii NumberField(1:mm*mm*13,default=oo)
 
 	τ=Tiles(γ,nn,nn)
-	XC=Tiles(τ,Γ.XC)
-	YC=Tiles(τ,Γ.YC)
+	XC_tiled=Tiles(τ,Γ.XC)
+	YC_tiled=Tiles(τ,Γ.YC)
 	Depth_tiled=Tiles(τ,Γ.Depth)
 
 	md"""
@@ -170,7 +170,12 @@ begin
 end
 
 # ╔═╡ d9a53bc6-19e2-48d9-b9c3-f76c3a533197
-plot_examples(:tiled_example,λ,Depth_interpolated,XC,YC,Depth_tiled,ii)
+begin
+    fig_tile=heatmap(Γ.Depth,axis_params=(interpolation=λ,colormap=:grayC,colorbar=false))
+    scatter!(current_axis(),XC_tiled[ii][:],YC_tiled[ii][:],color=Depth_tiled[ii][:],
+            markersize=4.0,colormap=:thermal,colorrange=(0.0,6000.0))
+    fig_tile
+end
 
 # ╔═╡ 42562cd8-04c5-4aef-87dc-5d0f87a9d204
 begin
@@ -181,9 +186,12 @@ end
 
 # ╔═╡ 794d822e-2101-41ba-8780-fac95fc02075
 begin
-	fig1=heatmap(λ.μ*Γ.Depth,axis_params=(interpolation=λ,colormap=:spring))
-	plot_examples(:one_section,fig1,lons,lats,my_section)
-	fig1
+	fig_section=heatmap(λ.μ*Γ.Depth,axis_params=(interpolation=λ,colormap=:spring))
+    ax=current_axis(fig_section)
+	scatter!(ax,my_section.lon[:],my_section.lat[:],color=:blue,markersize=2.0)
+	scatter!(ax,my_section.lon[:],my_section.lat[:],color=:black,markersize=4.0)
+	scatter!(ax,lons[:],lats[:],color=:blue)
+	fig_section
 end
 
 # ╔═╡ b0d576fc-971a-47c7-9a57-f2c788083bcd
@@ -208,7 +216,7 @@ plot_examples(:ocean_basins,Γ,λ,basins,basin_nam)
 plot_examples(:cell_area,Γ,λ,1)
 
 # ╔═╡ 6b72d272-eefc-45f2-9442-ef38057e4f09
-(fig01,fig2,fig3)=plot_examples(:interpolation_demo,Γ)
+(fig1,fig2,fig3)=plot_examples(:interpolation_demo,Γ)
 
 # ╔═╡ 897a49b2-9763-4020-a476-5e0fccda1cfb
 begin
@@ -234,10 +242,10 @@ end
 
 # ╔═╡ 54f6cb2f-025e-40e4-97a8-0f8ad4b35278
 begin
-	f1=Figure()
-	ax1=Axis(f1[1,1])
+	fig_polygons=Figure()
+	ax1=Axis(fig_polygons[1,1])
 	[lines!(ax1,l1,color = :black, linewidth = 0.5) for l1 in l]
-	f1
+	fig_polygons
 end
 
 # ╔═╡ d448431e-13a9-440c-9463-9174d7400cf1
