@@ -221,19 +221,19 @@ end
 function gradient_EN(λ,dDdx,dDdy)
 	fig1 = Figure(resolution = (900,600),markersize=0.1)
 	ax1 = Axis(fig1[1,1], title="Gradient of scalar potential in Eastward direction (in 1/s)")
-	hm1=contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdx,levels=(-1.0:0.25:1.0).*0.1)
+	hm1=heatmap_interpolation!(ax1,dDdx,λ,colorrange=(-0.1,0.1))
 	ax1 = Axis(fig1[2,1], title="Gradient of scalar potential in Northward direction (in 1/s)")
-	hm1=contourf!(ax1,λ.lon[:,1],λ.lat[1,:],dDdy,levels=(-1.0:0.25:1.0).*0.1)
+	hm1=heatmap_interpolation!(ax1,dDdy,λ,colorrange=(-0.1,0.1))
 	Colorbar(fig1[1:2,2], hm1, height = Relative(0.65))
 	fig1
 end
 
-function gradient_xy(λ,dDdx_i,dDdy_i)
+function gradient_xy(λ,dDdx,dDdy)
 	fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
 	ax = Axis(fig[1,1], title="x-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
-	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],dDdx_i,colorrange=(-1.0,1.0).*0.2)
+	hm1=heatmap_interpolation!(ax,dDdx,λ,colorrange=(-0.2,0.2))
 	ax = Axis(fig[2,1], title="y-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
-	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],dDdy_i,colorrange=(-1.0,1.0).*0.2)
+	hm1=heatmap_interpolation!(ax,dDdy,λ,colorrange=(-0.2,0.2))
 	Colorbar(fig[1:2,2], hm1, height = Relative(0.65))
 	fig
 end
