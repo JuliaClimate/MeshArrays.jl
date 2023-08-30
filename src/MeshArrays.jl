@@ -30,6 +30,7 @@ include("Solvers.jl")
 include("ReIndexing.jl")
 include("Interpolation.jl")
 include("VerticalDimension.jl")
+include("demo.jl")
 
 export AbstractMeshArray, MeshArray, gcmgrid, varmeta
 export GridSpec, GridLoad, GridLoadVar, UnitGrid, simple_periodic_domain
@@ -37,6 +38,7 @@ export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn, interpol
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
 export nansum, nanmean, nanmax, nanmin
+export demo, land_mask
 
 #export InnerArray, OuterArray
 #export smooth, mask
@@ -59,10 +61,6 @@ function read_json end
 function read_JLD2 end
 function write_JLD2 end
 function download_polygons end
-function ocean_sections end
-function one_section end
-function ocean_basins end
-function land_mask end
 
 function plot_examples end; export plot_examples
 examples_plot=plot_examples

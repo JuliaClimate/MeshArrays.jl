@@ -31,7 +31,6 @@ MeshArraysMakieExt = ["Makie"]
 MeshArraysProjExt = ["Proj"]
 MeshArraysShapefileExt = ["Shapefile"]
 MeshArraysZipFileExt = ["ZipFile"]
-demo_sections = ["JLD2"]
 
 [compat]
 CatViews = "1.0"

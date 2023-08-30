@@ -135,13 +135,6 @@ function plot_ocean_basins(Γ,λ,basins,basin_nam)
 	fig
 end
 
-function land_mask(Γ)
-    μ =Γ.hFacC[:,1]
-    μ[findall(μ.>0.0)].=1.0
-    μ[findall(μ.==0.0)].=NaN
-    μ
-end
-
 function plot_cell_area(Γ,λ,faceID)
 	fig = Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
 	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area (log10 of m^2)")

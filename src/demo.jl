@@ -1,10 +1,9 @@
 
-module demo_sections
+module demo
 
-    ## the following does not use JLD2; should move to src?
-
-    using MeshArrays
-    import MeshArrays: ocean_sections, one_section, ocean_basins
+    import MeshArrays: write_JLD2, Transect, rotate_points, rotate_XCYC
+    import MeshArrays: edge_mask, MskToTab, shorter_paths!
+    import MeshArrays: GRID_LLC90, GridSpec, MeshArray
 
     """
         ocean_sections()
@@ -12,7 +11,7 @@ module demo_sections
     Ocean sections are defined by longitude, latitude pairs.
 
     ```
-    sec=ocean_sections()
+    sec=demo.ocean_sections()
     ```
     """
     function ocean_sections()
@@ -53,7 +52,7 @@ module demo_sections
     Ocean sections are defined by longitude, latitude pairs.
 
     ```
-    sec,pth_sec=ocean_sections(Γ)
+    sec,pth_sec=demo.ocean_sections(Γ)
     ```
     """
     function ocean_sections(Γ)
@@ -68,7 +67,7 @@ module demo_sections
             name=sec.name[ii]
             Trsct=Transect(name,lons,lats,Γ)
             fil_Trsct=joinpath(pth_sec,"$(Trsct.name).jld2")
-            !isfile(fil_Trsct) ? MeshArrays.write_JLD2(fil_Trsct,tabC=Trsct.tabC,tabW=Trsct.tabW,tabS=Trsct.tabS) : nothing
+            !isfile(fil_Trsct) ? write_JLD2(fil_Trsct,tabC=Trsct.tabC,tabW=Trsct.tabW,tabS=Trsct.tabS) : nothing
         end
 
         sec,pth_sec
@@ -80,26 +79,26 @@ module demo_sections
     One section gets defined by longitude pair, and latitude pair.
 
     ```
-    my_section=one_section(Γ,lons,lats)
+    my_section=demo.one_section(Γ,lons,lats)
     ```
     """
     function one_section(Γ,lons,lats)
         name="An Example Grid Path"
     
-        x0,y0,z0,R=MeshArrays.rotate_points(lons,lats)
-        x,y,z=MeshArrays.rotate_XCYC(Γ,R)
+        x0,y0,z0,R=rotate_points(lons,lats)
+        x,y,z=rotate_XCYC(Γ,R)
         mskCint=1.0*(z.>0)
-        mskCedge,mskWedge,mskSedge=MeshArrays.edge_mask(mskCint)
+        mskCedge,mskWedge,mskSedge=edge_mask(mskCint)
         
         #for plotting
-        tabC=MeshArrays.MskToTab(mskCedge)
+        tabC=MskToTab(mskCedge)
         locCwhole=( lon=[Γ.XC[tabC[i,1]][tabC[i,2],tabC[i,3]] for i in 1:size(tabC,1)],
                     lat=[Γ.YC[tabC[i,1]][tabC[i,2],tabC[i,3]] for i in 1:size(tabC,1)])
     
-        mskCedge,mskWedge,mskSedge=MeshArrays.shorter_paths!((x,y,z),(x0,y0,z0),(mskCedge,mskWedge,mskSedge))
+        mskCedge,mskWedge,mskSedge=shorter_paths!((x,y,z),(x0,y0,z0),(mskCedge,mskWedge,mskSedge))
     
         #for plotting
-        tabC=MeshArrays.MskToTab(mskCedge)
+        tabC=MskToTab(mskCedge)
         
         ( 	lon=[Γ.XC[tabC[i,1]][tabC[i,2],tabC[i,3]] for i in 1:size(tabC,1)],
             lat=[Γ.YC[tabC[i,1]][tabC[i,2],tabC[i,3]] for i in 1:size(tabC,1)])
@@ -107,14 +106,22 @@ module demo_sections
 
     ##
 
+    """
+        ocean_basins()
+
+    Map of ocean basins on ECCO grid.
+
+    ```
+    basins=demo.ocean_basins()
+    ```
+    """
     function ocean_basins()        
-        γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
-        fil_basin=joinpath(MeshArrays.GRID_LLC90,"v4_basin.bin")
+        γ=GridSpec("LatLonCap",GRID_LLC90)
+        fil_basin=joinpath(GRID_LLC90,"v4_basin.bin")
         basins=(map=read(fil_basin,MeshArray(γ,Float32)),
             name=["Pacific","Atlantic","indian","Arctic","Bering Sea","South China Sea","Gulf of Mexico",
             "Okhotsk Sea","Hudson Bay","Mediterranean Sea","Java Sea","North Sea","Japan Sea",
             "Timor Sea","East China Sea","Red Sea","Gulf","Baffin Bay","GIN Seas","Barents Sea"])
     end
-
 
 end
