@@ -5,13 +5,13 @@ using MeshArrays, Makie
 
 import MeshArrays: land_mask
 import MeshArrays: read_polygons
-import MeshArrays: examples_plot
+import MeshArrays: plot_examples
 
 import Makie: heatmap
 LineString=Makie.LineString
 Observable=Makie.Observable
 
-function examples_plot(ID=Symbol,stuff...)
+function plot_examples(ID=Symbol,stuff...)
 	if ID==:ocean_basins
 		plot_ocean_basins(stuff...)
 	elseif ID==:cell_area

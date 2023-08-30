@@ -65,6 +65,7 @@ function ocean_basins end
 function interpolation_setup end
 function land_mask end
 
-function examples_plot end
+function plot_examples end; export plot_examples
+examples_plot=plot_examples
 
 end # module
