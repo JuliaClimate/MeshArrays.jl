@@ -293,7 +293,7 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.10.8"
-MeshArrays = "~0.2.39"
+MeshArrays = "~0.2.41"
 PlutoUI = "~0.7.52"
 """
 
@@ -1190,7 +1190,6 @@ version = "0.2.40"
     MeshArraysProjExt = ["Proj"]
     MeshArraysShapefileExt = ["Shapefile"]
     MeshArraysZipFileExt = ["ZipFile"]
-    demo_sections = ["JLD2"]
 
     [deps.MeshArrays.weakdeps]
     Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"

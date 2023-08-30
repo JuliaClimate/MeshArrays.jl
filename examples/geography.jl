@@ -124,16 +124,16 @@ begin
 	γ=GridSpec("LatLonCap",pth)
 	Γ=GridLoad(γ;option="full")	
 	#LC=LatitudeCircles(-89.0:89.0,Γ)
-	basins=MeshArrays.ocean_basins()
-	sections,path_sec=MeshArrays.ocean_sections(Γ)
+	basins=demo.ocean_basins()
+	sections,path_sec=demo.ocean_sections(Γ)
 	"Done with grid"
 end
 
 # ╔═╡ be38ff51-3526-44a0-9d8c-9209355e4a4a
 begin
-	file_int=MeshArrays.interpolation_setup()
-	λ=MeshArrays.interpolation_setup(file_int)
-	μ=MeshArrays.land_mask(Γ)
+	file_int=interpolation_setup()
+	λ=interpolation_setup(file_int)
+	μ=land_mask(Γ)
 	
 	Depth_interpolated=Interpolate(λ.μ*Γ.Depth,λ.f,λ.i,λ.j,λ.w)
 	Depth_interpolated=reshape(Depth_interpolated,size(λ.lon))
@@ -176,7 +176,7 @@ plot_examples(:tiled_example,λ,Depth_interpolated,XC,YC,Depth_tiled,ii)
 begin
 		lons=[lon1 lon2]
 		lats=[lat1 lat2]
-		my_section=MeshArrays.one_section(Γ,lons,lats)
+		my_section=demo.one_section(Γ,lons,lats)
 end
 
 # ╔═╡ 794d822e-2101-41ba-8780-fac95fc02075
@@ -224,9 +224,9 @@ end
 # ╔═╡ 229d395f-f3b4-40df-a482-264d540be875
 begin
 	if source==:shp_example
-		fil=MeshArrays.download_polygons("ne_110m_admin_0_countries.shp")
+		fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
 	elseif source==:json_example
-		fil=MeshArrays.download_polygons("countries.geojson")
+		fil=demo.download_polygons("countries.geojson")
 	end
 	l=MeshArrays.read_polygons(fil)
 	"Done With Reading Country Polygons"
@@ -281,7 +281,7 @@ ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 CairoMakie = "~0.10.8"
 GeoJSON = "~0.7.2"
 JLD2 = "~0.4.33"
-MeshArrays = "~0.2.39"
+MeshArrays = "~0.2.41"
 OceanStateEstimation = "~0.3.4"
 PlutoUI = "~0.7.52"
 Proj = "~1.4.0"
@@ -1381,7 +1381,6 @@ weakdeps = ["Downloads", "GeoJSON", "JLD2", "Makie", "Proj", "Shapefile", "ZipFi
     MeshArraysProjExt = ["Proj"]
     MeshArraysShapefileExt = ["Shapefile"]
     MeshArraysZipFileExt = ["ZipFile"]
-    demo_sections = ["JLD2"]
 
 [[deps.Missings]]
 deps = ["DataAPI"]
