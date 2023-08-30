@@ -40,6 +40,8 @@ function plot_examples(ID=Symbol,stuff...)
 		gradient_EN(stuff...)
 	elseif ID==:gradient_xy
 		gradient_xy(stuff...)
+	elseif ID==:basemap
+		basemap(stuff...)
 	else
 		println("unknown plot ID")
 	end
@@ -544,6 +546,28 @@ function geo2basic(vector::AbstractVector{<:AbstractVector})
 	end
 end
 
+
+##
+
+"""
+    basemap(lon,lat,basemap)
+
+```
+lon,lat,earth_img=demo.get_basemap()
+plot_examples(:basemap,lon,lat,earth_img)
+```
+"""
+function basemap(lon,lat,basemap)
+    #fig = Figure(resolution = (1200, 800)) #, backgroundcolor = :grey80)
+	fig=with_theme(Figure,theme_light())
+    ax = Axis(fig[1, 1])
+	#im=image!(ax,lon[:,1],lat[1,:],0.5 .+0.5*Gray.(basemap))
+	im=image!(ax,lon[:,1],lat[1,:],basemap)
+	hidedecorations!(ax)
+
+	#fig,ax,im
+    fig
+end
 
 ############################################################
 #                                                          #

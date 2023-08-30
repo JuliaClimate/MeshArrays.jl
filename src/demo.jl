@@ -1,7 +1,7 @@
 
 module demo
 
-    import MeshArrays: write_JLD2, Transect, rotate_points, rotate_XCYC
+    import MeshArrays: read_JLD2, write_JLD2, Transect, rotate_points, rotate_XCYC
     import MeshArrays: edge_mask, MskToTab, shorter_paths!
     import MeshArrays: GRID_LLC90, GridSpec, MeshArray
     import MeshArrays: download_file, unzip
@@ -155,5 +155,27 @@ module demo
         end
         fil
     end
+
+    """
+        get_basemap()
+
+        Download (if needed) and read "Blue_Marble.jpg".
+    """
+    function get_basemap()
+        dx=0.1
+        lat=[j for i=-0.05:dx:359.95, j=-89.95:dx:89.95]; 
+        lon=[i for i=-0.05:dx:359.95, j=-89.95:dx:89.95];
+    
+        earth_jpg=joinpath(tempdir(),"Blue_Marble.jpg")
+        url="https://upload.wikimedia.org/wikipedia/commons/5/56/Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"
+        !isfile(earth_jpg) ? MeshArrays.download_file(url,earth_jpg) : nothing
+    
+        earth_img=read_JLD2(earth_jpg)
+        earth_img=reverse(permutedims(earth_img),dims=2)
+        earth_img=circshift(earth_img,(1800,0))
+    
+        lon,lat,earth_img
+    end
+   
 
 end
