@@ -228,29 +228,11 @@ heatmap(1e-6*TrspPsi, axis_params=(interpolation=λ, title="Streamfunction (in S
 let
 	(dDdx, dDdy)=gradient(TrspPot,Γ)
 	(dDdx, dDdy)=UVtoUEVN(dDdx, dDdy,Γ)
-	dDdx=reshape(Interpolate(μ.*dDdx,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
-	dDdy=reshape(Interpolate(μ.*dDdy,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
-
 	plot_examples(:gradient_EN,λ,dDdx,dDdy)
 end
 
 # ╔═╡ e033825c-019c-44b6-86dd-30fff79f8339
-let
-	dDdx=U[:,1]
-	dDdy=V[:,1]
-
-	DD=Interpolate(dDdx,λ.f,λ.i,λ.j,λ.w)
-	DD=reshape(DD,size(λ.lon))
-	DD[findall(DD.==0.0)].=NaN
-	dDdx_i=DD
-
-	DD=Interpolate(dDdy,λ.f,λ.i,λ.j,λ.w)
-	DD=reshape(DD,size(λ.lon))
-	DD[findall(DD.==0.0)].=NaN
-	dDdy_i=DD
-
-	plot_examples(:gradient_xy,λ,dDdx_i,dDdy_i)
-end
+plot_examples(:gradient_xy,λ,U[:,1],V[:,1])
 
 # ╔═╡ 0888db7a-ff14-44c0-9c20-fed722f7e41e
 let
