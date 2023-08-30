@@ -210,14 +210,19 @@ begin
 end
 
 # ╔═╡ 2afc6934-9e07-46bf-a4f1-df33ce5a6fe9
-plot_examples(:ocean_basins,Γ,λ,basins,basin_nam)
+begin
+    fig_basins=scatter(Γ.XC,Γ.YC,axis_params=(color=basins.map*μ,colormap=:lisbon))
+    basin_ID=findall(basins.name.==basin_nam)[1]
+    jj=findall(basins.map.==basin_ID)
+    [scatter!(current_axis(),Γ.XC[jj][k],Γ.YC[jj][k],color=:red,markersize=3) for k in 1:length(jj)] 
+    fig_basins
+end
 
 # ╔═╡ a8defb50-fce4-4a0b-ac33-deb95f0b826b
 begin
     fig_area=scatter(Γ.XC,Γ.YC,axis_params=(color=:black,))
-    ax_area=current_axis(fig_area)
-    MS=log10.(Γ.RAC)*μ;
-    scatter!(ax_area,Γ.XC[faceID][:],Γ.YC[faceID][:],color=MS[faceID][:],
+    MS=log10.(Γ.RAC)*μ
+    scatter!(current_axis(),Γ.XC[faceID][:],Γ.YC[faceID][:],color=MS[faceID][:],
 				colorrange = (8.8,10.2),markersize=2.0,colormap=:thermal)
     fig_area
 end

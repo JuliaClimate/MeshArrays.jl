@@ -7,16 +7,12 @@ import MeshArrays: land_mask
 import MeshArrays: read_polygons
 import MeshArrays: plot_examples
 
-import Makie: heatmap, scatter
+import Makie: heatmap, scatter, scatter!
 LineString=Makie.LineString
 Observable=Makie.Observable
 
 function plot_examples(ID=Symbol,stuff...)
-	if ID==:ocean_basins
-		plot_ocean_basins(stuff...)
-	elseif ID==:cell_area
-		plot_cell_area(stuff...)
-	elseif ID==:interpolation_demo
+	if ID==:interpolation_demo
 		interpolation_demo(stuff...)
 	elseif ID==:projmap
 		projmap(stuff...)
@@ -59,29 +55,43 @@ function scatter(XC::MeshArray,YC::MeshArray;axis_params::NamedTuple=NamedTuple(
 #	haskey(axis_params,:projection) ? projection=axis_params.projection : projection=nothing
 	haskey(axis_params,:title) ? title=axis_params.title : title=""
 
+	if isa(color,MeshArray)
+		γ=color.grid
+		DD=γ.write(color)	
+		!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
+		cr[1]==cr[2] ? cr=(cr[1]-eps(),cr[2]+eps()) : nothing
+	else
+		cr=[]
+	end
+
 	fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
 	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
+	scatter!(ax,XC::MeshArray,YC::MeshArray;color=color, colormap=colormap, colorrange=cr)
+	colorbar&&isa(color,MeshArray) ? Colorbar(fig[1,2], colorrange=cr, height = Relative(0.65)) : nothing
+
+	fig
+end
+
+function scatter!(ax,XC::MeshArray,YC::MeshArray;color=:black,colorrange=[],colormap=:viridis)
 
 	if isa(color,MeshArray)
 		γ=color.grid
 		DD=γ.write(color)	
 		!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
+		cr[1]==cr[2] ? cr=(cr[1]-eps(),cr[2]+eps()) : nothing
 	else
 		cr=[]
 	end
 
 	for ff in eachindex(XC)
 		if isa(color,Symbol)
-			scatter!(ax,XC[ff][:],YC[ff][:],color=:gray,markersize=2.0)
+			scatter!(ax,XC[ff][:],YC[ff][:],color=color,markersize=2.0)
 		else
 			kk=findall((!isnan).(color[ff]))
+			#println(typeof(color[ff][kk]))
 			scatter!(ax,XC[ff][kk],YC[ff][kk],color=color[ff][kk],markersize=2.0,colorrange = cr,colormap=colormap)
 		end
 	end
-
-	colorbar&&isa(color,MeshArray) ? Colorbar(fig[1,2], colorrange=cr, height = Relative(0.65)) : nothing
-
-	fig
 end
 
 """
@@ -135,6 +145,7 @@ function heatmap_interpolation!(ax,MS::MeshArray,λ::NamedTuple;colorrange=[],co
     DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
 	DD=reshape(DD,size(λ.lon))
 	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
+	cr[1]==cr[2] ? cr=(cr[1]-eps(),cr[2]+eps()) : nothing
 	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=cr)
 end
 
@@ -156,6 +167,7 @@ function heatmap_tiled(MS::MeshArray;title="",colorrange=[],colormap=:viridis,co
 	jj=[j for j in 1:2, i in 1:nn]
 	
 	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(write(MS)),nanmax(write(MS)))
+	cr[1]==cr[2] ? cr=(cr[1]-eps(),cr[2]+eps()) : nothing
 
 	for f in 1:nf
 		ax = Axis(fig[ii[f],jj[f]], title=title*" face $(f)")
@@ -170,30 +182,6 @@ function heatmap_tiled(MS::MeshArray;title="",colorrange=[],colormap=:viridis,co
 
 	colorbar ? Colorbar(fig[1:3,3], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
 	
-	fig
-end
-
-##
-
-function plot_ocean_basins(Γ,λ,basins,basin_nam)
-#    fig=heatmap(λ.μ*Γ.Depth,λ,colormap=:grays,colorbar=false,colorrange=(0,10000))
-#    ax=current_axis(fig)
-    fig = Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
-    ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="ocean basin IDs")
-
-	basinID=findall(basins.name.==basin_nam)[1]
-	
-	mx=maximum(basins.map)
-	for ff in 1:length(Γ.RAC)
-		col=λ.μ[ff][:].*(basins.map[ff][:].==basinID)
-		kk=findall(col.>0.0)
-		!isempty(kk) ? scatter!(ax,Γ.XC[ff][kk],Γ.YC[ff][kk],color=:red,markersize=2.0) : nothing
-		kk=findall((col.==0.0).*(!isnan).(λ.μ[ff][:]))
-		!isempty(kk) ? scatter!(ax,Γ.XC[ff][kk],Γ.YC[ff][kk],color=basins.map[ff][kk],
-			colorrange=(0.0,mx),markersize=2.0,colormap=:lisbon) : nothing
-	end
-	Colorbar(fig[1,2], colormap=:lisbon, colorrange=(0.0, mx), height = Relative(0.65))
-
 	fig
 end
 
