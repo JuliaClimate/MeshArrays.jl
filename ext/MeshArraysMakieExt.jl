@@ -63,18 +63,42 @@ end
 
 ##
 
+"""
+    heatmap(MS::MeshArray;axis_params=NamedTuple)
+
+```
+heatmap(MS)
+heatmap(MS,axis_params=(interpolation=λ))
+heatmap(MS,axis_params=(interpolation=λ,title="ocean depth"))
+```
+"""
+function heatmap(MS::MeshArray;axis_params::NamedTuple=NamedTuple())
+
+	haskey(axis_params,:colorrange) ? colorrange=axis_params.colorrange : colorrange=[]
+	haskey(axis_params,:colorbar) ? colorbar=axis_params.colorbar : colorbar=true
+	haskey(axis_params,:colormap) ? colormap=axis_params.colormap : colormap=:viridis
+	haskey(axis_params,:interpolation) ? interpolation=axis_params.interpolation : interpolation=nothing
+#	haskey(axis_params,:projection) ? projection=axis_params.projection : projection=nothing
+	haskey(axis_params,:title) ? title=axis_params.title : title=""
+
+	if isnothing(interpolation)
+			tiled_viz(MS,title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
+	else
+			heatmap(MS,interpolation,
+			title=title,colorrange=colorrange,colormap=colormap,colorbar=colorbar)
+	end
+end
+
 function heatmap(MS::MeshArray,λ;
     title="",colorrange=[],colormap=:spring,colorbar=true)
     DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
 	DD=reshape(DD,size(λ.lon))
 
+	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
+
     fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
-    if !isempty(colorrange) 
-        hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=colorrange)
-    else
-        hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap)
-    end
+	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD,colormap=colormap,colorrange=cr)
     colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
     fig
 end
@@ -194,25 +218,27 @@ function tiled_example(λ,Depth,XC,YC,Depth_tiled,ii)
 	fig
 end
 
-function tiled_viz(fld)
+function tiled_viz(fld::MeshArray;title="",colorrange=[],colormap=:spring,colorbar=true)
 	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
 	nf=length(fld.fSize)
 	nn=Int(ceil(nf/2))
 	ii=[i for j in 1:2, i in 1:nn]
 	jj=[j for j in 1:2, i in 1:nn]
 	
+	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(write(fld)),nanmax(write(fld)))
+
 	for f in 1:nf
-		ax = Axis(fig[ii[f],jj[f]], title="face $(f)")
+		ax = Axis(fig[ii[f],jj[f]], title=title*" face $(f)")
 
 		s=fld.fSize[f]		
 		x=collect(0.5:s[1]-0.5)
 		y=collect(0.5:s[2]-0.5)
 		z=fld[f]
 
-		hm1=heatmap!(ax,x,y,z,clims=(-0.25,0.25),tickfont = (4, :black))
+		hm1=heatmap!(ax,x,y,z,clims=cr,colormap=colormap,tickfont = (4, :black))
 	end
-	
-	Colorbar(fig[1:3,3], limits=(-0.25,0.25), height = Relative(0.65))
+
+	colorbar ? Colorbar(fig[1:3,3], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
 	
 	fig
 end
