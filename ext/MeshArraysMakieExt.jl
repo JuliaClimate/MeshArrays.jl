@@ -7,7 +7,7 @@ import MeshArrays: land_mask
 import MeshArrays: read_polygons
 import MeshArrays: plot_examples
 
-import Makie: heatmap
+import Makie: heatmap, scatter
 LineString=Makie.LineString
 Observable=Makie.Observable
 
@@ -40,6 +40,49 @@ function plot_examples(ID=Symbol,stuff...)
 end
 
 ##
+
+"""
+    scatter(XC::MeshArray,YC::MeshArray;axis_params::NamedTuple)
+
+```
+scatter(Γ.XC,Γ.YC,axis_params=(color=:black,))
+MS=log10.(Γ.RAC)*μ
+scatter(Γ.XC,Γ.YC,axis_params=(color=MS,))
+```
+"""
+function scatter(XC::MeshArray,YC::MeshArray;axis_params::NamedTuple=NamedTuple())
+
+	haskey(axis_params,:colorrange) ? colorrange=axis_params.colorrange : colorrange=[]
+	haskey(axis_params,:colorbar) ? colorbar=axis_params.colorbar : colorbar=true
+	haskey(axis_params,:colormap) ? colormap=axis_params.colormap : colormap=:viridis
+	haskey(axis_params,:color) ? color=axis_params.color : color=:gray
+#	haskey(axis_params,:projection) ? projection=axis_params.projection : projection=nothing
+	haskey(axis_params,:title) ? title=axis_params.title : title=""
+
+	fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
+	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
+
+	if isa(color,MeshArray)
+		γ=color.grid
+		DD=γ.write(color)	
+		!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
+	else
+		cr=[]
+	end
+
+	for ff in eachindex(XC)
+		if isa(color,Symbol)
+			scatter!(ax,XC[ff][:],YC[ff][:],color=:gray,markersize=2.0)
+		else
+			kk=findall((!isnan).(color[ff]))
+			scatter!(ax,XC[ff][kk],YC[ff][kk],color=color[ff][kk],markersize=2.0,colorrange = cr,colormap=colormap)
+		end
+	end
+
+	colorbar&&isa(color,MeshArray) ? Colorbar(fig[1,2], colorrange=cr, height = Relative(0.65)) : nothing
+
+	fig
+end
 
 """
     heatmap(MS::MeshArray;axis_params=NamedTuple)
@@ -150,27 +193,6 @@ function plot_ocean_basins(Γ,λ,basins,basin_nam)
 			colorrange=(0.0,mx),markersize=2.0,colormap=:lisbon) : nothing
 	end
 	Colorbar(fig[1,2], colormap=:lisbon, colorrange=(0.0, mx), height = Relative(0.65))
-
-	fig
-end
-
-function plot_cell_area(Γ,λ,faceID)
-	fig = Figure(resolution = (900,600), backgroundcolor = :grey95,colormap=:thermal)
-	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title="grid cell area (log10 of m^2)")
-
-	rng=(0.0, maximum(Γ.RAC))
-	rng=(8.8,10.2)
-	for ff in 1:length(Γ.RAC)
-		col=log10.(λ.μ[ff][:].*Γ.RAC[ff][:])
-		kk=findall((!isnan).(col))
-		if ff==faceID
-			scatter!(ax,Γ.XC[ff][kk],Γ.YC[ff][kk],color=col[kk],
-				colorrange = rng,markersize=2.0,colormap=:thermal)
-		else
-			scatter!(ax,Γ.XC[ff][kk],Γ.YC[ff][kk],color=:gray,markersize=2.0)
-		end
-	end
-	Colorbar(fig[1,2], colorrange=rng, height = Relative(0.65))
 
 	fig
 end

@@ -213,7 +213,14 @@ end
 plot_examples(:ocean_basins,Γ,λ,basins,basin_nam)
 
 # ╔═╡ a8defb50-fce4-4a0b-ac33-deb95f0b826b
-plot_examples(:cell_area,Γ,λ,1)
+begin
+    fig_area=scatter(Γ.XC,Γ.YC,axis_params=(color=:black,))
+    ax_area=current_axis(fig_area)
+    MS=log10.(Γ.RAC)*μ;
+    scatter!(ax_area,Γ.XC[faceID][:],Γ.YC[faceID][:],color=MS[faceID][:],
+				colorrange = (8.8,10.2),markersize=2.0,colormap=:thermal)
+    fig_area
+end
 
 # ╔═╡ 6b72d272-eefc-45f2-9442-ef38057e4f09
 (fig1,fig2,fig3)=plot_examples(:interpolation_demo,Γ)
