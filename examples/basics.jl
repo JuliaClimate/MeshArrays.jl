@@ -178,7 +178,7 @@ end
 
 # ╔═╡ 2573fda7-66cb-484f-9d06-a9bb85a26a9e
 let	
-	fig=MeshArrays.examples_plot(:smoothing_demo1,Γ,Rini_a,Rend_a)
+	fig=plot_examples(:smoothing_demo1,Γ,Rini_a,Rend_a)
 	md"""#### Visualize Global Domain
 	
 	The `heatmap` display should reflect that `Rend` (R.H.S.) is smoother, and therefore more muted, than is `Rini` (L.H.S.).
@@ -192,7 +192,7 @@ end
 
 # ╔═╡ e34de61b-8630-43f8-84ba-ce7a99d673ab
 begin
-	f_a=MeshArrays.examples_plot(:tiled_viz,Rend_a)
+	f_a=heatmap(Rend_a)
 	md"""#### Visualize Subdomain by Subdomain
 	$(f_a)
 	"""
@@ -211,7 +211,7 @@ end
 
 # ╔═╡ aa95e258-f9d0-4137-8842-e878833740a6
 begin
-	f6=MeshArrays.examples_plot(:tiled_viz,Rend_b)
+	f6=heatmap(Rend_b)
 	#save("smooth_cs32.png", f6) 
 end
 
@@ -226,13 +226,13 @@ begin
 end
 
 # ╔═╡ 1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
-MeshArrays.examples_plot(:tiled_viz,Rend_c)
+heatmap(Rend_c)
 
 # ╔═╡ 1bb1b658-7462-4837-8214-24618b9b343b
 L=setup_interpolation(Γ_c)
 
 # ╔═╡ 6dfd7770-0197-4e74-ab27-bb666709c5d6
-heatmap(Γ_c.Depth,L,colormap=:viridis)
+heatmap(Γ_c.Depth,axis_params=(interpolation=L,colormap=:viridis))
 
 # ╔═╡ 169f9cdd-28f1-4574-ade4-237eab46a541
 let
@@ -280,6 +280,7 @@ let
 end
 
 # ╔═╡ 4bb0c25c-336c-4438-87df-a93344ea3cfb
+
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1177,9 +1178,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "95a9e8b52d5b4ea72072c908904f174b10ed29cf"
+git-tree-sha1 = "0eee26a2165d7965cfb33b2e878f4cdebf19a274"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.39"
+version = "0.2.40"
 
     [deps.MeshArrays.extensions]
     MeshArraysDownloadsExt = ["Downloads"]
@@ -1976,7 +1977,7 @@ version = "3.5.0+0"
 # ╟─aa95e258-f9d0-4137-8842-e878833740a6
 # ╟─d37ae153-8646-44ae-abd9-7e0e7d479275
 # ╟─23198b8d-6bf0-4af9-91d0-7886c9574f81
-# ╟─1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
+# ╠═1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
 # ╟─0865dd0f-c43e-43a7-aa65-74aba4f4460d
 # ╠═5a454424-30a9-40c1-9161-9ad62d51afb6
 # ╠═1bb1b658-7462-4837-8214-24618b9b343b

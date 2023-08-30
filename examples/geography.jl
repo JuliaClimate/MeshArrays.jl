@@ -170,7 +170,7 @@ begin
 end
 
 # ╔═╡ d9a53bc6-19e2-48d9-b9c3-f76c3a533197
-MeshArrays.examples_plot(:tiled_example,λ,Depth_interpolated,XC,YC,Depth_tiled,ii)
+plot_examples(:tiled_example,λ,Depth_interpolated,XC,YC,Depth_tiled,ii)
 
 # ╔═╡ 42562cd8-04c5-4aef-87dc-5d0f87a9d204
 begin
@@ -181,8 +181,8 @@ end
 
 # ╔═╡ 794d822e-2101-41ba-8780-fac95fc02075
 begin
-	fig1=heatmap(λ.μ*Γ.Depth,λ)
-	MeshArrays.examples_plot(:one_section,fig1,lons,lats,my_section)
+	fig1=heatmap(λ.μ*Γ.Depth,axis_params=(interpolation=λ,colormap=:spring))
+	plot_examples(:one_section,fig1,lons,lats,my_section)
 	fig1
 end
 
@@ -202,13 +202,13 @@ begin
 end
 
 # ╔═╡ 2afc6934-9e07-46bf-a4f1-df33ce5a6fe9
-MeshArrays.examples_plot(:ocean_basins,Γ,λ,basins,basin_nam)
+plot_examples(:ocean_basins,Γ,λ,basins,basin_nam)
 
 # ╔═╡ a8defb50-fce4-4a0b-ac33-deb95f0b826b
-MeshArrays.examples_plot(:cell_area,Γ,λ,1)
+plot_examples(:cell_area,Γ,λ,1)
 
 # ╔═╡ 6b72d272-eefc-45f2-9442-ef38057e4f09
-(fig01,fig2,fig3)=MeshArrays.examples_plot(:interpolation_demo,Γ)
+(fig01,fig2,fig3)=plot_examples(:interpolation_demo,Γ)
 
 # ╔═╡ 897a49b2-9763-4020-a476-5e0fccda1cfb
 begin
@@ -256,10 +256,11 @@ end
 
 # ╔═╡ 9c30b8df-b95d-40e1-b7e3-2dacbdda49ed
 #simple_heatmap(data)
-MeshArrays.examples_plot(:projmap,data,trans)
+plot_examples(:projmap,data,trans)
 
 # ╔═╡ 7fc02644-b037-425a-b660-cc6904a95037
 md"""#### Code"""
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1367,9 +1368,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "95a9e8b52d5b4ea72072c908904f174b10ed29cf"
+git-tree-sha1 = "0eee26a2165d7965cfb33b2e878f4cdebf19a274"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.39"
+version = "0.2.40"
 weakdeps = ["Downloads", "GeoJSON", "JLD2", "Makie", "Proj", "Shapefile", "ZipFile"]
 
     [deps.MeshArrays.extensions]
