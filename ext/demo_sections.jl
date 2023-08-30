@@ -4,7 +4,7 @@ module demo_sections
     ## the following does not use JLD2; should move to src?
 
     using MeshArrays
-    import MeshArrays: ocean_sections, one_section, ocean_basins, interpolation_setup
+    import MeshArrays: ocean_sections, one_section, ocean_basins
 
     """
         ocean_sections()
@@ -116,11 +116,5 @@ module demo_sections
             "Timor Sea","East China Sea","Red Sea","Gulf","Baffin Bay","GIN Seas","Barents Sea"])
     end
 
-    ##
-
-    function interpolation_setup(fil::String)
-        λ = MeshArrays.read_JLD2(fil)
-        λ = MeshArrays.Dict_to_NamedTuple(λ)
-    end
 
 end

@@ -37,12 +37,21 @@ module MeshArraysDownloadsExt
     
     ##
 
-    function interpolation_setup(;path=tempdir())
-        fil=joinpath(tempdir(),"interp_coeffs_halfdeg.jld2")
-        if !isfile(fil)
-            url="https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2"
-            Downloads.download(url, fil)
-        end
+    """
+        interpolation_setup(;path=tempdir())
+        
+    Download e.g. `interp_coeffs_halfdeg.jld2`
+
+    ```
+    file_int=MeshArrays.interpolation_setup()
+    λ=MeshArrays.interpolation_setup(file_int)
+    ```
+    """
+    function interpolation_setup(;
+            path=tempdir(),
+            url="https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2")
+        fil=joinpath(tempdir(),basename(url))
+        !isfile(fil) ? Downloads.download(url, fil) : nothing
         fil
     end
     
