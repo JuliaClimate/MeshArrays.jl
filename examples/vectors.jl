@@ -4,6 +4,9 @@
 using Markdown
 using InteractiveUtils
 
+# ╔═╡ 77979393-95a6-46fd-af99-c5ab87918a2c
+using Pkg; Pkg.status()
+
 # ╔═╡ 71b1447b-39d9-46e2-966d-a1e6e8dcccc6
 begin
 	using MeshArrays, OceanStateEstimation, MITgcmTools
@@ -74,7 +77,7 @@ When vector fields are represented using [MeshArrays.jl](https://github.com/Juli
 """
 
 # ╔═╡ a8ebbe41-1ac8-44da-b8c4-cbfd4d422227
-md"""## Preliminary Steps
+md"""## Appendix
 
 Here we load `MeshArrays.jl` and packages that provide a climatological estimate of ocean currents on the global grid defined in [Forget et al 2015](https://doi.org/10.5194/gmd-8-3071-2015) which is then used to demonstrate vector operations listed above.
 """
@@ -256,6 +259,7 @@ JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MITgcmTools = "62725fbc-3a66-4df3-9000-e33e85b3a198"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanStateEstimation = "891f6deb-a4f5-4bc5-a2e3-1e8f649cdd2c"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
@@ -273,7 +277,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.1"
 manifest_format = "2.0"
-project_hash = "a56d01bc878073091d0766374ecebd2c45bc40cc"
+project_hash = "bf0e607dad64eb558e887f9e8d8c52870ec8c108"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1299,9 +1303,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "0eee26a2165d7965cfb33b2e878f4cdebf19a274"
+git-tree-sha1 = "6ab2088be696f9039b4704beca534b5717b71a81"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.40"
+version = "0.2.41"
 
     [deps.MeshArrays.extensions]
     MeshArraysDownloadsExt = ["Downloads"]
@@ -2191,6 +2195,7 @@ version = "3.5.0+0"
 # ╟─87a4a232-d8eb-4612-8cc5-dc9d1c16dbe8
 # ╟─a8ebbe41-1ac8-44da-b8c4-cbfd4d422227
 # ╟─71b1447b-39d9-46e2-966d-a1e6e8dcccc6
+# ╟─77979393-95a6-46fd-af99-c5ab87918a2c
 # ╟─3c2de9d4-b091-464b-9210-aa84f3d4c5f1
 # ╟─c2788db6-3ab4-4c22-abf0-ae701a57e94d
 # ╟─cf99ec64-d142-42ff-9767-3d851229024e

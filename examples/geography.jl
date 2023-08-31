@@ -14,6 +14,9 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ 3df1fb35-e0a4-4894-8089-86f5d557c350
+using Pkg; Pkg.status()
+
 # ╔═╡ d123161e-49f1-11ec-1c1b-51871624545d
 begin
 	using MeshArrays, OceanStateEstimation
@@ -211,7 +214,7 @@ end
 
 # ╔═╡ 2afc6934-9e07-46bf-a4f1-df33ce5a6fe9
 begin
-    fig_basins=scatter(Γ.XC,Γ.YC,color=basins.map*μ,colormap=:lisbon)
+    fig_basins=scatter(Γ.XC,Γ.YC,color=basins.map*μ,colormap=:lisbon,markersize=3.0)
     basin_ID=findall(basins.name.==basin_nam)[1]
     jj=findall(basins.map.==basin_ID)
     [scatter!(current_axis(),Γ.XC[jj][k],Γ.YC[jj][k],color=:red,markersize=3) for k in 1:length(jj)] 
@@ -220,10 +223,10 @@ end
 
 # ╔═╡ a8defb50-fce4-4a0b-ac33-deb95f0b826b
 begin
-    fig_area=scatter(Γ.XC,Γ.YC,color=:black)
+    fig_area=scatter(Γ.XC,Γ.YC,color=:black,markersize=2.0,)
     MS=log10.(Γ.RAC)*μ
     scatter!(current_axis(),Γ.XC[faceID][:],Γ.YC[faceID][:],color=MS[faceID][:],
-				colorrange = (8.8,10.2),markersize=2.0,colormap=:thermal)
+				colorrange = (8.8,10.2),markersize=3.0,colormap=:thermal)
     fig_area
 end
 
@@ -291,6 +294,7 @@ GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanStateEstimation = "891f6deb-a4f5-4bc5-a2e3-1e8f649cdd2c"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
 Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
@@ -315,7 +319,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.1"
 manifest_format = "2.0"
-project_hash = "848e29f8e2af3e7cc177644a7e664e3d51c2bdef"
+project_hash = "bdf914fff3f52d8a11de5e7803e88ff4a9da1bf6"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1388,9 +1392,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "0eee26a2165d7965cfb33b2e878f4cdebf19a274"
+git-tree-sha1 = "6ab2088be696f9039b4704beca534b5717b71a81"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.40"
+version = "0.2.41"
 weakdeps = ["Downloads", "GeoJSON", "JLD2", "Makie", "Proj", "Shapefile", "ZipFile"]
 
     [deps.MeshArrays.extensions]
@@ -2324,6 +2328,7 @@ version = "3.5.0+0"
 # ╟─229d395f-f3b4-40df-a482-264d540be875
 # ╟─d448431e-13a9-440c-9463-9174d7400cf1
 # ╟─7fc02644-b037-425a-b660-cc6904a95037
-# ╠═d123161e-49f1-11ec-1c1b-51871624545d
+# ╟─d123161e-49f1-11ec-1c1b-51871624545d
+# ╟─3df1fb35-e0a4-4894-8089-86f5d557c350
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
