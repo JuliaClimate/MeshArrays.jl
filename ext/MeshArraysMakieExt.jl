@@ -76,7 +76,7 @@ fig
 ```
 """	
 function scatter!(ax,XC::MeshArray,YC::MeshArray;
-	color=:black,colorrange=[],colorbar=true,kwargs...)
+	color=:black,colorrange=[],colorbar=true,colormap=:veridis,kwargs...)
 
 	if isa(color,MeshArray)&&isempty(colorrange)
 		γ=color.grid
@@ -92,12 +92,13 @@ function scatter!(ax,XC::MeshArray,YC::MeshArray;
 			scatter!(ax,XC[ff][:],YC[ff][:];color=color,kwargs...)
 		else
 			kk=findall((!isnan).(color[ff]))
-			scatter!(ax,XC[ff][kk],YC[ff][kk];color=color[ff][kk],colorrange = cr,kwargs...)
+			scatter!(ax,XC[ff][kk],YC[ff][kk];color=color[ff][kk],
+				colorrange = cr,colormap=colormap, kwargs...)
 		end
 	end
 
 	fig=current_figure()
-	colorbar&&isa(color,MeshArray) ? Colorbar(fig[1,2], colorrange=cr, height = Relative(0.65)) : nothing
+	colorbar&&isa(color,MeshArray) ? Colorbar(fig[1,2], colorrange=cr, colormap=colormap, height = Relative(0.65)) : nothing
 
 end
 
