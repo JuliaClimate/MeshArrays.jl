@@ -4,6 +4,8 @@
 - full Earth grid examples (C-grids)
 - vector fields, transports, budgets
 - interpolation, distances, collocation
+- visualization (via [Makie](http://makie.org/) extension)
+- particle tracking via [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl#readme)
 
 ## Summary
 
@@ -12,8 +14,6 @@ The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` wher
 The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array size specifications, and inter-connection rules. A second  lightweight struct, `varmeta`, contains the `MeshArray` variable name, its unit, time, and position in grid space. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Grids](@ref)), and many variables, which can put a burden on users. 
 
 Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to invoke model grid details explicitely. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output (see, e.g., [Tutorials](@ref)).
-
-![smooth_cs32](https://user-images.githubusercontent.com/20276764/137231635-fdd12de0-29fe-45d4-9045-60621668e353.png)
 
 ## Data Structures
 
@@ -96,8 +96,12 @@ end
 
 ## Visualization, Particles, Transports
 
-A simple way to plot a `MeshArray` consists in plotting each elementary array separately. This method is illustrated in the [Tutorials](@ref) along with others that produce global maps. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide additional examples and a series of use case examples related to Earth System transports. This include using gridded flow fields to integrate transports, streamfunctions, budgets.
+A simple way to plot a `MeshArray` consists in using the `Makie` extension. 
 
-Lagrangian trajectories are readily computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) when velocity fields are provided as `MeshArray`s. Another set of examples shows that `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest) with I/O routines provided by [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) as also demontrated in [ClimateModels.jl](https://github.com/gaelforget/ClimateModels.jl) and the [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/).
+By default, for a `MeshArray` the `heatmap` command plots each elementary array separately. This is illustrated in [Grids](@ref) and in the [Tutorials](@ref). If an interpolation scheme is provided then `heatmap` produces a global map instead. See the [geography tutorial](../tutorials/geography.html) for examples. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide more examples
+
+The [vectors tutorial](../tutorials/vectors.html) illustrates a common Earth System use case -- using gridded flow fields to integrate transports, streamfunctions, budgets, etc. Particle trajectories are readily computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) when velocity fields are provided as `MeshArray`s. 
+
+The [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) examples shows how `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest).
 
 ![OceanMOC](https://github.com/JuliaClimate/Notebooks/raw/master/page/figures/MOC.png)
