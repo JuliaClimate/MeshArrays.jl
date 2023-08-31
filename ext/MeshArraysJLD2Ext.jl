@@ -14,7 +14,7 @@ module MeshArraysJLD2Ext
     """
        read_JLD2(file)
 
-    Call `FileIO.load(file)`. Works `.jld2`, `.jpg`, etc files.
+    Call `FileIO.load(file)`. Works for not just `.jld2`, but also `.jpg`, etc files.
     """
     read_JLD2(a) = load(a)
 

@@ -178,7 +178,7 @@ end
 
 # ╔═╡ 2573fda7-66cb-484f-9d06-a9bb85a26a9e
 let	
-	fig=plot_examples(:smoothing_demo1,Γ,Rini_a,Rend_a)
+	fig=plot_examples(:smoothing_demo,Rini_a,Rend_a)
 	md"""#### Visualize Global Domain
 	
 	The `heatmap` display should reflect that `Rend` (R.H.S.) is smoother, and therefore more muted, than is `Rini` (L.H.S.).
@@ -232,7 +232,7 @@ heatmap(Rend_c)
 L=setup_interpolation(Γ_c)
 
 # ╔═╡ 6dfd7770-0197-4e74-ab27-bb666709c5d6
-heatmap(Γ_c.Depth,axis_params=(interpolation=L,colormap=:viridis))
+heatmap(Γ_c.Depth,interpolation=L)
 
 # ╔═╡ 169f9cdd-28f1-4574-ade4-237eab46a541
 let
@@ -293,7 +293,7 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.10.8"
-MeshArrays = "~0.2.39"
+MeshArrays = "~0.2.41"
 PlutoUI = "~0.7.52"
 """
 
@@ -303,7 +303,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.1"
 manifest_format = "2.0"
-project_hash = "65b1812f4e638b776d7bf552b9952e2df750e980"
+project_hash = "9dea88148f7596a2c613007001bf0bd8e4cb3c40"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1178,9 +1178,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "0eee26a2165d7965cfb33b2e878f4cdebf19a274"
+git-tree-sha1 = "6ab2088be696f9039b4704beca534b5717b71a81"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.40"
+version = "0.2.41"
 
     [deps.MeshArrays.extensions]
     MeshArraysDownloadsExt = ["Downloads"]
@@ -1190,7 +1190,6 @@ version = "0.2.40"
     MeshArraysProjExt = ["Proj"]
     MeshArraysShapefileExt = ["Shapefile"]
     MeshArraysZipFileExt = ["ZipFile"]
-    demo_sections = ["JLD2"]
 
     [deps.MeshArrays.weakdeps]
     Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -1977,15 +1976,15 @@ version = "3.5.0+0"
 # ╟─aa95e258-f9d0-4137-8842-e878833740a6
 # ╟─d37ae153-8646-44ae-abd9-7e0e7d479275
 # ╟─23198b8d-6bf0-4af9-91d0-7886c9574f81
-# ╠═1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
+# ╟─1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
 # ╟─0865dd0f-c43e-43a7-aa65-74aba4f4460d
 # ╠═5a454424-30a9-40c1-9161-9ad62d51afb6
 # ╠═1bb1b658-7462-4837-8214-24618b9b343b
-# ╠═6dfd7770-0197-4e74-ab27-bb666709c5d6
+# ╟─6dfd7770-0197-4e74-ab27-bb666709c5d6
 # ╟─2c29ba59-ffc9-4763-8405-250029016ca5
 # ╠═169f9cdd-28f1-4574-ade4-237eab46a541
 # ╟─58f95665-9687-4b4f-af99-1239818f71a3
-# ╟─62f2dc32-456e-4e8a-8c4a-3a0ae236af13
+# ╠═62f2dc32-456e-4e8a-8c4a-3a0ae236af13
 # ╟─4bb0c25c-336c-4438-87df-a93344ea3cfb
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

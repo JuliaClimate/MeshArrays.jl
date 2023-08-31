@@ -1,7 +1,7 @@
 name = "MeshArrays"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.2.41"
+version = "0.3.0"
 
 [deps]
 CatViews = "81a5f4ea-a946-549a-aa7e-2a7f63a27d31"
@@ -34,7 +34,9 @@ MeshArraysZipFileExt = ["ZipFile"]
 
 [compat]
 CatViews = "1.0"
+Downloads = "1"
 GeoJSON = "0.6, 0.7"
+JLD2 = "0.4"
 Makie = "0.19"
 NearestNeighbors = "0.4"
 Proj = "1"

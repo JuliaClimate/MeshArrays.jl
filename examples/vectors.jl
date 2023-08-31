@@ -4,6 +4,9 @@
 using Markdown
 using InteractiveUtils
 
+# ╔═╡ 77979393-95a6-46fd-af99-c5ab87918a2c
+using Pkg; Pkg.status()
+
 # ╔═╡ 71b1447b-39d9-46e2-966d-a1e6e8dcccc6
 begin
 	using MeshArrays, OceanStateEstimation, MITgcmTools
@@ -74,7 +77,7 @@ When vector fields are represented using [MeshArrays.jl](https://github.com/Juli
 """
 
 # ╔═╡ a8ebbe41-1ac8-44da-b8c4-cbfd4d422227
-md"""## Preliminary Steps
+md"""## Appendix
 
 Here we load `MeshArrays.jl` and packages that provide a climatological estimate of ocean currents on the global grid defined in [Forget et al 2015](https://doi.org/10.5194/gmd-8-3071-2015) which is then used to demonstrate vector operations listed above.
 """
@@ -145,10 +148,10 @@ begin
 end
 
 # ╔═╡ 8e3bb50d-42e1-4c33-b8ac-7b87591f7379
-heatmap(uE,axis_params=(interpolation=λ, title="Eastward velocity (in m/s)",colormap=:viridis,colorrange=(-0.5,0.5)./2.0))
+heatmap(uE,interpolation=λ, title="Eastward velocity (in m/s)",colormap=:viridis,colorrange=(-0.5,0.5)./2.0)
 
 # ╔═╡ 99e7e24b-578e-47be-818a-623c8e9e4381
-heatmap(vN,axis_params=(interpolation=λ, title="Northward velocity (in m/s)",colormap=:viridis,colorrange=(-0.5,0.5)./5.0))
+heatmap(vN,interpolation=λ, title="Northward velocity (in m/s)",colormap=:viridis,colorrange=(-0.5,0.5)./5.0)
 
 # ╔═╡ 09dff33d-1c16-4fa6-a5af-8eb3c15816f3
 begin
@@ -217,40 +220,22 @@ begin
 end
 
 # ╔═╡ 9928d59f-0733-4ad9-93e7-f1a8622afd1f
-heatmap(TrspCon, axis_params=(interpolation=λ, title="Evaporation - Precipitation - Runoff (in Sv; inferred)",
-	colormap=:viridis,colorrange=(-1.0,1.0).*800.0))
+heatmap(TrspCon, interpolation=λ, title="Evaporation - Precipitation - Runoff (in Sv; inferred)",
+	colormap=:viridis,colorrange=(-1.0,1.0).*800.0)
 
 # ╔═╡ c3b3a104-a1d6-4692-ae0c-2e55821afd03
-heatmap(1e-6*TrspPsi, axis_params=(interpolation=λ, title="Streamfunction (in Sv)",
-	colormap=:viridis,colorrange=(-1.0,1.0).*40.0))
+heatmap(1e-6*TrspPsi, interpolation=λ, title="Streamfunction (in Sv)",
+	colormap=:viridis,colorrange=(-1.0,1.0).*40.0)
 
 # ╔═╡ 210b5414-ada8-49a1-8ac4-9115ed33e285
 let
 	(dDdx, dDdy)=gradient(TrspPot,Γ)
 	(dDdx, dDdy)=UVtoUEVN(dDdx, dDdy,Γ)
-	dDdx=reshape(Interpolate(μ.*dDdx,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
-	dDdy=reshape(Interpolate(μ.*dDdy,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
-
 	plot_examples(:gradient_EN,λ,dDdx,dDdy)
 end
 
 # ╔═╡ e033825c-019c-44b6-86dd-30fff79f8339
-let
-	dDdx=U[:,1]
-	dDdy=V[:,1]
-
-	DD=Interpolate(dDdx,λ.f,λ.i,λ.j,λ.w)
-	DD=reshape(DD,size(λ.lon))
-	DD[findall(DD.==0.0)].=NaN
-	dDdx_i=DD
-
-	DD=Interpolate(dDdy,λ.f,λ.i,λ.j,λ.w)
-	DD=reshape(DD,size(λ.lon))
-	DD[findall(DD.==0.0)].=NaN
-	dDdy_i=DD
-
-	plot_examples(:gradient_xy,λ,dDdx_i,dDdy_i)
-end
+plot_examples(:gradient_xy,λ,U[:,1],V[:,1])
 
 # ╔═╡ 0888db7a-ff14-44c0-9c20-fed722f7e41e
 let
@@ -258,8 +243,8 @@ let
 	v=V[:,1]
 	tmp=curl(u,v,Γ)
 
-	heatmap(μ.*tmp,axis_params=(interpolation=λ, title="Curl Of velocity Field (in 1/s)",
-		colormap=:viridis,colorrange=(-1.0,1.0).*1e-11))
+	heatmap(μ.*tmp,interpolation=λ, title="Curl Of velocity Field (in 1/s)",
+		colormap=:viridis,colorrange=(-1.0,1.0).*1e-11)
 end
 
 # ╔═╡ cee6124a-3043-447e-a3a3-780cadca7fd1
@@ -274,13 +259,14 @@ JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MITgcmTools = "62725fbc-3a66-4df3-9000-e33e85b3a198"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 OceanStateEstimation = "891f6deb-a4f5-4bc5-a2e3-1e8f649cdd2c"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.10.8"
 JLD2 = "~0.4.33"
 MITgcmTools = "~0.2.5"
-MeshArrays = "~0.2.39"
+MeshArrays = "~0.2.41"
 OceanStateEstimation = "~0.3.4"
 PlutoUI = "~0.7.52"
 """
@@ -291,7 +277,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.1"
 manifest_format = "2.0"
-project_hash = "a56d01bc878073091d0766374ecebd2c45bc40cc"
+project_hash = "bf0e607dad64eb558e887f9e8d8c52870ec8c108"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1317,9 +1303,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "0eee26a2165d7965cfb33b2e878f4cdebf19a274"
+git-tree-sha1 = "6ab2088be696f9039b4704beca534b5717b71a81"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.40"
+version = "0.2.41"
 
     [deps.MeshArrays.extensions]
     MeshArraysDownloadsExt = ["Downloads"]
@@ -1329,7 +1315,6 @@ version = "0.2.40"
     MeshArraysProjExt = ["Proj"]
     MeshArraysShapefileExt = ["Shapefile"]
     MeshArraysZipFileExt = ["ZipFile"]
-    demo_sections = ["JLD2"]
 
     [deps.MeshArrays.weakdeps]
     Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -2210,6 +2195,7 @@ version = "3.5.0+0"
 # ╟─87a4a232-d8eb-4612-8cc5-dc9d1c16dbe8
 # ╟─a8ebbe41-1ac8-44da-b8c4-cbfd4d422227
 # ╟─71b1447b-39d9-46e2-966d-a1e6e8dcccc6
+# ╟─77979393-95a6-46fd-af99-c5ab87918a2c
 # ╟─3c2de9d4-b091-464b-9210-aa84f3d4c5f1
 # ╟─c2788db6-3ab4-4c22-abf0-ae701a57e94d
 # ╟─cf99ec64-d142-42ff-9767-3d851229024e
