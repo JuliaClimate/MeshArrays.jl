@@ -220,8 +220,6 @@ function interpolation_setup(;Γ=NamedTuple(),
                 fil=joinpath(path,basename(url))
                 !isfile(fil) ? MeshArrays.download_file(url, fil) : nothing
         else
-                lon=
-		lat=		
 		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
                 fil=tempname()*"_interp_coeffs.jld2"
 		MeshArrays.write_JLD2(fil; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
