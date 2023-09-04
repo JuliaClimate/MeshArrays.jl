@@ -4,16 +4,16 @@ Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 """
     land_mask(m::MeshArray)
 
-Define land mask from `m[:,1]`
+Define land mask from `m` (1 if m>0; NaN if otherwise).
 """
 function land_mask(m::MeshArray)
-    μ =m[:,1]
+    μ=m
     μ[findall(μ.>0.0)].=1.0
     μ[findall(μ.==0.0)].=NaN
     μ
 end
 
-land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC)
+land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC[:,1])
 
 """
     UnitGrid(γ::gcmgrid;option="minimal")

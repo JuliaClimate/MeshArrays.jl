@@ -205,14 +205,14 @@ end
 """
     interpolation_setup(;Γ,lon,lat,path,url)
     
-Download or recompute `interp_coeffs_halfdeg.jld2`. 
+Download or recompute interpolation coefficients (e.g. `interp_coeffs_halfdeg.jld2`).
 
 - `λ=interpolation_setup()` to download from `url` to `path`
 - `λ=interpolation_setup(Γ=Γ)` to recompute at `lon,lat`
 """
 function interpolation_setup(;Γ=NamedTuple(),
-        lon=[i for i=-179.75:0.5:179.75, j=-89.75:0.5:89.75],
-        lat=[j for i=-179.75:0.5:179.75, j=-89.75:0.5:89.75],
+        lon=[i for i=-179.:2.0:179., j=-89.:2.0:89.],
+        lat=[j for i=-179.:2.0:179., j=-89.:2.0:89.],
         path=tempdir(),
         url="https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2")
 

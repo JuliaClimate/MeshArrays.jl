@@ -57,7 +57,7 @@ end
     Γ=GridLoad(γ;option="light")
     
     hFacC=GridLoadVar("hFacC",γ)
-    μ=land_mask(hFacC)
+    μ=land_mask(hFacC[:,1])
 
     lons=[-68 -63]; lats=[-54 -66]; name="Drake Passage"
     Trsct=Transect(name,lons,lats,Γ)
