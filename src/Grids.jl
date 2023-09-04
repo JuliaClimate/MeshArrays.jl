@@ -2,16 +2,18 @@
 Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 
 """
-    land_mask(Γ)
+    land_mask(m::MeshArray)
 
-Define land mask from `Γ.hFacC[:,1]`
+Define land mask from `m[:,1]`
 """
-function land_mask(Γ)
-    μ =Γ.hFacC[:,1]
+function land_mask(m::MeshArray)
+    μ =m[:,1]
     μ[findall(μ.>0.0)].=1.0
     μ[findall(μ.==0.0)].=NaN
     μ
 end
+
+land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC)
 
 """
     UnitGrid(γ::gcmgrid;option="minimal")
@@ -29,6 +31,10 @@ function UnitGrid(γ::gcmgrid;option="minimal")
         list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
         list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
         list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
+    elseif option=="light"
+        list_n=("XC","XG","YC","YG","RAC","DXC","DXG","DYC","DYG","Depth");
+        list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m",u"m",u"m",u"m",u"m")
+        list_p=(pc,pg,pc,pg,pc,pu,pv,pv,pu,pc)
     else
         list_n=("XC","YC");
         list_u=(u"°",u"°")
@@ -231,6 +237,12 @@ function GridLoad(γ::gcmgrid;option="minimal")
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
         list_n=(list_n...,"hFacC","hFacS","hFacW");
+    elseif option=="light"
+        list_n=("XC","XG","YC","YG","RAC","DXC","DXG","DYC","DYG","Depth");
+        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
+            list_n=(list_n...,"AngleCS","AngleSN");
+        end
+        list_n=(list_n...,"DRC","DRF","RC","RF")
     else
         list_n=("XC","YC");
     end

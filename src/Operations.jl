@@ -79,7 +79,7 @@ function curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
 	uvcurl=similar(Γ.XC)
 	fac=exchange(1.0 ./Γ.RAZ,1)
 	(U,V)=exchange(u,v,1)
-    (DXC,DYC)=exchange(Γ.DXC,Γ.DYC,1)
+  (DXC,DYC)=exchange(Γ.DXC,Γ.DYC,1)
 	[DXC[i].=abs.(DXC[i]) for i in eachindex(U)]
 	[DYC[i].=abs.(DYC[i]) for i in eachindex(V)]
 
