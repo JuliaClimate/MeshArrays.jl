@@ -103,20 +103,26 @@ function scatter!(ax,XC::MeshArray,YC::MeshArray;
 end
 
 """
-    heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,colorbar=true,title="",kwargs...)
+    heatmap(MS::MeshArray; interpolation=nothing,globalmap=false,x=nothing,y=nothing,colorbar=true,title="",kwargs...)
+
+Represent a `MeshArray` as a `heatmap`, or several, depending on keyword parameter choices. 
+
+Additional keyword arguments will passed along to the `Makie.heatmap` call.
 
 ```
-heatmap(MS)
-heatmap(MS,interpolation=λ)
-heatmap(MS,interpolation=λ,title="ocean depth")
+heatmap(MS) #will display tile by tile
+heatmap(MS,interpolation=λ) #will interpolate on the fly
+heatmap(MS,interpolation=λ,title="ocean depth") #same but w title
+heatmap(MS,x=lon,y=lat) #only for simple domains; will show MS[1]
 ```
 """
-function heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,colorbar=true,title="",kwargs...)
-	
+function heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,colorbar=true,title="",kwargs...)	
 	if !isnothing(interpolation)
 		heatmap_interpolation(MS,interpolation;colorbar=colorbar,title=title,kwargs...)
 	elseif globalmap
 		heatmap_globalmap(MS;colorbar=colorbar,title=title,kwargs...)
+	elseif !isnothing(x)
+		heatmap_xy(MS,x,y;colorbar=colorbar,title=title,kwargs...)
 	else
 		heatmap_tiled(MS;colorbar=colorbar,title=title,kwargs...)
 	end
@@ -134,6 +140,16 @@ function heatmap_globalmap(MS::MeshArray;title="",colorbar=true,kwargs...)
     fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="i index",ylabel="j index",title=title)
 	hm1=heatmap_globalmap!(ax,MS;kwargs...)
+    colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
+    fig
+end
+
+heatmap_xy!(ax,MS::MeshArray,x::Array,y::Array;kwargs...) = heatmap!(ax,x,y,MS[1];kwargs...)
+
+function heatmap_xy(MS::MeshArray,x::Array,y::Array;title="",colorbar=true,kwargs...)
+    fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
+    ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
+	hm1=heatmap_xy!(ax,MS,x,y;kwargs...)
     colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
     fig
 end
@@ -165,7 +181,7 @@ function heatmap_tiled(MS::MeshArray;title="",
 	cr[1]==cr[2] ? cr=(cr[1]-eps(),cr[2]+eps()) : nothing
 
 	for f in 1:nf
-		ax = Axis(fig[ii[f],jj[f]], title=title*" face $(f)")
+		nf > 1 ? ax = Axis(fig[ii[f],jj[f]], title=title*" face $(f)") : ax = Axis(fig[1,1], title=title)
 
 		s=MS.fSize[f]		
 		x=collect(0.5:s[1]-0.5)
@@ -175,7 +191,8 @@ function heatmap_tiled(MS::MeshArray;title="",
 		hm1=heatmap!(ax,x,y,z;colorrange=cr,colormap=colormap,kwargs...)
 	end
 
-	colorbar ? Colorbar(fig[1:3,3], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
+	nf > 1 ? jj=(1:nn,3) : jj=(1,2)
+	colorbar ? Colorbar(fig[jj...], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
 	
 	fig
 end
