@@ -193,8 +193,8 @@ InterpolationFactors(Γ,lon::Number,lat::Number) = InterpolationFactors(Γ,[lon]
 Read e.g. `interp_coeffs_halfdeg.jld2`
     
 ```
-file_int=MeshArrays.interpolation_setup()
-λ=MeshArrays.interpolation_setup(file_int)
+fil=joinpath(tempdir(),"interp_coeffs_halfdeg.jld2")
+λ=MeshArrays.interpolation_setup(fil)
 ```
 """
 function interpolation_setup(fil::String)
@@ -203,21 +203,30 @@ function interpolation_setup(fil::String)
 end
 
 """
-    interpolation_setup(;path=tempdir())
+    interpolation_setup(;Γ,lon,lat,path,url)
     
-Download e.g. `interp_coeffs_halfdeg.jld2`
+Download or recompute interpolation coefficients (e.g. `interp_coeffs_halfdeg.jld2`).
 
-```
-file_int=MeshArrays.interpolation_setup()
-λ=MeshArrays.interpolation_setup(file_int)
-```
+- `λ=interpolation_setup()` to download from `url` to `path`
+- `λ=interpolation_setup(Γ=Γ)` to recompute at `lon,lat`
 """
-function interpolation_setup(;
+function interpolation_setup(;Γ=NamedTuple(),
+        lon=[i for i=-179.:2.0:179., j=-89.:2.0:89.],
+        lat=[j for i=-179.:2.0:179., j=-89.:2.0:89.],
         path=tempdir(),
         url="https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2")
-    fil=joinpath(tempdir(),basename(url))
-    !isfile(fil) ? MeshArrays.download_file(url, fil) : nothing
-    fil
+
+        if isempty(Γ)
+                fil=joinpath(path,basename(url))
+                !isfile(fil) ? MeshArrays.download_file(url, fil) : nothing
+        else
+                lon=
+		lat=		
+		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
+                fil=tempname()*"_interp_coeffs.jld2"
+		MeshArrays.write_JLD2(fil; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
+        end
+        interpolation_setup(fil)
 end
 
 ##

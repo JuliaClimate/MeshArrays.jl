@@ -54,20 +54,23 @@ end
     γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
     Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
     Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
-    Γ=GridLoad(γ;option="full")
+    Γ=GridLoad(γ;option="light")
     
-    μ =Γ.hFacC[:,1]
-    μ[findall(μ.>0.0)].=1.0
-    μ[findall(μ.==0.0)].=NaN
+    hFacC=GridLoadVar("hFacC",γ)
+    μ=land_mask(hFacC[:,1])
 
     lons=[-68 -63]; lats=[-54 -66]; name="Drake Passage"
     Trsct=Transect(name,lons,lats,Γ)
 
     #Various vector operations
-    U=0*Γ.hFacW; V=0*Γ.hFacS;
+    hFacW=GridLoadVar("hFacW",γ)
+    hFacS=GridLoadVar("hFacS",γ)
+    RAZ=GridLoadVar("RAZ",γ)
+
+    U=0*hFacW; V=0*hFacS;
     UVtoTransport(U,V,Γ)
     UVtoUEVN(U[:,1],V[:,1],Γ)
-    curl(U[:,1],V[:,1],Γ)
+    curl(U[:,1],V[:,1], merge(Γ,(hFacW=hFacW,hFacS=hFacS,RAZ=RAZ,)) )
     
     #Meridional transport integral
     uv=Dict("U"=>Tx,"V"=>Ty,"dimensions"=>["x","y"])
@@ -90,7 +93,7 @@ end
     TxR = Tx-TxD
     TyR = Ty-TyD
     #vector Potential
-    TrspPsi=VectorPotential(TxR,TyR,Γ);
+    TrspPsi=VectorPotential(TxR,TyR, merge(Γ,(hFacC=hFacC,hFacW=hFacW,hFacS=hFacS)) );
 
     tst=extrema(write(TrspPsi))
 
