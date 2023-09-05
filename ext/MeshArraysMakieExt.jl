@@ -144,9 +144,10 @@ function heatmap_globalmap(MS::MeshArray;title="",colorbar=true,kwargs...)
     fig
 end
 
-heatmap_xy!(ax,MS::MeshArray,x::Array,y::Array;kwargs...) = heatmap!(ax,x,y,MS[1];kwargs...)
+heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = heatmap!(ax,x,y,MS[1];kwargs...)
+#heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = surface!(ax,x,y,0*x;color=MS[1],shading=false,	kwargs...)
 
-function heatmap_xy(MS::MeshArray,x::Array,y::Array;title="",colorbar=true,kwargs...)
+function heatmap_xy(MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};title="",colorbar=true,kwargs...)
     fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
 	hm1=heatmap_xy!(ax,MS,x,y;kwargs...)

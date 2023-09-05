@@ -14,9 +14,14 @@ Pkg.test("MeshArrays")
 
 To create your first `MeshArray`, open the `Julia` REPL and type:
 
-```@example
+```@example 1
 using MeshArrays
-MeshArray(randn(20,10))
+C=MeshArray(randn(21,10))
+```
+
+```@example 1
+using CairoMakie
+heatmap(C,x=-10:10,y=1:10)
 ```
 
 ## Grids
