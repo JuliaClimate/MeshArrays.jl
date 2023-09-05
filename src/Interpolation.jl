@@ -56,15 +56,17 @@ knn(xgrid::MeshArray,ygrid::MeshArray,lon::Number,lat::Number) = knn(xgrid::Mesh
 
 ```
 using MeshArrays
+
+γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+Γ=GridLoad(γ; option="full")
+
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
 lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
-
-Γ=GridLoad(GridSpec("LatLonCap",MeshArrays.GRID_LLC90); option="full")
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,vec(lon),vec(lat))
 DD=Interpolate(Γ.Depth,f,i,j,w)
 
-using Plots
-contourf(vec(lon[:,1]),vec(lat[1,:]),DD,clims=(0.,6000.))
+using CairoMakie
+heatmap(vec(lon[:,1]),vec(lat[1,:]),DD,colorrange=(0.,6000.))
 ```
 """
 function Interpolate(z_in::MeshArray,f,i,j,w)
@@ -77,6 +79,36 @@ function Interpolate(z_in::MeshArray,f,i,j,w)
         end
     end
     return z_out
+end
+
+"""
+    Interpolate(z_in::MeshArray,f,i,j,w)
+
+```
+using MeshArrays
+
+γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+Γ=GridLoad(γ; option="full")
+
+lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
+lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
+(f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,vec(lon),vec(lat))
+L=(lon=lon, lat=lat, f=f, i=i, j=j, w=w)
+
+using CairoMakie
+heatmap(Interpolate(Γ.Depth,L)...,colorrange=(0.,6000.))
+```
+
+or 
+
+```
+heatmap(Γ.Depth,interpolation=L,colorrange=(0.,6000.))
+```
+"""
+function Interpolate(z_in::MeshArray,λ::NamedTuple)
+        z=Interpolate(z_in,λ.f,λ.i,λ.j,λ.w)
+        z=reshape(z,size(λ.lon))
+        return λ.lon[:,1],λ.lat[1,:],z
 end
 
 """
@@ -220,8 +252,6 @@ function interpolation_setup(;Γ=NamedTuple(),
                 fil=joinpath(path,basename(url))
                 !isfile(fil) ? MeshArrays.download_file(url, fil) : nothing
         else
-                lon=
-		lat=		
 		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
                 fil=tempname()*"_interp_coeffs.jld2"
 		MeshArrays.write_JLD2(fil; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
