@@ -1,17 +1,5 @@
 # Get Started
 
-## Install
-
-To install `MeshArrays.jl` and verify it works as expected, open the `Julia` REPL and type:
-
-```
-using Pkg
-Pkg.add("MeshArrays")
-Pkg.test("MeshArrays")
-```
-
-## Use
-
 To create your first `MeshArray`, open the `Julia` REPL and type:
 
 ```@example 1
@@ -42,3 +30,12 @@ using MeshArrays,CairoMakie
 heatmap(Γ.YC,title="grid point latitudes")
 ```
 
+## Install
+
+To install `MeshArrays.jl` and verify it works as expected, open the `Julia` REPL and type:
+
+```
+using Pkg
+Pkg.add("MeshArrays")
+Pkg.test("MeshArrays")
+```

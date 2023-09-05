@@ -42,10 +42,11 @@ MeshArrays.write
 ## 3. Interpolation
 
 ```@docs
-knn
+interpolation_setup
 Interpolate
 InterpolationFactors
 StereographicProjection
+knn
 ```
 
 ## 4. Vector Fields
