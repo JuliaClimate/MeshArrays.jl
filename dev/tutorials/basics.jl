@@ -19,7 +19,7 @@ using Pkg; Pkg.status()
 
 # ╔═╡ 1a714fba-2a8e-11ec-182f-8f85cc17b02a
 begin
-	using MeshArrays, CairoMakie, PlutoUI
+	using MeshArrays, JLD2, CairoMakie, PlutoUI
 	toc=PlutoUI.TableOfContents()
 	
 	md"""
@@ -124,14 +124,6 @@ Methods that show subdomain arrays in their native, local `x,y`, coordinate syst
 	For a deeper dive into the interpolation method and geographic projections, see e.g. the [Julia Climate Nodetbooks](https://juliaclimate.github.io/GlobalOceanNotebooks/)
 """
 
-# ╔═╡ 5a454424-30a9-40c1-9161-9ad62d51afb6
-function setup_interpolation(Γ_c)
-	lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
-	lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
-	(f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ_c,vec(lon),vec(lat))
-	(lon=lon,lat=lat,f=f,i=i,j=j,w=w)
-end
-
 # ╔═╡ 2c29ba59-ffc9-4763-8405-250029016ca5
 md"""## 5. MeshArray Operations
 
@@ -229,7 +221,7 @@ end
 heatmap(Rend_c)
 
 # ╔═╡ 1bb1b658-7462-4837-8214-24618b9b343b
-L=setup_interpolation(Γ_c)
+L=interpolation_setup(Γ=Γ_c)
 
 # ╔═╡ 6dfd7770-0197-4e74-ab27-bb666709c5d6
 heatmap(Γ_c.Depth,interpolation=L)
@@ -279,21 +271,19 @@ let
 	end
 end
 
-# ╔═╡ 4bb0c25c-336c-4438-87df-a93344ea3cfb
-
-
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.10.8"
-MeshArrays = "~0.2.41"
+JLD2 = "~0.4.33"
+MeshArrays = "~0.3"
 PlutoUI = "~0.7.52"
 """
 
@@ -301,9 +291,9 @@ PlutoUI = "~0.7.52"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.1"
+julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "9dea88148f7596a2c613007001bf0bd8e4cb3c40"
+project_hash = "c595789f0af9b204ba4dcd0d23c69d4d279e9f1d"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -514,7 +504,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.2+0"
+version = "1.0.5+0"
 
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
@@ -961,6 +951,12 @@ git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
 
+[[deps.JLD2]]
+deps = ["FileIO", "MacroTools", "Mmap", "OrderedCollections", "Pkg", "Printf", "Reexport", "Requires", "TranscodingStreams", "UUIDs"]
+git-tree-sha1 = "aa6ffef1fd85657f4999030c52eaeec22a279738"
+uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+version = "0.4.33"
+
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
 git-tree-sha1 = "7e5d6779a1e09a36db2a7b6cff50942a0a7d0fca"
@@ -1064,10 +1060,10 @@ uuid = "7add5ba3-2f88-524e-9cd5-f83b8a55f7b8"
 version = "1.42.0+0"
 
 [[deps.Libiconv_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "c7cb1f5d892775ba13767a87c7ada0b980ea0a71"
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "f9557a255370125b405568f9767d6d195822a175"
 uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531"
-version = "1.16.1+2"
+version = "1.17.0+0"
 
 [[deps.Libmount_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1178,9 +1174,9 @@ version = "2.28.2+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "6ab2088be696f9039b4704beca534b5717b71a81"
+git-tree-sha1 = "24914ba2fe54f0f4d3fd3f12544fb4b68eabfab6"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.2.41"
+version = "0.3.1"
 
     [deps.MeshArrays.extensions]
     MeshArraysDownloadsExt = ["Downloads"]
@@ -1374,9 +1370,9 @@ version = "2.7.2"
 
 [[deps.Permutations]]
 deps = ["Combinatorics", "LinearAlgebra", "Random"]
-git-tree-sha1 = "6e6cab1c54ae2382bcc48866b91cf949cea703a1"
+git-tree-sha1 = "25e2bb0973689836bf164ecb960762f1bb8794dd"
 uuid = "2ae35dd2-176d-5d53-8349-f30d82d94d4f"
-version = "0.4.16"
+version = "0.4.17"
 
 [[deps.Pixman_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "Libdl"]
@@ -1387,7 +1383,7 @@ version = "0.42.2+0"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.9.0"
+version = "1.9.2"
 
 [[deps.PkgVersion]]
 deps = ["Pkg"]
@@ -1826,10 +1822,10 @@ uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 version = "0.5.5"
 
 [[deps.XML2_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "93c41695bc1c08c46c5899f4fe06d6ead504bb73"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
+git-tree-sha1 = "04a51d15436a572301b5abbb9d099713327e9fc4"
 uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
-version = "2.10.3+0"
+version = "2.10.4+0"
 
 [[deps.XSLT_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libgcrypt_jll", "Libgpg_error_jll", "Libiconv_jll", "Pkg", "XML2_jll", "Zlib_jll"]
@@ -1978,13 +1974,11 @@ version = "3.5.0+0"
 # ╟─23198b8d-6bf0-4af9-91d0-7886c9574f81
 # ╟─1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
 # ╟─0865dd0f-c43e-43a7-aa65-74aba4f4460d
-# ╠═5a454424-30a9-40c1-9161-9ad62d51afb6
-# ╠═1bb1b658-7462-4837-8214-24618b9b343b
-# ╟─6dfd7770-0197-4e74-ab27-bb666709c5d6
+# ╟─1bb1b658-7462-4837-8214-24618b9b343b
+# ╠═6dfd7770-0197-4e74-ab27-bb666709c5d6
 # ╟─2c29ba59-ffc9-4763-8405-250029016ca5
 # ╠═169f9cdd-28f1-4574-ade4-237eab46a541
 # ╟─58f95665-9687-4b4f-af99-1239818f71a3
-# ╠═62f2dc32-456e-4e8a-8c4a-3a0ae236af13
-# ╟─4bb0c25c-336c-4438-87df-a93344ea3cfb
+# ╟─62f2dc32-456e-4e8a-8c4a-3a0ae236af13
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
