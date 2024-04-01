@@ -10,6 +10,8 @@ MeshArrays.GRID_CS32_download()
 using Downloads, ZipFile
 fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
 
+MeshArrays.interpolation_setup()
+
 makedocs(
     sitename = "MeshArrays",
     format   = Documenter.HTML(),
