@@ -14,6 +14,7 @@ makedocs(
     sitename = "MeshArrays",
     format   = Documenter.HTML(),
     modules  = [MeshArrays],
+    warnonly = [:cross_references,:missing_docs],
     pages = [
     "Home" => "index.md",
     "Get Started" => "start.md",
