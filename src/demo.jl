@@ -137,7 +137,7 @@ module demo
         pth=tempdir()
         unzipfil="" #if provided then need to unzip + return this file name
         if ID=="ne_110m_admin_0_countries.shp"
-            url="https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
+            url="https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_countries.zip"
             fil=joinpath(pth,"ne_110m_admin_0_countries.zip")
             unzipfil=joinpath(pth,"ne_110m_admin_0_countries.shp")
         elseif ID=="countries.geojson"
