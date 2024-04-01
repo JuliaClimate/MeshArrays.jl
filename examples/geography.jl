@@ -280,6 +280,9 @@ end
 #simple_heatmap(data)
 plot_examples(:projmap,data,trans)
 
+# ╔═╡ b4b1d8d1-f97d-4cd2-ace7-82ae65643573
+data
+
 # ╔═╡ 7fc02644-b037-425a-b660-cc6904a95037
 md"""#### Code"""
 
@@ -2263,7 +2266,8 @@ version = "3.5.0+0"
 # ╟─ca8a8f1b-a225-46c4-93c1-ce1a4b016461
 # ╟─be38ff51-3526-44a0-9d8c-9209355e4a4a
 # ╟─85aac4c5-bf04-4f9a-a233-a3f24231762e
-# ╟─9c30b8df-b95d-40e1-b7e3-2dacbdda49ed
+# ╠═9c30b8df-b95d-40e1-b7e3-2dacbdda49ed
+# ╠═b4b1d8d1-f97d-4cd2-ace7-82ae65643573
 # ╟─303b2f54-a446-4dbe-a9a4-e6f424003722
 # ╟─d9a53bc6-19e2-48d9-b9c3-f76c3a533197
 # ╟─6aab5feb-06b6-4fbd-8732-83b70f397f00
