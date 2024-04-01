@@ -10,6 +10,18 @@ nanmax(x,y) = mapslices(nanmax,x,dims=y)
 nanmin(x) = minimum(filter(!isnan,x))
 nanmin(x,y) = mapslices(nanmin,x,dims=y)
 
+function nanmean(a::Number,b::Number)
+	if isnan(a)&&isnan(b)
+		NaN
+	elseif isnan(a)
+		b
+	elseif isnan(b)
+		a
+	else
+		(a+b)/2
+	end
+end
+
 ## gradient methods
 
 """
@@ -427,6 +439,23 @@ function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
     end
 
     return uC.*G.AngleCS-vC.*G.AngleSN, uC.*G.AngleSN+vC.*G.AngleCS
+end
+
+function UVtoSpeed!(u::MeshArray,v::MeshArray,G::NamedTuple,dD)
+  (u,v)=exch_UV(u,v)
+  for iF=1:u.grid.nFaces
+      for i in 1:size(vC[iF],1)
+      for j in 1:size(vC[iF],2)
+      u0=nanmean(u[iF][i,j],u[iF][i+1,j])
+      v0=nanmean(v[iF][i,j],v[iF][i,j+1])
+      u1=u0*G.AngleCS[iF][i,j]-v0*G.AngleSN[iF][i,j]
+      v1=u0*G.AngleSN[iF][i,j]+v0*G.AngleCS[iF][i,j]
+      dD[iF][i,j]=sqrt(u1^2 + v1^2)
+      #uC[iF][i,j]=u0*G.AngleCS[iF][i,j]-v0*G.AngleSN[iF][i,j]
+      #vC[iF][i,j]=u0*G.AngleSN[iF][i,j]+v0*G.AngleCS[iF][i,j]
+      end
+      end
+  end
 end
 
 """
