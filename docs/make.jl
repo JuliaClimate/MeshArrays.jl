@@ -24,7 +24,8 @@ makedocs(
     "Video Examples" => "videos.md",
     "API documentation" => "API.md",
     "Miscellaneous" => "detail.md",
-    ]
+    ],
+    warnonly = [:cross_references,:missing_docs],
 )
 
 lst=("basics.jl","geography.jl","vectors.jl")

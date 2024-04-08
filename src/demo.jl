@@ -1,10 +1,10 @@
 
 module demo
 
+    import MeshArrays
     import MeshArrays: read_JLD2, write_JLD2, Transect, rotate_points, rotate_XCYC
     import MeshArrays: edge_mask, MskToTab, shorter_paths!
     import MeshArrays: GRID_LLC90, GridSpec, MeshArray
-    import MeshArrays: download_file, unzip
 
     """
         ocean_sections()
@@ -137,7 +137,7 @@ module demo
         pth=tempdir()
         unzipfil="" #if provided then need to unzip + return this file name
         if ID=="ne_110m_admin_0_countries.shp"
-            url="https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip"
+            url="https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_countries.zip"
             fil=joinpath(pth,"ne_110m_admin_0_countries.zip")
             unzipfil=joinpath(pth,"ne_110m_admin_0_countries.shp")
         elseif ID=="countries.geojson"
@@ -148,9 +148,9 @@ module demo
             fil="unknown"
             url="unknown"
         end
-        !isfile(fil) ? download_file(url,fil) : nothing
+        !isfile(fil) ? MeshArrays.download_file(url,fil) : nothing
         if !isempty(unzipfil)
-            unzip(fil)
+            MeshArrays.unzip(fil)
             fil=unzipfil
         end
         fil

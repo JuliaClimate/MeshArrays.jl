@@ -30,6 +30,7 @@ include("Solvers.jl")
 include("ReIndexing.jl")
 include("Interpolation.jl")
 include("VerticalDimension.jl")
+include("demo.jl")
 
 export AbstractMeshArray, MeshArray, gcmgrid, varmeta
 export GridSpec, GridLoad, GridLoadVar, UnitGrid, simple_periodic_domain
@@ -63,7 +64,5 @@ function download_file end
 
 function plot_examples end; export plot_examples
 examples_plot=plot_examples
-
-include("demo.jl")
 
 end # module
