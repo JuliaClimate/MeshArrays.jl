@@ -26,7 +26,6 @@ makedocs(;
     "Miscellaneous" => "detail.md",
     ],
     warnonly = [:cross_references,:missing_docs],
-    sitename="MeshArrays.jl",
     authors="gaelforget <gforget@mit.edu>",
 )
 
