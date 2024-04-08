@@ -25,7 +25,6 @@ makedocs(;
     "API documentation" => "API.md",
     "Miscellaneous" => "detail.md",
     ],
-    warnonly = [:cross_references,:missing_docs],
     authors="gaelforget <gforget@mit.edu>",
 )
 
