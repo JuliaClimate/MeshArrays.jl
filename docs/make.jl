@@ -12,7 +12,7 @@ fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
 
 MeshArrays.interpolation_setup()
 
-makedocs(
+makedocs(;
     sitename = "MeshArrays",
     format   = Documenter.HTML(),
     modules  = [MeshArrays],
@@ -25,7 +25,8 @@ makedocs(
     "Video Examples" => "videos.md",
     "API documentation" => "API.md",
     "Miscellaneous" => "detail.md",
-    ]
+    ],
+    authors="gaelforget <gforget@mit.edu>",
 )
 
 lst=("basics.jl","geography.jl","vectors.jl")
