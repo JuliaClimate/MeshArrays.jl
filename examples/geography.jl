@@ -1261,9 +1261,9 @@ version = "2.28.2+1"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "339502822c5fffa5b3ffb0b04e5a722289fc76b5"
+git-tree-sha1 = "8358a82bd831029978764daa61f3dcc656660048"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.3.5"
+version = "0.3.6"
 weakdeps = ["DataDeps", "GeoJSON", "JLD2", "Makie", "Proj", "Shapefile"]
 
     [deps.MeshArrays.extensions]
