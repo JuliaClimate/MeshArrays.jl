@@ -215,7 +215,7 @@ function meriodional_overturning(Γ,ov)
 
 	fig1 = Figure(size = (900,400),markersize=0.1)
 	ax1 = Axis(fig1[1,1], title="Meridional Overturning Streamfunction (in Sv)")
-	hm1=contourf!(ax1,x,y,1e-6*z,levels=(-40.0:5.0:40.0),clims=(-40,40))
+	hm1=contourf!(ax1,x,y,1e-6*z,levels=(-40.0:5.0:40.0))
 	Colorbar(fig1[1,2], hm1, height = Relative(0.65))
 	fig1
 	#savefig("MOC_mean.png")
