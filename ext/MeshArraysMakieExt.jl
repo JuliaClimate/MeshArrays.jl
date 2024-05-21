@@ -145,7 +145,7 @@ function heatmap_globalmap(MS::MeshArray;title="",colorbar=true,kwargs...)
 end
 
 heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = heatmap!(ax,x,y,MS[1];kwargs...)
-#heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = surface!(ax,x,y,0*x;color=MS[1],shading=false,	kwargs...)
+#heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = surface!(ax,x,y,0*x;color=MS[1],shading=NoShading,	kwargs...)
 
 function heatmap_xy(MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};title="",colorbar=true,kwargs...)
     fig = Figure(size = (900,400), backgroundcolor = :grey95)
@@ -294,7 +294,7 @@ function projmap(data,trans; omit_lines=false)
     
     surf = surface!(ax,x,y,0*x; color=field, 
 	colorrange=data.meta.colorrange, colormap=data.meta.cmap,
-        shading = false)
+        shading = NoShading)
 
 	ii=[i for i in -180:45:180, j in -78.5:1.0:78.5]';
     jj=[j for i in -180:45:180, j in -78.5:1.0:78.5]';
@@ -372,9 +372,9 @@ function interpolation_demo(Γ)
 	fig1 = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax1 = Axis(fig1[1,1],xlabel="longitude",ylabel="latitude")
 
-	scatter!(ax1,XCtiles[iiTile][:],YCtiles[iiTile][:],marker=:+,c=:blue)
-	scatter!(ax1,[XC0],[YC0],c=:red)
-	scatter!(ax1,lon[:],lat[:],c=:green)
+	scatter!(ax1,XCtiles[iiTile][:],YCtiles[iiTile][:],marker=:+,color=:blue)
+	scatter!(ax1,[XC0],[YC0],color=:red)
+	scatter!(ax1,lon[:],lat[:],color=:green)
 
 	#Local Stereographic Projection
 	(x_grid,y_grid)=StereographicProjection(XC0,YC0,XCtiles[iiTile],YCtiles[iiTile])
@@ -399,10 +399,10 @@ function interpolation_demo(Γ)
 	fig2 = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax2 = Axis(fig2[1,1],xlabel="x",ylabel="y")
 
-	scatter!(ax2,x_grid[:],y_grid[:],marker=:+,c=:blue)
-	scatter!(ax2,[0.],[0.],c=:red)
-	scatter!(ax2,x_quad[ii,:][:],y_quad[ii,:][:],c=:orange)
-	scatter!(ax2,x_trgt,y_trgt,c=:green)
+	scatter!(ax2,x_grid[:],y_grid[:],marker=:+,color=:blue)
+	scatter!(ax2,[0.],[0.],color=:red)
+	scatter!(ax2,x_quad[ii,:][:],y_quad[ii,:][:],color=:orange)
+	scatter!(ax2,x_trgt,y_trgt,color=:green)
 
 	#
 
@@ -428,7 +428,7 @@ function interpolation_demo(Γ)
 	fig3 = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax3 = Axis(fig3[1,1],xlabel="longitude",ylabel="latitude")
 
-	scatter!(ax3,XCtiles[iiTile][:],YCtiles[iiTile][:],marker=:+,c=:blue)
+	scatter!(ax3,XCtiles[iiTile][:],YCtiles[iiTile][:],marker=:+,color=:blue)
 	scatter!(ax3,[XC0],[YC0],color=:red,marker=:diamond,markersize=24.0)
 	scatter!(ax3,lon,lat,color=:orange,markersize=24.0)
 	scatter!(ax3,lon_a,lat_a,color=:black,marker=:star4,markersize=24.0)
