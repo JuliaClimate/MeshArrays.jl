@@ -22,6 +22,18 @@ module MeshArraysDataDepsExt
       end
 
  
+   """
+       MA_datadep(nam="countries_shp1")
+       
+   Download data dependency with predefined name; currently :
+
+   ```
+   "countries_shp1"
+   "countries_geojson1"
+   "basemap_jpg1"
+   "interp_halfdeg"
+   ```    
+   """
    MA_datadep(nam="countries_shp1") = begin
       if nam=="countries_shp1"
          datadep"countries_shp1"

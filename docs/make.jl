@@ -1,4 +1,4 @@
-using Documenter, PlutoSliderServer, MeshArrays
+using Documenter, PlutoSliderServer, MeshArrays, DataDeps, CairoMakie
 
 import OceanStateEstimation
 OceanStateEstimation.get_ecco_velocity_if_needed()
@@ -7,7 +7,6 @@ MeshArrays.GRID_LL360_download()
 MeshArrays.GRID_LLC90_download()
 MeshArrays.GRID_CS32_download()
 
-using Downloads, ZipFile
 fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
 
 MeshArrays.interpolation_setup()
@@ -15,7 +14,7 @@ MeshArrays.interpolation_setup()
 makedocs(;
     sitename = "MeshArrays",
     format   = Documenter.HTML(),
-    modules  = [MeshArrays],
+    modules  = [MeshArrays, Base.get_extension(MeshArrays, :MeshArraysDataDepsExt)],
     warnonly = [:cross_references,:missing_docs],
     pages = [
     "Home" => "index.md",

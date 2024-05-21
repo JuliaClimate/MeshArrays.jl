@@ -4,7 +4,7 @@ module demo
     import MeshArrays
     import MeshArrays: read_JLD2, write_JLD2, Transect, rotate_points, rotate_XCYC
     import MeshArrays: edge_mask, MskToTab, shorter_paths!
-    import MeshArrays: GRID_LLC90, GridSpec, MeshArray, MA_datadep
+    import MeshArrays: GRID_LLC90, GridSpec, MeshArray
 
     """
         ocean_sections()
@@ -135,9 +135,9 @@ module demo
     """
     function download_polygons(ID::String)
         if ID=="ne_110m_admin_0_countries.shp"
-            joinpath(MA_datadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
+            joinpath(MeshArrays.MA_datadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
         elseif ID=="countries.geojson"
-            joinpath(MA_datadep("countries_geojson1"),"countries.geojson")
+            joinpath(MeshArrays.MA_datadep("countries_geojson1"),"countries.geojson")
         else
             error("unknown data dependency")
         end
@@ -153,7 +153,8 @@ module demo
         lat=[j for i=-0.05:dx:359.95, j=-89.95:dx:89.95]; 
         lon=[i for i=-0.05:dx:359.95, j=-89.95:dx:89.95];
     
-        earth_jpg=joinpath(MA_datadep("basemap_jpg1"),"Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg")
+        earth_jpg=joinpath(MeshArrays.MA_datadep("basemap_jpg1"),
+        "Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg")
     
         earth_img=read_JLD2(earth_jpg)
         earth_img=reverse(permutedims(earth_img),dims=2)
