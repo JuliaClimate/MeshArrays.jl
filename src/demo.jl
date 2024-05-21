@@ -4,7 +4,7 @@ module demo
     import MeshArrays
     import MeshArrays: read_JLD2, write_JLD2, Transect, rotate_points, rotate_XCYC
     import MeshArrays: edge_mask, MskToTab, shorter_paths!
-    import MeshArrays: GRID_LLC90, GridSpec, MeshArray
+    import MeshArrays: GRID_LLC90, GridSpec, MeshArray, MA_datadep
 
     """
         ocean_sections()
@@ -128,32 +128,19 @@ module demo
     """
         download_polygons(ID::String)
 
-    Download data and unzip (if needed) to `tempdir()`. Only works for predefined `ID`:
+    Download polygon data with predefined `ID`:
 
     - `ne_110m_admin_0_countries.shp`
     - `countries.geojson`
     """
     function download_polygons(ID::String)
-        pth=tempdir()
-        unzipfil="" #if provided then need to unzip + return this file name
         if ID=="ne_110m_admin_0_countries.shp"
-            url="https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_countries.zip"
-            fil=joinpath(pth,"ne_110m_admin_0_countries.zip")
-            unzipfil=joinpath(pth,"ne_110m_admin_0_countries.shp")
+            joinpath(MA_datadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
         elseif ID=="countries.geojson"
-            fil=joinpath(pth,"countries.geojson")
-            url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/countries.geojson"
+            joinpath(MA_datadep("countries_geojson1"),"countries.geojson")
         else
-            println("unknown file")
-            fil="unknown"
-            url="unknown"
+            error("unknown data dependency")
         end
-        !isfile(fil) ? MeshArrays.download_file(url,fil) : nothing
-        if !isempty(unzipfil)
-            MeshArrays.unzip(fil)
-            fil=unzipfil
-        end
-        fil
     end
 
     """
@@ -166,9 +153,7 @@ module demo
         lat=[j for i=-0.05:dx:359.95, j=-89.95:dx:89.95]; 
         lon=[i for i=-0.05:dx:359.95, j=-89.95:dx:89.95];
     
-        earth_jpg=joinpath(tempdir(),"Blue_Marble.jpg")
-        url="https://upload.wikimedia.org/wikipedia/commons/5/56/Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"
-        !isfile(earth_jpg) ? MeshArrays.download_file(url,earth_jpg) : nothing
+        earth_jpg=joinpath(MA_datadep("basemap_jpg1"),"Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg")
     
         earth_img=read_JLD2(earth_jpg)
         earth_img=reverse(permutedims(earth_img),dims=2)
