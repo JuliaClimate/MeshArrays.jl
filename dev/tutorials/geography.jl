@@ -1261,19 +1261,18 @@ version = "2.28.2+1"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "162dd3af2116a3b0f0098b3b90eba6b2d5871263"
+git-tree-sha1 = "339502822c5fffa5b3ffb0b04e5a722289fc76b5"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.3.4"
-weakdeps = ["Downloads", "GeoJSON", "JLD2", "Makie", "Proj", "Shapefile", "ZipFile"]
+version = "0.3.5"
+weakdeps = ["DataDeps", "GeoJSON", "JLD2", "Makie", "Proj", "Shapefile"]
 
     [deps.MeshArrays.extensions]
-    MeshArraysDownloadsExt = ["Downloads"]
+    MeshArraysDataDepsExt = ["DataDeps"]
     MeshArraysGeoJSONExt = ["GeoJSON"]
     MeshArraysJLD2Ext = ["JLD2"]
     MeshArraysMakieExt = ["Makie"]
     MeshArraysProjExt = ["Proj"]
     MeshArraysShapefileExt = ["Shapefile"]
-    MeshArraysZipFileExt = ["ZipFile"]
 
 [[deps.Missings]]
 deps = ["DataAPI"]

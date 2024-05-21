@@ -1083,27 +1083,25 @@ version = "2.28.2+1"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "162dd3af2116a3b0f0098b3b90eba6b2d5871263"
+git-tree-sha1 = "339502822c5fffa5b3ffb0b04e5a722289fc76b5"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.3.4"
+version = "0.3.5"
 
     [deps.MeshArrays.extensions]
-    MeshArraysDownloadsExt = ["Downloads"]
+    MeshArraysDataDepsExt = ["DataDeps"]
     MeshArraysGeoJSONExt = ["GeoJSON"]
     MeshArraysJLD2Ext = ["JLD2"]
     MeshArraysMakieExt = ["Makie"]
     MeshArraysProjExt = ["Proj"]
     MeshArraysShapefileExt = ["Shapefile"]
-    MeshArraysZipFileExt = ["ZipFile"]
 
     [deps.MeshArrays.weakdeps]
-    Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+    DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
     GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
     JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
     Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
-    ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
