@@ -58,7 +58,7 @@ function scatter(XC::MeshArray,YC::MeshArray;
 		cr=[]
 	end
 
-	fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
+	fig = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
 	scatter!(ax,XC::MeshArray,YC::MeshArray; 
 	color=color, colorrange=colorrange, colorbar=colorbar, kwargs...)
@@ -137,7 +137,7 @@ end
 
 function heatmap_globalmap(MS::MeshArray;title="",colorbar=true,kwargs...)
 
-    fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+    fig = Figure(size = (900,900), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="i index",ylabel="j index",title=title)
 	hm1=heatmap_globalmap!(ax,MS;kwargs...)
     colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
@@ -148,7 +148,7 @@ heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array}
 #heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = surface!(ax,x,y,0*x;color=MS[1],shading=false,	kwargs...)
 
 function heatmap_xy(MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};title="",colorbar=true,kwargs...)
-    fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
+    fig = Figure(size = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
 	hm1=heatmap_xy!(ax,MS,x,y;kwargs...)
     colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
@@ -163,7 +163,7 @@ end
 
 function heatmap_interpolation(MS::MeshArray,λ::NamedTuple;title="",colorbar=true,kwargs...)
 
-    fig = Figure(resolution = (900,400), backgroundcolor = :grey95)
+    fig = Figure(size = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
 	hm1=heatmap_interpolation!(ax,MS,λ;kwargs...)
     colorbar ? Colorbar(fig[1,2], hm1, height = Relative(0.65)) : nothing
@@ -172,7 +172,7 @@ end
 
 function heatmap_tiled(MS::MeshArray;title="",
 	colorbar=true,colorrange=[],colormap=:viridis,kwargs...)
-	fig = Figure(resolution = (900,900), backgroundcolor = :grey95)
+	fig = Figure(size = (900,900), backgroundcolor = :grey95)
 	nf=length(MS.fSize)
 	nn=Int(ceil(nf/2))
 	ii=[i for j in 1:2, i in 1:nn]
@@ -202,9 +202,10 @@ end
 
 function northward_transport(MT)
 	x=vec(-89.0:89.0)
-	fig1 = Figure(resolution = (900,400),markersize=0.1)
-	ax1 = Axis(fig1[1,1], title="Northward Volume Transport (in Sv)")
-	hm1=lines!(x,1e-6*MT,xlabel="latitude",ylabel="Transport (in Sv)",label="ECCO estimate")
+	fig1 = Figure(size = (900,400),markersize=0.1)
+	ax1 = Axis(fig1[1,1],xlabel="latitude", ylabel="Transport (in Sv)", 
+		title="Northward Volume Transport (in Sv)")
+	hm1=lines!(x,1e-6*MT,label="ECCO estimate")
 	fig1
 end
 
@@ -212,7 +213,7 @@ function meriodional_overturning(Γ,ov)
 	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:end-1])); #coordinate variables
 	z=reverse(ov,dims=2); z[z.==0.0].=NaN
 
-	fig1 = Figure(resolution = (900,400),markersize=0.1)
+	fig1 = Figure(size = (900,400),markersize=0.1)
 	ax1 = Axis(fig1[1,1], title="Meridional Overturning Streamfunction (in Sv)")
 	hm1=contourf!(ax1,x,y,1e-6*z,levels=(-40.0:5.0:40.0),clims=(-40,40))
 	Colorbar(fig1[1,2], hm1, height = Relative(0.65))
@@ -223,7 +224,7 @@ end
 ##
 
 function gradient_EN(λ,dDdx,dDdy)
-	fig1 = Figure(resolution = (900,600),markersize=0.1)
+	fig1 = Figure(size = (900,600),markersize=0.1)
 	ax1 = Axis(fig1[1,1], title="Gradient of scalar potential in Eastward direction (in 1/s)")
 	hm1=heatmap_interpolation!(ax1,dDdx,λ,colorrange=(-0.1,0.1))
 	ax1 = Axis(fig1[2,1], title="Gradient of scalar potential in Northward direction (in 1/s)")
@@ -233,7 +234,7 @@ function gradient_EN(λ,dDdx,dDdy)
 end
 
 function gradient_xy(λ,dDdx,dDdy)
-	fig = Figure(resolution = (900,600), backgroundcolor = :grey95)
+	fig = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax = Axis(fig[1,1], title="x-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
 	hm1=heatmap_interpolation!(ax,dDdx,λ,colorrange=(-0.2,0.2))
 	ax = Axis(fig[2,1], title="y-direction velocity (in m/s)",xlabel="longitude",ylabel="latitude")
@@ -249,7 +250,7 @@ function simple_heatmap(dat)
 	lats = dat.lat[1,:]
 	field = dat.var
 
-	fig = Figure(resolution = (1200,800), fontsize = 22)
+	fig = Figure(size = (1200,800), fontsize = 22)
 	ax = Axis(fig[1,1])
 	hm1 = heatmap!(ax, lons, lats, field, colorrange=dat.meta.colorrange, colormap=dat.meta.cmap)
 	Colorbar(fig[1,2], hm1, height = Relative(0.65))
@@ -368,7 +369,7 @@ function interpolation_demo(Γ)
 
 	#
 	
-	fig1 = Figure(resolution = (900,600), backgroundcolor = :grey95)
+	fig1 = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax1 = Axis(fig1[1,1],xlabel="longitude",ylabel="latitude")
 
 	scatter!(ax1,XCtiles[iiTile][:],YCtiles[iiTile][:],marker=:+,c=:blue)
@@ -395,7 +396,7 @@ function interpolation_demo(Γ)
 
 	#
 
-	fig2 = Figure(resolution = (900,600), backgroundcolor = :grey95)
+	fig2 = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax2 = Axis(fig2[1,1],xlabel="x",ylabel="y")
 
 	scatter!(ax2,x_grid[:],y_grid[:],marker=:+,c=:blue)
@@ -424,7 +425,7 @@ function interpolation_demo(Γ)
 
 	#
 	
-	fig3 = Figure(resolution = (900,600), backgroundcolor = :grey95)
+	fig3 = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax3 = Axis(fig3[1,1],xlabel="longitude",ylabel="latitude")
 
 	scatter!(ax3,XCtiles[iiTile][:],YCtiles[iiTile][:],marker=:+,c=:blue)
@@ -440,7 +441,7 @@ end
 ##
 
 function smoothing_demo(Rini_a,Rend_a)	
-	fig = Figure(resolution = (600,600), backgroundcolor = :grey95)
+	fig = Figure(size = (600,600), backgroundcolor = :grey95)
 
 	ax1 = Axis(fig[1,1])
 	hm1=heatmap_globalmap!(ax1,Rini_a,colorrange=(-0.25,0.25))
@@ -548,7 +549,7 @@ plot_examples(:basemap,lon,lat,earth_img)
 ```
 """
 function basemap(lon,lat,basemap)
-    #fig = Figure(resolution = (1200, 800)) #, backgroundcolor = :grey80)
+    #fig = Figure(size = (1200, 800)) #, backgroundcolor = :grey80)
 	fig=with_theme(Figure,theme_light())
     ax = Axis(fig[1, 1])
 	#im=image!(ax,lon[:,1],lat[1,:],0.5 .+0.5*Gray.(basemap))

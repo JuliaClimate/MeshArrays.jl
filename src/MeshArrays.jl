@@ -20,6 +20,12 @@ GRID_CS32_hash = artifact_hash("GRID_CS32", artifact_toml)
 GRID_CS32 = joinpath(artifact_path(GRID_CS32_hash)*"/","GRID_CS32-1.1/")
 GRID_CS32_download() = artifact"GRID_CS32"
 
+function read_polygons end
+function read_shp end
+function read_json end
+function read_JLD2 end
+function write_JLD2 end
+
 include("Types.jl")
 include("Grids.jl")
 include("GridPaths.jl")
@@ -53,12 +59,6 @@ export StereographicProjection, isosurface
 
 #export location_is_out, NeighborTileIndices_dpdo, NeighborTileIndices_cs, RelocationFunctions_cs
 #export update_location_cs!, update_location_llc!, update_location_dpdo!
-
-function read_polygons end
-function read_shp end
-function read_json end
-function read_JLD2 end
-function write_JLD2 end
 
 function MA_datadep end
 export MA_datadep
