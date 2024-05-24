@@ -274,9 +274,6 @@ begin
 	proj=Proj.Transformation(MA_preset=proj_ID,lon0=lon0)
 end
 
-# ╔═╡ bc2cc71d-9712-4d27-84d4-b5cb2de1f8d6
-fig0=plot_examples(:projmap,data,lon0,proj)
-
 # ╔═╡ 485f16de-b324-43a5-a634-783381910556
 let
 	f = Figure()
@@ -285,7 +282,7 @@ let
 	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=lon0)
     
 	surf = surface!(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Depth_interpolated, 
-			colorrange=(0.0,6000.0), colormap=:berlin,shading = NoShading)
+			colorrange=(0.0,6000.0), colormap=:berlin, shading = NoShading)
 	lines!(pr_ax; polygons=pol,color=:black,linewidth=0.5)
 	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
 
@@ -2079,7 +2076,6 @@ version = "3.5.0+0"
 # ╟─ca8a8f1b-a225-46c4-93c1-ce1a4b016461
 # ╟─be38ff51-3526-44a0-9d8c-9209355e4a4a
 # ╟─85aac4c5-bf04-4f9a-a233-a3f24231762e
-# ╟─bc2cc71d-9712-4d27-84d4-b5cb2de1f8d6
 # ╟─485f16de-b324-43a5-a634-783381910556
 # ╟─303b2f54-a446-4dbe-a9a4-e6f424003722
 # ╟─d9a53bc6-19e2-48d9-b9c3-f76c3a533197
