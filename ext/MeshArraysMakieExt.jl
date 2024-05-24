@@ -8,7 +8,7 @@ import MeshArrays: read_polygons
 import MeshArrays: plot_examples
 import MeshArrays: ProjAxis
 
-import Makie: heatmap, scatter, scatter!
+import Makie: heatmap, scatter, scatter!, surface!
 LineString=Makie.LineString
 Observable=Makie.Observable
 
@@ -274,32 +274,15 @@ Use examples:
 """
 function projmap(data,trans; omit_lines=false)
 	
-    lon0=data.meta.lon0
-	dx=-calc_shift(data.lon[:,1],data.meta.lon0)
-
-    lons = circshift(data.lon[:,1],dx)
-	lats = data.lat[1,:]
-	field = circshift(data.var,(dx,0))
-
-	lon=[i for i in lons, j in lats]
-    lat=[j for i in lons, j in lats]
-
-    tmp=trans.(lon[:],lat[:])
-	x=[a[1] for a in tmp]
-	y=[a[2] for a in tmp]
-    x=reshape(x,size(lon))
-    y=reshape(y,size(lon))
-
 	f = Figure()
     ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = data.meta.ttl)
-    
-    surf = surface!(ax,x,y,0*x; color=field, 
+	pr_ax=MeshArrays.ProjAxis(ax;proj=trans,lon0=data.meta.lon0)
+
+    surf = surface!(pr_ax,data.lon,data.lat,0*data.lat; color=data.var, 
 	colorrange=data.meta.colorrange, colormap=data.meta.cmap,
         shading = NoShading)
 
-	pr_ax=MeshArrays.ProjAxis(ax;proj=trans,lon0=lon0)
-
-    po=data.polygons #LineSplitting.LineSplit(data.polygons,lon0)
+    po=data.polygons #LineSplitting.LineSplit(data.polygons,data.meta.lon0)
     po=[[Point2(trans(p[1],p[2])) for p in k] for k in po]
     [lines!(ax,l,color=:black,linewidth=0.5) for l in po]
 
@@ -609,7 +592,7 @@ abstract type AbstractPrAxis <: Makie.AbstractAxis end
 
 struct PrAxis <: AbstractPrAxis
 	ax::Axis
-	f::Any
+	proj::Any
 	lon0::Float64
 end
  
@@ -643,6 +626,27 @@ function ProjAxis(ax;proj=(x->x),lon0=0.0,omit_lines=false)
     hidedecorations!.(ax)
 
 	PrAxis(ax,proj,lon0)
+end
+
+function surface!(pr_ax::PrAxis,lon,lat,zr; color=Float64[], kwargs...)
+dx=-calc_shift(lon[:,1],pr_ax.lon0)
+
+lons = circshift(lon[:,1],dx)
+lats = lat[1,:]
+field = circshift(color,(dx,0))
+
+lon=[i for i in lons, j in lats]
+lat=[j for i in lons, j in lats]
+
+#pr_ax.proj(0,0)
+
+tmp=pr_ax.proj.(lon[:],lat[:])
+x=[a[1] for a in tmp]
+y=[a[2] for a in tmp]
+x=reshape(x,size(lon))
+y=reshape(y,size(lon))
+
+surface!(pr_ax.ax,x,y,zr; color=field, kwargs...)
 end
 
 end # module
