@@ -7,6 +7,7 @@ import MeshArrays: land_mask
 import MeshArrays: read_polygons
 import MeshArrays: plot_examples
 import MeshArrays: ProjAxis
+import MeshArrays: grid_lines!
 
 import Makie: heatmap, scatter, scatter!, surface!, lines!
 LineString=Makie.LineString

@@ -12,6 +12,7 @@ function read_json end
 function read_JLD2 end
 function write_JLD2 end
 function ProjAxis end
+function grid_lines! end
 
 include("Types.jl")
 include("Grids.jl")
