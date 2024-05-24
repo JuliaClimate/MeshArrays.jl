@@ -2,23 +2,9 @@
 
 module MeshArrays
 
-import Pkg
-thistoml=joinpath(dirname(pathof(MeshArrays)), "..", "Project.toml")
-thisversion=Pkg.TOML.parsefile(thistoml)["version"]
-
 using LazyArtifacts
 p=dirname(pathof(MeshArrays))
 artifact_toml = joinpath(p, "../Artifacts.toml")
-
-GRID_LLC90_hash = artifact_hash("GRID_LLC90", artifact_toml)
-GRID_LLC90 = joinpath(artifact_path(GRID_LLC90_hash)*"/","GRID_LLC90-1.1/")
-GRID_LLC90_download() = artifact"GRID_LLC90"
-GRID_LL360_hash = artifact_hash("GRID_LL360", artifact_toml)
-GRID_LL360 = joinpath(artifact_path(GRID_LL360_hash)*"/","GRID_LL360-1.0/")
-GRID_LL360_download() = artifact"GRID_LL360"
-GRID_CS32_hash = artifact_hash("GRID_CS32", artifact_toml)
-GRID_CS32 = joinpath(artifact_path(GRID_CS32_hash)*"/","GRID_CS32-1.1/")
-GRID_CS32_download() = artifact"GRID_CS32"
 
 function read_polygons end
 function read_shp end
