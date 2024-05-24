@@ -297,27 +297,7 @@ function projmap(data,trans; omit_lines=false)
 	colorrange=data.meta.colorrange, colormap=data.meta.cmap,
         shading = NoShading)
 
-	ii=[i for i in -180:45:180, j in -78.5:1.0:78.5]';
-    jj=[j for i in -180:45:180, j in -78.5:1.0:78.5]';
-    xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
-    yl=vcat([[jj[:,i]; NaN] for i in 1:size(ii,2)]...)
-    tmp=trans.(xl[:],yl[:])
-	xl=[a[1] for a in tmp]
-	yl=[a[2] for a in tmp]
-    !omit_lines ? lines!(xl,yl, color = :black, linewidth = 0.5) : nothing
-
-    tmp=circshift(-179.5:1.0:179.5,-lon0)
-    ii=[i for i in tmp, j in -75:15:75];
-    jj=[j for i in tmp, j in -75:15:75];
-    xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
-    yl=vcat([[jj[:,i]; NaN] for i in 1:size(ii,2)]...)
-    tmp=trans.(xl[:],yl[:])
-	xl=[a[1] for a in tmp]
-	yl=[a[2] for a in tmp]
-    !omit_lines ? lines!(xl,yl, color = :black, linewidth = 0.5) : nothing
-
-    hidespines!(ax)
-    hidedecorations!.(ax)
+	pr_ax=MeshArrays.ProjAxis(ax;proj=trans,lon0=lon0)
 
     po=data.polygons #LineSplitting.LineSplit(data.polygons,lon0)
     po=[[Point2(trans(p[1],p[2])) for p in k] for k in po]
