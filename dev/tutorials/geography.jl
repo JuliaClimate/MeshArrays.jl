@@ -49,7 +49,7 @@ Later in this notebook, we break down the `MeshArrays.Interpolate` function into
 begin
 	source_bind = @bind source Select([:shp_example,:json_example])
 	list=["wintri","natearth2","longlat"]
-	proj_bind = @bind proj Select(list)
+	proj_bind = @bind proj_name Select(list, default="natearth2")
 	lon0_bind = @bind lon0 Select(collect(-160:40:160),default=-160)
 	md"""## Projection
 	
@@ -250,7 +250,7 @@ begin
 	elseif source==:json_example
 		fil=demo.download_polygons("countries.geojson")
 	end
-	l=MeshArrays.read_polygons(fil)
+	pol=MeshArrays.read_polygons(fil)
 	"Done With Reading Country Polygons"
 end
 
@@ -258,30 +258,40 @@ end
 begin
 	fig_polygons=Figure()
 	ax1=Axis(fig_polygons[1,1])
-	[lines!(ax1,l1,color = :black, linewidth = 0.5) for l1 in l]
+	[lines!(ax1,l1,color = :black, linewidth = 0.5) for l1 in pol]
 	fig_polygons
-end
-
-# ╔═╡ d448431e-13a9-440c-9463-9174d7400cf1
-begin
-	proj_ID=findall(list.==proj)[1]
-	trans=Proj.Transformation(MA_preset=proj_ID,lon0=lon0)
-	ll=Makie.coordinates.(split(l,lon0))
 end
 
 # ╔═╡ 41960267-fff9-4bc4-a7bc-aceea2217c63
 begin
-	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",lon0=lon0)
-	data=(lon=λ.lon,lat=λ.lat,var=Depth_interpolated,meta=meta,polygons=ll)
-	summary(data)
+	meta=(colorrange=(0.0,6000.0),cmap=:berlin,gridcolor=:lightgreen,ttl="Ocean Depth (m)")
+	data=(lon=λ.lon,lat=λ.lat,var=Depth_interpolated,meta=meta,polygons=pol)
 end
 
-# ╔═╡ 9c30b8df-b95d-40e1-b7e3-2dacbdda49ed
-#simple_heatmap(data)
-plot_examples(:projmap,data,trans)
+# ╔═╡ d448431e-13a9-440c-9463-9174d7400cf1
+begin
+	proj_ID=findall(list.==proj_name)[1]
+	proj=Proj.Transformation(MA_preset=proj_ID,lon0=lon0)
+end
 
-# ╔═╡ b4b1d8d1-f97d-4cd2-ace7-82ae65643573
-data
+# ╔═╡ bc2cc71d-9712-4d27-84d4-b5cb2de1f8d6
+fig0=plot_examples(:projmap,data,lon0,proj)
+
+# ╔═╡ 485f16de-b324-43a5-a634-783381910556
+let
+	f = Figure()
+    ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = "Ocean Depth (m)")
+
+	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=lon0)
+    
+	surf = surface!(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Depth_interpolated, 
+			colorrange=(0.0,6000.0), colormap=:berlin,shading = NoShading)
+	lines!(pr_ax; polygons=pol,color=:black,linewidth=0.5)
+	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
+
+	Colorbar(f[1,2], surf, height = Relative(0.5))
+	f
+end
 
 # ╔═╡ 7fc02644-b037-425a-b660-cc6904a95037
 md"""#### Code"""
@@ -2069,8 +2079,8 @@ version = "3.5.0+0"
 # ╟─ca8a8f1b-a225-46c4-93c1-ce1a4b016461
 # ╟─be38ff51-3526-44a0-9d8c-9209355e4a4a
 # ╟─85aac4c5-bf04-4f9a-a233-a3f24231762e
-# ╠═9c30b8df-b95d-40e1-b7e3-2dacbdda49ed
-# ╠═b4b1d8d1-f97d-4cd2-ace7-82ae65643573
+# ╟─bc2cc71d-9712-4d27-84d4-b5cb2de1f8d6
+# ╟─485f16de-b324-43a5-a634-783381910556
 # ╟─303b2f54-a446-4dbe-a9a4-e6f424003722
 # ╟─d9a53bc6-19e2-48d9-b9c3-f76c3a533197
 # ╟─6aab5feb-06b6-4fbd-8732-83b70f397f00
