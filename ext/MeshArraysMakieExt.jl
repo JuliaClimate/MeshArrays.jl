@@ -262,11 +262,12 @@ function simple_heatmap(dat)
 end
 
 """
-    projmap(data,proj; omit_grid_lines=false)
+    projmap(data,lon0=lon0,proj=proj)
 
 Inputs:
 
 - data is a `NamedTuple`
+- lon0 is the central longitude
 - proj is a `Proj.Transformation`
 
 Use examples:
@@ -274,17 +275,17 @@ Use examples:
 - `MeshArrays.jl/examples/geography.jl`
 - `ClimateModels.jl/examples/IPCC.jl`
 """
-function projmap(data,proj; omit_grid_lines=false)
+function projmap(data,lon0=lon0,proj=proj)
 	
 	f = Figure()
     ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = data.meta.ttl)
-	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=data.meta.lon0)
+	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=lon0)
 
     surf = surface!(pr_ax,data.lon,data.lat,0*data.lat.-1; color=data.var, 
 	colorrange=data.meta.colorrange, colormap=data.meta.cmap,
         shading = NoShading)
 
-	!omit_grid_lines ? grid_lines!(pr_ax) : nothing
+	haskey(data.meta,:gridcolor) ? grid_lines!(pr_ax,color=data.meta.gridcolor,linewidth=0.5) : nothing
 	haskey(data,:polygons) ? lines!(pr_ax; polygons=data.polygons,color=:black,linewidth=0.5) : nothing
 
     Colorbar(f[1,2], surf, height = Relative(0.5))
@@ -606,13 +607,13 @@ function ProjAxis(ax;proj=(x->x),lon0=0.0,omit_grid_lines=true,polygons=Any[])
     hidespines!(ax)
     hidedecorations!.(ax)
 	pr_ax=PrAxis(ax,proj,lon0)
-	!omit_grid_lines ? grid_lines!(pr_ax) : nothing
+	!omit_grid_lines ? grid_lines!(pr_ax,color=:black,linewidth=0.5) : nothing
 	!isempty(polygons) ? lines!(pr_ax; polygons=polygons,color=:black,linewidth=0.5) : nothing
 	
 	pr_ax
 end
 
-function grid_lines!(pr_ax::PrAxis)
+function grid_lines!(pr_ax::PrAxis;kwargs...)
 	ii=[i for i in -180:45:180, j in -78.5:1.0:78.5]';
     jj=[j for i in -180:45:180, j in -78.5:1.0:78.5]';
     xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
@@ -620,7 +621,7 @@ function grid_lines!(pr_ax::PrAxis)
     tmp=pr_ax.proj.(xl[:],yl[:])
 	xl=[a[1] for a in tmp]
 	yl=[a[2] for a in tmp]
-    lines!(xl,yl, color = :black, linewidth = 0.5)
+    lines!(xl,yl; kwargs...)
 
     tmp=circshift(-179.5:1.0:179.5,-pr_ax.lon0)
     ii=[i for i in tmp, j in -75:15:75];
@@ -630,7 +631,7 @@ function grid_lines!(pr_ax::PrAxis)
     tmp=pr_ax.proj.(xl[:],yl[:])
 	xl=[a[1] for a in tmp]
 	yl=[a[2] for a in tmp]
-    lines!(xl,yl, color = :black, linewidth = 0.5)
+    lines!(xl,yl; kwargs...)
 end
 
 function surface!(pr_ax::PrAxis,lon,lat,zr; color=Float64[], kwargs...)
@@ -642,8 +643,6 @@ field = circshift(color,(dx,0))
 
 lon=[i for i in lons, j in lats]
 lat=[j for i in lons, j in lats]
-
-#pr_ax.proj(0,0)
 
 tmp=pr_ax.proj.(lon[:],lat[:])
 x=[a[1] for a in tmp]
