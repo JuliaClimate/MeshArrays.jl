@@ -6,6 +6,7 @@ using MeshArrays, Makie
 import MeshArrays: land_mask
 import MeshArrays: read_polygons
 import MeshArrays: plot_examples
+import MeshArrays: ProjAxis
 
 import Makie: heatmap, scatter, scatter!
 LineString=Makie.LineString
@@ -620,6 +621,48 @@ function split(tmp::Vector{<:LineString},dest::String)
 	else
 		tmp
 	end
+end
+
+##
+
+abstract type AbstractPrAxis <: Makie.AbstractAxis end
+
+struct PrAxis <: AbstractPrAxis
+	ax::Axis
+	f::Any
+	lon0::Float64
+end
+ 
+"""
+    ProjAxis(;trans=(x->x),lon0=0.0)
+
+Presets for Proj in MeshArrays.    
+"""
+function ProjAxis(ax;proj=(x->x),lon0=0.0,omit_lines=false)
+
+	ii=[i for i in -180:45:180, j in -78.5:1.0:78.5]';
+    jj=[j for i in -180:45:180, j in -78.5:1.0:78.5]';
+    xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
+    yl=vcat([[jj[:,i]; NaN] for i in 1:size(ii,2)]...)
+    tmp=proj.(xl[:],yl[:])
+	xl=[a[1] for a in tmp]
+	yl=[a[2] for a in tmp]
+    !omit_lines ? lines!(xl,yl, color = :black, linewidth = 0.5) : nothing
+
+    tmp=circshift(-179.5:1.0:179.5,-lon0)
+    ii=[i for i in tmp, j in -75:15:75];
+    jj=[j for i in tmp, j in -75:15:75];
+    xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
+    yl=vcat([[jj[:,i]; NaN] for i in 1:size(ii,2)]...)
+    tmp=proj.(xl[:],yl[:])
+	xl=[a[1] for a in tmp]
+	yl=[a[2] for a in tmp]
+    !omit_lines ? lines!(xl,yl, color = :black, linewidth = 0.5) : nothing
+
+    hidespines!(ax)
+    hidedecorations!.(ax)
+
+	PrAxis(ax,proj,lon0)
 end
 
 end # module
