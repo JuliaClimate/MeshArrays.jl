@@ -1,4 +1,9 @@
 
+
+import Pkg
+thistoml=joinpath(dirname(pathof(MeshArrays)), "..", "Project.toml")
+thisversion=Pkg.TOML.parsefile(thistoml)["version"]
+
 """
     gcmarray{T, N, AT}
 
