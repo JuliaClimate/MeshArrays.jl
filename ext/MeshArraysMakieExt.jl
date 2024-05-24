@@ -8,9 +8,10 @@ import MeshArrays: read_polygons
 import MeshArrays: plot_examples
 import MeshArrays: ProjAxis
 
-import Makie: heatmap, scatter, scatter!, surface!
+import Makie: heatmap, scatter, scatter!, surface!, lines!
 LineString=Makie.LineString
 Observable=Makie.Observable
+GeometryBasics=Makie.GeometryBasics
 
 function plot_examples(ID=Symbol,stuff...)
 	if ID==:interpolation_demo
@@ -260,33 +261,31 @@ function simple_heatmap(dat)
 end
 
 """
-    projmap(data,trans; omit_lines=false)
+    projmap(data,proj; omit_grid_lines=false)
 
 Inputs:
 
 - data is a `NamedTuple`
-- trans is a `Proj.Transformation`
+- proj is a `Proj.Transformation`
 
 Use examples:
 
 - `MeshArrays.jl/examples/geography.jl`
 - `ClimateModels.jl/examples/IPCC.jl`
 """
-function projmap(data,trans; omit_lines=false)
+function projmap(data,proj; omit_grid_lines=false)
 	
 	f = Figure()
     ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = data.meta.ttl)
-	pr_ax=MeshArrays.ProjAxis(ax;proj=trans,lon0=data.meta.lon0)
+	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=data.meta.lon0)
 
-    surf = surface!(pr_ax,data.lon,data.lat,0*data.lat; color=data.var, 
+    surf = surface!(pr_ax,data.lon,data.lat,0*data.lat.-1; color=data.var, 
 	colorrange=data.meta.colorrange, colormap=data.meta.cmap,
         shading = NoShading)
 
-    po=data.polygons #LineSplitting.LineSplit(data.polygons,data.meta.lon0)
-    po=[[Point2(trans(p[1],p[2])) for p in k] for k in po]
-    [lines!(ax,l,color=:black,linewidth=0.5) for l in po]
+	!omit_grid_lines ? grid_lines!(pr_ax) : nothing
+	haskey(data,:polygons) ? lines!(pr_ax; polygons=data.polygons,color=:black,linewidth=0.5) : nothing
 
-	#add colorbar
     Colorbar(f[1,2], surf, height = Relative(0.5))
 
 	f
@@ -534,57 +533,57 @@ end
 
 import Base: split
 
-function regroup(tmp::Vector)
-	coastlines_custom=LineString[]
-	for ii in 1:length(tmp)
-		push!(coastlines_custom,tmp[ii][:]...)
-	end
-	coastlines_custom
-end
+getlon(p::GeometryBasics.Point) = p[1]
 
-"""
-	split(tmp::Vector{<:LineString},lon0::Real)
-
-Split each `LineString` at `lon0`.
-"""
-function split(tmp::Vector{<:LineString},lon0::Real)
-	regroup([split(a,lon0) for a in tmp])
-end
-
-"""
-	split(tmp::LineString,lon0::Real)
-
-Split `LineString` at `lon0`.
-"""
-function split(tmp::LineString,lon0::Real)
+###
+function split(tmp::GeometryBasics.LineString, lon0::Real)
 	lon0<0.0 ? lon1=lon0+180 : lon1=lon0-180 
-	np=length(tmp)
-	tmp2=fill(0,np)
-	for p in 1:np
-		tmp1=tmp[p]
-		tmp2[p]=maximum( [(tmp1[1][1]<=lon1)+2*(tmp1[2][1]>=lon1) , (tmp1[2][1]<=lon1)+2*(tmp1[1][1]>=lon1)] )
-	end
-	if sum(tmp2.==3)==0
-		[tmp]
-	else
-		#println("splitting here")
-		jj=[0;findall(tmp2.==3)...;np+1]
-		[LineString(tmp[jj[ii]+1:jj[ii+1]-1]) for ii in 1:length(jj)-1]
-	end
+
+	linenodes = GeometryBasics.coordinates(tmp)  # get coordinates of line nodes
+	# Find nodes that are on either side of lon0
+	cond = getlon.(linenodes) .>= lon1
+	# Find interval starts and ends
+	end_cond = diff(cond)  # nonzero values denote ends of intervals
+	end_inds = findall(!=(0), end_cond)
+	start_inds = [firstindex(linenodes);  end_inds .+ 1]  # starts of intervals
+	end_inds = [end_inds; lastindex(linenodes)]  # ends of intervals
+	# do the splitting
+	split_coords = view.(Ref(linenodes), UnitRange.(start_inds, end_inds))  # For each start-end pair, get those coords
+	# reconstruct lines from points
+	split_lines = GeometryBasics.LineString.(split_coords) 
 end
 
-split(tmp::Vector{<:LineString},dest::Observable) = tmp
+function split(tmp::Vector{<:GeometryBasics.LineString}, lon0::Real)
+	[split(a,lon0) for a in tmp]
+end
 
-function split(tmp::Vector{<:LineString},dest::String)
+###
+split(tmp::GeometryBasics.LineString,dest::Observable) = @lift(split(tmp, $(dest)))
+
+function split(tmp::Vector{<:GeometryBasics.LineString},dest::Observable)
+	@lift([split(a,$(dest)) for a in tmp])
+end
+
+###
+function split(tmp::GeometryBasics.LineString,dest::String)
 	if occursin("+lon_0",dest)
 		tmp1=split(dest)
 		tmp2=findall(occursin.(Ref("+lon_0"),tmp1))[1]
 		lon_0=parse(Float64,split(tmp1[tmp2],"=")[2])
-		regroup(split(tmp,lon_0))
+		split(tmp,lon_0)
 	else
 		tmp
 	end
 end
+
+function split(tmp::Vector{<:GeometryBasics.LineString},dest::String)
+	[split(a,dest) for a in tmp]
+end
+
+###
+
+split(tmp::Observable,dest::Observable) = @lift(split($(tmp), $(dest)))
+split(tmp::Observable,dest::String) = @lift(split($(tmp), (dest)))
 
 ##
 
@@ -597,35 +596,40 @@ struct PrAxis <: AbstractPrAxis
 end
  
 """
-    ProjAxis(;trans=(x->x),lon0=0.0)
+    ProjAxis(;proj=(x->x),lon0=0.0)
 
 Presets for Proj in MeshArrays.    
 """
-function ProjAxis(ax;proj=(x->x),lon0=0.0,omit_lines=false)
+function ProjAxis(ax;proj=(x->x),lon0=0.0,omit_grid_lines=true,polygons=Any[])
 
+    hidespines!(ax)
+    hidedecorations!.(ax)
+	pr_ax=PrAxis(ax,proj,lon0)
+	!omit_grid_lines ? grid_lines!(pr_ax) : nothing
+	!isempty(polygons) ? lines!(pr_ax; polygons=polygons,color=:black,linewidth=0.5) : nothing
+	
+	pr_ax
+end
+
+function grid_lines!(pr_ax::PrAxis)
 	ii=[i for i in -180:45:180, j in -78.5:1.0:78.5]';
     jj=[j for i in -180:45:180, j in -78.5:1.0:78.5]';
     xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
     yl=vcat([[jj[:,i]; NaN] for i in 1:size(ii,2)]...)
-    tmp=proj.(xl[:],yl[:])
+    tmp=pr_ax.proj.(xl[:],yl[:])
 	xl=[a[1] for a in tmp]
 	yl=[a[2] for a in tmp]
-    !omit_lines ? lines!(xl,yl, color = :black, linewidth = 0.5) : nothing
+    lines!(xl,yl, color = :black, linewidth = 0.5)
 
-    tmp=circshift(-179.5:1.0:179.5,-lon0)
+    tmp=circshift(-179.5:1.0:179.5,-pr_ax.lon0)
     ii=[i for i in tmp, j in -75:15:75];
     jj=[j for i in tmp, j in -75:15:75];
     xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
     yl=vcat([[jj[:,i]; NaN] for i in 1:size(ii,2)]...)
-    tmp=proj.(xl[:],yl[:])
+    tmp=pr_ax.proj.(xl[:],yl[:])
 	xl=[a[1] for a in tmp]
 	yl=[a[2] for a in tmp]
-    !omit_lines ? lines!(xl,yl, color = :black, linewidth = 0.5) : nothing
-
-    hidespines!(ax)
-    hidedecorations!.(ax)
-
-	PrAxis(ax,proj,lon0)
+    lines!(xl,yl, color = :black, linewidth = 0.5)
 end
 
 function surface!(pr_ax::PrAxis,lon,lat,zr; color=Float64[], kwargs...)
@@ -647,6 +651,16 @@ x=reshape(x,size(lon))
 y=reshape(y,size(lon))
 
 surface!(pr_ax.ax,x,y,zr; color=field, kwargs...)
+end
+
+function lines!(pr_ax::PrAxis;polygons=Any[], kwargs...)
+	if eltype(polygons)<:Makie.LineString
+		po=[Makie.coordinates.(p) for p in split(polygons,pr_ax.lon0)]
+		po=[[[Point2(pr_ax.proj(p[1],p[2])) for p in pp] for pp in ppp] for ppp in po]
+		[[lines!(pr_ax.ax,pp;kwargs...) for pp in ppp] for ppp in po]
+	else
+		@warn "untested input type"
+	end
 end
 
 end # module
