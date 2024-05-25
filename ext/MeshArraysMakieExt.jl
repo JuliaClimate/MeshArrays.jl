@@ -9,7 +9,7 @@ import MeshArrays: plot_examples
 import MeshArrays: ProjAxis
 import MeshArrays: grid_lines!
 
-import Makie: heatmap, scatter, scatter!, surface!, lines!
+import Makie: heatmap, scatter, scatter!, surface!, lines!, heatmap!, contour!, contourf!
 LineString=Makie.LineString
 Observable=Makie.Observable
 GeometryBasics=Makie.GeometryBasics
@@ -634,23 +634,44 @@ function grid_lines!(pr_ax::PrAxis;kwargs...)
     lines!(xl,yl; kwargs...)
 end
 
-function surface!(pr_ax::PrAxis,lon,lat,zr; color=Float64[], kwargs...)
-dx=-calc_shift(lon[:,1],pr_ax.lon0)
+circshift_etc(pr_ax::PrAxis,lon,lat,field) = begin
+	dx=-calc_shift(lon[:,1],pr_ax.lon0)
 
-lons = circshift(lon[:,1],dx)
-lats = lat[1,:]
-field = circshift(color,(dx,0))
+	lons = circshift(lon[:,1],dx)
+	lats = lat[1,:]
+	csfield = circshift(field,(dx,0))
+	
+	lon=[i for i in lons, j in lats]
+	lat=[j for i in lons, j in lats]
+	
+	tmp=pr_ax.proj.(lon[:],lat[:])
+	x=[a[1] for a in tmp]
+	y=[a[2] for a in tmp]
+	x=reshape(x,size(lon))
+	y=reshape(y,size(lon))
 
-lon=[i for i in lons, j in lats]
-lat=[j for i in lons, j in lats]
+	return x,y,csfield
+end	
 
-tmp=pr_ax.proj.(lon[:],lat[:])
-x=[a[1] for a in tmp]
-y=[a[2] for a in tmp]
-x=reshape(x,size(lon))
-y=reshape(y,size(lon))
+function surface!(pr_ax::PrAxis,lon,lat,field; color=Float64[], kwargs...)
+	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
+	_,_,cscolor=circshift_etc(pr_ax::PrAxis,lon,lat,color)
+	surface!(pr_ax.ax,x,y,csfield; color=cscolor, kwargs...)
+end
 
-surface!(pr_ax.ax,x,y,zr; color=field, kwargs...)
+function heatmap!(pr_ax::PrAxis,lon,lat,field; kwargs...)
+	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
+	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
+end
+
+function contourf!(pr_ax::PrAxis,lon,lat,field; kwargs...)
+	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
+	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
+end
+
+function contour!(pr_ax::PrAxis,lon,lat,field; kwargs...)
+	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
+	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
 end
 
 function lines!(pr_ax::PrAxis;polygons=Any[], kwargs...)
@@ -661,6 +682,15 @@ function lines!(pr_ax::PrAxis;polygons=Any[], kwargs...)
 	else
 		@warn "untested input type"
 	end
+end
+
+function scatter!(pr_ax::PrAxis,lon,lat,kargs...; kwargs...)
+	tmp=pr_ax.proj.(collect(lon)[:],collect(lat)[:])
+	x=[a[1] for a in tmp]
+	y=[a[2] for a in tmp]
+	x=reshape(x,size(lon))
+	y=reshape(y,size(lon))
+	scatter!(pr_ax.ax,x,y,kargs...; kwargs...)
 end
 
 end # module
