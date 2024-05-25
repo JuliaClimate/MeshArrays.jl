@@ -275,7 +275,7 @@ begin
 end
 
 # ╔═╡ 485f16de-b324-43a5-a634-783381910556
-let
+fig0=let
 	f = Figure()
     ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = "Ocean Depth (m)")
 
@@ -284,6 +284,7 @@ let
 	surf = surface!(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Depth_interpolated, 
 			colorrange=(0.0,6000.0), colormap=:berlin, shading = NoShading)
 	lines!(pr_ax; polygons=pol,color=:black,linewidth=0.5)
+	#y1=-90:5:90; x1=lon0.+0*y1; scatter!(pr_ax,x1,y1,color=:yellow,markersize=5,marker=:x)
 	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
 
 	Colorbar(f[1,2], surf, height = Relative(0.5))
