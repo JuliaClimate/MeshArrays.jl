@@ -33,6 +33,8 @@ function plot_examples(ID=Symbol,stuff...)
 		gradient_xy(stuff...)
 	elseif ID==:basemap
 		basemap(stuff...)
+	elseif ID==:baseproj
+		baseproj(stuff...)
 	else
 		println("unknown plot ID")
 	end
@@ -509,6 +511,7 @@ end
     basemap(lon,lat,basemap)
 
 ```
+using MeshArrays, CairoMakie, DataDeps, JLD2
 lon,lat,earth_img=demo.get_basemap()
 plot_examples(:basemap,lon,lat,earth_img)
 ```
@@ -523,6 +526,26 @@ function basemap(lon,lat,basemap)
 
 	#fig,ax,im
     fig
+end
+
+"""
+```
+using MeshArrays, CairoMakie, Proj
+#using DataDeps, JLD2
+
+lon0=-160
+proj=Proj.Transformation(MA_preset=2,lon0=lon0)
+(fi0,ax0)=plot_examples(:baseproj,proj,lon0)
+fi0
+```
+"""
+function baseproj(proj,lon0; pol=[])
+	fi0=Figure(size=(900,600),fontsize=24)
+	ax0=Axis(fi0[1,1],backgroundcolor = :gray20)
+	pr_ax=ProjAxis(ax0; proj=proj,lon0=lon0)
+	lines!(pr_ax,polygons=pol;color=:white, linewidth = 0.5)
+	grid_lines!(pr_ax;color=:yellow,linewidth=0.5)
+	fi0,pr_ax
 end
 
 ############################################################
