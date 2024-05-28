@@ -658,14 +658,19 @@ function grid_lines!(pr_ax::PrAxis;kwargs...)
 end
 
 circshift_etc(pr_ax::PrAxis,lon,lat,field) = begin
-	dx=-calc_shift(lon[:,1],pr_ax.lon0)
+	if length(size(lon))>1
+		lo=lon[:,1]; la=lat[1,:]
+	else
+		lo=lon[:]; la=lat[:]
+	end
 
-	lons = circshift(lon[:,1],dx)
-	lats = lat[1,:]
+	dx=-calc_shift(lo,pr_ax.lon0)
+
+	shlo = circshift(lo,dx)
 	csfield = circshift(field,(dx,0))
 	
-	lon=[i for i in lons, j in lats]
-	lat=[j for i in lons, j in lats]
+	lon=[i for i in shlo, j in la]
+	lat=[j for i in shlo, j in la]
 	
 	tmp=pr_ax.proj.(lon[:],lat[:])
 	x=[a[1] for a in tmp]
@@ -684,17 +689,17 @@ end
 
 function heatmap!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
-	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
+	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
 end
 
 function contourf!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
-	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
+	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
 end
 
 function contour!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
-	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
+	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
 end
 
 function lines!(pr_ax::PrAxis;polygons=Any[], kwargs...)
