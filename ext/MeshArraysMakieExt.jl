@@ -14,7 +14,7 @@ LineString=Makie.LineString
 Observable=Makie.Observable
 GeometryBasics=Makie.GeometryBasics
 
-function plot_examples(ID=Symbol,stuff...)
+function plot_examples(ID=Symbol,stuff...;kwargs...)
 	if ID==:interpolation_demo
 		interpolation_demo(stuff...)
 	elseif ID==:projmap
@@ -34,7 +34,7 @@ function plot_examples(ID=Symbol,stuff...)
 	elseif ID==:basemap
 		basemap(stuff...)
 	elseif ID==:baseproj
-		baseproj(stuff...)
+		baseproj(stuff...;kwargs...)
 	else
 		println("unknown plot ID")
 	end
@@ -543,12 +543,14 @@ end
 """
 ```
 using MeshArrays, CairoMakie, Proj
-#using DataDeps, JLD2
+
+using DataDeps, Shapefile
+pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
+pol=MeshArrays.read_polygons(pol_file)
 
 lon0=-160
 proj=Proj.Transformation(MA_preset=2,lon0=lon0)
-(fi0,ax0)=plot_examples(:baseproj,proj,lon0)
-fi0
+plot_examples(:baseproj,proj,lon0,pol=pol)
 ```
 """
 function baseproj(proj,lon0; pol=[])
@@ -557,7 +559,7 @@ function baseproj(proj,lon0; pol=[])
 	pr_ax=ProjAxis(ax0; proj=proj,lon0=lon0)
 	lines!(pr_ax,polygons=pol;color=:white, linewidth = 0.5)
 	grid_lines!(pr_ax;color=:yellow,linewidth=0.5)
-	fi0,pr_ax
+	fi0
 end
 
 ############################################################
