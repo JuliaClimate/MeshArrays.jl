@@ -121,15 +121,29 @@ heatmap(MS,interpolation=λ,title="ocean depth") #same but w title
 heatmap(MS,x=lon,y=lat) #only for simple domains; will show MS[1]
 ```
 """
-function heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,colorbar=true,title="",kwargs...)	
-	if !isnothing(interpolation)
-		heatmap_interpolation(MS,interpolation;colorbar=colorbar,title=title,kwargs...)
-	elseif globalmap
-		heatmap_globalmap(MS;colorbar=colorbar,title=title,kwargs...)
-	elseif !isnothing(x)
-		heatmap_xy(MS,x,y;colorbar=colorbar,title=title,kwargs...)
+heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,colorbar=true,title="",kwargs...)=begin
+	if (!isnothing(interpolation))||globalmap||(!isnothing(x))
+		f=Figure()
+		ax=Axis(f[1,1],title=title)
+		hm1=heatmap!(ax,MS::MeshArray;
+				interpolation=interpolation,globalmap=globalmap,x=x,y=y,
+				kwargs...)
+		colorbar ? Colorbar(f[1,2], hm1, height = Relative(0.65)) : nothing
+		f
 	else
 		heatmap_tiled(MS;colorbar=colorbar,title=title,kwargs...)
+	end
+end
+
+function heatmap!(ax::Axis,MS::MeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,kwargs...)	
+	if !isnothing(interpolation)
+		heatmap_interpolation!(ax,MS,interpolation;kwargs...)
+	elseif globalmap
+		heatmap_globalmap!(ax,MS;kwargs...)
+	elseif !isnothing(x)
+		heatmap_xy!(ax,MS,x,y;kwargs...)
+	else
+		heatmap_tiled(MS;kwargs...)
 	end
 end
 
@@ -141,7 +155,6 @@ function heatmap_globalmap!(ax,MS::MeshArray;kwargs...)
 end
 
 function heatmap_globalmap(MS::MeshArray;title="",colorbar=true,kwargs...)
-
     fig = Figure(size = (900,900), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="i index",ylabel="j index",title=title)
 	hm1=heatmap_globalmap!(ax,MS;kwargs...)
@@ -167,7 +180,6 @@ function heatmap_interpolation!(ax,MS::MeshArray,λ::NamedTuple;kwargs...)
 end
 
 function heatmap_interpolation(MS::MeshArray,λ::NamedTuple;title="",colorbar=true,kwargs...)
-
     fig = Figure(size = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
 	hm1=heatmap_interpolation!(ax,MS,λ;kwargs...)
