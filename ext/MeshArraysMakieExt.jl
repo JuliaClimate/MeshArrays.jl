@@ -14,7 +14,7 @@ LineString=Makie.LineString
 Observable=Makie.Observable
 GeometryBasics=Makie.GeometryBasics
 
-function plot_examples(ID=Symbol,stuff...)
+function plot_examples(ID=Symbol,stuff...;kwargs...)
 	if ID==:interpolation_demo
 		interpolation_demo(stuff...)
 	elseif ID==:projmap
@@ -33,6 +33,8 @@ function plot_examples(ID=Symbol,stuff...)
 		gradient_xy(stuff...)
 	elseif ID==:basemap
 		basemap(stuff...)
+	elseif ID==:baseproj
+		baseproj(stuff...;kwargs...)
 	else
 		println("unknown plot ID")
 	end
@@ -521,6 +523,7 @@ end
     basemap(lon,lat,basemap)
 
 ```
+using MeshArrays, CairoMakie, DataDeps, JLD2
 lon,lat,earth_img=demo.get_basemap()
 plot_examples(:basemap,lon,lat,earth_img)
 ```
@@ -535,6 +538,28 @@ function basemap(lon,lat,basemap)
 
 	#fig,ax,im
     fig
+end
+
+"""
+```
+using MeshArrays, CairoMakie, Proj
+
+using DataDeps, Shapefile
+pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
+pol=MeshArrays.read_polygons(pol_file)
+
+lon0=-160
+proj=Proj.Transformation(MA_preset=2,lon0=lon0)
+plot_examples(:baseproj,proj,lon0,pol=pol)
+```
+"""
+function baseproj(proj,lon0; pol=[])
+	fi0=Figure(size=(900,600),fontsize=24)
+	ax0=Axis(fi0[1,1],backgroundcolor = :gray20)
+	pr_ax=ProjAxis(ax0; proj=proj,lon0=lon0)
+	lines!(pr_ax,polygons=pol;color=:white, linewidth = 0.5)
+	grid_lines!(pr_ax;color=:yellow,linewidth=0.5)
+	fi0
 end
 
 ############################################################
@@ -647,14 +672,19 @@ function grid_lines!(pr_ax::PrAxis;kwargs...)
 end
 
 circshift_etc(pr_ax::PrAxis,lon,lat,field) = begin
-	dx=-calc_shift(lon[:,1],pr_ax.lon0)
+	if length(size(lon))>1
+		lo=lon[:,1]; la=lat[1,:]
+	else
+		lo=lon[:]; la=lat[:]
+	end
 
-	lons = circshift(lon[:,1],dx)
-	lats = lat[1,:]
+	dx=-calc_shift(lo,pr_ax.lon0)
+
+	shlo = circshift(lo,dx)
 	csfield = circshift(field,(dx,0))
 	
-	lon=[i for i in lons, j in lats]
-	lat=[j for i in lons, j in lats]
+	lon=[i for i in shlo, j in la]
+	lat=[j for i in shlo, j in la]
 	
 	tmp=pr_ax.proj.(lon[:],lat[:])
 	x=[a[1] for a in tmp]
@@ -673,17 +703,17 @@ end
 
 function heatmap!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
-	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
+	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
 end
 
 function contourf!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
-	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
+	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
 end
 
 function contour!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
-	surface!(pr_ax.ax,x,y,0*cscolor; color=cscolor, kwargs...)
+	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
 end
 
 function lines!(pr_ax::PrAxis;polygons=Any[], kwargs...)
