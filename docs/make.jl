@@ -2,8 +2,8 @@ using Documenter, PlutoSliderServer, MeshArrays, DataDeps, CairoMakie
 
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
 
-import OceanStateEstimation
-OceanStateEstimation.get_ecco_velocity_if_needed()
+import Climatology
+Climatology.get_ecco_velocity_if_needed()
 
 MeshArrays.GRID_LL360_download()
 MeshArrays.GRID_LLC90_download()

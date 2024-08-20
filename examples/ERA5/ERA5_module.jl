@@ -111,10 +111,7 @@ function ave3h(a,buffer2d,buff2d,y,d,r,rec0; path="ERA5/", variable=1)
     a.=a/3
 end
 
-function loop_over_years(variable=1,path="ERA5/")
-  y0=1941
-  ny=83
-  ndmax=366
+function loop_over_years(variable=1;path="ERA5/",y0=1941,ny=83,ndmax=366)
 
   γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
   Γ=GridLoad(γ)
@@ -162,6 +159,43 @@ function loop_over_years(variable=1,path="ERA5/")
   end
   S
 end
+
+##
+
+function loop_over_years_spfh(; path="ERA5/ERA5_llc90/",y0=1941,ny=83,ndmax=366)
+
+  γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+  spfh=zeros(Float32,γ.ioSize...)
+  d2m=zeros(Float32,γ.ioSize...)
+  pres=zeros(Float32,γ.ioSize...)
+
+  for y in y0.+(0:ny-1)
+      nd=Day(DateTime(y+1,1)-DateTime(y,1)).value
+
+      fil_out=joinpath(pth_out,"llc90_ERA5_spfh2m_$y")
+      fil_d2m=joinpath(pth_out,"llc90_ERA5_d2m_$y")
+      fil_pres=joinpath(pth_out,"llc90_ERA5_pres_$y")
+
+      g_out=FortranFiles.FortranFile(fil_out,"w",access="direct",recl=90*1170*4,convert="big-endian")
+      g_d2m=FortranFiles.FortranFile(fil_d2m,"r",access="direct",recl=90*1170*4,convert="big-endian")
+      g_pres=FortranFiles.FortranFile(fil_pres,"r",access="direct",recl=90*1170*4,convert="big-endian")
+
+      nt=8*min(Dates.Day(DateTime(y+1,1,1)-DateTime(y,1,1)).value,ndmax)
+
+      for t in 1:nt
+          FortranFiles.read(g_d2m,rec=t,d2m)
+          FortranFiles.read(g_pres,rec=t,pres)
+          [spfh[i]=qsat(pres[i],E(d2m[i])) for i in eachindex(IndexCartesian(),spfh)]
+          FortranFiles.write(g_out,rec=t,Float32.(spfh))
+      end
+
+      close(g_out)
+      close(g_d2m)
+      close(g_pres)
+  end
+end
+
+##
 
 end #module ERA5interp
 

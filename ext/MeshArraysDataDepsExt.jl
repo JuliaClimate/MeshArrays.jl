@@ -35,16 +35,18 @@ module MeshArraysDataDepsExt
    ```    
    """
    MA_datadep(nam="countries_shp1") = begin
-      if nam=="countries_shp1"
-         datadep"countries_shp1"
-      elseif nam=="countries_geojson1"
-         datadep"countries_geojson1"
-      elseif nam=="basemap_jpg1"
-         datadep"basemap_jpg1"
-      elseif nam=="interp_halfdeg"
-         datadep"interp_halfdeg"
-      else
-         error("unknown data dependency")
+      withenv("DATADEPS_ALWAYS_ACCEPT"=>true) do
+         if nam=="countries_shp1"
+            datadep"countries_shp1"
+         elseif nam=="countries_geojson1"
+            datadep"countries_geojson1"
+         elseif nam=="basemap_jpg1"
+            datadep"basemap_jpg1"
+         elseif nam=="interp_halfdeg"
+            datadep"interp_halfdeg"
+         else
+            error("unknown data dependency")
+         end
       end
    end
 
