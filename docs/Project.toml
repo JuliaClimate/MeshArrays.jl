@@ -1,10 +1,10 @@
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Climatology = "9e9a4d37-2d2e-41e3-8b85-f7978328d9c7"
 DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
-OceanStateEstimation = "891f6deb-a4f5-4bc5-a2e3-1e8f649cdd2c"
 PlutoSliderServer = "2fc8631c-6f24-4c5b-bca7-cbb509c42db4"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
