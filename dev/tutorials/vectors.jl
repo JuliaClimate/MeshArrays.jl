@@ -487,9 +487,9 @@ version = "0.3.5"
 
 [[deps.Climatology]]
 deps = ["DataDeps", "Dataverse", "Distributed", "Glob", "JLD2", "MeshArrays", "Pkg", "Printf", "RollingFunctions", "Scratch", "SharedArrays", "Statistics", "TOML"]
-git-tree-sha1 = "0d41cfbe632fa81225c4f94a85aa8cee9976cf1f"
+git-tree-sha1 = "9bbbaa67639e31ab92dc2b06994d040ac43610df"
 uuid = "9e9a4d37-2d2e-41e3-8b85-f7978328d9c7"
-version = "0.5.3"
+version = "0.5.4"
 
     [deps.Climatology.extensions]
     ClimatologyMITgcmExt = ["MITgcm"]
@@ -1402,9 +1402,9 @@ version = "2.28.2+1"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "cbdb63e4aa9fb61154b4a6bf410e26f75fe34d0e"
+git-tree-sha1 = "54d8b2bb9ac97f0175dea32bcdd9348573c04ec6"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.3.9"
+version = "0.3.10"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
