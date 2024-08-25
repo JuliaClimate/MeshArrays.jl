@@ -20,7 +20,7 @@ Some features and related packages:
 - compute trajectories of materials over any supported grid via [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
 - read/write [NetCDF](https://en.wikipedia.org/wiki/NetCDF), files and other formats often used in climate sciences
 - support domain decomposition via [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/) that 
-- support for [MITgcm](https://mitgcm.readthedocs.io/en/latest/) model ouput via [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl)
+- support for [MITgcm](https://mitgcm.readthedocs.io/en/latest/) model ouput via [MITgcm.jl](https://github.com/gaelforget/MITgcm.jl)
 - support for [ECCO](https://doi.org/10.5194/gmd-8-3071-2015) ocean estimates via [OceanStateEstimation.jl](https://github.com/gaelforget/OceanStateEstimation.jl)
 
 `MeshArrays.jl` was first introduced in [this presentation](https://youtu.be/RDxAy_zSUvg) at JuliaCon 2018.

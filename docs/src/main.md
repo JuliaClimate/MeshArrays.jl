@@ -102,6 +102,6 @@ By default, for a `MeshArray` the `heatmap` command plots each elementary array 
 
 The [vectors tutorial](../tutorials/vectors.html) illustrates a common Earth System use case -- using gridded flow fields to integrate transports, streamfunctions, budgets, etc. Particle trajectories are readily computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) when velocity fields are provided as `MeshArray`s. 
 
-The [MITgcmTools.jl](https://github.com/gaelforget/MITgcmTools.jl) examples shows how `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest).
+The [MITgcm.jl](https://github.com/gaelforget/MITgcm.jl) examples shows how `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest).
 
 ![OceanMOC](https://github.com/JuliaClimate/Notebooks/raw/master/page/figures/MOC.png)
