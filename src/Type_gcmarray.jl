@@ -243,7 +243,7 @@ function Base.similar(A::gcmarray;m::varmeta=defaultmeta)
     if ndims(A)==1
         B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
     else
-        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex),size(A,2); meta=m)
+        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex),size(A)[2:end]...; meta=m)
     end
     return B
 end
@@ -259,7 +259,7 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmarray}},
   if ndims(A)==1
         B=gcmarray(similar(A.grid),ElType,copy(A.fSize),copy(A.fIndex))
   else
-        B=gcmarray(similar(A.grid),ElType,copy(A.fSize),copy(A.fIndex),size(A,2))
+        B=gcmarray(similar(A.grid),ElType,copy(A.fSize),copy(A.fIndex),size(A)[2:end]...)
   end
   return B
 end

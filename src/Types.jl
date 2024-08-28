@@ -174,10 +174,12 @@ function *(a::AbstractMeshArray,b::AbstractMeshArray)
   return c
 end
 
-function *(a::AbstractMeshArray,b::Union{AbstractMatrix,AbstractVector})
+function *(a::AbstractMeshArray,b::Array)
   c=MeshArray(a.grid,eltype(a[eachindex(a.f)[1]]),size(b)...)
-  for I in eachindex(IndexCartesian(),b)
-    c[:,I.I...].=b[I]*a
+  for f in 1:length(a.f)
+    for bb in eachindex(IndexCartesian(),b)
+      c.f[f,bb.I...].=b[bb.I...]*a[f]
+    end
   end
   return c
 end
