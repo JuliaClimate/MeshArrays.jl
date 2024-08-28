@@ -14,9 +14,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ dec3cc17-bd5d-4fb0-a85c-df71a679264b
-using Pkg; Pkg.status()
-
 # ╔═╡ 1a714fba-2a8e-11ec-182f-8f85cc17b02a
 begin
 	using MeshArrays, JLD2, CairoMakie, PlutoUI
@@ -25,8 +22,17 @@ begin
 	md"""
 	$(toc)
 	## Julia Packages
-	
+
+	The following packages are used in running this notebook.
 	"""
+end
+
+# ╔═╡ dec3cc17-bd5d-4fb0-a85c-df71a679264b
+begin
+	using Pkg
+	PlutoUI.with_terminal() do
+		Pkg.status()
+	end
 end
 
 # ╔═╡ 0358ae4b-f941-4254-aa10-6c37bb09c464
@@ -55,12 +61,17 @@ end
 
 # ╔═╡ 6da9023a-a974-4c9d-a088-5f398700336c
 md"""## Create More `MeshArray`s
+
+- There are many simple ways to create and initialize a `MeshArray`.
+- The first dimension of a `MeshArray` represents the global `x,y` domain.
+- Additional dimensions can be added to represent e.g. altitude and time.
+
+Below are examples for two different grids.
 """
 
 # ╔═╡ 8f323098-5021-46ca-9c97-122fc2a60f0d
 let
 	γ=tmp.grid
-	#GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 
 	a=fill(2.0,MeshArray(γ))
 	b=a*ones(10)
@@ -71,35 +82,44 @@ let
 	
 	f=ones(γ,3)
 	g=zeros(γ,3,2)
-	h=fill(3.0,γ,3,2)
+	h=fill(3.0,γ,3,12)
+
+	#display MeshArray
+	PlutoUI.with_terminal() do
+		show(h)
+	end
 end
 
 # ╔═╡ 4a3f3b75-1c75-4ce5-8e75-f4dd263199cd
 let
-	γ=tmp.grid
-	#γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+	γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 	
 	a=fill(2.0,MeshArray(γ))
 	aa=write(a)
 	b=ones(γ.ioSize...,2)
 	bb=5*read(b,γ)
+
+	#display MeshArray
+	PlutoUI.with_terminal() do
+		show(bb)
+	end
 end
 
 # ╔═╡ a0a7637f-f115-4257-a140-06dc48dd5fba
 md"""## Tutorial
 
-For the **first part** of this tutorial, we focus on a use case which proceeds as follows:
+**In the first part** of this tutorial, we select a computation that involves all tiles in a `MeshArray`, and features the connection between tiles. A diffusion equation is applied to a `MeshArray`, which will induce a smoothing effect.
 
 1. generate global grid configuration
 1. initialize random noise field
-1. apply smoothing
+1. apply smoothing by diffusion
 1. plot results
 
 Step 3 illustrates how `MeshArrays.jl` computes partial derivatives between neighboring subdomains of the global domain. The chosen smoothing method (`MeshArrays.smooth`) indeed integrates lateral diffusion, a transport process, over time and the global domain. Other processes like e.g. advection by ocean currents would work similarly.
 
 This example is then repeated twice with different grid configurations commonly used in Earth system models (see [Grids](https://juliaclimate.github.io/MeshArrays.jl/dev/start/#Grids)). The repeated code is provided by the `comp` (steps 2 and 3) and `viz` (step 4) functions.
 
-In the **second part** of this tutorial, we further document `Array` operations as performed on a `MeshArray`, and some of the more advanced functionalities that `MeshArray.jl` provides to compute transports within the climate system. 
+**In the second part** of this tutorial, we further document `Array` operations as performed on a `MeshArray`, and some of the more advanced functionalities that `MeshArray.jl` provides to compute transports within the climate system. 
 """
 
 # ╔═╡ 54030bff-45f7-43b1-b19f-7c0cd05a02ae
@@ -134,7 +154,7 @@ end
 # ╔═╡ 2ee0a449-fd98-43e1-90b4-b4e15f237d67
 md"""## 2. Cube Sphere Grid
 
-Now, we instead use a grid that has 6 subdomains, 32x32 points each, covering the six faces of a cube. We note that this _cube sphere_ topology involves connections between subdomain that are slightly more complicated than in the first example. 
+Now, let's instead use a grid that has 6 subdomains, 32x32 points each, covering the six faces of a cube. This _cube sphere_ grid has connections between subdomains that are slightly more complicated than in the first example. 
 
 Here, grid variables are read from the `MeshArrays.GRID_CS32` folder by the `GridLoad` function. The `GridSpec` function provides the corresponding subdomain sizes. Again we call `comp()` which combines steps 2 and 3, and `viz()` to visualize. 
 """
@@ -150,26 +170,28 @@ Here, grid variables are read from the `MeshArrays.GRID_LLC90` folder by the `Gr
 # ╔═╡ 0865dd0f-c43e-43a7-aa65-74aba4f4460d
 md"""## 4. Plotting
 
-Methods that show subdomain arrays in their native, local `x,y`, coordinate systems have already been illustrated. In presenting analysis results though, it can be prefereable to interpolate to a different grid. And maybe use geographic projection. Here is one method to do that.
+Methods that show subdomain arrays in their native, local `x,y`, coordinate systems have already been illustrated. 
+
+To present results, it can be prefereable to interpolate to a regular grid though. Below is an example.
 
 !!! note
-	For a deeper dive into the interpolation method and geographic projections, see e.g. the [Julia Climate Nodetbooks](https://juliaclimate.github.io/GlobalOceanNotebooks/)
+	For more on interpolation methods, projections, etc, see the [geography tutorial](https://juliaclimate.github.io/MeshArrays.jl/dev/tutorials/geography.html)
 """
 
 # ╔═╡ 2c29ba59-ffc9-4763-8405-250029016ca5
 md"""## 5. MeshArray Operations
 
-The cell below demonstrates array operations, indexing methods, and exchange functions.
+Let's now demonstrate basic array operations, indexing methods, and other functions.
 """
 
 # ╔═╡ 58f95665-9687-4b4f-af99-1239818f71a3
 md"""## Helper Functions
 
-The `comp` funtion can be used repeatedly with different grids.
+The `smoothing_example` funtion defined hereafter is used repeatedly with different grids in this notebook.
 """
 
 # ╔═╡ 62f2dc32-456e-4e8a-8c4a-3a0ae236af13
-function comp(Γ::NamedTuple)
+function smoothing_example(Γ::NamedTuple)
     γ=Γ.XC.grid
 	T=eltype(Γ.XC)
 
@@ -194,7 +216,7 @@ end
 
 # ╔═╡ cef83984-80dc-4196-8edd-314885fa9448
 begin
-	Rini_a,Rend_a=comp(Γ)
+	Rini_a,Rend_a=smoothing_example(Γ)
 
 	md"""Steps 2 (`Rini`) and 3 (`Rend`) are completed in this code cell (using `comp` defined below) and results plotted in the next. 
 	"""
@@ -227,7 +249,7 @@ begin
 	γ_b=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
 	Γ_b=GridLoad(γ_b;option="full")
 
-	Rini_b,Rend_b=comp(Γ_b)
+	Rini_b,Rend_b=smoothing_example(Γ_b)
 	PlutoUI.with_terminal() do
 		show(Rend_b)
 	end
@@ -243,7 +265,7 @@ end
 begin
 	γ_c=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
 	Γ_c=GridLoad(γ_c;option="full")
-	Rini_c,Rend_c=comp(Γ_c)
+	Rini_c,Rend_c=smoothing_example(Γ_c)
 	PlutoUI.with_terminal() do
 		show(Rend_c)
 	end
@@ -296,7 +318,8 @@ let
 	Dexch=exchange(D,4)
 	(dDdx, dDdy)=gradient(D,Γ)
 	(dDdxEx,dDdyEx)=exchange(dDdx,dDdy,4)
-	
+
+	#display
 	PlutoUI.with_terminal() do
 	println("\n The result of `exchange()` may look like this: \n\n ")
 		show(Dexch)
@@ -1815,8 +1838,8 @@ version = "3.6.0+0"
 # ╟─23198b8d-6bf0-4af9-91d0-7886c9574f81
 # ╟─1ad0fdcc-9c0d-4d17-96d6-37b01610cf85
 # ╟─0865dd0f-c43e-43a7-aa65-74aba4f4460d
-# ╟─1bb1b658-7462-4837-8214-24618b9b343b
 # ╠═6dfd7770-0197-4e74-ab27-bb666709c5d6
+# ╠═1bb1b658-7462-4837-8214-24618b9b343b
 # ╟─2c29ba59-ffc9-4763-8405-250029016ca5
 # ╠═169f9cdd-28f1-4574-ade4-237eab46a541
 # ╟─1a714fba-2a8e-11ec-182f-8f85cc17b02a
