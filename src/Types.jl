@@ -131,6 +131,8 @@ function fill(val::Any,a::AbstractMeshArray)
   return c
 end
 
+fill(val::Any,a::gcmgrid,args...) = val .* ones(a,args...)
+
 function fill!(a::AbstractMeshArray,val::Any)
   for I in eachindex(a.f)
     fill!(a.f[I],val)
@@ -170,4 +172,38 @@ function *(a::AbstractMeshArray,b::AbstractMeshArray)
     c.f[I] = a.f[I] .* b.f[I]
   end
   return c
+end
+
+function *(a::AbstractMeshArray,b::Union{AbstractMatrix,AbstractVector})
+  c=MeshArray(a.grid,eltype(a[eachindex(a.f)[1]]),size(b)...)
+  for I in eachindex(IndexCartesian(),b)
+    c[:,I.I...].=b[I]*a
+  end
+  return c
+end
+
+import Base: ones, zeros
+
+function zeros(a::gcmgrid,args...)
+  b=MeshArray(a)
+  [b.f[c].=1.0 for c in eachindex(b.f)]
+  (length(args)>0 ? b*ones(args...) : b) 
+end
+
+function ones(a::gcmgrid,args...)
+  b=MeshArray(a)
+  [b.f[c].=1.0 for c in eachindex(b.f)]
+  (length(args)>0 ? b*ones(args...) : b) 
+end
+
+function zeros(a::AbstractMeshArray)
+  b=similar(a)
+  [b.f[c].=0.0 for c in eachindex(b.f)]
+  b
+end
+
+function ones(a::AbstractMeshArray)
+  b=similar(a)
+  [b.f[c].=1.0 for c in eachindex(b.f)]
+  b
 end
