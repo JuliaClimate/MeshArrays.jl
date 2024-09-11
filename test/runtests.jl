@@ -1,5 +1,5 @@
 using Test, Documenter
-using MeshArrays
+using MeshArrays, DataDeps, CairoMakie, JLD2, Shapefile, Proj
 
 MeshArrays.GRID_LL360_download()
 MeshArrays.GRID_LLC90_download()
@@ -167,6 +167,49 @@ end
     MeshArrays.write_tiles(Γ.XC)
     MeshArrays.write_tiles(tmp,Γ.XC)    
     @test isfile(tmp)
+end
+
+@testset "Plotting:" begin
+    γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+    Γ=GridLoad(γ;option="light")
+    D=Γ.Depth
+    λ=interpolation_setup()
+
+    fig=MeshArrays.plot_examples(:smoothing_demo,D,D)
+    (fig1,fig2,fig3)=MeshArrays.plot_examples(:interpolation_demo,Γ)
+
+    MeshArrays.plot_examples(:meriodional_overturning,Γ,rand(179,50))
+    MeshArrays.plot_examples(:northward_transport,rand(179))
+
+    MeshArrays.plot_examples(:gradient_EN,λ,D,D)
+    MeshArrays.plot_examples(:gradient_xy,λ,D,D)
+
+    ## more methods
+
+    scatter(Γ.XC,Γ.YC,color=:black)
+    heatmap(D,interpolation=λ)
+    scatter!(current_axis(),Γ.XC,Γ.YC,color=:red)
+
+    heatmap(D) #will display tile by tile
+    heatmap(D,interpolation=λ,title="ocean depth") #same but w title
+
+    lon0=-160
+	proj=Proj.Transformation(MA_preset=2,lon0=lon0)
+    Dint=reshape(Interpolate(D,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
+
+    fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
+#    fil=demo.download_polygons("countries.geojson")
+    pol=MeshArrays.read_polygons(fil)
+
+    f = Figure()
+    ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = "Ocean Depth (m)")
+	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=lon0)
+	surf = surface!(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Dint, 
+			colorrange=(0.0,6000.0), colormap=:berlin, shading = NoShading)
+	lines!(pr_ax; polygons=pol,color=:black,linewidth=0.5)
+	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
+	f
+
 end
 
 @testset "doctests" begin
