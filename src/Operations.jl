@@ -296,8 +296,8 @@ function ThroughFlow(VectorField,IntegralPath,Γ::NamedTuple)
         #do_dz==1 ? mskS=Γ.DRF[i3]*mskS : nothing
         #
         #method 2: less slow
-        tabW=IntegralPath.tabW
-        tabS=IntegralPath.tabS
+        tabW=(isa(IntegralPath,NamedTuple) ? IntegralPath.tabW : IntegralPath.W)
+        tabS=(isa(IntegralPath,NamedTuple) ? IntegralPath.tabS : IntegralPath.S)
         for i4=1:n[4]
             #method 1: quite slow
             #trsp[1,i3,i4]=sum(mskW*U[:,:,i3,i4])+sum(mskS*V[:,:,i3,i4])
@@ -331,11 +331,11 @@ end
 ## LatitudeCircles function
 
 """
-    LatitudeCircles(LatValues,Γ::NamedTuple)
+    LatitudeCircles(LatValues,Γ::NamedTuple; format=:gridpath)
 
 Compute integration paths that follow latitude circles
 """
-function LatitudeCircles(LatValues,Γ::NamedTuple; format=:NamedTuple)
+function LatitudeCircles(LatValues,Γ::NamedTuple; format=:gridpath)
   T=(format==:NamedTuple ? NamedTuple : gridpath)
   LatitudeCircles=Array{T}(undef,length(LatValues))
     for j=1:length(LatValues)
@@ -407,12 +407,12 @@ end
 ##
 
 """
-    Transect(name,lons,lats,Γ; segment=1, format=:NamedTuple)
+    Transect(name,lons,lats,Γ; segment=:short, format=:gridpath)
 
 Compute integration paths that follow a great circle between two geolocations give by `lons`, `lats`.
 
 """
-function Transect(name,lons,lats,Γ; segment=:short, format=:NamedTuple)
+function Transect(name,lons,lats,Γ; segment=:short, format=:gridpath)
   x0,y0,z0,R=rotate_points(lons,lats)
   x,y,z=rotate_XCYC(Γ,R)
   mskCint=1.0*(z.>0)
