@@ -130,26 +130,38 @@ function simple_periodic_domain(np::Integer,nq=missing)
     return UnitGrid(γ)
 end
 
-## GridSpec function with default GridName argument:
-
-GridSpec() = GridSpec("PeriodicDomain","./")
-
-## GridSpec function with GridName argument:
+## GridSpec function with category argument:
 
 """
-    GridSpec(GridName,GridParentDir="./")
+    GridSpec(category="PeriodicDomain",path=tempname(); ID=:unknown)
 
-Select one of the pre-defined grids (by `GridName`) and return 
-the corresponding `gcmgrid` -- a global grid specification 
-which contains the grid files location (`GridParentDir`).
-    
+- Select one of the pre-defined grids either by ID (keyword) or by category.
+- Return the corresponding `gcmgrid` specification, including the path where grid files can be accessed (`path`).
 
-Possible choices for `GridName`:
+1. selection by `ID`
+
+- `:LLC90`
+- `:CS32`
+- `:onedegree`
+- `:default`
+
+Example:
+
+```
+using MeshArrays
+g = GridSpec(ID=:LLC90)
+```
+
+note : the path to these fully supported grids are handled internally in `MeshArrays.jl`.
+
+2. by `category` and `path`
 
 - `"PeriodicDomain"`
 - `"PeriodicChannel"`
 - `"CubeSphere"`
 - `"LatLonCap"``
+
+Examples:
 
 ```jldoctest; output = false
 using MeshArrays
@@ -164,38 +176,49 @@ isa(g,gcmgrid)
 true
 ```
 """
-function GridSpec(GridName,GridParentDir="./")
+function GridSpec(category="PeriodicDomain",path=tempname(); ID=:unknown)
 
-grDir=GridParentDir
-if GridName=="LatLonCap"
+if category=="LatLonCap"
     nFaces=5
     grTopo="LatLonCap"
     ioSize=[90 1170]
     facesSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
     ioPrec=Float64
-elseif GridName=="CubeSphere"
+elseif category=="CubeSphere"
     nFaces=6
     grTopo="CubeSphere"
     ioSize=[32 192]
     facesSize=[(32, 32), (32, 32), (32, 32), (32, 32), (32, 32), (32, 32)]
     ioPrec=Float32
-elseif GridName=="PeriodicChannel"
+elseif category=="PeriodicChannel"
     nFaces=1
     grTopo="PeriodicChannel"
     ioSize=[360 160]
     facesSize=[(360, 160)]
     ioPrec=Float32
-elseif GridName=="PeriodicDomain"
+elseif category=="PeriodicDomain"
     nFaces=4
     grTopo="PeriodicDomain"
     ioSize=[80 42]
     facesSize=[(40, 21), (40, 21), (40, 21), (40, 21)]
     ioPrec=Float32
 else
-    error("unknown GridName case")
+    error("unknown category case")
 end
 
-return gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
+if ID==:unknown
+    gcmgrid(path,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
+elseif ID==:LLC90
+    GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+elseif ID==:CS32
+    GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+elseif ID==:onedegree
+    GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+elseif ID==:default
+    GridSpec()
+else
+    error("unknwown grid")
+end
 
 end
 
