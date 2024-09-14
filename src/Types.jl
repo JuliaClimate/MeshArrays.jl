@@ -188,7 +188,7 @@ import Base: ones, zeros
 
 function zeros(a::gcmgrid,args...)
   b=MeshArray(a)
-  [b.f[c].=1.0 for c in eachindex(b.f)]
+  [b.f[c].=0.0 for c in eachindex(b.f)]
   (length(args)>0 ? b*ones(args...) : b) 
 end
 

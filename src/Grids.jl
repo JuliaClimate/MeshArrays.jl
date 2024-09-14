@@ -130,26 +130,38 @@ function simple_periodic_domain(np::Integer,nq=missing)
     return UnitGrid(γ)
 end
 
-## GridSpec function with default GridName argument:
-
-GridSpec() = GridSpec("PeriodicDomain","./")
-
-## GridSpec function with GridName argument:
+## GridSpec function with category argument:
 
 """
-    GridSpec(GridName,GridParentDir="./")
+    GridSpec(category="PeriodicDomain",path=tempname(); ID=:unknown)
 
-Select one of the pre-defined grids (by `GridName`) and return 
-the corresponding `gcmgrid` -- a global grid specification 
-which contains the grid files location (`GridParentDir`).
-    
+- Select one of the pre-defined grids either by ID (keyword) or by category.
+- Return the corresponding `gcmgrid` specification, including the path where grid files can be accessed (`path`).
 
-Possible choices for `GridName`:
+1. selection by `ID`
+
+- `:LLC90`
+- `:CS32`
+- `:onedegree`
+- `:default`
+
+Example:
+
+```
+using MeshArrays
+g = GridSpec(ID=:LLC90)
+```
+
+note : the path to these fully supported grids are handled internally in `MeshArrays.jl`.
+
+2. by `category` and `path`
 
 - `"PeriodicDomain"`
 - `"PeriodicChannel"`
 - `"CubeSphere"`
 - `"LatLonCap"``
+
+Examples:
 
 ```jldoctest; output = false
 using MeshArrays
@@ -164,51 +176,62 @@ isa(g,gcmgrid)
 true
 ```
 """
-function GridSpec(GridName,GridParentDir="./")
+function GridSpec(category="PeriodicDomain",path=tempname(); ID=:unknown)
 
-grDir=GridParentDir
-if GridName=="LatLonCap"
+if category=="LatLonCap"
     nFaces=5
     grTopo="LatLonCap"
     ioSize=[90 1170]
     facesSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
     ioPrec=Float64
-elseif GridName=="CubeSphere"
+elseif category=="CubeSphere"
     nFaces=6
     grTopo="CubeSphere"
     ioSize=[32 192]
     facesSize=[(32, 32), (32, 32), (32, 32), (32, 32), (32, 32), (32, 32)]
     ioPrec=Float32
-elseif GridName=="PeriodicChannel"
+elseif category=="PeriodicChannel"
     nFaces=1
     grTopo="PeriodicChannel"
     ioSize=[360 160]
     facesSize=[(360, 160)]
     ioPrec=Float32
-elseif GridName=="PeriodicDomain"
+elseif category=="PeriodicDomain"
     nFaces=4
     grTopo="PeriodicDomain"
     ioSize=[80 42]
     facesSize=[(40, 21), (40, 21), (40, 21), (40, 21)]
     ioPrec=Float32
 else
-    error("unknown GridName case")
+    error("unknown category case")
 end
 
-return gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
+if ID==:unknown
+    gcmgrid(path,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
+elseif ID==:LLC90
+    GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+elseif ID==:CS32
+    GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+elseif ID==:onedegree
+    GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+elseif ID==:default
+    GridSpec()
+else
+    error("unknwown grid")
+end
 
 end
 
 ## GridLoad function
 
 """
-    GridLoad(γ::gcmgrid;option="minimal")
+    GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
 
-Return a `NamedTuple` of grid variables read from files located in `γ.path` (see `?GridSpec`).
-
-By default, option="minimal" means that only grid cell center positions (XC, YC) are loaded. 
-
-The "full" option provides a complete set of grid variables. 
+- Return a `NamedTuple` of grid variables read from files located in `γ.path` (see `?GridSpec`).
+- option : 
+  - (default) option=:minimal means that only grid cell center positions (XC, YC) are loaded. 
+  - option=:full provides a complete set of 2D grid variables. 
+  - option=:full provides a complete set of 2D & 3d grid variables. 
 
 Based on the MITgcm naming convention, grid variables are:
 
@@ -222,11 +245,7 @@ https://mitgcm.readthedocs.io/en/latest/algorithm/algorithm.html#spatial-discret
 
 ```jldoctest; output = false
 using MeshArrays
-
-γ = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
-#γ = GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
-#γ = GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
-
+γ = GridSpec(ID=:LLC90)
 Γ = GridLoad(γ;option="full")
 
 isa(Γ.XC,MeshArray)
@@ -236,33 +255,38 @@ isa(Γ.XC,MeshArray)
 true
 ```
 """
-function GridLoad(γ::gcmgrid;option="minimal")
+function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
 
-    γ.path==GRID_CS32 ? GRID_CS32_download() : nothing
-    γ.path==GRID_LL360 ? GRID_LL360_download() : nothing
-    γ.path==GRID_LLC90 ? GRID_LLC90_download() : nothing
+    gr = (ID!==:default ? GridSpec(ID=ID) : γ)
+
+    gr.path==GRID_CS32 ? GRID_CS32_download() : nothing
+    gr.path==GRID_LL360 ? GRID_LL360_download() : nothing
+    gr.path==GRID_LLC90 ? GRID_LLC90_download() : nothing
 
     Γ=Dict()
 
-    if option=="full"
-        list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth");
-        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
+    op=string(option)
+    if op=="full"
+        list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth")
+        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(gr.path))))
             list_n=(list_n...,"AngleCS","AngleSN");
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
-        list_n=(list_n...,"hFacC","hFacS","hFacW");
-    elseif option=="light"
-        list_n=("XC","XG","YC","YG","RAC","DXC","DXG","DYC","DYG","Depth");
-        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
-            list_n=(list_n...,"AngleCS","AngleSN");
+        list_n=(list_n...,"hFacC","hFacS","hFacW")
+    elseif op=="light"
+        list_n=("XC","XG","YC","YG","RAC","DXC","DXG","DYC","DYG","Depth")
+        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(gr.path))))
+            list_n=(list_n...,"AngleCS","AngleSN")
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
+    elseif op=="minimal"||op=="minimum"
+        list_n=("XC","YC")
     else
-        list_n=("XC","YC");
+        error("unknown option")
     end
 
-    [Γ[ii]=GridLoadVar(ii,γ) for ii in list_n]
-    option=="full" ? GridAddWS!(Γ) : nothing
+    [Γ[ii]=GridLoadVar(ii,gr) for ii in list_n]
+    option=="full"||option=="light" ? GridAddWS!(Γ) : nothing
     return Dict_to_NamedTuple(Γ)
 end
 

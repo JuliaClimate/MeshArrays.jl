@@ -12,22 +12,53 @@ _The second argument (MeshArray or gcmgrid) provides the grid specifications (x.
 function read(fil::String,x::MeshArray)
 
   (n1,n2)=x.grid.ioSize
-  (nFaces,n3)=nFacesEtc(x)
+  (nFaces,n3,n4)=nFacesEtc(x)
 
   fid = open(fil)
-  xx = Array{eltype(x),2}(undef,(n1*n2,n3))
+  xx = Array{eltype(x),1}(undef,n1*n2*n3*n4)
   read!(fid,xx)
-  xx = reshape(hton.(xx),(n1,n2,n3))
+  xx = reshape(hton.(xx),(n1,n2,n3,n4))
   close(fid)
 
   return x.grid.read(xx,x)
 end
 
+"""
+    read(xx::Array,γ::gcmgrid)
+
+Reformat Array data into a MeshArray shaped after `γ`.
+"""
 function read(xx::Array,γ::gcmgrid)
-  n3=Int(round(prod(size(xx))/prod(γ.ioSize)))
-  read(xx,MeshArray(γ,γ.ioPrec,n3))
+  siz=size.(Ref(xx),[1,2,3,4])
+  if siz[1:2]==[i for i in γ.ioSize]
+    n3=siz[3]; n4=siz[4]
+    yy=reshape(xx,(γ.ioSize...,n3,n4))
+  elseif siz[1]==prod(γ.ioSize[:])
+    n3=siz[2]; n4=siz[3]
+    yy=reshape(xx,(γ.ioSize...,n3,n4))
+  elseif mod(siz[1],prod(γ.ioSize[:]))==0
+    n3=Int(siz[1]/prod(γ.ioSize[:]))
+    n4=1
+    yy=reshape(xx,(γ.ioSize...,n3,n4))
+  else
+    error("unexpected array size")
+  end
+  yy
+
+  if n3==1&&n4==1
+    read(yy,MeshArray(γ,γ.ioPrec))
+  elseif n4==1
+    read(yy,MeshArray(γ,γ.ioPrec,n3))
+  else
+    read(yy,MeshArray(γ,γ.ioPrec,n3,n4))
+  end
 end
 
+"""
+    read(xx::Array,x::MeshArray)
+
+Reformat Array data into a MeshArray similar to `x`. 
+"""
 function read(xx::Array,x::MeshArray)
   y=similar(x; m=x.meta)
   read!(xx,y)
@@ -40,29 +71,43 @@ end
 Reformat array into MeshArray and write into `x`.
 """
 function read!(xx::Array,x::MeshArray)
-
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  (nFaces,n3)=nFacesEtc(x)
+  (nFaces,n3,n4)=nFacesEtc(x)
 
-  size(xx)!=(n1*n2,n3) ? xx=reshape(xx,(n1*n2,n3)) : nothing
+  tmp=zeros(x.grid)
+  for i3 in 1:n3
+    for i4 in 1:n4
+      read_one!(xx[:,:,i3,i4],tmp)
+      for f in 1:nFaces
+        if (n3>1)&&(n4>1)
+          x[f,i3,i4].=tmp[f]
+        elseif n3>1
+          x[f,i3].=tmp[f]
+        else
+          x[f].=tmp[f]
+        end
+      end
+    end
+  end
+end
 
+"""
+    read!(xx::Array,x::MeshArray)
+
+Reformat one array of size x.grid.ioSize, and write **in-place** into MeshArray `x``.
+"""
+function read_one!(xx::Array,x::MeshArray)
+  facesSize=x.grid.fSize
+  (n1,n2)=x.grid.ioSize
+  (nFaces,n3,n4)=nFacesEtc(x)
   i0=0; i1=0;
   for iFace=1:nFaces
     i0=i1+1;
     nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
     i1=i1+nn*mm;
-
-    if n3>1 && ndims(x.f)==1
-      x.f[iFace]=reshape(xx[i0:i1,:],(nn,mm,n3))
-    elseif n3>1 && ndims(x.f)==2
-      for i3=1:n3
-        x.f[iFace,i3]=reshape(xx[i0:i1,i3],(nn,mm))
-      end
-    else
-      x.f[iFace]=reshape(xx[i0:i1,:],(nn,mm))
-    end
-  end
+    x.f[iFace]=reshape(xx[:][i0:i1,:],(nn,mm))
+end
 
 end
 
@@ -84,32 +129,32 @@ function write(fil::String,x::MeshArray)
 end
 
 function write(x::MeshArray)
-
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
-  (nFaces,n3)=nFacesEtc(x)
+  (nFaces,n3,n4)=nFacesEtc(x)
 
-  y = Array{eltype(x),2}(undef,(n1*n2,n3))
+  y = Array{eltype(x),3}(undef,(n1*n2,n3,n4))
   i0=0; i1=0;
   for iFace=1:nFaces;
     i0=i1+1;
     nn=facesSize[iFace][1];
     mm=facesSize[iFace][2];
     i1=i1+nn*mm;
-    if n3>1 && ndims(x.f)==2
+    for i4=1:n4
       for i3=1:n3
-        y[i0:i1,i3]=reshape(x.f[iFace,i3],(nn*mm,1))
+        y[i0:i1,i3,i4]=reshape(x.f[iFace,i3,i4],(nn*mm,1))
       end
-    else
-      y[i0:i1,:]=reshape(x.f[iFace],(nn*mm,n3))
     end
   end
 
-  y=reshape(y,(n1,n2,n3));
-  n3==1 ? y=dropdims(y,dims=3) : nothing
-
-  return y
-
+  y=reshape(y,(n1,n2,n3,n4));
+  yy=if n3==1&&n4==1
+    dropdims(y,dims=(3,4))
+  elseif n4==1
+    dropdims(y,dims=4)
+  else
+    y
+  end
 end
 
 ## 
