@@ -331,26 +331,45 @@ end
 ## LatitudeCircles function
 
 """
-    LatitudeCircles(LatValues,Γ::NamedTuple; format=:gridpath)
+    LatitudeCircles(LatValues,Γ::NamedTuple; format=:gridpath, range=(0.0,360.0))
 
-Compute integration paths that follow latitude circles
+Compute integration paths that follow latitude circles, within the specified longitude `range`.
 """
-function LatitudeCircles(LatValues,Γ::NamedTuple; format=:gridpath)
+function LatitudeCircles(LatValues,Γ::NamedTuple; 
+  format=:gridpath, range=(0.0,360.0))
   T=(format==:NamedTuple ? NamedTuple : gridpath)
   LatitudeCircles=Array{T}(undef,length(LatValues))
     for j=1:length(LatValues)
-        mskCint=1*(Γ.YC .>= LatValues[j])
-        mskC,mskW,mskS=edge_mask(mskCint)
-        LatitudeCircles[j]=
-          if format==:NamedTuple
-            (lat=LatValues[j],tabC=MskToTab(mskC),
-            tabW=MskToTab(mskW),tabS=MskToTab(mskS))
-          else
-            gridpath(name="Parallel $(LatValues[j])", grid=Γ,
-            C=MskToTab(mskC),W=MskToTab(mskW),S=MskToTab(mskS))
-          end
+        LatitudeCircles[j]=LatitudeCircle(LatValues[j],Γ; 
+        format=format,range=range)
     end
-    return LatitudeCircles
+    (length(LatValues)==1 ? LatitudeCircles[1] : LatitudeCircles)
+end
+
+function LatitudeCircle(lat,Γ::NamedTuple; 
+  format=:gridpath, range=(0.0,360.0))
+      mskCint=1*(Γ.YC .>= lat)
+      mskC,mskW,mskS=edge_mask(mskCint)
+      restrict_longitudes!(mskC,Γ.XC,range=range)
+      restrict_longitudes!(mskS,Γ.XS,range=range)
+      restrict_longitudes!(mskW,Γ.XW,range=range)
+      LC=if format==:NamedTuple
+        (lat=LatValues[j],tabC=MskToTab(mskC),
+        tabW=MskToTab(mskW),tabS=MskToTab(mskS))
+      else
+        gridpath(name="Parallel $lat", grid=Γ,
+        C=MskToTab(mskC),W=MskToTab(mskW),S=MskToTab(mskS))
+      end
+
+end
+
+is_in_lon_range(x,range)=(range[2].-range[1]>=360)||
+  (mod(x-range[1],360).<mod(range[2].-range[1],360))
+
+function restrict_longitudes!(x::MeshArray,lon::MeshArray;range=(0.0,360.0))
+  for f in 1:x.grid.nFaces
+    x[f].=x[f].*is_in_lon_range.(lon[f],Ref(range))
+  end
 end
 
 function MskToTab(msk::MeshArray)
