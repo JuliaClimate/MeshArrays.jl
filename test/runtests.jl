@@ -1,4 +1,4 @@
-using Test, Documenter
+using Test, Documenter, Suppressor
 using MeshArrays, DataDeps, CairoMakie, JLD2, Shapefile, Proj
 
 MeshArrays.GRID_LL360_download()
@@ -60,6 +60,7 @@ end
     μ=land_mask(hFacC[:,1])
 
     lons=[-68 -63]; lats=[-54 -66]; name="Drake Passage"
+    Trsct=Transect(name,lons,lats,Γ,segment=:long,format=:NamedTuple)
     Trsct=Transect(name,lons,lats,Γ)
 
     #Various vector operations
@@ -71,6 +72,8 @@ end
     UVtoTransport(U,V,Γ)
     UVtoUEVN(U[:,1],V[:,1],Γ)
     curl(U[:,1],V[:,1], merge(Γ,(hFacW=hFacW,hFacS=hFacS,RAZ=RAZ,)) )
+    dD=zeros(γ)
+    MeshArrays.UVtoSpeed!(U[:,1],V[:,1],Γ,dD)
     
     #Meridional transport integral
     uv=Dict("U"=>Tx,"V"=>Ty,"dimensions"=>["x","y"])
@@ -78,6 +81,17 @@ end
     T=Array{Float64,1}(undef,length(LC))
     [T[i]=1e-6*ThroughFlow(uv,LC[i],Γ) for i=1:length(LC)]
 
+    x=zeros(γ)
+    fill!(x,1.0)
+    y=fill(-1.0,γ)
+    extrema(y)
+    @test minimum(y)<minimum(x)
+
+    y*ones(3,2)
+    ones(γ)
+    ones(y)
+    zeros(y)
+    
     #See: OceanTransports/helper_functions.jl
     #u,v,uC,vC=rotate_uv(uv,Γ);
 
@@ -115,7 +129,7 @@ end
     MeshArrays.fsize(tmp.f,2)
     size(tmp)
     size(tmp,3)
-    show(tmp)
+    @suppress show(tmp)
 
     x=tmp[1:10,1,1:2]; y=x[2]; x[3]=1.0
     view(x,1:3,:,1)
@@ -136,11 +150,11 @@ end
     size(tmp1)
     tmp1[2]
     view(tmp1,:)
-    show(tmp1)
+    @suppress show(tmp1)
     similar(tmp1)
     #tmp[tmp1]
 
-    show(tmp)
+    @suppress show(tmp)
     MeshArrays.getindexetc(tmp,2)
     MeshArray(γ,tmp.f,meta=tmp.meta)
     MeshArray(γ,meta=tmp.meta)
@@ -210,6 +224,19 @@ end
 	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
 	f
 
+end
+
+@testset "nanmath" begin
+    x=[NaN 1 2]
+    nansum(x)
+    nansum(x,1)
+    nanmax(x,2)
+    nanmin(x,2)
+
+    nanmean(NaN,1)
+    nanmean(1,NaN)
+    nanmean(2,1)
+    nanmean(NaN,NaN)
 end
 
 @testset "doctests" begin

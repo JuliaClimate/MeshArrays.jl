@@ -97,7 +97,9 @@ MeshArray=gcmarray
 
 ## Methods that apply to all AbstractMeshArray types
 
-import Base: maximum, minimum, sum, fill, fill!
+import Base: maximum, minimum, extrema, sum, fill, fill!
+
+extrema(a::AbstractMeshArray) = [minimum(a) maximum(a)]
 
 function maximum(a::AbstractMeshArray)
   c=-Inf;
