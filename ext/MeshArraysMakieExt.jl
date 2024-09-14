@@ -9,7 +9,11 @@ import MeshArrays: plot_examples
 import MeshArrays: ProjAxis
 import MeshArrays: grid_lines!
 
-import Makie: heatmap, scatter, scatter!, surface!, lines!, heatmap!, contour!, contourf!
+import MeshArrays: gridpath
+
+import Makie: plot, plot!, heatmap, scatter, scatter!, surface!
+import Makie: lines!, heatmap!, contour!, contourf!
+
 LineString=Makie.LineString
 Observable=Makie.Observable
 GeometryBasics=Makie.GeometryBasics
@@ -735,5 +739,31 @@ function scatter!(pr_ax::PrAxis,lon,lat,kargs...; kwargs...)
 	scatter!(pr_ax.ax,x,y,kargs...; kwargs...)
 end
 
+##
+
+function plot(x::Union{gridpath,Vector{gridpath}})
+	fig=Figure(); ax=Axis(fig[1,1],limits=(-180.0,180.0,-90.0,90.0))
+	if isa(x,gridpath)
+		plot!(x)
+	else
+		[plot!(y) for y in x]
+	end
+	fig
+end
+
+function plot!(x::gridpath)
+	np=size(x.C,1)
+	lon=zeros(np)
+	lat=zeros(np)
+	for p in 1:np
+		f=x.C[p,1]; i=x.C[p,2]; j=x.C[p,3]; q=x.C[p,4]
+		lon[p]=x.grid.XC[f][i,j]
+		lat[p]=x.grid.YC[f][i,j]
+	end
+	scatter!(lon,lat)
+end
+
 end # module
+
+
 

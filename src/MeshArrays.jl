@@ -26,7 +26,7 @@ include("Interpolation.jl")
 include("VerticalDimension.jl")
 include("demo.jl")
 
-export AbstractMeshArray, MeshArray, gcmgrid, varmeta
+export AbstractMeshArray, MeshArray, gcmgrid, varmeta, gridpath
 export GridSpec, GridLoad, GridLoadVar, UnitGrid, simple_periodic_domain
 export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn, interpolation_setup
 #The following exch_UV differs from normal exchange; incl. exch_UV_N

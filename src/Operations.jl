@@ -335,13 +335,20 @@ end
 
 Compute integration paths that follow latitude circles
 """
-function LatitudeCircles(LatValues,Γ::NamedTuple)
-    LatitudeCircles=Array{NamedTuple}(undef,length(LatValues))
+function LatitudeCircles(LatValues,Γ::NamedTuple; format=:NamedTuple)
+  T=(format==:NamedTuple ? NamedTuple : gridpath)
+  LatitudeCircles=Array{T}(undef,length(LatValues))
     for j=1:length(LatValues)
         mskCint=1*(Γ.YC .>= LatValues[j])
         mskC,mskW,mskS=edge_mask(mskCint)
-        LatitudeCircles[j]=(lat=LatValues[j],
-        tabC=MskToTab(mskC),tabW=MskToTab(mskW),tabS=MskToTab(mskS))
+        LatitudeCircles[j]=
+          if format==:NamedTuple
+            (lat=LatValues[j],tabC=MskToTab(mskC),
+            tabW=MskToTab(mskW),tabS=MskToTab(mskS))
+          else
+            gridpath(name="Parallel $(LatValues[j])", grid=Γ,
+            C=MskToTab(mskC),W=MskToTab(mskW),S=MskToTab(mskS))
+          end
     end
     return LatitudeCircles
 end
@@ -400,20 +407,36 @@ end
 ##
 
 """
-    Transect(name,lons,lats,Γ)
+    Transect(name,lons,lats,Γ; segment=1, format=:NamedTuple)
 
 Compute integration paths that follow a great circle between two geolocations give by `lons`, `lats`.
+
 """
-function Transect(name,lons,lats,Γ)
+function Transect(name,lons,lats,Γ; segment=:short, format=:NamedTuple)
   x0,y0,z0,R=rotate_points(lons,lats)
   x,y,z=rotate_XCYC(Γ,R)
   mskCint=1.0*(z.>0)
   mskCedge,mskWedge,mskSedge=edge_mask(mskCint)
-  mskCedge,mskWedge,mskSedge=shorter_paths!((x,y,z),(x0,y0,z0),(mskCedge,mskWedge,mskSedge))
+
+  mskCedge,mskWedge,mskSedge=
+  if segment==:short
+    shorter_paths!((x,y,z),(x0,y0,z0),(mskCedge,mskWedge,mskSedge))
+  elseif segment==:long
+    C,W,S=shorter_paths!((x,y,z),(x0,y0,z0),(mskCedge,mskWedge,mskSedge))
+    C-mskCedge,W-mskWedge,S-mskSedge
+  elseif segment==:circle
+    mskCedge,mskWedge,mskSedge
+  end
+  
   tabC=MskToTab(mskCedge)
   tabW=MskToTab(mskWedge)
   tabS=MskToTab(mskSedge)
-  return (name=name,tabC=tabC,tabW=tabW,tabS=tabS)
+  
+  if format==:NamedTuple
+    (name=name,tabC=tabC,tabW=tabW,tabS=tabS)
+  else
+    gridpath(name=name,grid=Γ,C=tabC,W=tabW,S=tabS)
+  end
 end
 
 ##
