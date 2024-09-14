@@ -279,7 +279,7 @@ function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
             list_n=(list_n...,"AngleCS","AngleSN")
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
-    elseif op=="minimal"
+    elseif op=="minimal"||op=="minimum"
         list_n=("XC","YC")
     else
         error("unknown option")

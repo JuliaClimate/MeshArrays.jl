@@ -739,6 +739,14 @@ function scatter!(pr_ax::PrAxis,lon,lat,kargs...; kwargs...)
 	scatter!(pr_ax.ax,x,y,kargs...; kwargs...)
 end
 
+plot(x::MeshArray; kwargs...) = begin
+	if ndims(x) == 1
+		heatmap(x; kwargs...)
+	else
+		heatmap(x[:,1]; kwargs...)
+	end
+end
+
 ##
 
 function plot(x::Union{gridpath,Vector{gridpath}})
