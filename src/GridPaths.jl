@@ -1,6 +1,9 @@
 
 #bring end points to the equator -> define 3D rotation matrix
 function rotate_points(lons,lats)
+	lons=transpose([lons[i] for i in eachindex(lons)])
+	lats=transpose([lats[i] for i in eachindex(lats)])
+
 	#... and of end points
 	x0=cosd.(lats).*cosd.(lons)
 	y0=cosd.(lats).*sind.(lons)
