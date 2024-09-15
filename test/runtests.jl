@@ -124,7 +124,7 @@ end
 end
 
 @testset "gcmfaces type:" begin
-    γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+    γ=GridSpec(ID=:CS32)
 
     MeshArrays.gcmfaces(γ)
     MeshArrays.gcmfaces(γ,Float32)
@@ -138,6 +138,10 @@ end
     MeshArrays.fsize(tmp.f,2)
     size(tmp)
     size(tmp,3)
+    tmp1=similar(tmp)
+    2 .*tmp1
+    findall(tmp.>0)
+    MeshArrays.nFacesEtc(tmp)
     @suppress show(tmp)
 
     x=tmp[1:10,1,1:2]; y=x[2]; x[3]=1.0
@@ -177,6 +181,7 @@ end
 
 @testset "UnitGrid:" begin
     C=MeshArray(randn(20,10))
+    D=MeshArray(randn(20,10,3))
 
     (Γ,γ)=UnitGrid( (80,90) , (20,30) ; option="full")
     @test isa(γ,gcmgrid)
