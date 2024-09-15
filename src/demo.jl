@@ -68,7 +68,7 @@ module demo
             name=sec.name[ii]
             Trsct=Transect(name,lons,lats,Γ)
             fil_Trsct=joinpath(pth_sec,"$(Trsct.name).jld2")
-            !isfile(fil_Trsct) ? write_JLD2(fil_Trsct,tabC=Trsct.tabC,tabW=Trsct.tabW,tabS=Trsct.tabS) : nothing
+            !isfile(fil_Trsct) ? write_JLD2(fil_Trsct,tabC=Trsct.C,tabW=Trsct.W,tabS=Trsct.S) : nothing
         end
 
         sec,pth_sec

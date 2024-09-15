@@ -51,10 +51,12 @@ end
 
 @testset "Transport computations:" begin
     #Load grid and transport / vector field
-    γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+    γ=GridSpec(ID=:LLC90)
+    Γ=GridLoad(ID=:LLC90,option=:full)
+    @suppress show(Γ.XC)
+
     Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
     Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
-    Γ=GridLoad(γ;option=:full)
     plot(Γ.XC)
 
     hFacC=GridLoadVar("hFacC",γ)
@@ -174,6 +176,8 @@ end
 end
 
 @testset "UnitGrid:" begin
+    C=MeshArray(randn(20,10))
+
     (Γ,γ)=UnitGrid( (80,90) , (20,30) ; option="full")
     @test isa(γ,gcmgrid)
 
@@ -191,10 +195,14 @@ end
 end
 
 @testset "Plotting:" begin
-    γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+    γ=GridSpec(ID=:LLC90)
     Γ=GridLoad(γ;option="light")
     D=Γ.Depth
     λ=interpolation_setup()
+
+	basins=demo.ocean_basins()
+	sections,path_sec=demo.ocean_sections(Γ)
+    my_section=demo.one_section(Γ,[127 127],[-25 -68])
 
     fig=MeshArrays.plot_examples(:smoothing_demo,D,D)
     (fig1,fig2,fig3)=MeshArrays.plot_examples(:interpolation_demo,Γ)
