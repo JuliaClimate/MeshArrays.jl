@@ -218,8 +218,8 @@ end
 	proj=Proj.Transformation(MA_preset=2,lon0=lon0)
     Dint=reshape(Interpolate(D,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
-#    fil=demo.download_polygons("countries.geojson")
-#    pol=MeshArrays.read_polygons(fil)
+    fil=demo.download_polygons("countries.geojson")
+    pol=MeshArrays.read_polygons(fil)
 
     fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
     pol=MeshArrays.read_polygons(fil)
