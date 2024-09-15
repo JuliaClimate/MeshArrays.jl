@@ -483,20 +483,18 @@ function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
     return uC.*G.AngleCS-vC.*G.AngleSN, uC.*G.AngleSN+vC.*G.AngleCS
 end
 
-function UVtoSpeed!(u::MeshArray,v::MeshArray,G::NamedTuple,dD)
-  (u,v)=exch_UV(u,v)
+function UVtoSpeed!(uC::MeshArray,vC::MeshArray,G::NamedTuple,dD)
+  (u,v)=exch_UV(uC,vC)
   for iF=1:u.grid.nFaces
-      for i in 1:size(vC[iF],1)
+    for i in 1:size(vC[iF],1)
       for j in 1:size(vC[iF],2)
-      u0=nanmean(u[iF][i,j],u[iF][i+1,j])
-      v0=nanmean(v[iF][i,j],v[iF][i,j+1])
-      u1=u0*G.AngleCS[iF][i,j]-v0*G.AngleSN[iF][i,j]
-      v1=u0*G.AngleSN[iF][i,j]+v0*G.AngleCS[iF][i,j]
-      dD[iF][i,j]=sqrt(u1^2 + v1^2)
-      #uC[iF][i,j]=u0*G.AngleCS[iF][i,j]-v0*G.AngleSN[iF][i,j]
-      #vC[iF][i,j]=u0*G.AngleSN[iF][i,j]+v0*G.AngleCS[iF][i,j]
+        u0=nanmean(u[iF][i,j],u[iF][i+1,j])
+        v0=nanmean(v[iF][i,j],v[iF][i,j+1])
+        u1=u0*G.AngleCS[iF][i,j]-v0*G.AngleSN[iF][i,j]
+        v1=u0*G.AngleSN[iF][i,j]+v0*G.AngleCS[iF][i,j]
+        dD[iF][i,j]=sqrt(u1^2 + v1^2)
       end
-      end
+    end
   end
 end
 
@@ -553,8 +551,8 @@ function calc_bolus(GM_PsiX,GM_PsiY, Γ)
         bolusU.f[:,k].=(GM_PsiX.f[:,k+1].-GM_PsiX.f[:,k])/Γ.DRF[k];
         bolusV.f[:,k].=(GM_PsiY.f[:,k+1].-GM_PsiY.f[:,k])/Γ.DRF[k];
     end;
-    bolusU.f[:, nr] .= 0. -GM_PsiX.f[:,nr]./Γ.DRF[nr];
-    bolusV.f[:, nr] .= 0. -GM_PsiY.f[:,nr]./Γ.DRF[nr];
+    bolusU.f[:, nr] .= 0*GM_PsiX.f[:,nr] .-GM_PsiX.f[:,nr]./Γ.DRF[nr];
+    bolusV.f[:, nr] .= 0*GM_PsiY.f[:,nr] .-GM_PsiY.f[:,nr]./Γ.DRF[nr];
 
     bolusU=bolusU.*mskW;
     bolusV=bolusV.*mskS;
@@ -568,7 +566,7 @@ function calc_bolus(GM_PsiX,GM_PsiY, Γ)
     for k in 1:nr
         (tmpU,tmpV)=exch_UV(tmp_x[:, k],tmp_y[:, k])
         for a=1:tmpU.grid.nFaces
-            (s1,s2)=size(tmpU.f[a])
+            (s1,s2)=size(tmp_x.f[a])
             tmpU1=view(tmpU.f[a],1:s1,1:s2)
             tmpU2=view(tmpU.f[a],2:s1+1,1:s2)
             tmpV1=view(tmpV.f[a],1:s1,1:s2)
