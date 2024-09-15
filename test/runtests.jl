@@ -247,6 +247,7 @@ end
 	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",lon0=lon0)
 	data=(lon=λ.lon,lat=λ.lat,var=Dint,meta=meta) #,polygons=pol)
     plot_examples(:projmap,data,lon0,proj)
+    plot_examples(:simple_heatmap,data)
 
 end
 
