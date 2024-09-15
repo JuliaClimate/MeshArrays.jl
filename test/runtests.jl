@@ -218,8 +218,19 @@ end
 	proj=Proj.Transformation(MA_preset=2,lon0=lon0)
     Dint=reshape(Interpolate(D,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
-#    fil=demo.download_polygons("countries.geojson")
-#    pol=MeshArrays.read_polygons(fil)
+    ###
+
+    fil=demo.download_polygons("countries.geojson")
+    pol=MeshArrays.read_polygons(fil)
+
+    MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
+    dest="+proj=eqearth +lon_0=$(lon0) +lat_1=0.0 +x_0=0.0 +y_0=0.0 +ellps=GRS80"
+    MeshArraysMakieExt.split(pol,dest)
+    MeshArraysMakieExt.split(pol,Observable(dest))
+    MeshArraysMakieExt.split(Observable(pol),Observable(dest))
+    MeshArraysMakieExt.split(Observable(pol),dest)
+
+    ###
 
     fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
     pol=MeshArrays.read_polygons(fil)
@@ -236,6 +247,7 @@ end
 	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",lon0=lon0)
 	data=(lon=λ.lon,lat=λ.lat,var=Dint,meta=meta) #,polygons=pol)
     plot_examples(:projmap,data,lon0,proj)
+    plot_examples(:simple_heatmap,data)
 
 end
 

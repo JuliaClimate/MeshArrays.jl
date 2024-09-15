@@ -467,17 +467,19 @@ function json_to_Makie(file="countries.geojson")
 
 	tmp22=Vector{Point2{Float64}}[]
 	for l1 in tmp2
-		if isa(l1[1][1],Vector{Float64})
-			push!(tmp22,geo2basic(l1[1]))
+		if isa(l1[1][1],Tuple)
+			push!(tmp22,geo2basic(tuple2vec.(l1[1])))
 		else
 			for l2 in l1
-				push!(tmp22,geo2basic(l2[1]))
+				push!(tmp22,geo2basic(tuple2vec.(l2[1])))
 			end
 		end
 	end
 	
 	LineString.(tmp22)
 end
+
+tuple2vec(x)=[y for y in x]
 
 """
 	shp_to_Makie(file="countries.geojson")
@@ -519,7 +521,6 @@ function geo2basic(vector::AbstractVector{<:AbstractVector})
 		end
 	end
 end
-
 
 ##
 
