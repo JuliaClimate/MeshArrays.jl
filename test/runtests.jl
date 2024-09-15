@@ -1,5 +1,5 @@
-using Test, Documenter, Suppressor
-using MeshArrays, DataDeps, CairoMakie, JLD2, Shapefile, Proj
+using Test, Documenter, Suppressor, MeshArrays, CairoMakie
+import DataDeps, JLD2, Shapefile, GeoJSON, Proj
 
 MeshArrays.GRID_LL360_download()
 MeshArrays.GRID_LLC90_download()
@@ -55,7 +55,8 @@ end
     Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
     Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
     Γ=GridLoad(γ;option=:full)
-    
+    plot(Γ.XC)
+
     hFacC=GridLoadVar("hFacC",γ)
     μ=land_mask(hFacC[:,1])
 
@@ -80,6 +81,8 @@ end
     L=-85.0:5.0:85.0; LC=LatitudeCircles(L,Γ,format=:gridpath)
     T=Array{Float64,1}(undef,length(LC))
     [T[i]=1e-6*ThroughFlow(uv,LC[i],Γ) for i=1:length(LC)]
+    plot(LC)
+    plot(LC[1])
 
     x=zeros(γ)
     fill!(x,1.0)
@@ -215,8 +218,10 @@ end
 	proj=Proj.Transformation(MA_preset=2,lon0=lon0)
     Dint=reshape(Interpolate(D,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
-    fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
 #    fil=demo.download_polygons("countries.geojson")
+#    pol=MeshArrays.read_polygons(fil)
+
+    fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
     pol=MeshArrays.read_polygons(fil)
 
     f = Figure()
@@ -227,6 +232,10 @@ end
 	lines!(pr_ax; polygons=pol,color=:black,linewidth=0.5)
 	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
 	f
+
+	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",lon0=lon0)
+	data=(lon=λ.lon,lat=λ.lat,var=Dint,meta=meta) #,polygons=pol)
+    plot_examples(:projmap,data,lon0,proj)
 
 end
 
@@ -241,6 +250,18 @@ end
     nanmean(1,NaN)
     nanmean(2,1)
     nanmean(NaN,NaN)
+end
+
+@testset "plotting" begin
+    lon,lat,earth_img=demo.get_basemap()
+    plot_examples(:basemap,lon,lat,earth_img)
+
+    pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
+    pol=MeshArrays.read_polygons(pol_file)
+
+    lon0=-160
+    proj=Proj.Transformation(MA_preset=2,lon0=lon0)
+    plot_examples(:baseproj,proj,lon0,pol=pol)
 end
 
 @testset "doctests" begin
