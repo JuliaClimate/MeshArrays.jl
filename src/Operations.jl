@@ -551,8 +551,8 @@ function calc_bolus(GM_PsiX,GM_PsiY, Γ)
         bolusU.f[:,k].=(GM_PsiX.f[:,k+1].-GM_PsiX.f[:,k])/Γ.DRF[k];
         bolusV.f[:,k].=(GM_PsiY.f[:,k+1].-GM_PsiY.f[:,k])/Γ.DRF[k];
     end;
-    bolusU.f[:, nr] .= 0. -GM_PsiX.f[:,nr]./Γ.DRF[nr];
-    bolusV.f[:, nr] .= 0. -GM_PsiY.f[:,nr]./Γ.DRF[nr];
+    bolusU.f[:, nr] .= 0*GM_PsiX.f[:,nr] .-GM_PsiX.f[:,nr]./Γ.DRF[nr];
+    bolusV.f[:, nr] .= 0*GM_PsiY.f[:,nr] .-GM_PsiY.f[:,nr]./Γ.DRF[nr];
 
     bolusU=bolusU.*mskW;
     bolusV=bolusV.*mskS;
@@ -566,7 +566,7 @@ function calc_bolus(GM_PsiX,GM_PsiY, Γ)
     for k in 1:nr
         (tmpU,tmpV)=exch_UV(tmp_x[:, k],tmp_y[:, k])
         for a=1:tmpU.grid.nFaces
-            (s1,s2)=size(tmpU.f[a])
+            (s1,s2)=size(tmp_x.f[a])
             tmpU1=view(tmpU.f[a],1:s1,1:s2)
             tmpU2=view(tmpU.f[a],2:s1+1,1:s2)
             tmpV1=view(tmpV.f[a],1:s1,1:s2)

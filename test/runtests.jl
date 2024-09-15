@@ -54,7 +54,7 @@ end
     γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
     Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
     Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
-    Γ=GridLoad(γ;option="light")
+    Γ=GridLoad(γ;option=:full)
     
     hFacC=GridLoadVar("hFacC",γ)
     μ=land_mask(hFacC[:,1])
@@ -91,6 +91,10 @@ end
     ones(γ)
     ones(y)
     zeros(y)
+
+    GM_PsiX=read(randn(90,1170,50),Γ.hFacW)
+    GM_PsiY=read(randn(90,1170,50),Γ.hFacS)
+    bolusU, bolusV, bolusW=MeshArrays.calc_bolus(GM_PsiX,GM_PsiY, Γ)
     
     #See: OceanTransports/helper_functions.jl
     #u,v,uC,vC=rotate_uv(uv,Γ);

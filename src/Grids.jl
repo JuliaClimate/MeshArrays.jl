@@ -286,7 +286,7 @@ function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
     end
 
     [Γ[ii]=GridLoadVar(ii,gr) for ii in list_n]
-    option=="full"||option=="light" ? GridAddWS!(Γ) : nothing
+    op=="full"||op=="light" ? GridAddWS!(Γ) : nothing
     return Dict_to_NamedTuple(Γ)
 end
 
