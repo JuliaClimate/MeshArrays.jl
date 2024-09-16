@@ -30,13 +30,14 @@ Reformat Array data into a MeshArray shaped after `γ`.
 """
 function read(xx::Array,γ::gcmgrid)
   siz=size.(Ref(xx),[1,2,3,4])
-  if siz[1:2]==[i for i in γ.ioSize]
+  S=[i for i in γ.ioSize[:]]
+  if siz[1:2]==S||siz[1:2]==transpose(S)
     n3=siz[3]; n4=siz[4]
     yy=reshape(xx,(γ.ioSize...,n3,n4))
-  elseif siz[1]==prod(γ.ioSize[:])
+  elseif siz[1]==prod(S)
     n3=siz[2]; n4=siz[3]
     yy=reshape(xx,(γ.ioSize...,n3,n4))
-  elseif mod(siz[1],prod(γ.ioSize[:]))==0
+  elseif mod(siz[1],prod(S))==0
     n3=Int(siz[1]/prod(γ.ioSize[:]))
     n4=1
     yy=reshape(xx,(γ.ioSize...,n3,n4))
