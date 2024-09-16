@@ -101,6 +101,10 @@ end
     GM_PsiY=read(randn(90,1170,50),Γ.hFacS)
     bolusU, bolusV, bolusW=MeshArrays.calc_bolus(GM_PsiX,GM_PsiY, Γ)
     
+    read(rand(90*1170),γ)
+    read(rand(90*1170*2),γ)
+    read(rand(90,1170,2,2),γ)
+
     #See: OceanTransports/helper_functions.jl
     #u,v,uC,vC=rotate_uv(uv,Γ);
 
