@@ -239,6 +239,8 @@ function Base.show(io::IO, z::gcmarray{T, N, Array{T,2}}) where {T,N}
   return
 end
 
+import Base: display; display(X::gcmarray)=show(X)
+
 function Base.similar(A::gcmarray;m::varmeta=defaultmeta)
     if ndims(A)==1
         B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
