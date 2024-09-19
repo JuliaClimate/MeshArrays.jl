@@ -25,14 +25,16 @@ include("ReIndexing.jl")
 include("Interpolation.jl")
 include("VerticalDimension.jl")
 include("demo.jl")
+include("Integration.jl")
 
-export AbstractMeshArray, MeshArray, gcmgrid, varmeta, gridpath
+export AbstractMeshArray, MeshArray, gcmgrid, varmeta, gridpath, gridmask
 export GridSpec, GridLoad, GridLoadVar, UnitGrid, simple_periodic_domain
 export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn, interpolation_setup
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
 export nansum, nanmean, nanmax, nanmin
 export demo, land_mask
+export Integration
 
 #export InnerArray, OuterArray
 #export smooth, mask
