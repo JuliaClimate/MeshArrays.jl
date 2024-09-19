@@ -50,7 +50,7 @@ end
 end
 
 @testset "Regional Integration:" begin
-    G,M,files=Integration.example(option=:hv)
+    G,M,files=Integration.example()
 
     allones=1.0 .+0*G.hFacC
     vol0=sum(G.RAC*G.DRF*G.hFacC)
@@ -59,7 +59,7 @@ end
     vol=[b(M.tmp2d) for b in M.h_sum]
     @test isapprox(sum(vol),vol0)
 
-    G,M,files=Integration.example(option=:full)
+    G,M,files=Integration.example(option=:streamlined_loop)
     vol=[b(allones) for b in M.h_sum]
     @test isapprox(sum(vol),vol0)
 
