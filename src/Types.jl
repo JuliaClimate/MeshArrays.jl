@@ -252,5 +252,17 @@ Base.@kwdef struct gridmask
   tmp3d::MeshArray
 end
 
-
+function Base.show(io::IO, z::gridmask)
+  printstyled(io, " gridmask \n",color=:normal)
+  printstyled(io, "  map         = ",color=:normal)
+  printstyled(io, "$(typeof(z.map))\n",color=:blue)
+  printstyled(io, "  depths      = ",color=:normal)
+  printstyled(io, "$(typeof(z.depths))\n",color=:blue)
+  printstyled(io, "  names       = ",color=:normal)
+  printstyled(io, "$(z.names[1] )\n",color=:cyan)
+  for iFace=2:length(z.names)
+    printstyled(io, "                $(z.names[iFace])\n",color=:cyan)
+  end
+return
+end
 
