@@ -236,3 +236,21 @@ Base.@kwdef struct gridpath
   W::Matrix
   S::Matrix
 end
+
+"""
+    gridmask
+
+gridmask data structure.
+"""
+Base.@kwdef struct gridmask
+  map::MeshArray
+  names::Array
+  depths::Array
+  h_sum::Array
+  v_int::Array
+  tmp2d::MeshArray
+  tmp3d::MeshArray
+end
+
+
+

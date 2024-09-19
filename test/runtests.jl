@@ -49,6 +49,21 @@ end
     @test isapprox(d[1][180,90],-2204.8384919029777)
 end
 
+@testset "Regional Integration:" begin
+    G,M,files=Integration.example(option=:hv)
+
+    allones=1.0 .+0*G.hFacC
+    vol0=sum(G.RAC*G.DRF*G.hFacC)
+
+    M.tmp2d.=M.v_int[1](allones)
+    vol=[b(M.tmp2d) for b in M.h_sum]
+    @test isapprox(sum(vol),vol0)
+
+    G,M,files=Integration.example(option=:whole)
+    vol=[b(allones) for b in M.h_sum]
+    @test isapprox(sum(vol),vol0)
+end
+
 @testset "Transport computations:" begin
     #Load grid and transport / vector field
     γ=GridSpec(ID=:LLC90)

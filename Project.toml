@@ -6,21 +6,24 @@ version = "0.3.13"
 [deps]
 CatViews = "81a5f4ea-a946-549a-aa7e-2a7f63a27d31"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
 LazyArtifacts = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+SharedArrays = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [weakdeps]
 DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
-GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
 Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
-JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 
 [extensions]
 MeshArraysDataDepsExt = ["DataDeps"]
@@ -34,6 +37,7 @@ MeshArraysShapefileExt = ["Shapefile"]
 CatViews = "1.0"
 DataDeps = "0.7"
 GeoJSON = "0.6, 0.7, 0.8"
+Glob = "1"
 JLD2 = "0.4, 0.5"
 Makie = "0.19, 0.20, 0.21"
 NearestNeighbors = "0.4"
