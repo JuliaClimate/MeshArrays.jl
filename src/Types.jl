@@ -52,6 +52,21 @@ copy_if_isarray(x) = isa(x,Array) ? copy(x) : x
 
 Base.similar(g::gcmgrid)=gcmgrid(g.path, g.class, g.nFaces, copy(g.fSize), copy_if_isarray(g.ioSize), g.ioPrec, g.read, g.write)
 
+function Base.show(io::IO, z::gcmgrid)
+  printstyled(io, " gcmgrid \n",color=:normal)
+  printstyled(io, "  class        = ",color=:normal)
+  printstyled(io, "$(z.class)\n",color=:magenta)
+  printstyled(io, "  path         = ",color=:normal)
+  printstyled(io, "$(z.path)\n",color=:magenta)
+  printstyled(io, "  fSize        = ",color=:normal)
+  printstyled(io, "$(z.fSize)\n",color=:magenta)
+  printstyled(io, "  ioSize       = ",color=:normal)
+  printstyled(io, "$(z.ioSize)\n",color=:magenta)
+  printstyled(io, "  ioPrec       = ",color=:normal)
+  printstyled(io, "$(z.ioPrec)\n",color=:magenta)
+  return
+end
+
 """
     varmeta
 
@@ -263,6 +278,6 @@ function Base.show(io::IO, z::gridmask)
   for iFace=2:length(z.names)
     printstyled(io, "                $(z.names[iFace])\n",color=:cyan)
   end
-return
+  return
 end
 
