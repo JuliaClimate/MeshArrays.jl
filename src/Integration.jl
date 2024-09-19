@@ -48,6 +48,31 @@ function define_regions(;option=:basins,grid::NamedTuple)
   name=[Symbol("lat_$(lats[l])_to_$(lats[l+1])") for l in 1:nl]
   [mask[findall((mask.>0)*(la.>=lats[l])*(la.<lats[l+1]))].=l for l in 1:nl]
   (map=mask,name=name)
+ elseif isa(option,Tuple)
+  dlo=option[1]; dla=option[2]
+  mask=1.0*(grid.hFacC[:,1].>0)
+
+  lo=grid.XC
+  lons=collect(-180:dlo:180)
+  nlo=length(lons)-1
+  la=grid.YC
+  lats=[-90 ; -75:dla:75 ; 90]
+  nla=length(lats)-1
+
+  name=Symbol[]
+  for i_a in 1:nla
+   for i_o in 1:nlo
+    if sum((mask.>0)*(la.>=lats[i_a])*(la.<lats[i_a+1])*
+           (lo.>=lons[i_o])*(lo.<lons[i_o+1]))>0
+    t_a="$(lats[i_a])Nto$(lats[i_a+1])N"
+    t_o="$(lons[i_o])Eto$(lons[i_o+1])E"
+    push!(name,Symbol(t_a*"_"*t_o))
+    mask[findall((mask.>0)*(la.>=lats[i_a])*(la.<lats[i_a+1])
+	 *(lo.>=lons[i_o])*(lo.<lons[i_o+1]))].=length(name)
+    end
+   end
+  end
+  (map=mask,name=name)
  else
   error("unknown option")
  end
@@ -83,7 +108,6 @@ function define_boxes(;option=:hv, grid::NamedTuple, regions=:basins, depths=[(0
   zmsk(d0,d1,k) = layer_mask(grid.RF,d0,d1)[k] 
   func(X,b,d0,d1)=sum([sum(xymsk(b)*zmsk(d0,d1,k)*X[:,k]*
          grid.DRF[k]*grid.hFacC[:,k]*grid.RAC) for k in 1:nr])
-  ocn_surf=[sum(xymsk(b)*(grid.hFacC[:,1].>0)*grid.RAC) for b in 1:nb]
   tmp3d=MeshArray(grid.XC.grid,Float32,nr)
 
   function func_v(X,d0,d1)
@@ -94,8 +118,10 @@ function define_boxes(;option=:hv, grid::NamedTuple, regions=:basins, depths=[(0
     tmp2d
   end
 
-  BX=(name=String[],volsum=Function[],volume=Float64[],ocn_surf=Float64[],
-       tmp2d=tmp2d,tmp3d=tmp3d)
+  if option==:full
+  #ocn_surf=[sum(xymsk(b)*(grid.hFacC[:,1].>0)*grid.RAC) for b in 1:nb]
+  BX=(name=String[],volsum=Function[],volume=Float64[],
+       ocn_surf=Float64[],tmp2d=tmp2d,tmp3d=tmp3d)
   for b in 1:nb
    for d in 1:nd
     (d0,d1)=dep[d]
@@ -105,8 +131,9 @@ function define_boxes(;option=:hv, grid::NamedTuple, regions=:basins, depths=[(0
     push!(BX.name,n)
     push!(BX.volsum,f)
     push!(BX.volume,v)
-    push!(BX.ocn_surf,ocn_surf[b])
+    #push!(BX.ocn_surf,ocn_surf[b])
    end
+  end
   end
 
   BXh=(name=String[],hsum=Function[],tmp2d=tmp2d,tmp3d=tmp3d)
@@ -128,8 +155,10 @@ function define_boxes(;option=:hv, grid::NamedTuple, regions=:basins, depths=[(0
 
   if option==:hv
     gridmask(rgns.map,BXh.name,depths,BXh.hsum,BXv.vint,tmp2d,tmp3d)
-  else
+  elseif option==:full
     gridmask(rgns.map,BX.name,depths,BX.volsum,[],tmp2d,tmp3d)
+  else
+    error("unknown option")
   end
 end
 
@@ -143,8 +172,8 @@ begin
 @everywhere using MeshArrays, MITgcm
 @everywhere rd(F,var,tmp)=read(read_mdsio(F,var),tmp)
 @everywhere G,M,files=Integration.example(option=:hv)
-#,depths=Integration.DEPTHS)
-end
+	#,regions=(30,10),depths=Integration.DEPTHS)
+end;
 #H_3d=Integration.loop_3d(M,files=files,rd=rd)
 H_hv=Integration.loop_hv(M,files=files,rd=rd)
 ```

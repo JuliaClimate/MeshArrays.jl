@@ -59,9 +59,14 @@ end
     vol=[b(M.tmp2d) for b in M.h_sum]
     @test isapprox(sum(vol),vol0)
 
-    G,M,files=Integration.example(option=:whole)
+    G,M,files=Integration.example(option=:full)
     vol=[b(allones) for b in M.h_sum]
     @test isapprox(sum(vol),vol0)
+
+    rgns=Integration.define_regions(option=:basins,grid=G)
+    rgns=Integration.define_regions(option=:dlat_10,grid=G)
+    rgns=Integration.define_regions(option=(30,10),grid=G)
+    @test isa(rgns,NamedTuple)
 end
 
 @testset "Transport computations:" begin
