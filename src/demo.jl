@@ -176,9 +176,9 @@ module demo
     """
     function download_polygons(ID::String)
         if ID=="ne_110m_admin_0_countries.shp"
-            joinpath(MeshArrays.MA_datadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
+            joinpath(MeshArrays.mydatadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
         elseif ID=="countries.geojson"
-            joinpath(MeshArrays.MA_datadep("countries_geojson1"),"countries.geojson")
+            joinpath(MeshArrays.mydatadep("countries_geojson1"),"countries.geojson")
         else
             error("unknown data dependency")
         end
@@ -194,7 +194,7 @@ module demo
         lat=[j for i=-0.05:dx:359.95, j=-89.95:dx:89.95]; 
         lon=[i for i=-0.05:dx:359.95, j=-89.95:dx:89.95];
     
-        earth_jpg=joinpath(MeshArrays.MA_datadep("basemap_jpg1"),
+        earth_jpg=joinpath(MeshArrays.mydatadep("basemap_jpg1"),
         "Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg")
     
         earth_img=read_JLD2(earth_jpg)
