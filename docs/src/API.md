@@ -9,6 +9,8 @@ AbstractMeshArray
 MeshArrays.gcmarray
 gcmgrid
 varmeta
+gridpath
+gridmask
 ```
 
 More : 
@@ -21,7 +23,6 @@ MeshArrays.gcmfaces
 ## 2. Grids And I/O
 
 ```@docs
-UnitGrid
 simple_periodic_domain
 GridSpec
 GridLoad
@@ -37,6 +38,7 @@ exchange
 MeshArrays.read
 MeshArrays.read!
 MeshArrays.write
+UnitGrid
 ```
 
 ## 3. Interpolation
@@ -62,11 +64,19 @@ UVtoTransport
 UVtoUEVN
 ```
 
-## 5. Other
+## 5. Integration
+
+```@docs
+Integration.loops
+```
+
+## 6. Other
 
 ```@docs
 LatitudeCircles
 Transect
+demo.ocean_basins
+demo.extended_basin
 isosurface
 MA_datadep
 ```

@@ -230,6 +230,7 @@ end
     λ=interpolation_setup()
 
 	basins=demo.ocean_basins()
+    AtlExt=demo.extended_basin(basins,:Atl)
 	sections,path_sec=demo.ocean_sections(Γ)
     my_section=demo.one_section(Γ,[127 127],[-25 -68])
 

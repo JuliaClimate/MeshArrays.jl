@@ -110,21 +110,62 @@ module demo
     """
         ocean_basins()
 
-    Map of ocean basins on ECCO grid.
+    Mask of ocean basins on ECCO grid (LLC90).
 
     ```
     basins=demo.ocean_basins()
+    AtlExt=extended_basin(basins,:Atl)
     ```
     """
     function ocean_basins()        
-        γ=GridSpec("LatLonCap",GRID_LLC90)
+        γ=GridSpec(ID=:LLC90)
         fil_basin=joinpath(GRID_LLC90,"v4_basin.bin")
-        basins=(map=read(fil_basin,MeshArray(γ,Float32)),
+        basins=(mask=read(fil_basin,MeshArray(γ,Float32)),
             name=["Pacific","Atlantic","indian","Arctic","Bering Sea","South China Sea","Gulf of Mexico",
             "Okhotsk Sea","Hudson Bay","Mediterranean Sea","Java Sea","North Sea","Japan Sea",
             "Timor Sea","East China Sea","Red Sea","Gulf","Baffin Bay","GIN Seas","Barents Sea"])
     end
 
+
+    list_Atl=["Atlantic","Gulf of Mexico","Hudson Bay","Mediterranean Sea","North Sea","Baffin Bay","GIN Seas"]
+    list_Pac=["Pacific","Bering Sea","Okhotsk Sea","Japan Sea","East China Sea"]
+    list_Ind=["indian","South China Sea","Java Sea","Timor Sea","Red Sea","Gulf"]
+    list_Arc=["Arctic","Barents Sea"]
+    
+    """
+        extended_basin(basins,ID=:Atl)
+
+    Consolidate basins mask to include marginal seas. 
+    
+    note : has only be tested on the ECCO grid (LLC90). 
+
+    ```
+    basins=demo.ocean_basins()
+    AtlExt=extended_basin(basins,:Atl)
+    ```
+    """
+    function extended_basin(basins,ID=:Atl)
+        list_basins=if ID==:Pac
+            list_Pac
+        elseif ID==:Atl
+            list_Atl
+        elseif ID==:Ind
+            list_Ind
+        elseif ID==:Arc
+            list_Arc
+        else
+            error("unknown basin")
+        end
+
+        mask=0*basins.mask
+        for i in list_basins
+            println(i)
+            jj=findall(basins.name.==i)[1]
+            mask.=mask+1.0*(basins.mask.==jj)
+        end
+        mask
+    end
+    
     """
         download_polygons(ID::String)
 

@@ -189,17 +189,17 @@ jldsave(output_path; depths=M.depths, integral=H, volume=vol, name=M.names)
 where vol is calculated as follows:
 
 ```
-#option=:other
-allones=1.0 .+0*G.hFacC
-vol=[b(allones) for b in M.h_sum]
+#option=:loops
+M.tmp2d.=M.v_int[1](allones)
+vol=[b(M.tmp2d) for b in M.h_sum]
 ```
 
 or 
 
 ```
-#option=:loops
-M.tmp2d.=M.v_int[1](allones)
-vol=[b(M.tmp2d) for b in M.h_sum]
+#option=:streamlined_loop
+allones=1.0 .+0*G.hFacC
+vol=[b(allones) for b in M.h_sum]
 ```
 """
 function loops(boxes::gridmask; files=String[], var=:THETA, rd=read)
