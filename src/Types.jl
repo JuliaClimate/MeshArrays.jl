@@ -256,6 +256,11 @@ end
     gridmask
 
 gridmask data structure.
+
+```
+G,M,files=Integration.example()
+M
+```
 """
 Base.@kwdef struct gridmask
   map::MeshArray

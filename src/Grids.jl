@@ -231,7 +231,7 @@ end
 - option : 
   - (default) option=:minimal means that only grid cell center positions (XC, YC) are loaded. 
   - option=:full provides a complete set of 2D grid variables. 
-  - option=:full provides a complete set of 2D & 3d grid variables. 
+  - option=:full provides a complete set of 2D & 3D grid variables. 
 
 Based on the MITgcm naming convention, grid variables are:
 

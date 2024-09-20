@@ -2,7 +2,7 @@
 module MeshArraysDataDepsExt
 
    using DataDeps, MeshArrays
-   import MeshArrays: MA_datadep
+   import MeshArrays: mydatadep
   
 
    __init__() = begin
@@ -23,7 +23,7 @@ module MeshArraysDataDepsExt
 
  
    """
-       MA_datadep(nam="countries_shp1")
+       mydatadep(nam="countries_shp1")
        
    Download data dependency with predefined name; currently :
 
@@ -34,7 +34,7 @@ module MeshArraysDataDepsExt
    "interp_halfdeg"
    ```    
    """
-   MA_datadep(nam="countries_shp1") = begin
+   mydatadep(nam="countries_shp1") = begin
       withenv("DATADEPS_ALWAYS_ACCEPT"=>true) do
          if nam=="countries_shp1"
             datadep"countries_shp1"

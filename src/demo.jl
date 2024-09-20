@@ -110,21 +110,62 @@ module demo
     """
         ocean_basins()
 
-    Map of ocean basins on ECCO grid.
+    Mask of ocean basins on ECCO grid (LLC90).
 
     ```
     basins=demo.ocean_basins()
+    AtlExt=extended_basin(basins,:Atl)
     ```
     """
     function ocean_basins()        
-        γ=GridSpec("LatLonCap",GRID_LLC90)
+        γ=GridSpec(ID=:LLC90)
         fil_basin=joinpath(GRID_LLC90,"v4_basin.bin")
-        basins=(map=read(fil_basin,MeshArray(γ,Float32)),
+        basins=(mask=read(fil_basin,MeshArray(γ,Float32)),
             name=["Pacific","Atlantic","indian","Arctic","Bering Sea","South China Sea","Gulf of Mexico",
             "Okhotsk Sea","Hudson Bay","Mediterranean Sea","Java Sea","North Sea","Japan Sea",
             "Timor Sea","East China Sea","Red Sea","Gulf","Baffin Bay","GIN Seas","Barents Sea"])
     end
 
+
+    list_Atl=["Atlantic","Gulf of Mexico","Hudson Bay","Mediterranean Sea","North Sea","Baffin Bay","GIN Seas"]
+    list_Pac=["Pacific","Bering Sea","Okhotsk Sea","Japan Sea","East China Sea"]
+    list_Ind=["indian","South China Sea","Java Sea","Timor Sea","Red Sea","Gulf"]
+    list_Arc=["Arctic","Barents Sea"]
+    
+    """
+        extended_basin(basins,ID=:Atl)
+
+    Consolidate basins mask to include marginal seas. 
+    
+    note : has only be tested on the ECCO grid (LLC90). 
+
+    ```
+    basins=demo.ocean_basins()
+    AtlExt=extended_basin(basins,:Atl)
+    ```
+    """
+    function extended_basin(basins,ID=:Atl)
+        list_basins=if ID==:Pac
+            list_Pac
+        elseif ID==:Atl
+            list_Atl
+        elseif ID==:Ind
+            list_Ind
+        elseif ID==:Arc
+            list_Arc
+        else
+            error("unknown basin")
+        end
+
+        mask=0*basins.mask
+        for i in list_basins
+            println(i)
+            jj=findall(basins.name.==i)[1]
+            mask.=mask+1.0*(basins.mask.==jj)
+        end
+        mask
+    end
+    
     """
         download_polygons(ID::String)
 
@@ -135,9 +176,9 @@ module demo
     """
     function download_polygons(ID::String)
         if ID=="ne_110m_admin_0_countries.shp"
-            joinpath(MeshArrays.MA_datadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
+            joinpath(MeshArrays.mydatadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
         elseif ID=="countries.geojson"
-            joinpath(MeshArrays.MA_datadep("countries_geojson1"),"countries.geojson")
+            joinpath(MeshArrays.mydatadep("countries_geojson1"),"countries.geojson")
         else
             error("unknown data dependency")
         end
@@ -153,7 +194,7 @@ module demo
         lat=[j for i=-0.05:dx:359.95, j=-89.95:dx:89.95]; 
         lon=[i for i=-0.05:dx:359.95, j=-89.95:dx:89.95];
     
-        earth_jpg=joinpath(MeshArrays.MA_datadep("basemap_jpg1"),
+        earth_jpg=joinpath(MeshArrays.mydatadep("basemap_jpg1"),
         "Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg")
     
         earth_img=read_JLD2(earth_jpg)

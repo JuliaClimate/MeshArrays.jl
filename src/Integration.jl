@@ -8,14 +8,14 @@ import MeshArrays: demo, MeshArray, gridmask
 
 ##
 
-example(;option=:hv,regions=:dlat_10,depths=[(0,7000)]) = begin
+example(;option=:loops,regions=:dlat_10,depths=[(0,7000)]) = begin
   g=GridSpec(ID=:LLC90); Γ=GridLoad(g)
   G=(hFacC=GridLoadVar("hFacC",g),RF=GridLoadVar("RF",g),
      RC=GridLoadVar("RC",g),RAC=GridLoadVar("RAC",g),
      DRF=GridLoadVar("DRF",g))
   G=merge(Γ,G)
 
-  M=define_boxes(option=option, regions=regions, grid=G, depths=depths)
+  M=define_sums(option=option, regions=regions, grid=G, depths=depths)
 
   diags=joinpath(pwd(),"diags")
   files=glob("state_3d_set1*.data",diags)
@@ -89,11 +89,11 @@ layer_mask(dF,d0,d1)=begin
 end
 
 """
-    define_boxes(;option=:hv,grid::NamedTuple, regions=:basins, depths=[(0,7000)])
+    define_sums(;option=:loops, grid::NamedTuple, regions=:basins, depths=[(0,7000)])
 
 Define regional integration function for each basin and depth range.
 """
-function define_boxes(;option=:hv, grid::NamedTuple, regions=:basins, depths=[(0,7000)])
+function define_sums(;option=:loops, grid::NamedTuple, regions=:basins, depths=[(0,7000)])
   dep=(isa(depths,Tuple) ? [depths] : depths)
   nd=length(dep)
   rgns=define_regions(option=regions,grid=grid) 
@@ -118,7 +118,7 @@ function define_boxes(;option=:hv, grid::NamedTuple, regions=:basins, depths=[(0
     tmp2d
   end
 
-  if option==:full
+  if option==:streamlined_loop
   #ocn_surf=[sum(xymsk(b)*(grid.hFacC[:,1].>0)*grid.RAC) for b in 1:nb]
   BX=(name=String[],volsum=Function[],volume=Float64[],
        ocn_surf=Float64[],tmp2d=tmp2d,tmp3d=tmp3d)
@@ -153,9 +153,9 @@ function define_boxes(;option=:hv, grid::NamedTuple, regions=:basins, depths=[(0
     push!(BXv.vint,f)
   end
 
-  if option==:hv
+  if option==:loops
     gridmask(rgns.map,BXh.name,depths,BXh.hsum,BXv.vint,tmp2d,tmp3d)
-  elseif option==:full
+  elseif option==:streamlined_loop
     gridmask(rgns.map,BX.name,depths,BX.volsum,[],tmp2d,tmp3d)
   else
     error("unknown option")
@@ -165,17 +165,18 @@ end
 #nonan(x)=[(isnan(y) ? 0.0 : y) for y in x]
 
 """
-    loop(boxes::NamedTuple; files=String[], var=:THETA, rd=read)
+    loops(mask::gridmask; files=String[], var=:THETA, rd=read)
 
 ```
 begin
-@everywhere using MeshArrays, MITgcm
-@everywhere rd(F,var,tmp)=read(read_mdsio(F,var),tmp)
-@everywhere G,M,files=Integration.example(option=:hv)
-	#,regions=(30,10),depths=Integration.DEPTHS)
+  @everywhere using MeshArrays, MITgcm
+  @everywhere rd(F,var,tim,tmp)=read(read_mdsio(F,var),tmp)
+  @everywhere G,M,files=Integration.example()
+    #,regions=(30,10),depths=Integration.DEPTHS)
 end;
-#H_3d=Integration.loop_3d(M,files=files,rd=rd)
-H_hv=Integration.loop_hv(M,files=files,rd=rd)
+
+H=Integration.loops(M,files=files,rd=rd)
+# Hbis=Integration.streamlined_loop(M,files=files,rd=rd)
 ```
 
 and to save results:
@@ -188,55 +189,59 @@ jldsave(output_path; depths=M.depths, integral=H, volume=vol, name=M.names)
 where vol is calculated as follows:
 
 ```
-#option=:other
-allones=1.0 .+0*G.hFacC
-vol=[b(allones) for b in M.h_sum]
+#option=:loops
+M.tmp2d.=M.v_int[1](allones)
+vol=[b(M.tmp2d) for b in M.h_sum]
 ```
 
 or 
 
 ```
-#option=:hv
-M.tmp2d.=M.v_int[1](allones)
-vol=[b(M.tmp2d) for b in M.h_sum]
+#option=:streamlined_loop
+allones=1.0 .+0*G.hFacC
+vol=[b(allones) for b in M.h_sum]
 ```
 """
-function loop_3d(boxes::gridmask; files=String[], var=:THETA, rd=read)
+function loops(mask::gridmask; files=String[], var=:THETA, rd=read)
   nt=length(files)
-  nb=length(boxes.names)
+  nh=length(mask.names)
+  nv=length(mask.depths)
+  BA=SharedArray{Float64}(nh,nv,nt)
+  @sync @distributed for t in 1:nt
+    mod(t,10)==0 ? println(t) : nothing
+    F=files[t]
+    ext=split(F,".")[end]
+    mask.tmp3d.=rd(F,var,t,mask.tmp3d)
+    for layer in 1:nv
+       mask.tmp2d.=mask.v_int[layer](mask.tmp3d)
+       BA[:,layer,t]=[b(mask.tmp2d) for b in mask.h_sum]
+    end
+    GC.gc()
+  end
+  BA
+end
+
+"""
+    streamlined_loop(mask::gridmask; files=String[], var=:THETA, rd=read)
+
+Alternate approach to loops, where loops are streamlined in a single dimension.
+"""
+function streamlined_loop(mask::gridmask; files=String[], var=:THETA, rd=read)
+  nt=length(files)
+  nb=length(mask.names)
   BA=SharedArray{Float64}(nb,nt)
   @sync @distributed for t in 1:nt
     mod(t,10)==0 ? println(t) : nothing
     F=files[t]
     ext=split(F,".")[end]
-    boxes.tmp3d.=rd(F,var,boxes.tmp3d)
-    BA[:,t]=[b(boxes.tmp3d) for b in boxes.h_sum]
+    mask.tmp3d.=rd(F,var,mask.tmp3d)
+    BA[:,t]=[b(mask.tmp3d) for b in mask.h_sum]
     GC.gc()
   end
   BA
 end
 
 ##
-
-function loop_hv(boxes::gridmask; files=String[], var=:THETA, rd=read)
-  nt=length(files)
-  nh=length(boxes.names)
-  nv=length(boxes.depths)
-  BA=SharedArray{Float64}(nh,nv,nt)
-  @sync @distributed for t in 1:nt
-    mod(t,10)==0 ? println(t) : nothing
-    F=files[t]
-    ext=split(F,".")[end]
-    boxes.tmp3d.=rd(F,var,boxes.tmp3d)
-    for layer in 1:nv
-       boxes.tmp2d.=boxes.v_int[layer](boxes.tmp3d)
-       BA[:,layer,t]=[b(boxes.tmp2d) for b in boxes.h_sum]
-       #dH0[i]=nansum(write(dT*(G.b_i.==i)))
-    end
-    GC.gc()
-  end
-  BA
-end
 
 end
 
