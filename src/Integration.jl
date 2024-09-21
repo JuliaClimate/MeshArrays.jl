@@ -29,6 +29,8 @@ DEPTHS=[(0,100),(100,200),(200,300),(300,400),(400,500),(500,600),(600,700),
         (700,800),(800,1000),(1000,1200),(1200,1400),(1400,1700),(1700,2000),
         (2000,2500),(2500,3000),(3000,4000),(4000,5000),(5000,7000)]
 
+lon180(x)=Float64(x>180.0 ? x-360.0 : x)
+
 """
     define_regions(;option=:global,grid::NamedTuple)
 
@@ -52,7 +54,7 @@ function define_regions(;option=:global,grid::NamedTuple)
   dlo=option[1]; dla=option[2]
   mask=1.0*(grid.hFacC[:,1].>0)
 
-  lo=grid.XC
+  lo=lon180.(grid.XC)
   lons=collect(-180:dlo:180)
   nlo=length(lons)-1
   la=grid.YC
@@ -242,6 +244,16 @@ function streamlined_loop(mask::gridmask; files=String[], var=:THETA, rd=read)
 end
 
 ##
+
+volumes(M::gridmask,G::NamedTuple)=begin
+  allones=1.0 .+0*G.hFacC
+  vol=zeros(length(M.names),length(M.depths))
+  for j in 1:length(M.depths)
+    M.tmp2d.=M.v_int[j](allones)
+    vol[:,j]=[b(M.tmp2d) for b in M.h_sum]
+  end
+  vol
+end
 
 end
 
