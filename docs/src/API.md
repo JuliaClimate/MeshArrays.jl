@@ -23,10 +23,18 @@ MeshArrays.gcmfaces
 ## 2. Grids And I/O
 
 ```@docs
-simple_periodic_domain
 GridSpec
 GridLoad
 GridLoadVar
+```
+
+More :
+
+```
+Grids_simple.simple_periodic_domain
+Grids_simple.UnitGrid
+Grids_simple.GridLoad_lonlatdep
+Grids_simple.GridLoad_lonlat
 ```
 
 More : 
@@ -38,7 +46,6 @@ exchange
 MeshArrays.read
 MeshArrays.read!
 MeshArrays.write
-UnitGrid
 ```
 
 ## 3. Interpolation

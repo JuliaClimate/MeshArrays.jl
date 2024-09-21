@@ -16,7 +16,7 @@ include(joinpath(p,"../examples/Demos.jl"))
         elseif nTopo==4; grTopo="PeriodicDomain"; nFaces=1; N=400;
         end;
         Npt=nFaces*N*N
-        γ,Γ=MeshArrays.GridOfOnes(grTopo,nFaces,N;option="full")
+        γ,Γ=Grids_simple.GridOfOnes(grTopo,nFaces,N;option="full")
         @test γ.class == grTopo
         Rini= 0.; Rend= 0.;
         (Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
@@ -207,10 +207,10 @@ end
     C=MeshArray(randn(20,10))
     D=MeshArray(randn(20,10,3))
 
-    (Γ,γ)=UnitGrid( (80,90) , (20,30) ; option="full")
+    (Γ,γ)=Grids_simple.UnitGrid( (80,90) , (20,30) ; option="full")
     @test isa(γ,gcmgrid)
 
-    tmp=UnitGrid(γ)
+    tmp=Grids_simple.UnitGrid(γ)
     @test isa(tmp,NamedTuple)
 
     #various read/write functions
