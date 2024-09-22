@@ -221,6 +221,8 @@ end
     MeshArrays.write_tiles(Γ.XC)
     MeshArrays.write_tiles(tmp,Γ.XC)    
     @test isfile(tmp)
+
+    G=Grids_simple.GridLoad_lonlatdep([10 100 1000],ones(360,180,3))
 end
 
 @testset "Plotting:" begin

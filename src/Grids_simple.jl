@@ -2,7 +2,7 @@
 module Grids_simple
 
 using Unitful
-import MeshArrays: gcmgrid, varmeta, MeshArray, Dict_to_NamedTuple, read_tiles, write_tiles
+import MeshArrays: gcmgrid, varmeta, MeshArray, Dict_to_NamedTuple, read_tiles, write_tiles, GridSpec
 
 """
     GridOfOnes(grTp,nF,nP;option="minimal")
@@ -144,8 +144,10 @@ end
     GridLoad_lonlatdep(depth,mask)
 """
 function GridLoad_lonlatdep(depth,mask)
-    GridLoad_lonlat()
-    hFacC=read(hFacC,g)
+    G=GridLoad_lonlat()
+    g=G.XC.grid
+    hFacC=read(mask,g)
+    RC=depth
     RF=[0;0.5*(RC[1:end-1]+RC[2:end]);RC[end]+0.5*(RC[end]-RC[end-1])]
     merge(G,(hFacC=hFacC,RC=RC,RF=RF,DRF=diff(RF)))  
 end
