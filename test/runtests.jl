@@ -16,7 +16,7 @@ include(joinpath(p,"../examples/Demos.jl"))
         elseif nTopo==4; grTopo="PeriodicDomain"; nFaces=1; N=400;
         end;
         Npt=nFaces*N*N
-        γ,Γ=MeshArrays.GridOfOnes(grTopo,nFaces,N;option="full")
+        γ,Γ=Grids_simple.GridOfOnes(grTopo,nFaces,N;option="full")
         @test γ.class == grTopo
         Rini= 0.; Rend= 0.;
         (Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
@@ -55,8 +55,7 @@ end
     allones=1.0 .+0*G.hFacC
     vol0=sum(G.RAC*G.DRF*G.hFacC)
 
-    M.tmp2d.=M.v_int[1](allones)
-    vol=[b(M.tmp2d) for b in M.h_sum]
+    vol=Integration.volumes(M,G)
     @test isapprox(sum(vol),vol0)
 
     G,M,files=Integration.example(option=:streamlined_loop)
@@ -67,6 +66,17 @@ end
     rgns=Integration.define_regions(option=:dlat_10,grid=G)
     rgns=Integration.define_regions(option=(30,10),grid=G)
     @test isa(rgns,NamedTuple)
+
+    G,M,files=Integration.example()
+    files=fill("?",3)
+    rd0(F,var,tim,tmp)=tim*ones(tmp)
+    H=Integration.loops(M,files=files,rd=rd0)
+    @test isa(H,Array)
+
+    G,M,files=Integration.example(option=:streamlined_loop)
+    files=fill("?",3)
+    H=Integration.streamlined_loop(M,files=files,rd=rd0)
+    @test isa(H,Array)
 end
 
 @testset "Transport computations:" begin
@@ -207,10 +217,10 @@ end
     C=MeshArray(randn(20,10))
     D=MeshArray(randn(20,10,3))
 
-    (Γ,γ)=UnitGrid( (80,90) , (20,30) ; option="full")
+    (Γ,γ)=Grids_simple.UnitGrid( (80,90) , (20,30) ; option="full")
     @test isa(γ,gcmgrid)
 
-    tmp=UnitGrid(γ)
+    tmp=Grids_simple.UnitGrid(γ)
     @test isa(tmp,NamedTuple)
 
     #various read/write functions
@@ -221,6 +231,8 @@ end
     MeshArrays.write_tiles(Γ.XC)
     MeshArrays.write_tiles(tmp,Γ.XC)    
     @test isfile(tmp)
+
+    G=Grids_simple.GridLoad_lonlatdep([10 100 1000],ones(360,180,3))
 end
 
 @testset "Plotting:" begin

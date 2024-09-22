@@ -159,7 +159,7 @@ module demo
 
         mask=0*basins.mask
         for i in list_basins
-            println(i)
+            #println(i)
             jj=findall(basins.name.==i)[1]
             mask.=mask+1.0*(basins.mask.==jj)
         end

@@ -24,11 +24,12 @@ include("Solvers.jl")
 include("ReIndexing.jl")
 include("Interpolation.jl")
 include("VerticalDimension.jl")
+include("Grids_simple.jl")
 include("demo.jl")
 include("Integration.jl")
 
 export AbstractMeshArray, MeshArray, gcmgrid, varmeta, gridpath, gridmask
-export GridSpec, GridLoad, GridLoadVar, UnitGrid, simple_periodic_domain
+export GridSpec, GridLoad, GridLoadVar, Grids_simple
 export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn, interpolation_setup
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV

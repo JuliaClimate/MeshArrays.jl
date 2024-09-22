@@ -220,7 +220,7 @@ function loops(mask::gridmask; files=String[], var=:THETA, rd=read)
     end
     GC.gc()
   end
-  BA
+  Array(BA)
 end
 
 """
@@ -236,11 +236,11 @@ function streamlined_loop(mask::gridmask; files=String[], var=:THETA, rd=read)
     mod(t,10)==0 ? println(t) : nothing
     F=files[t]
     ext=split(F,".")[end]
-    mask.tmp3d.=rd(F,var,mask.tmp3d)
+    mask.tmp3d.=rd(F,var,t,mask.tmp3d)
     BA[:,t]=[b(mask.tmp3d) for b in mask.h_sum]
     GC.gc()
   end
-  BA
+  Array(BA)
 end
 
 ##
