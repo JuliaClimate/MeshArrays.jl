@@ -272,7 +272,8 @@ end
     lon0=-160
 	proj=Proj.Transformation(MA_preset=2,lon0=lon0)
     Dint=reshape(Interpolate(D,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
-    Dint=reshape(Interpolate(D,λ),size(λ.lon))
+
+    Interpolate(D,λ)
     InterpolationFactors(Γ,30.0,30.0)
 
     ###
