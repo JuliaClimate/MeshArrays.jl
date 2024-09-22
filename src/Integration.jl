@@ -29,17 +29,19 @@ DEPTHS=[(0,100),(100,200),(200,300),(300,400),(400,500),(500,600),(600,700),
         (700,800),(800,1000),(1000,1200),(1200,1400),(1400,1700),(1700,2000),
         (2000,2500),(2500,3000),(3000,4000),(4000,5000),(5000,7000)]
 
+lon180(x)=Float64(x>180.0 ? x-360.0 : x)
+
 """
-    define_regions(;option=:basins,grid::NamedTuple)
+    define_regions(;option=:global,grid::NamedTuple)
 
 Define regional integration mask (one value period region).
 """
-function define_regions(;option=:basins,grid::NamedTuple)
+function define_regions(;option=:global,grid::NamedTuple)
  if option==:basins
   demo.ocean_basins()
  elseif option==:global
   mask=1.0*(grid.hFacC[:,1].>0)
-  (map=mask,name=["Global"])
+  (mask=mask,name=["Global"])
  elseif option==:dlat_10
   mask=1.0*(grid.hFacC[:,1].>0)
   la=grid.YC
@@ -47,12 +49,12 @@ function define_regions(;option=:basins,grid::NamedTuple)
   nl=length(lats)-1
   name=[Symbol("lat_$(lats[l])_to_$(lats[l+1])") for l in 1:nl]
   [mask[findall((mask.>0)*(la.>=lats[l])*(la.<lats[l+1]))].=l for l in 1:nl]
-  (map=mask,name=name)
+  (mask=mask,name=name)
  elseif isa(option,Tuple)
   dlo=option[1]; dla=option[2]
   mask=1.0*(grid.hFacC[:,1].>0)
 
-  lo=grid.XC
+  lo=lon180.(grid.XC)
   lons=collect(-180:dlo:180)
   nlo=length(lons)-1
   la=grid.YC
@@ -72,7 +74,7 @@ function define_regions(;option=:basins,grid::NamedTuple)
     end
    end
   end
-  (map=mask,name=name)
+  (mask=mask,name=name)
  else
   error("unknown option")
  end
@@ -89,11 +91,11 @@ layer_mask(dF,d0,d1)=begin
 end
 
 """
-    define_sums(;option=:loops, grid::NamedTuple, regions=:basins, depths=[(0,7000)])
+    define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[(0,7000)])
 
 Define regional integration function for each basin and depth range.
 """
-function define_sums(;option=:loops, grid::NamedTuple, regions=:basins, depths=[(0,7000)])
+function define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[(0,7000)])
   dep=(isa(depths,Tuple) ? [depths] : depths)
   nd=length(dep)
   rgns=define_regions(option=regions,grid=grid) 
@@ -101,7 +103,7 @@ function define_sums(;option=:loops, grid::NamedTuple, regions=:basins, depths=[
   allones=1.0 .+0*grid.hFacC
   nr=length(grid.RC)
 
-  xymsk(b) = 1.0*(rgns.map.==b)
+  xymsk(b) = 1.0*(rgns.mask.==b)
   func_h(X,b)=sum(xymsk(b)*X)
   tmp2d=MeshArray(grid.XC.grid,Float32)
 
@@ -154,9 +156,9 @@ function define_sums(;option=:loops, grid::NamedTuple, regions=:basins, depths=[
   end
 
   if option==:loops
-    gridmask(rgns.map,BXh.name,depths,BXh.hsum,BXv.vint,tmp2d,tmp3d)
+    gridmask(rgns.mask,BXh.name,depths,BXh.hsum,BXv.vint,tmp2d,tmp3d)
   elseif option==:streamlined_loop
-    gridmask(rgns.map,BX.name,depths,BX.volsum,[],tmp2d,tmp3d)
+    gridmask(rgns.mask,BX.name,depths,BX.volsum,[],tmp2d,tmp3d)
   else
     error("unknown option")
   end
@@ -242,6 +244,16 @@ function streamlined_loop(mask::gridmask; files=String[], var=:THETA, rd=read)
 end
 
 ##
+
+volumes(M::gridmask,G::NamedTuple)=begin
+  allones=1.0 .+0*G.hFacC
+  vol=zeros(length(M.names),length(M.depths))
+  for j in 1:length(M.depths)
+    M.tmp2d.=M.v_int[j](allones)
+    vol[:,j]=[b(M.tmp2d) for b in M.h_sum]
+  end
+  vol
+end
 
 end
 
