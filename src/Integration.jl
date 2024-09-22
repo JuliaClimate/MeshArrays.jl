@@ -240,7 +240,7 @@ function streamlined_loop(mask::gridmask; files=String[], var=:THETA, rd=read)
     BA[:,t]=[b(mask.tmp3d) for b in mask.h_sum]
     GC.gc()
   end
-  BA
+  Array(BA)
 end
 
 ##
