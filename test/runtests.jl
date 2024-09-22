@@ -51,6 +51,7 @@ end
 
 @testset "Regional Integration:" begin
     G,M,files=Integration.example()
+    @suppress show(M)
 
     allones=1.0 .+0*G.hFacC
     vol0=sum(G.RAC*G.DRF*G.hFacC)
@@ -82,6 +83,7 @@ end
 @testset "Transport computations:" begin
     #Load grid and transport / vector field
     γ=GridSpec(ID=:LLC90)
+    @suppress show(γ)
     Γ=GridLoad(ID=:LLC90,option=:full)
     @suppress show(Γ.XC)
 
@@ -104,7 +106,7 @@ end
     U=0*hFacW; V=0*hFacS;
     UVtoTransport(U,V,Γ)
     UVtoUEVN(U[:,1],V[:,1],Γ)
-    curl(U[:,1],V[:,1], merge(Γ,(hFacW=hFacW,hFacS=hFacS,RAZ=RAZ,)) )
+    curl(U[:,1],V[:,1], merge(Γ,(hFacW=hFacW,hFacS=hFacS,RAZ=RAZ)) )
     dD=zeros(γ)
     MeshArrays.UVtoSpeed!(U[:,1],V[:,1],Γ,dD)
     
@@ -239,6 +241,9 @@ end
     γ=GridSpec(ID=:LLC90)
     Γ=GridLoad(γ;option="light")
     D=Γ.Depth
+    λ=interpolation_setup(Γ=Γ,
+        lon=[i for i=-170.:20.0:170., j=-80.:20.0:80.], 
+        lat=[j for i=-170.:20.0:170., j=-80.:20.0:80.])
     λ=interpolation_setup()
 
 	basins=demo.ocean_basins()
@@ -267,6 +272,8 @@ end
     lon0=-160
 	proj=Proj.Transformation(MA_preset=2,lon0=lon0)
     Dint=reshape(Interpolate(D,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
+    Dint=reshape(Interpolate(D,λ),size(λ.lon))
+    InterpolationFactors(Γ,30.0,30.0)
 
     ###
 
