@@ -538,7 +538,9 @@ function basemap(lon,lat,basemap)
 	fig=with_theme(Figure,theme_light())
     ax = Axis(fig[1, 1])
 	#im=image!(ax,lon[:,1],lat[1,:],0.5 .+0.5*Gray.(basemap))
-	im=image!(ax,lon[:,1],lat[1,:],basemap)
+	#im=image!(ax,lon[:,1],lat[1,:],basemap)
+	im=image!(ax,lon[1,1]..lon[end,1],lat[1,1]..lat[1,end],basemap)
+
 	hidedecorations!(ax)
 
 	#fig,ax,im

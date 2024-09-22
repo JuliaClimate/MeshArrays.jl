@@ -31,7 +31,7 @@ GridLoadVar
 More :
 
 ```
-Grids_simple.simple_periodic_domain
+Grids_simple.periodic_domain
 Grids_simple.UnitGrid
 Grids_simple.GridLoad_lonlatdep
 Grids_simple.GridLoad_lonlat

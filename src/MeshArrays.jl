@@ -30,7 +30,6 @@ include("Integration.jl")
 
 export AbstractMeshArray, MeshArray, gcmgrid, varmeta, gridpath, gridmask
 export GridSpec, GridLoad, GridLoadVar, Grids_simple
-#, UnitGrid, simple_periodic_domain
 export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn, interpolation_setup
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV

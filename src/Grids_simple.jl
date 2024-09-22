@@ -109,14 +109,14 @@ function UnitGrid(ioSize::NTuple{2, Int},tileSize::NTuple{2, Int}; option="minim
 end
 
 """
-    simple_periodic_domain(np::Integer,nq=missing)
+    periodic_domain(np::Integer,nq=missing)
 
 Set up a simple periodic domain of size np x nq
 
 ```jldoctest; output = false
 using MeshArrays
 np=16 #domain size is np x np
-Γ=Grids_simple.simple_periodic_domain(np)
+Γ=Grids_simple.periodic_domain(np)
 isa(Γ.XC,MeshArray)
 
 # output
@@ -125,7 +125,7 @@ true
 ```
 
 """
-function simple_periodic_domain(np::Integer,nq=missing)
+function periodic_domain(np::Integer,nq=missing)
     ismissing(nq) ? nq=np : nothing
 
     nFaces=1
