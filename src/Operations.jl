@@ -261,7 +261,7 @@ end
 
 Compute transport through an integration path
 """
-function ThroughFlow(VectorField,IntegralPath,Γ::NamedTuple)
+function ThroughFlow(VectorField,IntegralPath,Γ::NamedTuple; mask=[])
 
     #Note: vertical intergration is not always wanted; left for user to do outside
 
