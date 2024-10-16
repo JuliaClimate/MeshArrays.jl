@@ -261,12 +261,12 @@ end
 
 Compute transport through an integration path
 """
-function ThroughFlow(VectorField,IntegralPath,Γ::NamedTuple)
+function ThroughFlow(VectorField,IntegralPath,Γ::NamedTuple,msk=[])
 
     #Note: vertical intergration is not always wanted; left for user to do outside
-
-    U=VectorField["U"]
-    V=VectorField["V"]
+    MSK=(isempty(msk) ? 1.0 : msk)
+    U=MSK .*VectorField["U"] 
+    V=MSK .*VectorField["V"] 
 
     nd=ndims(U)
     #println("nd=$nd and d=$d")
