@@ -14,14 +14,14 @@ Please refer to the [Docs](https://juliaclimate.github.io/MeshArrays.jl/dev/), [
 Some features and related packages:
 
 - interpolate to geographic coordinates and visualize as maps
-- visualize on the sphere, in geographic coordinates, in projection, or grid coordinate
-- examples include interaction and animation using `Makie.jl` and `Pluto.jl`
-- accurately derive planetary scale transports on a global [climate model grid](https://en.wikipedia.org/wiki/Arakawa_grids)
-- compute trajectories of materials over any supported grid via [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
-- read/write [NetCDF](https://en.wikipedia.org/wiki/NetCDF), files and other formats often used in climate sciences
-- support domain decomposition via [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/) that 
+- visualization : on the sphere, in geographic coordinates, geographic projections
+- interaction and animation : via `Pluto.jl` notebooks and `Makie.jl` recipes
+- support for accurate derivations of oceanic and atmospheric transports on [climate model grids](https://en.wikipedia.org/wiki/Arakawa_grids)
+- particle tracking : trajectories of materials over any supported grid via [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
+- handling of model output : read/write [NetCDF](https://en.wikipedia.org/wiki/NetCDF) files, and other formats used in climate sciences
+- support for domain decomposition via [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/) that 
 - support for [MITgcm](https://mitgcm.readthedocs.io/en/latest/) model ouput via [MITgcm.jl](https://github.com/gaelforget/MITgcm.jl)
-- support for [ECCO](https://doi.org/10.5194/gmd-8-3071-2015) ocean estimates via [OceanStateEstimation.jl](https://github.com/gaelforget/OceanStateEstimation.jl)
+- support for [ECCO](https://doi.org/10.5194/gmd-8-3071-2015) ocean estimates via [Climatology.jl](https://github.com/juliaocean/Climatology.jl) and [ECCO.jl](https://github.com/gaelforget/ECCO.jl)
 
 `MeshArrays.jl` was first introduced in [this presentation](https://youtu.be/RDxAy_zSUvg) at JuliaCon 2018.
 
