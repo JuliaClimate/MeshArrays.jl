@@ -13,9 +13,9 @@ Please refer to the [Docs](https://juliaclimate.github.io/MeshArrays.jl/dev/), [
 
 Some features and related packages:
 
-- interpolate to geographic coordinates and visualize as maps
 - visualization : on the sphere, in geographic coordinates, geographic projections
-- interaction and animation : via `Pluto.jl` notebooks and `Makie.jl` recipes
+- interaction and animation : via [Pluto.jl](https://plutojl.org) notebooks and [Makie.jl](https://docs.makie.org/dev/) recipes
+- support for interpolation to arbitrary geographic coordinates, geospatial statistics, and mapping
 - support for accurate derivations of oceanic and atmospheric transports on [climate model grids](https://en.wikipedia.org/wiki/Arakawa_grids)
 - particle tracking : trajectories of materials over any supported grid via [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
 - handling of model output : read/write [NetCDF](https://en.wikipedia.org/wiki/NetCDF) files, and other formats used in climate sciences
