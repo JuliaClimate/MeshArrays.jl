@@ -17,7 +17,8 @@ function MaskWetPoints(TrspCon)
     mskDry=1.0 * isnan.(mskWet)
     mskDry=mask(mskDry,NaN,0.0)
     #
-    tmp1=fill(1.0,mskWet); tmp2=exchange(tmp1);
+    tmp1=fill(1.0,mskWet)
+    tmp2=exchange(tmp1).MA
     for I=1:size(tmp1.f,1)
         tmp3=mskWet[I]; tmp4=tmp2[I];
         tmp4=tmp4[2:end-1,1:end-2]+tmp4[2:end-1,3:end]+tmp4[1:end-2,2:end-1]+tmp4[3:end,2:end-1];
@@ -69,7 +70,7 @@ function SeedWetPoints(tmp::MeshArray,Kmap::MeshArray,Lmap::MeshArray,I...)
     FLDkkFROMtmp[aa][ii:3:end,jj:3:end]=Kmap[aa][ii:3:end,jj:3:end]
     FLDkkFROMtmp[aa][findall(isnan.(tmp[aa]))].=0.0
 
-    FLDkkFROM=exchange(FLDkkFROMtmp)
+    FLDkkFROM=exchange(FLDkkFROMtmp).MA
     FLDkkFROM=mask(FLDkkFROM,0.0)
 
     for bb in 1:tmp.grid.nFaces
@@ -224,10 +225,10 @@ function VectorPotential(TrspX::MeshArray,TrspY::MeshArray,Γ::NamedTuple,method
     if fldU.grid.nFaces>1
         TMP1=similar(psi)
         for I in eachindex(TMP1); TMP1[I] = fill(I,size(psi[I])); end
-        TMP2=exchange(TMP1) #this is a trick
+        TMP2=exchange(TMP1).MA #this is a trick
 
     for I in 1:TrspX.grid.nFaces-1
-        tmp2=exchange(psi) #this is a trick
+        tmp2=exchange(psi).MA #this is a trick
         tmp3=tmp2[I+1]; tmp3[3:end-2,3:end-2].=NaN #mask out interior points
         TMP3=TMP2[I+1]; tmp3[findall(TMP3.>I+1)].=NaN #mask out edges points coming from unadjusted faces
         tmp3[findall(TMP3.==0)].=NaN

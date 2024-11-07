@@ -14,19 +14,19 @@ Exchange / transfer data between neighboring arrays. Other methods are
     exchange(u::MeshArray,v::MeshArray,N::Integer)
 """
 function exchange(fld::MeshArray)
-  FLD=exch_T_N(fld,1);
+  MeshArray_wh(exch_T_N(fld,1),1)
 end
 
 function exchange(fld::MeshArray,N::Integer)
-  FLD=exch_T_N(fld,N);
+  MeshArray_wh(exch_T_N(fld,N),N)
 end
 
 function exchange(u::MeshArray,v::MeshArray)
-  (uex,vex)=exch_UV_N(u,v,1);
+  MeshArray_wh.(exch_UV_N(u,v,1),1)
 end
 
 function exchange(u::MeshArray,v::MeshArray,N::Integer)
-  (uex,vex)=exch_UV_N(u,v,N);
+  MeshArray_wh.(exch_UV_N(u,v,N),N)
 end
 
 ## dispatch over grid types

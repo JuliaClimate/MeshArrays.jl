@@ -40,7 +40,7 @@ end
 
 function gradient(inFLD::MeshArray,Γ::NamedTuple,doDIV::Bool)
 
-exFLD=exchange(inFLD,1)
+exFLD=exchange(inFLD,1).MA
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
@@ -63,7 +63,7 @@ end
 
 function gradient(inFLD::MeshArray,iDXC::MeshArray,iDYC::MeshArray)
 
-exFLD=exchange(inFLD,1)
+exFLD=exchange(inFLD,1).MA
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
@@ -92,15 +92,15 @@ function curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
 	fac=exchange(1.0 ./Γ.RAZ,1)
 	(U,V)=exchange(u,v,1)
   (DXC,DYC)=exchange(Γ.DXC,Γ.DYC,1)
-	[DXC[i].=abs.(DXC[i]) for i in eachindex(U)]
-	[DYC[i].=abs.(DYC[i]) for i in eachindex(V)]
+	[DXC.MA[i].=abs.(DXC.MA[i]) for i in eachindex(U.MA)]
+	[DYC.MA[i].=abs.(DYC.MA[i]) for i in eachindex(V.MA)]
 
-	for i in eachindex(U)
-    ucur=U[i][2:end,:]
-    vcur=V[i][:,2:end]        
+	for i in eachindex(U.MA)
+    ucur=U.MA[i][2:end,:]
+    vcur=V.MA[i][:,2:end]        
     tmpcurl=ucur[:,1:end-1]-ucur[:,2:end]
     tmpcurl=tmpcurl-(vcur[1:end-1,:]-vcur[2:end,:])
-    tmpcurl=tmpcurl.*fac[i][1:end-1,1:end-1]
+    tmpcurl=tmpcurl.*fac.MA[i][1:end-1,1:end-1]
 
 		##still needed:
 		##- deal with corners
@@ -402,7 +402,7 @@ function edge_mask(mskCint::MeshArray)
   mskW=similar(mskCint)
   mskS=similar(mskCint)
 
-  mskCint=exchange(mskCint,1)
+  mskCint=exchange(mskCint,1).MA
 
   for i in eachindex(mskCint)
       tmp1=mskCint[i]

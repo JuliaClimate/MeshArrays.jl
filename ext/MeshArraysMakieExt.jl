@@ -341,8 +341,8 @@ function interpolation_demo(Γ)
 
 	#
 
-	XCtiles=Tiles(τ,exchange(Γ.XC))
-	YCtiles=Tiles(τ,exchange(Γ.YC))
+	XCtiles=Tiles(τ,exchange(Γ.XC).MA)
+	YCtiles=Tiles(τ,exchange(Γ.YC).MA)
 
 	iiTile=tiles[f[1]][i[1],j[1]]; iiFace=τ[iiTile].face
 

@@ -31,7 +31,7 @@ include(joinpath(p,"../examples/Demos.jl"))
         exchange(Rend,2)
         exchange(dRdx,dRdy,1)        
         (dRdx_e,dRdy_e)=exchange(dRdx,dRdy,1)        
-        @test isa(dRdx_e,MeshArray)
+        @test isa(dRdx_e,MeshArray_wh)
     end
 end
 

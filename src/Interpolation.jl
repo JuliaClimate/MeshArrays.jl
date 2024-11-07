@@ -157,16 +157,16 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         #2. t_XC, t_XC, t_f, t_i, t_j        
         t=vec(write(tiles)[c])
         t_list=unique(t)
-        t_XC=Tiles(τ,exchange(Γ.XC))
-        t_YC=Tiles(τ,exchange(Γ.YC))
+        t_XC=Tiles(τ,exchange(Γ.XC).MA)
+        t_YC=Tiles(τ,exchange(Γ.YC).MA)
 
         t_f=MeshArray(γ,Int); [t_f[ii][:,:].=ii for ii=1:γ.nFaces]
         t_i=MeshArray(γ,Int); [t_i[ii]=collect(1:γ.fSize[ii][1])*ones(Int,1,γ.fSize[ii][2]) for ii=1:γ.nFaces]
         t_j=MeshArray(γ,Int); [t_j[ii]=ones(Int,γ.fSize[ii][1],1)*collect(1:γ.fSize[ii][2])' for ii=1:γ.nFaces]
 
-        t_f=Tiles(τ,exchange(t_f))
-        t_i=Tiles(τ,exchange(t_i))
-        t_j=Tiles(τ,exchange(t_j))
+        t_f=Tiles(τ,exchange(t_f).MA)
+        t_i=Tiles(τ,exchange(t_i).MA)
+        t_j=Tiles(τ,exchange(t_j).MA)
 
         x_q=fill(0.0,1,4)
         y_q=fill(0.0,1,4)

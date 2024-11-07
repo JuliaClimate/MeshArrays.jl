@@ -229,7 +229,6 @@ end
 
 ## derivative types
 
-
 """
     gridpath
 
@@ -284,5 +283,10 @@ function Base.show(io::IO, z::gridmask)
     printstyled(io, "                $(z.names[iFace])\n",color=:cyan)
   end
   return
+end
+
+Base.@kwdef struct MeshArray_wh
+  MA::MeshArray
+  HS::Int #halo size
 end
 
