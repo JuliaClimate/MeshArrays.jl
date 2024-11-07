@@ -40,15 +40,15 @@ end
 
 function gradient(inFLD::MeshArray,Γ::NamedTuple,doDIV::Bool)
 
-exFLD=exchange(inFLD,1)
+exFLD=exchange(inFLD,1).MA
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
 for a=1:inFLD.grid.nFaces
-  (s1,s2)=size(exFLD.MA.f[a])
-  tmpA=view(exFLD.MA.f[a],2:s1-1,2:s2-1)
-  tmpB=tmpA-view(exFLD.MA.f[a],1:s1-2,2:s2-1)
-  tmpC=tmpA-view(exFLD.MA.f[a],2:s1-1,1:s2-2)
+  (s1,s2)=size(exFLD.f[a])
+  tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
+  tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
+  tmpC=tmpA-view(exFLD.f[a],2:s1-1,1:s2-2)
   if doDIV
     dFLDdx.f[a]=tmpB./Γ.DXC.f[a]
     dFLDdy.f[a]=tmpC./Γ.DYC.f[a]
@@ -63,15 +63,15 @@ end
 
 function gradient(inFLD::MeshArray,iDXC::MeshArray,iDYC::MeshArray)
 
-exFLD=exchange(inFLD,1)
+exFLD=exchange(inFLD,1).MA
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
 for a=1:inFLD.grid.nFaces
-  (s1,s2)=size(exFLD.MA.f[a])
-  tmpA=view(exFLD.MA.f[a],2:s1-1,2:s2-1)
-  tmpB=tmpA-view(exFLD.MA.f[a],1:s1-2,2:s2-1)
-  tmpC=tmpA-view(exFLD.MA.f[a],2:s1-1,1:s2-2)
+  (s1,s2)=size(exFLD.f[a])
+  tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
+  tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
+  tmpC=tmpA-view(exFLD.f[a],2:s1-1,1:s2-2)
   dFLDdx.f[a]=tmpB.*iDXC.f[a]
   dFLDdy.f[a]=tmpC.*iDYC.f[a]
 end
