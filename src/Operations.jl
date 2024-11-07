@@ -45,10 +45,10 @@ dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
 for a=1:inFLD.grid.nFaces
-  (s1,s2)=size(exFLD.f[a])
-  tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
-  tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
-  tmpC=tmpA-view(exFLD.f[a],2:s1-1,1:s2-2)
+  (s1,s2)=size(exFLD.MA.f[a])
+  tmpA=view(exFLD.MA.f[a],2:s1-1,2:s2-1)
+  tmpB=tmpA-view(exFLD.MA.f[a],1:s1-2,2:s2-1)
+  tmpC=tmpA-view(exFLD.MA.f[a],2:s1-1,1:s2-2)
   if doDIV
     dFLDdx.f[a]=tmpB./Γ.DXC.f[a]
     dFLDdy.f[a]=tmpC./Γ.DYC.f[a]
@@ -68,10 +68,10 @@ dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
 for a=1:inFLD.grid.nFaces
-  (s1,s2)=size(exFLD.f[a])
-  tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
-  tmpB=tmpA-view(exFLD.f[a],1:s1-2,2:s2-1)
-  tmpC=tmpA-view(exFLD.f[a],2:s1-1,1:s2-2)
+  (s1,s2)=size(exFLD.MA.f[a])
+  tmpA=view(exFLD.MA.f[a],2:s1-1,2:s2-1)
+  tmpB=tmpA-view(exFLD.MA.f[a],1:s1-2,2:s2-1)
+  tmpC=tmpA-view(exFLD.MA.f[a],2:s1-1,1:s2-2)
   dFLDdx.f[a]=tmpB.*iDXC.f[a]
   dFLDdy.f[a]=tmpC.*iDYC.f[a]
 end
@@ -92,15 +92,15 @@ function curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
 	fac=exchange(1.0 ./Γ.RAZ,1)
 	(U,V)=exchange(u,v,1)
   (DXC,DYC)=exchange(Γ.DXC,Γ.DYC,1)
-	[DXC[i].=abs.(DXC[i]) for i in eachindex(U)]
-	[DYC[i].=abs.(DYC[i]) for i in eachindex(V)]
+	[DXC.MA[i].=abs.(DXC.MA[i]) for i in eachindex(U.MA)]
+	[DYC.MA[i].=abs.(DYC.MA[i]) for i in eachindex(V.MA)]
 
-	for i in eachindex(U)
-    ucur=U[i][2:end,:]
-    vcur=V[i][:,2:end]        
+	for i in eachindex(U.MA)
+    ucur=U.MA[i][2:end,:]
+    vcur=V.MA[i][:,2:end]        
     tmpcurl=ucur[:,1:end-1]-ucur[:,2:end]
     tmpcurl=tmpcurl-(vcur[1:end-1,:]-vcur[2:end,:])
-    tmpcurl=tmpcurl.*fac[i][1:end-1,1:end-1]
+    tmpcurl=tmpcurl.*fac.MA[i][1:end-1,1:end-1]
 
 		##still needed:
 		##- deal with corners
@@ -402,7 +402,7 @@ function edge_mask(mskCint::MeshArray)
   mskW=similar(mskCint)
   mskS=similar(mskCint)
 
-  mskCint=exchange(mskCint,1)
+  mskCint=exchange(mskCint,1).MA
 
   for i in eachindex(mskCint)
       tmp1=mskCint[i]

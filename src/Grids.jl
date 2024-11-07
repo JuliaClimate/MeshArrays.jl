@@ -353,8 +353,8 @@ field locations) and add them to Γ.
 """
 function GridAddWS!(Γ::Dict)
 
-    XC=exchange(Γ["XC"])
-    YC=exchange(Γ["YC"])
+    XC=exchange(Γ["XC"]).MA
+    YC=exchange(Γ["YC"]).MA
     nFaces=XC.grid.nFaces
     uX=XC.meta.unit
     uY=YC.meta.unit

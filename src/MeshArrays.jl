@@ -28,7 +28,8 @@ include("Grids_simple.jl")
 include("demo.jl")
 include("Integration.jl")
 
-export AbstractMeshArray, MeshArray, gcmgrid, varmeta, gridpath, gridmask
+export AbstractMeshArray, MeshArray, MeshArray_wh
+export gcmgrid, varmeta, gridpath, gridmask
 export GridSpec, GridLoad, GridLoadVar, Grids_simple
 export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn, interpolation_setup
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
