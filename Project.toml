@@ -1,7 +1,7 @@
 name = "MeshArrays"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.3.17"
+version = "0.3.18"
 
 [deps]
 CatViews = "81a5f4ea-a946-549a-aa7e-2a7f63a27d31"
@@ -39,7 +39,7 @@ DataDeps = "0.7"
 GeoJSON = "0.6, 0.7, 0.8"
 Glob = "1"
 JLD2 = "0.4, 0.5"
-Makie = "0.19, 0.20, 0.21"
+Makie = "0.19, 0.20, 0.21, 0.22"
 NearestNeighbors = "0.4"
 Proj = "1"
 Shapefile = "0.10, 0.11, 0.12, 0.13"
