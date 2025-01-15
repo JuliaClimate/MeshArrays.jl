@@ -467,7 +467,7 @@ function json_to_Makie(file="countries.geojson")
 
 	tmp22=Vector{Point2{Float64}}[]
 	for l1 in tmp2
-		if isa(l1[1][1],Tuple)
+		if isa(l1[1][1][1],Number)
 			push!(tmp22,geo2basic(tuple2vec.(l1[1])))
 		else
 			for l2 in l1
@@ -596,7 +596,11 @@ function split(tmp::GeometryBasics.LineString, lon0::Real)
 	# do the splitting
 	split_coords = view.(Ref(linenodes), UnitRange.(start_inds, end_inds))  # For each start-end pair, get those coords
 	# reconstruct lines from points
-	split_lines = GeometryBasics.LineString.(split_coords) 
+	split_lines = if isa(split_coords[1][1],Point)
+		[GeometryBasics.LineString(a[:]) for a in split_coords]
+	else
+		GeometryBasics.LineString.(split_coords)
+	end
 end
 
 function split(tmp::Vector{<:GeometryBasics.LineString}, lon0::Real)
