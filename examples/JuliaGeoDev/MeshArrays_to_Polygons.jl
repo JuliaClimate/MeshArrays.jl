@@ -44,6 +44,25 @@ function to_sphere(XC,YC)
 	(x,y,z)
 end
 
+# ╔═╡ 7d0afd5e-fa88-4f40-a1f0-1a2a944341cd
+function to_spherical(pols::Array,ff)
+	arr2=Array{Any}(undef,32,32)
+	b0=Array{Any}(undef,5)
+	for ij in eachindex(pols[ff])
+		geom=GI.getgeom(pols[ff][ij])
+		a=GI.getpoint.(geom)
+		b=GI.coordinates.(geom)
+		b1=GI.coordinates.(a[1])
+		for p in 1:5
+#			b0[p,:].=to_sphere(GI.coordinates(a[1][p])...)
+			b0[p]=GI.Point(to_sphere(GI.coordinates(a[1][p])...))
+		end
+#		arr2[ij]=deepcopy(b0)
+		arr2[ij]=GI.LineString(b0)
+	end
+	arr2
+end
+
 # ╔═╡ 3e5aac32-c82a-45e2-8d7b-05cf96a4ce3c
 begin
 	ui_do_sphere = @bind do_sphere CheckBox(default=true)
@@ -52,9 +71,6 @@ begin
 	$(ui_do_sphere)
 	"""
 end
-
-# ╔═╡ 0cbc2673-fcb6-4739-9760-32dc6ec72cf7
-GI.MultiLineStringTrait
 
 # ╔═╡ 915a5f42-9a31-4837-a891-d22f8825930b
 md"""## Read Grid Definition (MITgcm input)
@@ -133,6 +149,54 @@ function to_LineString(ff=1;do_sphere=true)
 	arr2
 end
 
+# ╔═╡ a248a2b1-ed63-48a0-922c-b00a3dbfc294
+function to_Polygons(ff=1)
+	arr2=Array{Any}(undef,32,32)
+	IJ=1:32
+	for i in IJ
+		for j in IJ
+			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]] 
+			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  
+			arr2[i,j]=GI.Polygon([ GI.LinearRing(GI.Point.(zip(vec(x),vec(y)))) ])
+#			arr2[i,j]=GI.LineString(GI.Point.(zip(vec(x),vec(y))))
+		end
+	end
+	arr2
+end
+
+# ╔═╡ 17dd67f4-0c98-408a-9cf9-b02e9a00b5a3
+pols=[to_Polygons(ff) for ff in 1:6];
+
+# ╔═╡ 9405eb97-1130-427d-a9f4-e45efea361b2
+let
+	#GI.getgeom.
+	geom=GI.getgeom(pols[1][1,1])
+#	ext = exterior(geom)
+	a=GI.getpoint.(geom)
+	b=GI.coordinates.(geom)
+	b1=GI.coordinates.(a[1])
+	b0=zeros(5,2)
+	for p in 1:5
+		b0[p,:].=GI.coordinates(a[1][p])
+	end
+	b0
+end
+
+# ╔═╡ 731565ec-c0cf-4ded-8ebf-7bd5f6aef9aa
+begin
+	pols3D=to_spherical(pols,1)
+	plot(pols3D[1,1])
+end
+
+# ╔═╡ f112ecfa-8a66-4ae1-aac3-7b354bb5863f
+let
+	fi=Figure(); ax=Axis(fi[1,1])
+	for ff in 1:6
+		[plot!(p) for p in pols[ff]]
+	end
+	fi
+end
+
 # ╔═╡ 523311f3-8d0a-4b57-b376-da945c4f20a7
 md"""## Read MITgcm Output for this Grid"""
 
@@ -183,7 +247,8 @@ function fig2(facets=1:6,cc=[:blue :green :orange :black :red :violet];
 	end		
     #arr=Array{Any}(undef,6)
 	for ff in facets
-		arr=to_LineString(ff,do_sphere=do_sphere)
+		#here can we do polygons? in 2D? 3D? LineRings at least?
+		arr=to_LineString(ff,do_sphere=do_sphere) 
 		if do_sphere
 			xyz=to_sphere.(vec(Γ.XC[ff]),vec(Γ.YC[ff]))
 			scatter!(a,xyz,markersize=2,color=cc[ff])
@@ -191,7 +256,7 @@ function fig2(facets=1:6,cc=[:blue :green :orange :black :red :violet];
 		#plot!(a,arr,color=cc[ff],linewidth=1)
 		[plot!(a,arr[i,j],color=cc[ff],linewidth=0.5) for i in 1:32, j in 1:32]
 	end
-	zoom!(scene.scene,cam,2.0)
+	do_sphere ? zoom!(scene.scene,cam,2.0) : nothing
 	#center!(scene.scene)
 
 	f
@@ -2083,10 +2148,15 @@ version = "1.4.1+2"
 # ╟─7aca186c-efd7-4312-afd2-37fdc1a2bbb6
 # ╟─7bace9d8-4e9e-451d-aef4-5093c62b08e7
 # ╟─53b62449-7006-4f2a-a337-0b0e45d82f5e
-# ╟─87bb371f-c08e-4a31-b7bf-56b58fe9cbda
+# ╠═9405eb97-1130-427d-a9f4-e45efea361b2
+# ╠═731565ec-c0cf-4ded-8ebf-7bd5f6aef9aa
+# ╠═7d0afd5e-fa88-4f40-a1f0-1a2a944341cd
+# ╠═87bb371f-c08e-4a31-b7bf-56b58fe9cbda
+# ╟─f112ecfa-8a66-4ae1-aac3-7b354bb5863f
+# ╠═17dd67f4-0c98-408a-9cf9-b02e9a00b5a3
+# ╟─a248a2b1-ed63-48a0-922c-b00a3dbfc294
 # ╟─3e5aac32-c82a-45e2-8d7b-05cf96a4ce3c
 # ╠═7cd21258-eaa4-4a85-9d4d-6c7dcb3af7cd
-# ╠═0cbc2673-fcb6-4739-9760-32dc6ec72cf7
 # ╟─915a5f42-9a31-4837-a891-d22f8825930b
 # ╟─bd0a43e9-00e9-4657-a186-8a09639f9217
 # ╟─6b029c27-7d44-46e7-be82-0957f6009314
@@ -2098,7 +2168,7 @@ version = "1.4.1+2"
 # ╟─199f9dfc-c393-47f9-95d8-c0a783ae47e6
 # ╟─540641e2-14e7-47da-9f8e-ac37cd499886
 # ╟─4353cfb7-39bc-480e-8c22-cc7cd1dec262
-# ╟─798f41ed-cd77-4890-9148-be278df52ba4
+# ╠═798f41ed-cd77-4890-9148-be278df52ba4
 # ╟─1effaab8-8237-4236-ad75-755795f898fc
 # ╟─98496427-b774-4d9b-b386-ffe5ea775d37
 # ╟─fc2e3116-8a7e-405d-ad6d-bdf5d4ae45c9
@@ -2106,7 +2176,7 @@ version = "1.4.1+2"
 # ╟─5f5e6be3-a7ad-4772-a52c-acb765106593
 # ╟─a4418a2e-831b-416f-8348-e282b08cfa2d
 # ╟─5365dc71-0ddc-4d40-8f38-7c494b3305d9
-# ╟─b494d021-3727-4736-8031-9587d0d542a2
+# ╠═b494d021-3727-4736-8031-9587d0d542a2
 # ╠═e4d61551-c0e7-4a61-b38e-774897862fed
 # ╠═50272674-6935-4239-89bf-29997341148b
 # ╠═63c58499-c353-4124-9270-6c22b0e6bcd7
