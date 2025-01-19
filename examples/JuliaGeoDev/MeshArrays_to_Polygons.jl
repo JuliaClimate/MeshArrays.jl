@@ -44,6 +44,13 @@ function to_sphere(XC,YC)
 	(x,y,z)
 end
 
+# ╔═╡ 65dcb624-7f27-4247-bc73-446bf069a67a
+function treat_180lon!(x::Matrix{Float64})
+	if (maximum(x)-minimum(x))>180
+		x[x.<0].=x[x.<0].+360
+	end
+end
+
 # ╔═╡ 7d0afd5e-fa88-4f40-a1f0-1a2a944341cd
 function to_LineStrings3D(pol)
 	arr2=Array{Any}(undef,32,32)
@@ -125,7 +132,8 @@ function to_Polygons(ff=1)
 	IJ=1:32
 	for i in IJ
 		for j in IJ
-			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]] 
+			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]]
+			treat_180lon!(x)
 			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  
 			arr2[i,j]=GI.Polygon([ GI.LinearRing(GI.Point.(zip(vec(x),vec(y)))) ])
 #			arr2[i,j]=GI.LineString(GI.Point.(zip(vec(x),vec(y))))
@@ -156,6 +164,7 @@ function to_LineStrings2D(ff=1;do_sphere=true)
 	for i in IJ
 		for j in IJ
 			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]] 
+			treat_180lon!(x)
 			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  
 			arr2[i,j]=GI.LineString(GI.Point.(zip(vec(x),vec(y))))
 		end
@@ -175,37 +184,37 @@ end
 # ╔═╡ 199f9dfc-c393-47f9-95d8-c0a783ae47e6
 md"""# Appendix"""
 
-# ╔═╡ 798f41ed-cd77-4890-9148-be278df52ba4
-function fig2(facets=1:6,cc=[:blue :green :orange :black :red :violet];
-	do_sphere=true)
+# ╔═╡ 6a354d1f-eba1-40f6-bdfc-1ecd8d96a0ef
+function fig2_basis(do_sphere)
 	f=Figure()
 	if do_sphere
 		scene = LScene(f[1, 1])
 		cam = Makie.Camera3D(scene.scene, projectiontype = Makie.Perspective)
-		a=scene
-		#a=Axis3(f[1,1])
 		sphere = Sphere(Point3f(0), 0.99f0)
-		mesh!(a,sphere, color = :white)
+		mesh!(scene,sphere, color = :white)
+		zoom!(scene.scene,cam,2.0)
+		a=scene
 	else
 		a=Axis(f[1,1])
-	end		
-    #arr=Array{Any}(undef,6)
+	end	
+	f,a
+end
+
+# ╔═╡ 798f41ed-cd77-4890-9148-be278df52ba4
+function fig2(facets=1:6,cc=[:blue :green :orange :black :red :violet];
+	do_sphere=true)
+	f,a=fig2_basis(do_sphere)
 	for ff in facets
-		#here can we do polygons? in 2D? 3D? LineRings at least?
+		#here in 3D can we do LineRings or generalized Polygons?
 		if do_sphere
 #			xyz=to_sphere.(vec(Γ.XC[ff]),vec(Γ.YC[ff]))
 #			scatter!(a,xyz,markersize=2,color=cc[ff])
-#			arr=to_LineStrings2(to_Polygons(ff)) 
-			arr=pols3D[ff] 
+			[plot!(a,pols3D[ff][i,j],color=cc[ff],linewidth=0.5) for i in 1:32, j in 1:32]
 		else
-			arr=to_LineStrings2D(ff,do_sphere=false) 
+			#arr=to_LineStrings2D(ff,do_sphere=false)
+			[lines!(a,pols[ff][i,j],color=cc[ff],linewidth=0.5) for i in 1:32, j in 1:32]
 		end
-		#plot!(a,arr,color=cc[ff],linewidth=1)
-		[plot!(a,arr[i,j],color=cc[ff],linewidth=0.5) for i in 1:32, j in 1:32]
 	end
-	do_sphere ? zoom!(scene.scene,cam,2.0) : nothing
-	#center!(scene.scene)
-
 	f
 end
 
@@ -2112,6 +2121,7 @@ version = "1.4.1+2"
 # ╠═17dd67f4-0c98-408a-9cf9-b02e9a00b5a3
 # ╠═2fd20020-8b29-4262-92f3-aabf9bc609fa
 # ╟─53b62449-7006-4f2a-a337-0b0e45d82f5e
+# ╟─65dcb624-7f27-4247-bc73-446bf069a67a
 # ╟─7d0afd5e-fa88-4f40-a1f0-1a2a944341cd
 # ╟─a248a2b1-ed63-48a0-922c-b00a3dbfc294
 # ╟─87bb371f-c08e-4a31-b7bf-56b58fe9cbda
@@ -2127,6 +2137,7 @@ version = "1.4.1+2"
 # ╟─199f9dfc-c393-47f9-95d8-c0a783ae47e6
 # ╟─540641e2-14e7-47da-9f8e-ac37cd499886
 # ╟─798f41ed-cd77-4890-9148-be278df52ba4
+# ╟─6a354d1f-eba1-40f6-bdfc-1ecd8d96a0ef
 # ╟─1effaab8-8237-4236-ad75-755795f898fc
 # ╟─98496427-b774-4d9b-b386-ffe5ea775d37
 # ╟─fc2e3116-8a7e-405d-ad6d-bdf5d4ae45c9
@@ -2135,9 +2146,9 @@ version = "1.4.1+2"
 # ╟─a4418a2e-831b-416f-8348-e282b08cfa2d
 # ╟─5365dc71-0ddc-4d40-8f38-7c494b3305d9
 # ╟─b494d021-3727-4736-8031-9587d0d542a2
-# ╠═e4d61551-c0e7-4a61-b38e-774897862fed
-# ╠═50272674-6935-4239-89bf-29997341148b
-# ╠═63c58499-c353-4124-9270-6c22b0e6bcd7
-# ╠═9405eb97-1130-427d-a9f4-e45efea361b2
+# ╟─e4d61551-c0e7-4a61-b38e-774897862fed
+# ╟─50272674-6935-4239-89bf-29997341148b
+# ╟─63c58499-c353-4124-9270-6c22b0e6bcd7
+# ╟─9405eb97-1130-427d-a9f4-e45efea361b2
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
