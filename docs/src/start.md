@@ -16,6 +16,14 @@ using CairoMakie
 heatmap(C,x=-10:10,y=1:10)
 ```
 
+Or you can define default grid axes, and maybe split the global grid into subdomains :
+
+```@example 1
+nP=10; nQ=5
+(Γ,γ)=Grids_simple.UnitGrid( (nP*3,nQ*2) , (nP,nQ) ; option="full")
+heatmap(Γ.XC,title="Coordinate 1 (XC)")
+```
+
 ## Global Grids
 
 Three grids are available directly via this package the examples (`:LL360`, `:CS32`, and `:LLC90`).

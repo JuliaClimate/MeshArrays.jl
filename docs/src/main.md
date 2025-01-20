@@ -1,7 +1,7 @@
 # Main Features
 
-- `MeshArray`, `gcmgrid`, `varmeta`
-- full Earth grid examples (see [Grids](@ref))
+- [Data Structures](@ref) : `MeshArray`, `gcmgrid`, `varmeta` 
+- [Global Grids](@ref) : full Earth grids used in MIT climate model
 - [vector fields](../tutorials/vectors.html), transports, budgets
 - [interpolation](../tutorials/geography.html), distances, collocation
 - visualization (via [Makie](http://makie.org/) extension)
@@ -11,7 +11,7 @@
 
 The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. By default, outer and inner arrays are of all of the standard `Array` type. However, this setup potentially allows different choices for the outer and inner arrays – for example `DistributedArrays` and `AxisArrays`, respectively, could be an option. `MeshArrays.jl` thus provides a simple but general solution to analyze or e.g. simulate climate system variables. By default the `MeshArray` type is an alias to the [`MeshArrays.gcmarray`](@ref) type.
 
-The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array sizes, and connection rules (amongst the inner arrays). A second  lightweight struct, `varmeta`, contains metadata about the variable inside a `MeshArray` -- variable name, unit, time, and grid position. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Grids](@ref)), and many variables, which can put a burden on users. 
+The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array sizes, and connection rules (amongst the inner arrays). A second  lightweight struct, `varmeta`, contains metadata about the variable inside a `MeshArray` -- variable name, unit, time, and grid position. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Global Grids](@ref)), and many variables, which can put a burden on users. 
 
 Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to invoke model grid details explicitely. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output (see, e.g., [Tutorials](@ref)).
 
@@ -98,7 +98,7 @@ end
 
 A simple way to plot a `MeshArray` consists in using the `Makie` extension. 
 
-By default, for a `MeshArray` the `heatmap` command plots each elementary array separately. This is illustrated in [Grids](@ref) and in the [Tutorials](@ref). If an interpolation scheme is provided then `heatmap` produces a global map instead. See the [geography tutorial](../tutorials/geography.html) for examples. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide more examples
+By default, for a `MeshArray` the `heatmap` command plots each elementary array separately. This is illustrated in [Simple Grids](@ref) and in the [Tutorials](@ref). If an interpolation scheme is provided then `heatmap` produces a global map instead. See the [geography tutorial](../tutorials/geography.html) for examples. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide more examples
 
 The [vectors tutorial](../tutorials/vectors.html) illustrates a common Earth System use case -- using gridded flow fields to integrate transports, streamfunctions, budgets, etc. Particle trajectories are readily computed with [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl) when velocity fields are provided as `MeshArray`s. 
 
