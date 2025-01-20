@@ -5,7 +5,7 @@
 - vector fields, transports, budgets
 - interpolation, distances, collocation
 - visualization (via [Makie](http://makie.org/) extension)
-- particle tracking via [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl#readme)
+- particle tracking via [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl#readme)
 
 ## Summary
 
@@ -100,7 +100,7 @@ A simple way to plot a `MeshArray` consists in using the `Makie` extension.
 
 By default, for a `MeshArray` the `heatmap` command plots each elementary array separately. This is illustrated in [Grids](@ref) and in the [Tutorials](@ref). If an interpolation scheme is provided then `heatmap` produces a global map instead. See the [geography tutorial](../tutorials/geography.html) for examples. The [JuliaClimate Notebooks](https://juliaclimate.github.io/GlobalOceanNotebooks/) provide more examples
 
-The [vectors tutorial](../tutorials/vectors.html) illustrates a common Earth System use case -- using gridded flow fields to integrate transports, streamfunctions, budgets, etc. Particle trajectories are readily computed with [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) when velocity fields are provided as `MeshArray`s. 
+The [vectors tutorial](../tutorials/vectors.html) illustrates a common Earth System use case -- using gridded flow fields to integrate transports, streamfunctions, budgets, etc. Particle trajectories are readily computed with [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl) when velocity fields are provided as `MeshArray`s. 
 
 The [MITgcm.jl](https://github.com/gaelforget/MITgcm.jl) examples shows how `MeshArrays.jl` can ingest any standard grid from the [MIT general circulation model](https://mitgcm.readthedocs.io/en/latest/?badge=latest).
 

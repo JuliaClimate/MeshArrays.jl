@@ -17,7 +17,7 @@ Some features and related packages:
 - interaction and animation : via [Pluto.jl](https://plutojl.org) notebooks and [Makie.jl](https://docs.makie.org/dev/) recipes
 - support for interpolation to arbitrary geographic coordinates, geospatial statistics, and mapping
 - support for accurate derivations of oceanic and atmospheric transports on [climate model grids](https://en.wikipedia.org/wiki/Arakawa_grids)
-- particle tracking : trajectories of materials over any supported grid via [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
+- particle tracking : trajectories of materials over any supported grid via [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl)
 - handling of model output : read/write [NetCDF](https://en.wikipedia.org/wiki/NetCDF) files, and other formats used in climate sciences
 - support for domain decomposition via [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/) that 
 - support for [MITgcm](https://mitgcm.readthedocs.io/en/latest/) model ouput via [MITgcm.jl](https://github.com/gaelforget/MITgcm.jl)
