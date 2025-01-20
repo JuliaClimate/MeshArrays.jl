@@ -23,6 +23,7 @@ makedocs(;
     "Get Started" => "start.md",
     "Main Features" => "main.md",
     "Notebook Tutorials" => "tutorials.md",
+    "Developer Notebooks" => "dev.md",
     "Video Examples" => "videos.md",
     "API documentation" => "API.md",
     "Miscellaneous" => "detail.md",
@@ -30,13 +31,13 @@ makedocs(;
     authors="gaelforget <gforget@mit.edu>",
 )
 
-lst=("basics.jl","geography.jl","vectors.jl")
-pth=("tutorials","tutorials","tutorials")
+lst=("basics.jl","geography.jl","vectors.jl","JuliaGeoDev/MeshArrays_to_Polygons.jl","JuliaGeoDev/GeometryOps_exploration.jl")
+pth=("tutorials","tutorials","tutorials","dev","dev")
 
 for ii in 1:length(lst)
     i=lst[ii]
     fil_in=joinpath(@__DIR__,"..", "examples",i)
-    fil_out=joinpath(@__DIR__,"build", pth[ii] ,i[1:end-2]*"html")
+    fil_out=joinpath(@__DIR__,"build", pth[ii] ,basename(i)[1:end-2]*"html")
     PlutoSliderServer.export_notebook(fil_in)
     mv(fil_in[1:end-2]*"html",fil_out)
     cp(fil_in,fil_out[1:end-4]*"jl")
