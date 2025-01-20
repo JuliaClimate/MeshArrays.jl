@@ -73,7 +73,7 @@ md"""## Particle Tracking
 
 Materials and particles that tend to follow ocean currents or atmospheric winds can be analyzed in terms of trajectories. These are simply computed by integrating velocities over time within a [Lagrangian framework](https://en.wikipedia.org/wiki/Lagrangian_and_Eulerian_specification_of_the_flow_field).
 
-When vector fields are represented using [MeshArrays.jl](https://github.com/JuliaClimate/MeshArrays.jl), as done in this tutorial, this is easily done via the [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl) package as shown in [these examples](https://juliaclimate.github.io/IndividualDisplacements.jl/dev/examples/).
+When vector fields are represented using [MeshArrays.jl](https://github.com/JuliaClimate/MeshArrays.jl), as done in this tutorial, this is easily done via the [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl) package as shown in [these examples](https://juliaclimate.github.io/Drifters.jl/dev/examples/).
 """
 
 # ╔═╡ a8ebbe41-1ac8-44da-b8c4-cbfd4d422227
