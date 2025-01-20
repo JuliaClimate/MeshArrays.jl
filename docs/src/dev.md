@@ -1,5 +1,5 @@
 
-# Developer Notes
+# Developer Notebooks
 
 ## [JuliaGeo](@id id_JuliaGeo)
 

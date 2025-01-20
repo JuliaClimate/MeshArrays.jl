@@ -23,10 +23,8 @@ makedocs(;
     "Get Started" => "start.md",
     "Main Features" => "main.md",
     "Notebook Tutorials" => "tutorials.md",
-    "Developer Notebooks" => "dev.md",
-    "Video Examples" => "videos.md",
     "API documentation" => "API.md",
-    "Miscellaneous" => "detail.md",
+    "Miscellaneous" => ["detail.md", "videos.md", "dev.md"],
     ],
     authors="gaelforget <gforget@mit.edu>",
 )

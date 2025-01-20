@@ -24,7 +24,7 @@ Another method for interacting with data sets is to use `GLMakie.jl` or `WGLMaki
 
 ## Particle Tracking and Modeling
 
-Here we visualize a simulation of particles moving at a fixed depth in the Ocean (300m depth). This uses [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl), and `MeshArrays.jl` underneath, to simulate particle trajectories. 
+Here we visualize a simulation of particles moving at a fixed depth in the Ocean (300m depth). This uses [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl), and `MeshArrays.jl` underneath, to simulate particle trajectories. 
 
 [![simulated particle movie (300m)](https://user-images.githubusercontent.com/20276764/84767001-b89a4400-af9f-11ea-956f-2e207f892c4f.png)](https://youtu.be/M6vAUtIsIIY)
 

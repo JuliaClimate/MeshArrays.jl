@@ -13,15 +13,12 @@ Please refer to the [Docs](https://juliaclimate.github.io/MeshArrays.jl/dev/), [
 
 Some features and related packages:
 
-- visualization : on the sphere, in geographic coordinates, geographic projections
-- interaction and animation : via [Pluto.jl](https://plutojl.org) notebooks and [Makie.jl](https://docs.makie.org/dev/) recipes
-- support for interpolation to arbitrary geographic coordinates, geospatial statistics, and mapping
-- support for accurate derivations of oceanic and atmospheric transports on [climate model grids](https://en.wikipedia.org/wiki/Arakawa_grids)
-- particle tracking : trajectories of materials over any supported grid via [IndividualDisplacements.jl](https://github.com/JuliaClimate/IndividualDisplacements.jl)
-- handling of model output : read/write [NetCDF](https://en.wikipedia.org/wiki/NetCDF) files, and other formats used in climate sciences
-- support for domain decomposition via [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/) that 
-- support for [MITgcm](https://mitgcm.readthedocs.io/en/latest/) model ouput via [MITgcm.jl](https://github.com/gaelforget/MITgcm.jl)
-- support for [ECCO](https://doi.org/10.5194/gmd-8-3071-2015) ocean estimates via [Climatology.jl](https://github.com/juliaocean/Climatology.jl) and [ECCO.jl](https://github.com/gaelforget/ECCO.jl)
+- [interpolation](https://juliaclimate.github.io/MeshArrays.jl/dev/tutorials/geography.html) to arbitrary geographic coordinates, geospatial statistics, geographic projections, ...
+- visualization, interaction, and animation via [Pluto.jl](https://plutojl.org) notebooks and [Makie.jl](https://docs.makie.org/dev/) recipes
+- accurate derivations for e.g. oceanic currents and atmospheric transports, budgets, ... on global and regional [climate model grids](https://en.wikipedia.org/wiki/Arakawa_grids)
+- particle tracking and trajectory computations for fluids and materials over all supported grid via [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl)
+- gridded domain decomposition (`Tiles`) and tiled [NetCDF](https://en.wikipedia.org/wiki/NetCDF) files via [NCTiles.jl](https://gaelforget.github.io/NCTiles.jl/stable/)
+- support for [MITgcm](https://mitgcm.readthedocs.io/en/latest/) model ouput and [ECCO](https://doi.org/10.5194/gmd-8-3071-2015) ocean estimates via [MITgcm.jl](https://github.com/gaelforget/MITgcm.jl), [Climatology.jl](https://github.com/juliaocean/Climatology.jl), and [ECCO.jl](https://github.com/gaelforget/ECCO.jl)
 
 `MeshArrays.jl` was first introduced in [this presentation](https://youtu.be/RDxAy_zSUvg) at JuliaCon 2018.
 
