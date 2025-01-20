@@ -1,7 +1,7 @@
 # Main Features
 
 - `MeshArray`, `gcmgrid`, `varmeta`
-- full Earth grid examples (C-grids)
+- full Earth grid examples (see [Grids](@ref))
 - [vector fields](../tutorials/vectors.html), transports, budgets
 - [interpolation](../tutorials/geography.html), distances, collocation
 - visualization (via [Makie](http://makie.org/) extension)
