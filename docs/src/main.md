@@ -2,16 +2,16 @@
 
 - `MeshArray`, `gcmgrid`, `varmeta`
 - full Earth grid examples (C-grids)
-- vector fields, transports, budgets
-- interpolation, distances, collocation
+- [vector fields](../tutorials/vectors.html), transports, budgets
+- [interpolation](../tutorials/geography.html), distances, collocation
 - visualization (via [Makie](http://makie.org/) extension)
-- particle tracking via [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl#readme)
+- particle tracking (via [Drifters.jl](https://github.com/JuliaClimate/Drifters.jl#readme) package)
 
 ## Summary
 
 The `MeshArray` type is a sub-type of `AbstractArray` with an `outer array` where each element is itself a 2D `inner array`. By default, outer and inner arrays are of all of the standard `Array` type. However, this setup potentially allows different choices for the outer and inner arrays – for example `DistributedArrays` and `AxisArrays`, respectively, could be an option. `MeshArrays.jl` thus provides a simple but general solution to analyze or e.g. simulate climate system variables. By default the `MeshArray` type is an alias to the [`MeshArrays.gcmarray`](@ref) type.
 
-The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array size specifications, and inter-connection rules. A second  lightweight struct, `varmeta`, contains the `MeshArray` variable name, its unit, time, and position in grid space. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Grids](@ref)), and many variables, which can put a burden on users. 
+The internals of a `MeshArray` are regulated by its `gcmgrid` -- a struct containing just a few index ranges, array sizes, and connection rules (amongst the inner arrays). A second  lightweight struct, `varmeta`, contains metadata about the variable inside a `MeshArray` -- variable name, unit, time, and grid position. A general approach like this is useful because climate models often involve advanced domain decompositions (see, e.g., [Grids](@ref)), and many variables, which can put a burden on users. 
 
 Encoding the grid specification inside the `MeshArray` data type allows user to manipulate `MeshArray`s just like they would manipulate `Array`s without having to invoke model grid details explicitely. In addition, the provided `exchange` methods readily transfer data between connected subdomains to extend them at the sides. This makes it easy to compute e.g. partial derivatives and related operators like gradients, curl, or divergences over subdomain edges as often needed for precise computation of transports, budgets, etc using climate model output (see, e.g., [Tutorials](@ref)).
 
