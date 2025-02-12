@@ -157,6 +157,11 @@ end
     tst=extrema(write(TrspPsi))
 
     @test prod(isapprox.(tst,(-8.08f7,2.19f8)))
+
+    #Ekman transport
+    de4=demo4()
+    @test isapprox(de4.Tr[120],1.317456)
+
 end
 
 @testset "gcmfaces type:" begin
@@ -246,9 +251,9 @@ end
         lat=[j for i=-170.:20.0:170., j=-80.:20.0:80.])
     λ=interpolation_setup()
 
-	basins=demo.ocean_basins()
+    basins=demo.ocean_basins()
     AtlExt=demo.extended_basin(basins,:Atl)
-	sections,path_sec=demo.ocean_sections(Γ)
+    sections,path_sec=demo.ocean_sections(Γ)
     my_section=demo.one_section(Γ,[127 127],[-25 -68])
 
     fig=MeshArrays.plot_examples(:smoothing_demo,D,D)
