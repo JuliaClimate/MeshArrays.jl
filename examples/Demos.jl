@@ -135,7 +135,7 @@ fig3=heatmap(1e-6*de.TrspY,title="V comp. in Sv",colorrange=(-10,10))
 function demo3()
 
     γ=GridSpec(ID=:LLC90)
-    Γ=GridLoad(γ,option=:light)
+    Γ=GridLoad(γ,option=:full)
 
     TrspX=γ.read(γ.path*"TrspX.bin",MeshArray(γ,Float32))
     TrspY=γ.read(γ.path*"TrspY.bin",MeshArray(γ,Float32))
@@ -157,4 +157,29 @@ function demo3(U::MeshArray,V::MeshArray,Γ::NamedTuple)
        Tr[i]=ThroughFlow(UV,LC[i],Γ)
     end
     return UV, LC, Tr
+end
+
+"""
+    demo4()
+
+Calculation of Ekman transport.
+
+```
+using MeshArrays, CairoMakie, DataDeps, JLD2
+include("examples/Demos.jl")
+de4=demo4()
+
+lines!(Axis(Figure()[1,1]),de4.lat,de4.Tr); current_figure()
+
+λ=interpolation_setup()
+heatmap(de4.μ*de4.EkE,interpolation=λ,colorrange=(-1,1))
+```
+"""
+function demo4()
+    de=demo3()
+    (EkX,EkY)=MeshArrays.EkmanTrsp(de.TauX,de.TauY,de.Γ)
+    (EkE,EkN)=UVtoUEVN(EkX,EkY,de.Γ)
+    (UV, LC, Tr)=demo3(EkX*de.Γ.DXG./1e6,EkY*de.Γ.DYG./1e6,de.Γ)
+    μ=land_mask(de.Γ)
+    (EkX=EkX, EkY=EkY, EkE=EkE, EkN=EkN, LC=LC, Tr=Tr, lat=-89.0:89.0, Γ=de.Γ, μ=μ)
 end
