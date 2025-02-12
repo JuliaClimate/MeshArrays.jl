@@ -115,6 +115,41 @@ function curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
 	return uvcurl
 end
 
+
+
+export f, β
+
+Ω = 7.2921 * 10^(-5) #rad/s
+R = 6.3781 * 10^(6) #m
+#Coriolis Parameter
+f_Coriolis(φ) = 2Ω * sind(φ)
+
+"""
+    EkmanTrsp(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+
+Compute Ekman Transport (in m2/s) from wind stress (in N/m2?).
+"""
+function EkmanTrsp(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+	EkX=similar(Γ.DYG)
+	EkY=similar(Γ.DXG)
+	(U,V)=exchange(u,v,1)
+
+	for i in eachindex(U.MA)
+    ucur=1/4* (U.MA[i][2:end-1,1:end-2]+U.MA[i][2:end-1,2:end-1]
+              +U.MA[i][3:end,1:end-2]+U.MA[i][3:end,2:end-1])
+    fcur=f_Coriolis.(Γ.YS[i])
+    fcur[abs.(Γ.YS[i]).<10].=NaN
+		EkY[i]=-ucur./fcur./1029.0
+    ucur=1/4* (V.MA[i][1:end-2,2:end-1]+V.MA[i][1:end-2,2:end-1]
+              +V.MA[i][2:end-1,3:end]+V.MA[i][2:end-1,3:end])
+    fcur=f_Coriolis.(Γ.YW[i])
+    fcur[abs.(Γ.YW[i]).<10].=NaN
+    EkX[i]=ucur./fcur./1029.0
+	end
+
+	(EkX,EkY)
+end
+
 ## mask methods
 
 function mask(fld::MeshArray)

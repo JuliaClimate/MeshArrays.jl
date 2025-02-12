@@ -8,8 +8,7 @@ Demonstrate basic functionalities (load grid, arithmetic, exchange, gradient,
 etc.). Call sequence:
 
 ```
-!isdir(MeshArrays.GRID_LLC90) ? error("missing files") : nothing
-
+include("examples/Demos.jl")
 (D,Dexch,Darr,DD)=demo1("LatLonCap",MeshArrays.GRID_LLC90);
 ```
 """
@@ -37,7 +36,7 @@ function demo1(gridChoice::String,GridParentDir="./")
     DD=γ.read(Darr,D)
     DD .== D
 
-    Γ=GridLoad(γ)
+    Γ=GridLoad(γ,option="full")
 
     (dFLDdx, dFLDdy)=gradient(Γ.YC,Γ)
     (dFLDdxEx,dFLDdyEx)=exchange(dFLDdx,dFLDdy,4)
@@ -68,21 +67,19 @@ end
 Demonstrate higher level functions using `smooth`. Call sequence:
 
 ```
-(Rini,Rend,DXCsm,DYCsm)=demo2();
+include("examples/Demos.jl")
+(Rini,Rend,DXCsm,DYCsm)=demo2()
 
-using Plots
-include(joinpath(dirname(pathof(MeshArrays)),"../examples/Plots.jl"))
-heatmap(Rend,title="smoothed noise",clims=(-0.5,0.5))
-heatmap(Rini,title="raw noise",clims=(-0.5,0.5))
-
-#gr(); contour(Rend,clims=(-0.5,0.5),levels=-0.5:0.1:0.5,fill=true)
+using CairoMakie, MeshArrays
+heatmap(Rend,title="smoothed noise",colorrange=(-0.5,0.5))
+heatmap(Rini,title="raw noise",colorrange=(-0.5,0.5))
 ```
 
 """
 function demo2()
 
     #Pre-requisite: either load predefined grid using `demo1` or call `GridOfOnes`
-    isdir(MeshArrays.GRID_LLC90) ? Γ=GridLoad(ID:LLC90) : (γ,Γ)=Grids_simple.GridOfOnes("CubeSphere",6,100)
+    isdir(MeshArrays.GRID_LLC90) ? Γ=GridLoad(ID=:LLC90,option="full") : (γ,Γ)=Grids_simple.GridOfOnes("CubeSphere",6,100)
 
     (Rini,Rend,DXCsm,DYCsm)=demo2(Γ)
 end
@@ -125,19 +122,20 @@ end
 Demonstrate ocean transport computations. Call sequence:
 
 ```
-(UV,LC,Tr)=demo3();
-using Plots; plot(Tr/1e6,title="meridional transport")
+include("examples/Demos.jl")
+de=demo3()
 
-using Plots
-include(joinpath(dirname(pathof(MeshArrays)),"../examples/Plots.jl"))
-heatmap(1e-6*UV["U"],title="U comp. in Sv",clims=(-10,10))
-heatmap(1e-6*UV["V"],title="V comp. in Sv",clims=(-10,10))
+using CairoMakie, MeshArrays
+lines!(Axis(Figure()[1,1],title="meridional transport"),de.lat,de.Tr/1e6)
+fig1=current_figure()
+fig2=heatmap(1e-6*de.TrspX,title="U comp. in Sv",colorrange=(-10,10))
+fig3=heatmap(1e-6*de.TrspY,title="V comp. in Sv",colorrange=(-10,10))
 ```
 """
 function demo3()
 
-    γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
-    Γ=GridLoad(γ)
+    γ=GridSpec(ID=:LLC90)
+    Γ=GridLoad(γ,option=:full)
 
     TrspX=γ.read(γ.path*"TrspX.bin",MeshArray(γ,Float32))
     TrspY=γ.read(γ.path*"TrspY.bin",MeshArray(γ,Float32))
@@ -147,20 +145,54 @@ function demo3()
 
     (UV, LC, Tr)=demo3(TrspX,TrspY,Γ)
 
+    (TrspX=TrspX,TrspY=TrspY,TauX=TauX,TauY=TauY,SSH=SSH,γ=γ,Γ=Γ,LC=LC,Tr=Tr,lat=-89.0:89.0,UV=UV)
 end
 
 function demo3(U::MeshArray,V::MeshArray,Γ::NamedTuple)
-
     LC=LatitudeCircles(-89.0:89.0,Γ)
-
     #UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y","z","t"],"factors"=>["dxory","dz"])
-    UV=NamedTuple("U"=>U,"V"=>V,"dimensions"=>["x","y"])
-
+    UV=Dict("U"=>U,"V"=>V,"dimensions"=>["x","y"])
     Tr=Array{Float64,1}(undef,length(LC));
     for i=1:length(LC)
        Tr[i]=ThroughFlow(UV,LC[i],Γ)
     end
-
     return UV, LC, Tr
-
 end
+
+"""
+    demo4()
+
+Calculation of Ekman transport.
+
+```
+using MeshArrays, CairoMakie, DataDeps, JLD2
+include("examples/Demos.jl")
+de4=demo4()
+
+lines!(Axis(Figure()[1,1]),de4.lat,de4.Tr); current_figure()
+lines!(de4.lat,de4.TrPac,color=:red); limits!(-90,90,-20,20)
+fig1=current_figure()
+
+λ=interpolation_setup()
+fig2=heatmap(de4.μ*de4.EkE,interpolation=λ,colorrange=(-1,1))
+```
+"""
+function demo4()
+    de=demo3()
+    Γ=de.Γ
+    (EkX,EkY)=MeshArrays.EkmanTrsp(de.TauX,de.TauY,Γ)
+    (EkE,EkN)=UVtoUEVN(EkX,EkY,Γ)
+    μ=land_mask(Γ)
+
+    #global meridional transport
+    (_, LC, Tr)=demo3(EkX*Γ.DXG./1e6,EkY*Γ.DYG./1e6,Γ)
+    #regional meridional transport (Eastern Pacific example)
+    mask=demo.extended_basin(demo.ocean_basins(),:Pac)
+    mask[findall( (Γ.XC.>-110)*(Γ.XC.<180)+(Γ.XC.<-170) )].=0
+    (_, _, TrPac)=demo3(mask*EkX*Γ.DXG./1e6,mask*EkY*Γ.DYG./1e6,Γ)
+
+    (EkX=EkX, EkY=EkY, EkE=EkE, EkN=EkN, LC=LC, Tr=Tr, TrPac=TrPac, lat=-89.0:89.0, Γ=Γ, μ=μ)
+end
+
+##
+
