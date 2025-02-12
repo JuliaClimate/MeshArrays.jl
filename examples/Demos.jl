@@ -170,16 +170,29 @@ include("examples/Demos.jl")
 de4=demo4()
 
 lines!(Axis(Figure()[1,1]),de4.lat,de4.Tr); current_figure()
+lines!(de4.lat,de4.TrPac,color=:red); limits!(-90,90,-20,20)
+fig1=current_figure()
 
 λ=interpolation_setup()
-heatmap(de4.μ*de4.EkE,interpolation=λ,colorrange=(-1,1))
+fig2=heatmap(de4.μ*de4.EkE,interpolation=λ,colorrange=(-1,1))
 ```
 """
 function demo4()
     de=demo3()
-    (EkX,EkY)=MeshArrays.EkmanTrsp(de.TauX,de.TauY,de.Γ)
-    (EkE,EkN)=UVtoUEVN(EkX,EkY,de.Γ)
-    (UV, LC, Tr)=demo3(EkX*de.Γ.DXG./1e6,EkY*de.Γ.DYG./1e6,de.Γ)
-    μ=land_mask(de.Γ)
-    (EkX=EkX, EkY=EkY, EkE=EkE, EkN=EkN, LC=LC, Tr=Tr, lat=-89.0:89.0, Γ=de.Γ, μ=μ)
+    Γ=de.Γ
+    (EkX,EkY)=MeshArrays.EkmanTrsp(de.TauX,de.TauY,Γ)
+    (EkE,EkN)=UVtoUEVN(EkX,EkY,Γ)
+    μ=land_mask(Γ)
+
+    #global meridional transport
+    (_, LC, Tr)=demo3(EkX*Γ.DXG./1e6,EkY*Γ.DYG./1e6,Γ)
+    #regional meridional transport (Eastern Pacific example)
+    mask=demo.extended_basin(demo.ocean_basins(),:Pac)
+    mask[findall( (Γ.XC.>-110)*(Γ.XC.<180)+(Γ.XC.<-170) )].=0
+    (_, _, TrPac)=demo3(mask*EkX*Γ.DXG./1e6,mask*EkY*Γ.DYG./1e6,Γ)
+
+    (EkX=EkX, EkY=EkY, EkE=EkE, EkN=EkN, LC=LC, Tr=Tr, TrPac=TrPac, lat=-89.0:89.0, Γ=Γ, μ=μ)
 end
+
+##
+
