@@ -18,7 +18,8 @@ module MeshArraysDataDepsExt
          ["https://upload.wikimedia.org/wikipedia/commons/5/56/Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"]))
       register(DataDep("interp_halfdeg",
          "Interpolation coefficients example, from LLC90 grid to half degree grid, created with MeshArrays.jl",
-         ["https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2"]))
+         ["https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2"],
+         "a0e2806ad2a88c0acb5d3baef942fcbcf69fe27310487894cd38f6c782f55e99"))
       end
 
  
