@@ -493,6 +493,26 @@ function Transect(name,lons,lats,Γ; segment=:short, format=:gridpath)
   end
 end
 
+
+"""
+    edge_path(name,mskCint,Γ)
+
+Compute integration path that follows the outer edge of `mskCint>0`. 
+
+```
+Γ=GridLoad(ID=:LLC90)
+mask=demo.extended_basin(demo.ocean_basins(),:Pac)
+edge=edge_path("Pacific Ocean Edge",mask,Γ)
+```
+"""
+function edge_path(name,mskCint,Γ)
+  mskCedge,mskWedge,mskSedge=edge_mask(mskCint)
+  tabC=MskToTab(mskCedge)
+  tabW=MskToTab(mskWedge)
+  tabS=MskToTab(mskSedge)  
+  gridpath(name=name,grid=Γ,C=tabC,W=tabW,S=tabS)
+end
+
 ##
 
 """

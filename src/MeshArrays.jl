@@ -35,7 +35,7 @@ export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn, interpol
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
 export nansum, nanmean, nanmax, nanmin
-export demo, land_mask
+export demo, land_mask, edge_path
 export Integration
 
 #export InnerArray, OuterArray
