@@ -98,6 +98,9 @@ end
     Trsct=Transect(name,lons,lats,Γ,segment=:long,format=:NamedTuple)
     Trsct=Transect(name,lons,lats,Γ)
 
+    mask=demo.extended_basin(demo.ocean_basins(),:Pac)
+    edge=edge_path("Pacific Ocean Edge",mask,Γ)
+
     #Various vector operations
     hFacW=GridLoadVar("hFacW",γ)
     hFacS=GridLoadVar("hFacS",γ)
