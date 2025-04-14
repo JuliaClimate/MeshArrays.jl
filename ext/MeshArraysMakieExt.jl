@@ -756,17 +756,17 @@ end
 
 ##
 
-function plot(x::Union{gridpath,Vector{gridpath}})
+function plot(x::Union{gridpath,Vector{gridpath}}; kwargs...)
 	fig=Figure(); ax=Axis(fig[1,1],limits=(-180.0,180.0,-90.0,90.0))
 	if isa(x,gridpath)
-		plot!(x)
+		plot!(x; kwargs...)
 	else
-		[plot!(y) for y in x]
+		[plot!(y; kwargs...) for y in x]
 	end
 	fig
 end
 
-function plot!(x::gridpath)
+function plot!(x::gridpath; kwargs...)
 	np=size(x.C,1)
 	lon=zeros(np)
 	lat=zeros(np)
@@ -775,7 +775,7 @@ function plot!(x::gridpath)
 		lon[p]=x.grid.XC[f][i,j]
 		lat[p]=x.grid.YC[f][i,j]
 	end
-	scatter!(lon,lat)
+	scatter!(lon,lat; kwargs...)
 end
 
 end # module

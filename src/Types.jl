@@ -251,6 +251,23 @@ Base.@kwdef struct gridpath
   S::Matrix
 end
 
+function Base.show(io::IO, z::gridpath)
+  printstyled(io, " gridpath \n",color=:normal)
+  printstyled(io, "  name         = ",color=:normal)
+  printstyled(io, "$(z.name)\n",color=:blue)
+  ff=unique(z.C[:,1])
+  for f in ff
+    n=sum(z.C[:,1].==f)
+    printstyled(io, "  C points (face, nb) = ",color=:normal)
+    printstyled(io, "$(f) ,$(n)\n",color=:green)
+  end
+  printstyled(io, "  W points (faces) = ",color=:normal)
+  printstyled(io, "$(unique(z.W[:,1]))\n",color=:magenta)
+  printstyled(io, "  S points (faces) =",color=:normal)
+  printstyled(io, "$(unique(z.S[:,1]))\n",color=:magenta)
+return
+end
+
 """
     gridmask
 
