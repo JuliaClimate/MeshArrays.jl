@@ -652,7 +652,7 @@ Presets for Proj in MeshArrays.
 """
 function ProjAxis(ax;proj=(x->x),lon0=0.0,omit_grid_lines=true,polygons=Any[])
 
-    hidespines!(ax)
+#    hidespines!(ax)
     hidedecorations!.(ax)
 	pr_ax=PrAxis(ax,proj,lon0)
 	!omit_grid_lines ? grid_lines!(pr_ax,color=:black,linewidth=0.5) : nothing
@@ -662,8 +662,8 @@ function ProjAxis(ax;proj=(x->x),lon0=0.0,omit_grid_lines=true,polygons=Any[])
 end
 
 function grid_lines!(pr_ax::PrAxis;kwargs...)
-	ii=[i for i in -180:45:180, j in -78.5:1.0:78.5]';
-    jj=[j for i in -180:45:180, j in -78.5:1.0:78.5]';
+	ii=[i for i in -180:30:180, j in -90:1.0:90]';
+    jj=[j for i in -180:30:180, j in -90:1.0:90]';
     xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
     yl=vcat([[jj[:,i]; NaN] for i in 1:size(ii,2)]...)
     tmp=pr_ax.proj.(xl[:],yl[:])
@@ -672,8 +672,8 @@ function grid_lines!(pr_ax::PrAxis;kwargs...)
     lines!(xl,yl; kwargs...)
 
     tmp=circshift(-179.5:1.0:179.5,-pr_ax.lon0)
-    ii=[i for i in tmp, j in -75:15:75];
-    jj=[j for i in tmp, j in -75:15:75];
+    ii=[i for i in tmp, j in -90:30:90];
+    jj=[j for i in tmp, j in -90:30:90];
     xl=vcat([[ii[:,i]; NaN] for i in 1:size(ii,2)]...)
     yl=vcat([[jj[:,i]; NaN] for i in 1:size(ii,2)]...)
     tmp=pr_ax.proj.(xl[:],yl[:])
@@ -756,17 +756,17 @@ end
 
 ##
 
-function plot(x::Union{gridpath,Vector{gridpath}})
+function plot(x::Union{gridpath,Vector{gridpath}}; kwargs...)
 	fig=Figure(); ax=Axis(fig[1,1],limits=(-180.0,180.0,-90.0,90.0))
 	if isa(x,gridpath)
-		plot!(x)
+		plot!(x; kwargs...)
 	else
-		[plot!(y) for y in x]
+		[plot!(y; kwargs...) for y in x]
 	end
 	fig
 end
 
-function plot!(x::gridpath)
+function plot!(x::gridpath; kwargs...)
 	np=size(x.C,1)
 	lon=zeros(np)
 	lat=zeros(np)
@@ -775,7 +775,7 @@ function plot!(x::gridpath)
 		lon[p]=x.grid.XC[f][i,j]
 		lat[p]=x.grid.YC[f][i,j]
 	end
-	scatter!(lon,lat)
+	scatter!(lon,lat; kwargs...)
 end
 
 end # module

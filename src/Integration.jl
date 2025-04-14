@@ -192,6 +192,7 @@ where vol is calculated as follows:
 
 ```
 #option=:loops
+allones=1.0 .+0*G.hFacC
 M.tmp2d.=M.v_int[1](allones)
 vol=[b(M.tmp2d) for b in M.h_sum]
 ```
@@ -241,6 +242,17 @@ function streamlined_loop(mask::gridmask; files=String[], var=:THETA, rd=read)
     GC.gc()
   end
   Array(BA)
+end
+
+function one_comp(mask::gridmask, tmp::MeshArray)
+  nh=length(mask.names)
+  nv=length(mask.depths)
+  BA=zeros(nh,nv)
+  for layer in 1:nv
+    mask.tmp2d.=mask.v_int[layer](tmp)
+    BA[:,layer]=[b(mask.tmp2d) for b in mask.h_sum]
+  end
+  BA    
 end
 
 ##
