@@ -242,7 +242,15 @@ end
     MeshArrays.write_tiles(tmp,Γ.XC)    
     @test isfile(tmp)
 
-    G=Grids_simple.GridLoad_lonlatdep([10 100 1000],ones(360,180,3))
+    xy=Grids_simple.xy_OISST()
+    xy=Grids_simple.xy_Oscar()
+
+    xy=Grids_simple.xy_IAP()
+    gr=Grids_simple.grid_factors(xy)
+    dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
+    gr=Grids_simple.grid_add_z(gr,dep,msk)
+
+    @test haskey(gr,:hFacC)
 end
 
 @testset "Plotting:" begin
@@ -278,7 +286,7 @@ end
     heatmap(D,interpolation=λ,title="ocean depth") #same but w title
 
     lon0=-160
-	proj=Proj.Transformation(MA_preset=2,lon0=lon0)
+    proj=Proj.Transformation(MA_preset=2,lon0=lon0)
     Dint=reshape(Interpolate(D,λ.f,λ.i,λ.j,λ.w),size(λ.lon))
 
     Interpolate(D,λ)

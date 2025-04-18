@@ -32,9 +32,9 @@ More :
 
 ```
 Grids_simple.periodic_domain
+Grids_simple.grid_factors
+Grids_simple.grid_add_z
 Grids_simple.UnitGrid
-Grids_simple.GridLoad_lonlatdep
-Grids_simple.GridLoad_lonlat
 ```
 
 More : 
