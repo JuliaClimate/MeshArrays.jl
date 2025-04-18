@@ -13,7 +13,7 @@ gridpath
 gridmask
 ```
 
-More : 
+### More
 
 ```@docs
 MeshArrays.gcmvector
@@ -28,16 +28,16 @@ GridLoad
 GridLoadVar
 ```
 
-More :
+### Simple Grids
 
-```
+```@docs
 Grids_simple.periodic_domain
 Grids_simple.grid_factors
 Grids_simple.grid_add_z
 Grids_simple.UnitGrid
 ```
 
-More : 
+### Functionalities
 
 ```@docs
 Tiles
