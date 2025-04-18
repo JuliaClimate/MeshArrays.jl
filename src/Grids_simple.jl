@@ -144,9 +144,23 @@ rSphere = 6370.0*1000
 
 """
     GridLoad_lonlatdep(depth,mask)
+
+!! deprecated, replaced with `grid_add_z` !!
 """
 GridLoad_lonlatdep(depth,mask) = grid_add_z(GridLoad_lonlat(),depth,mask) 
 
+
+"""
+    grid_add_z(G,depth,mask)
+
+```
+xy=Grids_simple.xy_IAP()
+gr=Grids_simple.grid_factors(xy)
+
+dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
+gr=Grids_simple.grid_add_z(gr,dep,msk)
+```
+"""
 grid_add_z(G,depth,mask) = begin
     RC=depth
     RF=[0;0.5*(RC[1:end-1]+RC[2:end]);RC[end]+0.5*(RC[end]-RC[end-1])]
@@ -157,12 +171,10 @@ end
 
 """
     GridLoad_lonlat()
+
+!! deprecated, replaced with `grid_factors` !!
 """
 GridLoad_lonlat(xy=xy_IAP())=grid_factors(xy)
-
-## list of regular grids to consolidate : 
-#- done : IAP, Oscar
-#- todo : OISST, OCCA1, OCCA2-interpolated
 
 xy_IAP()=begin
     xg=0.0:1:360
@@ -188,6 +200,14 @@ xy_OISST()=begin
     (xc=xc,yc=yc,xg=xg,yg=yg)
 end
 
+"""
+    grid_factors(xy::NamedTuple)
+
+```
+xy=Grids_simple.xy_OISST()
+gr=Grids_simple.grid_factors(xy)
+```
+"""
 grid_factors(xy::NamedTuple)=begin
     (; xc, yc, xg, yg) = xy
 
