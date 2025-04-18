@@ -180,6 +180,14 @@ xy_Oscar()=begin
     (xc=xc,yc=yc,xg=xg,yg=yg)
 end
 
+xy_OISST()=begin
+    xg=0.0:0.25:360.0
+    yg=-90.0:0.25:90.0
+    xc=0.125:0.25:359.875
+    yc=-89.875:0.25:89.875
+    (xc=xc,yc=yc,xg=xg,yg=yg)
+end
+
 grid_factors(xy::NamedTuple)=begin
     (; xc, yc, xg, yg) = xy
 
