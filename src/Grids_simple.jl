@@ -140,55 +140,78 @@ end
 
 ## Grid_latlon with specified vertical grid and land mask
 
+rSphere = 6370.0*1000
+
 """
     GridLoad_lonlatdep(depth,mask)
 """
-function GridLoad_lonlatdep(depth,mask)
-    G=GridLoad_lonlat()
-    g=G.XC.grid
-    hFacC=read(mask,g)
+GridLoad_lonlatdep(depth,mask) = grid_add_z(GridLoad_lonlat(),depth,mask) 
+
+grid_add_z(G,depth,mask) = begin
     RC=depth
     RF=[0;0.5*(RC[1:end-1]+RC[2:end]);RC[end]+0.5*(RC[end]-RC[end-1])]
-    merge(G,(hFacC=hFacC,RC=RC,RF=RF,DRF=diff(RF)))  
+    g=G.XC.grid
+    hFacC=read(mask,g)
+    merge(G,(hFacC=hFacC,RC=RC,RF=RF,DRF=diff(RF)))    
 end
-  
+
 """
     GridLoad_lonlat()
 """
-function GridLoad_lonlat()
-    g=GridSpec("PeriodicChannel")
-    g.fSize[1]=(360,180)
-    g.ioSize.=[360 180]
-    grid_factors(g)
-end
-  
-grid_factors(g)=begin
+GridLoad_lonlat(xy=xy_IAP())=grid_factors(xy)
+
+## list of regular grids to consolidate : 
+#- done : IAP, Oscar
+#- todo : OISST, OCCA1, OCCA2-interpolated
+
+xy_IAP()=begin
     xg=0.0:1:360
     yg=-90.0:1:90
     xc=0.5:1:359.5
     yc=-89.5:1:89.5
-    rSphere = 6370.0*1000
-    dxF = rSphere*deg2rad.(cosd.(yc)*1.0)
+    (xc=xc,yc=yc,xg=xg,yg=yg)
+end
+
+xy_Oscar()=begin
+    xg=-0.125:0.25:359.875
+    yg=-89.875:0.25:89.875
+    xc=0.0:0.25:359.75
+    yc=-89.75:0.25:89.75
+    (xc=xc,yc=yc,xg=xg,yg=yg)
+end
+
+grid_factors(xy::NamedTuple)=begin
+    (; xc, yc, xg, yg) = xy
+
+    ni=length(xc)
+    nj=length(yc)
+    dx=diff(xg)[1]
+
+    g=GridSpec("PeriodicChannel")
+    g.fSize[1]=(ni,nj)
+    g.ioSize.=[ni nj]
+
+    dxF = rSphere*deg2rad.(cosd.(yc)*dx)
     dyF = rSphere*deg2rad.(diff(yg))
-    dxG = rSphere*deg2rad.(cosd.(yg[1:end-1])*1.0)
+    dxG = rSphere*deg2rad.(cosd.(yg[1:end-1])*dx)
     dyG = rSphere*deg2rad.(diff(yg))
     dxC = dxF
     dyC = rSphere*deg2rad.(diff(yg))
     x=sind.(yg[2:end])-sind.(yg[1:end-1])
-    RAC = rSphere*rSphere*1.0*deg2rad.(abs.(x))
+    RAC = rSphere*rSphere*dx*deg2rad.(abs.(x))
   
     (
-    XG=read(xg[1:end-1]*ones(1,180),g),
-    YG=read(permutedims(yc*ones(1,360)),g),
-    XC=read(xc*ones(1,180),g),
-    YC=read(permutedims(yc*ones(1,360)),g),
-    dxF=read(permutedims(dxF*ones(1,360)),g),
-    dyF=read(permutedims(dyF*ones(1,360)),g),
-    dxG=read(permutedims(dxG*ones(1,360)),g),
-    dyG=read(permutedims(dyG*ones(1,360)),g),
-    dxC=read(permutedims(dxC*ones(1,360)),g),
-    dyC=read(permutedims(dyC*ones(1,360)),g),
-    RAC=read(permutedims(RAC*ones(1,360)),g),
+    XG=read(xg[1:end-1]*ones(1,nj),g),
+    YG=read(permutedims(yc*ones(1,ni)),g),
+    XC=read(xc*ones(1,nj),g),
+    YC=read(permutedims(yc*ones(1,ni)),g),
+    dxF=read(permutedims(dxF*ones(1,ni)),g),
+    dyF=read(permutedims(dyF*ones(1,ni)),g),
+    dxG=read(permutedims(dxG*ones(1,ni)),g),
+    dyG=read(permutedims(dyG*ones(1,ni)),g),
+    dxC=read(permutedims(dxC*ones(1,ni)),g),
+    dyC=read(permutedims(dyC*ones(1,ni)),g),
+    RAC=read(permutedims(RAC*ones(1,ni)),g),
     )
 end
 
