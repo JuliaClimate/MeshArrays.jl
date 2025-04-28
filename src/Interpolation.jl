@@ -235,12 +235,12 @@ function interpolation_setup(fil::String)
 end
 
 """
-    interpolation_setup(;Γ,lon,lat,path,url)
+    interpolation_setup(;Γ,lon,lat)
     
 Download or recompute interpolation coefficients.
 
 - `λ=interpolation_setup()` to download "interp_coeffs_halfdeg.jld2" 
-- `λ=interpolation_setup(Γ=Γ)` to recompute interpolation to `lon,lat`
+- `λ=interpolation_setup(Γ=Γ,lon=lon,lat=lat)` to recompute interpolation to `lon,lat`
 """
 function interpolation_setup(;Γ=NamedTuple(),
         lon=[i for i=-179.:2.0:179., j=-89.:2.0:89.],
@@ -251,6 +251,7 @@ function interpolation_setup(;Γ=NamedTuple(),
         else
 		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
                 fil=tempname()*"_interp_coeffs.jld2"
+                println(fil)
 		MeshArrays.write_JLD2(fil; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
         end
         interpolation_setup(fil)
