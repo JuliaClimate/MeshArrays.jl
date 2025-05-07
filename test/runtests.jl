@@ -169,7 +169,7 @@ end
 end
 
 @testset "gcmfaces type:" begin
-    for ID in (:CS32, :LLC270)
+    for ID in (:default, :CS32, :LLC270)
         γ=GridSpec(ID=ID)
         MeshArrays.gcmfaces(γ)
         MeshArrays.gcmfaces(γ,Float32)
