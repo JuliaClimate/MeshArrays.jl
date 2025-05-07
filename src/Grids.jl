@@ -2,6 +2,9 @@
 GRID_LLC90_hash = artifact_hash("GRID_LLC90", artifact_toml)
 GRID_LLC90 = joinpath(artifact_path(GRID_LLC90_hash)*"/","GRID_LLC90-1.1/")
 GRID_LLC90_download() = artifact"GRID_LLC90"
+GRID_LLC270_hash = artifact_hash("GRID_LLC270", artifact_toml)
+GRID_LLC270 = joinpath(artifact_path(GRID_LLC270_hash)*"/","GRID_LLC270-1.0.0/")
+GRID_LLC270_download() = artifact"GRID_LLC270"
 GRID_LL360_hash = artifact_hash("GRID_LL360", artifact_toml)
 GRID_LL360 = joinpath(artifact_path(GRID_LL360_hash)*"/","GRID_LL360-1.0/")
 GRID_LL360_download() = artifact"GRID_LL360"
@@ -28,7 +31,7 @@ land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC[:,1])
 ## GridSpec function with category argument:
 
 """
-    GridSpec(category="PeriodicDomain",path=tempname(); ID=:unknown)
+    GridSpec(category="PeriodicDomain",path=tempname(), nx=nothing; ID=:unknown)
 
 - Select one of the pre-defined grids either by ID (keyword) or by category.
 - Return the corresponding `gcmgrid` specification, including the path where grid files can be accessed (`path`).
@@ -71,19 +74,23 @@ isa(g,gcmgrid)
 true
 ```
 """
-function GridSpec(category="PeriodicDomain",path=tempname(); ID=:unknown)
+function GridSpec(category="PeriodicDomain", path=tempname(), nx=90; ID=:unknown)
 
 if category=="LatLonCap"
     nFaces=5
     grTopo="LatLonCap"
-    ioSize=[90 1170]
-    facesSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
-    ioPrec=Float64
+    ioSize=[nx nx*13]
+    facesSize=[(nx, nx*3), (nx, nx*3), (nx, nx), (nx*3, nx), (nx*3, nx)]
+    if nx==270
+        ioPrec=Float32
+    else
+        ioPrec=Float64
+    end
 elseif category=="CubeSphere"
     nFaces=6
     grTopo="CubeSphere"
-    ioSize=[32 192]
-    facesSize=[(32, 32), (32, 32), (32, 32), (32, 32), (32, 32), (32, 32)]
+    ioSize=[nx nx*nFaces]
+    facesSize=[(nx, nx), (nx, nx), (nx, nx), (nx, nx), (nx, nx), (nx, nx)]
     ioPrec=Float32
 elseif category=="PeriodicChannel"
     nFaces=1
@@ -102,13 +109,18 @@ else
 end
 
 if ID==:unknown
-    gcmgrid(path,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
+    gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 elseif ID==:LLC90
-    GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+    nx = 90
+    GridSpec("LatLonCap", MeshArrays.GRID_LLC90, nx)
+elseif ID==:LLC270
+    nx=270
+    GridSpec("LatLonCap", MeshArrays.GRID_LLC270, nx)
 elseif ID==:CS32
-    GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+    nx=32
+    GridSpec("CubeSphere", MeshArrays.GRID_CS32, nx)
 elseif ID==:onedegree
-    GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+    GridSpec("PeriodicChannel", MeshArrays.GRID_LL360)
 elseif ID==:default
     GridSpec()
 else
@@ -156,6 +168,7 @@ function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
 
     gr.path==GRID_CS32 ? GRID_CS32_download() : nothing
     gr.path==GRID_LL360 ? GRID_LL360_download() : nothing
+    gr.path==GRID_LLC270 ? GRID_LLC270_download() : nothing
     gr.path==GRID_LLC90 ? GRID_LLC90_download() : nothing
 
     Γ=Dict()
