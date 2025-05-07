@@ -37,7 +37,7 @@ include(joinpath(p,"../examples/Demos.jl"))
 end
 
 @testset "Vertical Dimension:" begin
-    γ=GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+    γ=GridSpec(ID=:onedegree)
     Γ=GridLoad(γ;option="full")
     θ=Float64.(Γ.hFacC)
     nk=length(Γ.RC)
