@@ -74,11 +74,12 @@ isa(g,gcmgrid)
 true
 ```
 """
-function GridSpec(category="PeriodicDomain", path=tempname(), nx=90; ID=:unknown)
+function GridSpec(category="PeriodicDomain", path=tempname(); nx=nothing, ID=:unknown)
 
 if category=="LatLonCap"
     nFaces=5
     grTopo="LatLonCap"
+    nx === nothing ? nx=90 : nx
     ioSize=[nx nx*13]
     facesSize=[(nx, nx*3), (nx, nx*3), (nx, nx), (nx*3, nx), (nx*3, nx)]
     if nx==270
@@ -89,6 +90,7 @@ if category=="LatLonCap"
 elseif category=="CubeSphere"
     nFaces=6
     grTopo="CubeSphere"
+    nx === nothing ? nx=32 : nx
     ioSize=[nx nx*nFaces]
     facesSize=[(nx, nx), (nx, nx), (nx, nx), (nx, nx), (nx, nx), (nx, nx)]
     ioPrec=Float32
@@ -112,13 +114,13 @@ if ID==:unknown
     gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 elseif ID==:LLC90
     nx = 90
-    GridSpec("LatLonCap", MeshArrays.GRID_LLC90, nx)
+    GridSpec("LatLonCap", MeshArrays.GRID_LLC90, nx=nx)
 elseif ID==:LLC270
-    nx=270
-    GridSpec("LatLonCap", MeshArrays.GRID_LLC270, nx)
+    nx = 270
+    GridSpec("LatLonCap", MeshArrays.GRID_LLC270, nx=nx)
 elseif ID==:CS32
-    nx=32
-    GridSpec("CubeSphere", MeshArrays.GRID_CS32, nx)
+    nx = 32
+    GridSpec("CubeSphere", MeshArrays.GRID_CS32, nx=nx)
 elseif ID==:onedegree
     GridSpec("PeriodicChannel", MeshArrays.GRID_LL360)
 elseif ID==:default
