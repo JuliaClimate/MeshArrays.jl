@@ -244,13 +244,14 @@ Download or recompute interpolation coefficients.
 """
 function interpolation_setup(;Γ=NamedTuple(),
         lon=[i for i=-179.:2.0:179., j=-89.:2.0:89.],
-        lat=[j for i=-179.:2.0:179., j=-89.:2.0:89.])
+        lat=[j for i=-179.:2.0:179., j=-89.:2.0:89.],
+        path=tempname())
 
         if isempty(Γ)
                 fil=joinpath(MeshArrays.mydatadep("interp_halfdeg"),"interp_coeffs_halfdeg.jld2")
         else
 		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
-                fil=tempname()*"_interp_coeffs.jld2"
+                fil=path*"_interp_coeffs.jld2"
 		MeshArrays.write_JLD2(fil; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
         end
         interpolation_setup(fil)
