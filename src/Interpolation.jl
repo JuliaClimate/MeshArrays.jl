@@ -254,7 +254,8 @@ function interpolation_setup(;Γ=NamedTuple(),
                 fil=joinpath(MeshArrays.mydatadep("interp_halfdeg"),"interp_coeffs_halfdeg.jld2")
         else
 		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
-		MeshArrays.write_JLD2(filename; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
+                fil=filename
+		MeshArrays.write_JLD2(fil; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
         end
         interpolation_setup(fil)
 end
