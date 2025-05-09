@@ -31,7 +31,7 @@ land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC[:,1])
 ## GridSpec function with category argument:
 
 """
-    GridSpec(category="PeriodicDomain",path=tempname(), nx=nothing; ID=:unknown)
+    GridSpec(category="PeriodicDomain",path=tempname(); ny=nothing, ID=:unknown)
 
 - Select one of the pre-defined grids either by ID (keyword) or by category.
 - Return the corresponding `gcmgrid` specification, including the path where grid files can be accessed (`path`).
@@ -40,6 +40,7 @@ land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC[:,1])
 
 - `:LLC90`
 - `:CS32`
+- `:LLC270`
 - `:onedegree`
 - `:default`
 
@@ -73,16 +74,34 @@ isa(g,gcmgrid)
 
 true
 ```
+
+3. by `category` and `path` with the `ny` argument
+- `ny` is the number of grid points in y for the `LatLonCap` and `CubeSphere` tiles. 
+`ny` defaults to 90 for `LatLonCap` and 32 for `CubeSphere`, and so must be included to access the LLC270 grid.
+
+Examples:
+
+```jldoctest; output = false
+using MeshArrays
+g = GridSpec("LatLonCap",MeshArrays.GRID_LLC90,ny=90)
+g = GridSpec("LatLonCap",MeshArrays.GRID_LLC270,ny=270)
+g = GridSpec("CubeSphere",MeshArrays.GRID_CS32,ny=32)
+isa(g,gcmgrid)
+
+# output
+
+true
+```
 """
-function GridSpec(category="PeriodicDomain", path=tempname(); nx=nothing, ID=:unknown)
+function GridSpec(category="PeriodicDomain", path=tempname(); ny=nothing, ID=:unknown)
 
 if category=="LatLonCap"
     nFaces=5
     grTopo="LatLonCap"
-    nx === nothing ? nx=90 : nx
-    ioSize=[nx nx*13]
-    facesSize=[(nx, nx*3), (nx, nx*3), (nx, nx), (nx*3, nx), (nx*3, nx)]
-    if nx==270
+    ny === nothing ? ny=90 : ny
+    ioSize=[ny ny*13]
+    facesSize=[(ny, ny*3), (ny, ny*3), (ny, ny), (ny*3, ny), (ny*3, ny)]
+    if ny==270
         ioPrec=Float32
     else
         ioPrec=Float64
@@ -90,9 +109,9 @@ if category=="LatLonCap"
 elseif category=="CubeSphere"
     nFaces=6
     grTopo="CubeSphere"
-    nx === nothing ? nx=32 : nx
-    ioSize=[nx nx*nFaces]
-    facesSize=[(nx, nx), (nx, nx), (nx, nx), (nx, nx), (nx, nx), (nx, nx)]
+    ny === nothing ? ny=32 : ny
+    ioSize=[ny ny*nFaces]
+    facesSize=[(ny, ny), (ny, ny), (ny, ny), (ny, ny), (ny, ny), (ny, ny)]
     ioPrec=Float32
 elseif category=="PeriodicChannel"
     nFaces=1
@@ -113,14 +132,14 @@ end
 if ID==:unknown
     gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 elseif ID==:LLC90
-    nx = 90
-    GridSpec("LatLonCap", MeshArrays.GRID_LLC90, nx=nx)
+    ny = 90
+    GridSpec("LatLonCap", MeshArrays.GRID_LLC90, ny=ny)
 elseif ID==:LLC270
-    nx = 270
-    GridSpec("LatLonCap", MeshArrays.GRID_LLC270, nx=nx)
+    ny = 270
+    GridSpec("LatLonCap", MeshArrays.GRID_LLC270, ny=ny)
 elseif ID==:CS32
-    nx = 32
-    GridSpec("CubeSphere", MeshArrays.GRID_CS32, nx=nx)
+    ny = 32
+    GridSpec("CubeSphere", MeshArrays.GRID_CS32, ny=ny)
 elseif ID==:onedegree
     GridSpec("PeriodicChannel", MeshArrays.GRID_LL360)
 elseif ID==:default
