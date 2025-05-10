@@ -31,7 +31,7 @@ land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC[:,1])
 ## GridSpec function with category argument:
 
 """
-    GridSpec(category="PeriodicDomain",path=tempname(); ny=nothing, ID=:unknown)
+    GridSpec(category="PeriodicDomain",path=tempname(); np=nothing, ID=:unknown)
 
 - Select one of the pre-defined grids either by ID (keyword) or by category.
 - Return the corresponding `gcmgrid` specification, including the path where grid files can be accessed (`path`).
@@ -75,17 +75,17 @@ isa(g,gcmgrid)
 true
 ```
 
-3. by `category` and `path` with the `ny` argument
-- `ny` is the number of grid points in y for the `LatLonCap` and `CubeSphere` tiles. 
-`ny` defaults to 90 for `LatLonCap` and 32 for `CubeSphere`, and so must be included to access the LLC270 grid.
+3. by `category` and `path` with the `np` argument
+- `np` is the number of grid points in x or y for the `LatLonCap` and `CubeSphere` tiles. 
+`np` defaults to 90 for `LatLonCap` and 32 for `CubeSphere`, and so must be included to access the LLC270 grid with the category argument.
 
 Examples:
 
 ```jldoctest; output = false
 using MeshArrays
-g = GridSpec("LatLonCap",MeshArrays.GRID_LLC90,ny=90)
-g = GridSpec("LatLonCap",MeshArrays.GRID_LLC270,ny=270)
-g = GridSpec("CubeSphere",MeshArrays.GRID_CS32,ny=32)
+g = GridSpec("LatLonCap",MeshArrays.GRID_LLC90,np=90)
+g = GridSpec("LatLonCap",MeshArrays.GRID_LLC270,np=270)
+g = GridSpec("CubeSphere",MeshArrays.GRID_CS32,np=32)
 isa(g,gcmgrid)
 
 # output
@@ -93,15 +93,15 @@ isa(g,gcmgrid)
 true
 ```
 """
-function GridSpec(category="PeriodicDomain", path=tempname(); ny=nothing, ID=:unknown)
+function GridSpec(category="PeriodicDomain", path=tempname(); np=nothing, ID=:unknown)
 
 if category=="LatLonCap"
     nFaces=5
     grTopo="LatLonCap"
-    ny === nothing ? ny=90 : ny
-    ioSize=[ny ny*13]
-    facesSize=[(ny, ny*3), (ny, ny*3), (ny, ny), (ny*3, ny), (ny*3, ny)]
-    if ny==270
+    np === nothing ? np=90 : np
+    ioSize=[np np*13]
+    facesSize=[(np, np*3), (np, np*3), (np, np), (np*3, np), (np*3, np)]
+    if np==270
         ioPrec=Float32
     else
         ioPrec=Float64
@@ -109,9 +109,9 @@ if category=="LatLonCap"
 elseif category=="CubeSphere"
     nFaces=6
     grTopo="CubeSphere"
-    ny === nothing ? ny=32 : ny
-    ioSize=[ny ny*nFaces]
-    facesSize=[(ny, ny), (ny, ny), (ny, ny), (ny, ny), (ny, ny), (ny, ny)]
+    np === nothing ? np=32 : np
+    ioSize=[np np*nFaces]
+    facesSize=[(np, np), (np, np), (np, np), (np, np), (np, np), (np, np)]
     ioPrec=Float32
 elseif category=="PeriodicChannel"
     nFaces=1
@@ -132,14 +132,14 @@ end
 if ID==:unknown
     gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 elseif ID==:LLC90
-    ny = 90
-    GridSpec("LatLonCap", MeshArrays.GRID_LLC90, ny=ny)
+    np = 90
+    GridSpec("LatLonCap", MeshArrays.GRID_LLC90, np=np)
 elseif ID==:LLC270
-    ny = 270
-    GridSpec("LatLonCap", MeshArrays.GRID_LLC270, ny=ny)
+    np = 270
+    GridSpec("LatLonCap", MeshArrays.GRID_LLC270, np=np)
 elseif ID==:CS32
-    ny = 32
-    GridSpec("CubeSphere", MeshArrays.GRID_CS32, ny=ny)
+    np = 32
+    GridSpec("CubeSphere", MeshArrays.GRID_CS32, np=np)
 elseif ID==:onedegree
     GridSpec("PeriodicChannel", MeshArrays.GRID_LL360)
 elseif ID==:default
