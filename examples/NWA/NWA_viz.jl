@@ -1,11 +1,11 @@
 
 
-using NCDatasets, GLMakie
+using NCDatasets, GLMakie, MeshArrays
 
 file="ocean_daily.static.nc"
 ds=Dataset(file)
 
-#list below should be double checked (done quickly, likely to have errors)
+#list below is draft (needs to be double checked; this is just a first guess)
 variable_pairs=(
 (:Coriolis, :Coriolis),
 (:areacello, :RAC),
@@ -38,12 +38,11 @@ variable_pairs=(
 (:yq, :XZ1d),
 )
 
-G=NamedTuple[]
-
 preproc(x) = [(ismissing(i) ? NaN : i) for i in x]
   
-for i in 1:length(variable_pairs)
-    (n_in,n_out)=variable_pairs[i]
+G=NamedTuple[]
+for i in variable_pairs
+    (n_in,n_out)=i
     tmp=try
         MeshArray(preproc(ds[n_in][:,:]))
     catch
