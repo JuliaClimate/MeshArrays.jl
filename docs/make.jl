@@ -1,16 +1,13 @@
-using Documenter
-import PlutoSliderServer, MeshArrays, DataDeps, CairoMakie, MITgcm
+using Documenter, MeshArrays
+import PlutoSliderServer, DataDeps, CairoMakie, MITgcm
+import Climatology
 
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
-
-import Climatology
+MITgcm.getdata("mitgcmsmall")
 Climatology.get_ecco_velocity_if_needed()
-
 MeshArrays.GRID_LL360_download()
 MeshArrays.GRID_LLC90_download()
 MeshArrays.GRID_CS32_download()
-MITgcm.getdata("mitgcmsmall")
-
 fil=MeshArrays.demo.download_polygons("ne_110m_admin_0_countries.shp")
 
 MeshArrays.interpolation_setup()
