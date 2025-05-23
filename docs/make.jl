@@ -11,7 +11,7 @@ MeshArrays.GRID_LLC90_download()
 MeshArrays.GRID_CS32_download()
 MITgcm.getdata("mitgcmsmall")
 
-fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
+fil=MeshArrays.demo.download_polygons("ne_110m_admin_0_countries.shp")
 
 MeshArrays.interpolation_setup()
 
