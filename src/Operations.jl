@@ -123,11 +123,12 @@ export f, β
 R = 6.3781 * 10^(6) #m
 #Coriolis Parameter
 f_Coriolis(φ) = 2Ω * sind(φ)
+#f_Coriolis(φ::MeshArray) = 2Ω * sind.(φ)
 
 """
     EkmanTrsp(u::MeshArray,v::MeshArray,Γ::NamedTuple)
 
-Compute Ekman Transport (in m2/s) from wind stress (in N/m2?).
+Compute Ekman Transport (in m2/s) from wind stress (in N/m2 , or kg/m/s2).
 """
 function EkmanTrsp(u::MeshArray,v::MeshArray,Γ::NamedTuple)
 	EkX=similar(Γ.DYG)
@@ -139,7 +140,7 @@ function EkmanTrsp(u::MeshArray,v::MeshArray,Γ::NamedTuple)
               +U.MA[i][3:end,1:end-2]+U.MA[i][3:end,2:end-1])
     fcur=f_Coriolis.(Γ.YS[i])
     fcur[abs.(Γ.YS[i]).<10].=NaN
-		EkY[i]=-ucur./fcur./1029.0
+    EkY[i]=-ucur./fcur./1029.0
     ucur=1/4* (V.MA[i][1:end-2,2:end-1]+V.MA[i][1:end-2,2:end-1]
               +V.MA[i][2:end-1,3:end]+V.MA[i][2:end-1,3:end])
     fcur=f_Coriolis.(Γ.YW[i])
