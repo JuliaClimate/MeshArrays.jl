@@ -173,12 +173,15 @@ module demo
 
     - `ne_110m_admin_0_countries.shp`
     - `countries.geojson`
+    - `oceans.geojson`
     """
     function download_polygons(ID::String)
         if ID=="ne_110m_admin_0_countries.shp"
             joinpath(MeshArrays.mydatadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
         elseif ID=="countries.geojson"
             joinpath(MeshArrays.mydatadep("countries_geojson1"),"countries.geojson")
+        elseif ID=="oceans.geojson"
+            joinpath(MeshArrays.mydatadep("oceans_geojson1"),"ocean_basins_res1000_20251109_GF.json")
         else
             error("unknown data dependency")
         end

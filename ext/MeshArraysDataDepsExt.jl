@@ -14,6 +14,10 @@ module MeshArraysDataDepsExt
          "GeoJSON countries example, from http://www.publicamundi.eu/",
          ["https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/countries.geojson"],
          "7ff2917a7a8b38e6392b0a27183d8f28ae9db1d81679526413a29b44fb7c3830"))
+      register(DataDep("oceans_geojson1",
+         "Ocean Basin Polygons",
+         ["https://zenodo.org/records/17565459/files/ocean_basins_res1000_20251109_GF.json"],
+         "1634f8c99a4913819ad7f420ab5dadf20e0c4ec9e835729dc7f9e5e17bfba903"))
       register(DataDep("basemap_jpg1",
          "JPG basemap example, from https://upload.wikimedia.org/wikipedia/commons",
          ["https://upload.wikimedia.org/wikipedia/commons/5/56/Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"],
@@ -35,6 +39,7 @@ module MeshArraysDataDepsExt
    "countries_geojson1"
    "basemap_jpg1"
    "interp_halfdeg"
+   "oceans_geojson1"
    ```    
    """
    mydatadep(nam="countries_shp1") = begin
@@ -47,6 +52,8 @@ module MeshArraysDataDepsExt
             datadep"basemap_jpg1"
          elseif nam=="interp_halfdeg"
             datadep"interp_halfdeg"
+         elseif nam=="oceans_geojson1"
+            datadep"oceans_geojson1"
          else
             error("unknown data dependency")
          end
