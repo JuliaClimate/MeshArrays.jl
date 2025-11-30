@@ -79,12 +79,19 @@ function Dataset(d::String; do_read=true, verbose=false)
                 verbose ? println("unknown read method") : nothing
                 file
             end
-        else
-            file
         end
-
     catch
-        d
+        if d=="GRID_LLC90"
+            MeshArrays.GRID_LLC90                
+        elseif d=="GRID_CS32"
+            MeshArrays.GRID_CS32
+        elseif d=="GRID_LLC270"
+            MeshArrays.GRID_LLC270
+        elseif d=="GRID_LL360"
+            MeshArrays.GRID_LL360
+        else
+            d
+        end
     end
 end
 
