@@ -5,10 +5,10 @@ import Climatology
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
 MITgcm.getdata("mitgcmsmall")
 Climatology.get_ecco_velocity_if_needed()
-MeshArrays.GRID_LL360_download()
-MeshArrays.GRID_LLC90_download()
-MeshArrays.GRID_CS32_download()
-fil=MeshArrays.demo.download_polygons("ne_110m_admin_0_countries.shp")
+MeshArrays.Dataset("GRID_LL360")
+MeshArrays.Dataset("GRID_LLC90")
+MeshArrays.Dataset("GRID_CS32")
+MeshArrays.Dataset("countries_shp1")
 
 MeshArrays.interpolation_setup()
 

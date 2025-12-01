@@ -460,11 +460,21 @@ end
 """
 	json_to_Makie(file="countries.geojson")
 
-Call `GeoJSON.read` then `geo2basic`. Return a vector of `LineString`.
+- Read file via `read_json`.
+- Call `shp_to_Makie`.
+- Return a vector of `LineString`.
 """
-function json_to_Makie(file="countries.geojson")
+function json_to_Makie(file::String)
 	tmp2=MeshArrays.read_json(file)
+	json_to_Makie(tmp2)
+end
 
+"""
+	json_to_Makie(tmp2::Vector)
+
+Convert output of `read_json` to a vector of `LineString`.
+"""
+function json_to_Makie(tmp2::Vector)
 	tmp22=Vector{Point2{Float64}}[]
 	for l1 in tmp2
 		if isa(l1[1][1][1],Number)
@@ -484,11 +494,21 @@ tuple2vec(x)=[y for y in x]
 """
 	shp_to_Makie(file="countries.geojson")
 
-Done via `Shapefile.shapes` then `geo2basic`. Return a vector of `LineString`.
+- Read file via `read_shp`.
+- Call `shp_to_Makie`.
+- Return a vector of `LineString`.
 """
-function shp_to_Makie(file="ne_110m_admin_0_countries.shp")
+function shp_to_Makie(file::String)
 	tmp2=MeshArrays.read_shp(file)
+	shp_to_Makie(tmp2)
+end
 
+"""
+	shp_to_Makie(tmp2::Vector)
+
+Convert output of `read_shp` to a vector of `LineString`.
+"""
+function shp_to_Makie(tmp2::Vector)
 	tmp22=Vector{Point2{Float64}}[]
 	[[[push!(tmp22,geo2basic(l3)) for l3 in l2] for l2 in l1] for l1 in tmp2]
 	
@@ -552,8 +572,7 @@ end
 using MeshArrays, CairoMakie, Proj
 
 using DataDeps, Shapefile
-pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-pol=MeshArrays.read_polygons(pol_file)
+pol=MeshArrays.Dataset("countries_shp1")
 
 lon0=-160
 proj=Proj.Transformation(MA_preset=2,lon0=lon0)
