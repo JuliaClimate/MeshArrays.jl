@@ -16,14 +16,17 @@ function Dataset(d::String; do_read=true, verbose=false)
 
         if do_read==true
             if occursin(".geojson",file)&&file[end-7:end]==".geojson"
-                verbose ? println("read_json") : nothing
+                verbose ? println("calling read_json") : nothing
                 read_json(file)
             elseif occursin(".json",file)&&file[end-4:end]==".json"
-                verbose ? println("read_json") : nothing
+                verbose ? println("calling read_json") : nothing
                 read_json(file)
             elseif occursin(".shp",file)&&file[end-3:end]==".shp"
-                verbose ? println("read_shp") : nothing
+                verbose ? println("calling read_shp") : nothing
                 read_shp(file)
+            elseif occursin(".jld2",file)&&file[end-4:end]==".jld2"
+                verbose ? println("calling read_jld2") : nothing
+                read_jld2(file)
             else
                 verbose ? println("unknown read method") : nothing
                 file

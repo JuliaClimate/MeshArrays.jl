@@ -2,7 +2,7 @@
 module demo
 
     import MeshArrays
-    import MeshArrays: read_JLD2, write_JLD2, Transect, rotate_points, rotate_XCYC
+    import MeshArrays: read_jld2, write_jld2, Transect, rotate_points, rotate_XCYC
     import MeshArrays: edge_mask, MskToTab, shorter_paths!
     import MeshArrays: GridSpec, MeshArray
 
@@ -68,7 +68,7 @@ module demo
             name=sec.name[ii]
             Trsct=Transect(name,lons,lats,Γ)
             fil_Trsct=joinpath(pth_sec,"$(Trsct.name).jld2")
-            !isfile(fil_Trsct) ? write_JLD2(fil_Trsct,tabC=Trsct.C,tabW=Trsct.W,tabS=Trsct.S) : nothing
+            !isfile(fil_Trsct) ? write_jld2(fil_Trsct,tabC=Trsct.C,tabW=Trsct.W,tabS=Trsct.S) : nothing
         end
 
         sec,pth_sec
@@ -200,7 +200,7 @@ module demo
         earth_jpg=joinpath(MeshArrays.mydatadep("basemap_jpg1"),
         "Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg")
     
-        earth_img=read_JLD2(earth_jpg)
+        earth_img=read_jld2(earth_jpg)
         earth_img=reverse(permutedims(earth_img),dims=2)
         earth_img=circshift(earth_img,(1800,0))
     

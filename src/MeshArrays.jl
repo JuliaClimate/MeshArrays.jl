@@ -10,8 +10,8 @@ import GeoInterface as GI
 
 function read_shp end
 function read_json end
-function read_JLD2 end
-function write_JLD2 end
+function read_jld2 end
+function write_jld2 end
 function ProjAxis end
 function grid_lines! end
 

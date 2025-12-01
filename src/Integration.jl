@@ -2,7 +2,7 @@
 module Integration
 
 using Distributed, SharedArrays, Glob
-import MeshArrays: read_JLD2, write_JLD2
+import MeshArrays: read_jld2, write_jld2
 import MeshArrays: GridLoad, GridLoadVar, GridSpec
 import MeshArrays: demo, MeshArray, gridmask
 
