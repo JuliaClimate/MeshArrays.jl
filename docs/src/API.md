@@ -85,5 +85,6 @@ Transect
 demo.ocean_basins
 demo.extended_basin
 isosurface
+MeshArrays.Dataset
 MeshArrays.mydatadep
 ```
