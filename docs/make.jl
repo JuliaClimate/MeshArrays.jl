@@ -1,10 +1,10 @@
 using Documenter, MeshArrays
-import PlutoSliderServer, DataDeps, CairoMakie, MITgcm
-import Climatology
+import PlutoSliderServer, DataDeps, CairoMakie, JLD2, Shapefile
+#import Climatology, MITgcm
 
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
-MITgcm.getdata("mitgcmsmall")
-Climatology.get_ecco_velocity_if_needed()
+#MITgcm.getdata("mitgcmsmall")
+#Climatology.get_ecco_velocity_if_needed()
 MeshArrays.Dataset("GRID_LL360")
 MeshArrays.Dataset("GRID_LLC90")
 MeshArrays.Dataset("GRID_CS32")

@@ -252,7 +252,7 @@ function interpolation_setup(;Γ=NamedTuple(),
         filename=tempname()*"_interp_coeffs.jld2")
 
         if isempty(Γ)
-                fil=joinpath(MeshArrays.mydatadep("interp_halfdeg"),"interp_coeffs_halfdeg.jld2")
+                fil=joinpath(MeshArrays.Dataset("interp_halfdeg"),"interp_coeffs_halfdeg.jld2")
         else
 		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
                 fil=filename
