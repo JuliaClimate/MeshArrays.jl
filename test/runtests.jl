@@ -301,7 +301,7 @@ end
 
 
     MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
-    pol=MeshArraysMakieExt.shp_to_Makie(pol_shp)
+    pol=MeshArraysMakieExt.pol_to_Makie(pol_shp)
     dest="+proj=eqearth +lon_0=$(lon0) +lat_1=0.0 +x_0=0.0 +y_0=0.0 +ellps=GRS80"
     MeshArraysMakieExt.split(pol,dest)
     MeshArraysMakieExt.split(pol,Observable(dest))
