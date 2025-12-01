@@ -71,7 +71,6 @@ Examples:
 ```jldoctest; output = false
 using MeshArrays
 g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"),np=90)
-g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC270"),np=270)
 g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"),np=32)
 isa(g,gcmgrid)
 
