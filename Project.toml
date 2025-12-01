@@ -1,6 +1,6 @@
 name = "MeshArrays"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["gaelforget <gforget@mit.edu>"]
 
 [deps]
@@ -21,6 +21,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 [weakdeps]
 DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
 GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+GeometryOps = "3251bfac-6a57-4b6d-aa61-ac1fef2975ab"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
@@ -29,6 +30,7 @@ Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
 [extensions]
 MeshArraysDataDepsExt = ["DataDeps"]
 MeshArraysGeoJSONExt = ["GeoJSON"]
+MeshArraysGeometryOpsExt = ["GeometryOps"]
 MeshArraysJLD2Ext = ["JLD2"]
 MeshArraysMakieExt = ["Makie"]
 MeshArraysProjExt = ["Proj"]
@@ -39,6 +41,7 @@ CatViews = "1.0"
 DataDeps = "0.7"
 GeoInterface = "1.4, 1.5, 1.6"
 GeoJSON = "0.6, 0.7, 0.8"
+GeometryOps = "0.1"
 Glob = "1"
 JLD2 = "0.4, 0.5, 0.6"
 Makie = "0.19, 0.20, 0.21, 0.22, 0.23, 0.24"

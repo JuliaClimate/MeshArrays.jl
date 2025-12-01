@@ -94,7 +94,7 @@ end
 
 # ╔═╡ 4a3f3b75-1c75-4ce5-8e75-f4dd263199cd
 let
-	γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+	γ=GridSpec(ID=:LLC90())
 	
 	a=fill(2.0,MeshArray(γ))
 	aa=write(a)
@@ -158,7 +158,7 @@ md"""## 2. Cube Sphere Grid
 
 Now, let's instead use a grid that has 6 subdomains, 32x32 points each, covering the six faces of a cube. This _cube sphere_ grid has connections between subdomains that are slightly more complicated than in the first example. 
 
-Here, grid variables are read from the `MeshArrays.GRID_CS32` folder by the `GridLoad` function. The `GridSpec` function provides the corresponding subdomain sizes. Again we call `comp()` which combines steps 2 and 3, and `viz()` to visualize. 
+Here, grid variables are read from the `GRID_CS32` folder by the `GridLoad` function. The `GridSpec` function provides the corresponding subdomain sizes. Again we call `comp()` which combines steps 2 and 3, and `viz()` to visualize. 
 """
 
 # ╔═╡ d37ae153-8646-44ae-abd9-7e0e7d479275
@@ -166,7 +166,7 @@ md"""## 3. LLC90 grid
 
 The [Lat-Lon-Cap grid](http://www.geosci-model-dev.net/8/3071/2015/) (or LLC) is a global ocean model grid which is widely used in the [MITgcm user community](https://mitgcm.readthedocs.io/en/latest/). It has 5 uneven subdomains, variable grid spacing, and continents [(Forget et al 2015)](http://www.geosci-model-dev.net/8/3071/2015/). LLC90's resolution is one degree albeit with modications in the Arctic and along the Equator.
 
-Here, grid variables are read from the `MeshArrays.GRID_LLC90` folder by the `GridLoad` function. The `GridSpec` function provides the corresponding subdomain sizes. Again we call `comp()` which combines steps 2 and 3, and `viz()` to visualize. 
+Here, grid variables are read from the `GRID_LLC90` folder by the `GridLoad` function. The `GridSpec` function provides the corresponding subdomain sizes. Again we call `comp()` which combines steps 2 and 3, and `viz()` to visualize. 
 """
 
 # ╔═╡ 0865dd0f-c43e-43a7-aa65-74aba4f4460d
@@ -248,7 +248,7 @@ end
 
 # ╔═╡ dacc2261-1d75-4d68-b82c-174e4fae3631
 begin
-	γ_b=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+	γ_b=GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
 	Γ_b=GridLoad(γ_b;option="full")
 
 	Rini_b,Rend_b=smoothing_example(Γ_b)
@@ -265,7 +265,7 @@ end
 
 # ╔═╡ 23198b8d-6bf0-4af9-91d0-7886c9574f81
 begin
-	γ_c=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+	γ_c=GridSpec(ID=:LLC90)
 	Γ_c=GridLoad(γ_c;option="full")
 	Rini_c,Rend_c=smoothing_example(Γ_c)
 	PlutoUI.with_terminal() do
@@ -777,17 +777,35 @@ git-tree-sha1 = "7a214fdac5ed5f59a22c2d9a885a16da1c74bbc7"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.17+0"
 
+[[deps.GeoFormatTypes]]
+git-tree-sha1 = "7528a7956248c723d01a0a9b0447bf254bf4da52"
+uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
+version = "0.4.5"
+
+[[deps.GeoInterface]]
+deps = ["DataAPI", "Extents", "GeoFormatTypes"]
+git-tree-sha1 = "b7c5cdf45298877bb683bdda3f871ff7070985c4"
+uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
+version = "1.6.0"
+
+    [deps.GeoInterface.extensions]
+    GeoInterfaceMakieExt = ["Makie", "GeometryBasics"]
+    GeoInterfaceRecipesBaseExt = "RecipesBase"
+
+    [deps.GeoInterface.weakdeps]
+    GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "IterTools", "LinearAlgebra", "PrecompileTools", "Random", "StaticArrays"]
 git-tree-sha1 = "1f5a80f4ed9f5a4aada88fc2db456e637676414b"
 uuid = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 version = "0.5.10"
+weakdeps = ["GeoInterface"]
 
     [deps.GeometryBasics.extensions]
     GeometryBasicsGeoInterfaceExt = "GeoInterface"
-
-    [deps.GeometryBasics.weakdeps]
-    GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 
 [[deps.GettextRuntime_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll"]
@@ -1221,10 +1239,10 @@ uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
 
 [[deps.MeshArrays]]
-deps = ["CatViews", "Dates", "Distributed", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "3ea2dc9aaaa4f4aa8799d568a4fef5abcfd2b7bf"
+deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
+git-tree-sha1 = "bc4820b8c8648fc0d60503562a6acae0aeef312d"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.3.24"
+version = "0.4.0"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]

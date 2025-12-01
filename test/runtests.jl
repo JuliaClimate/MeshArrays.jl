@@ -1,5 +1,5 @@
 using Test, Documenter, Suppressor, MeshArrays, CairoMakie
-import DataDeps, JLD2, Shapefile, GeoJSON, Proj
+import DataDeps, JLD2, Shapefile, GeoJSON, Proj, GeometryOps
 
 MeshArrays.Dataset("GRID_LL360")
 MeshArrays.Dataset("GRID_LLC90")
@@ -7,7 +7,7 @@ MeshArrays.Dataset("GRID_LLC270")
 MeshArrays.Dataset("GRID_CS32")
 
 pol_shp=MeshArrays.Dataset("countries_shp1")
-pol_json=MeshArrays.Dataset("countries_geojson1")
+pol_json=MeshArrays.Dataset("oceans_geojson1")
 
 p=dirname(pathof(MeshArrays))
 include(joinpath(p,"../examples/Demos.jl"))
@@ -347,6 +347,14 @@ end
     lon0=-160
     proj=Proj.Transformation(MA_preset=2,lon0=lon0)
     plot_examples(:baseproj,proj,lon0,pol=pol_shp)
+end
+
+@testset "polygon operattions" begin
+    name,rule=MeshArrays.within_pol(pol_json; ID=11)
+    rule_vec = (x,y) -> rule.(x,y)
+
+    np=10000; lo=-180 .+360*rand(np); la=-90 .+180*rand(np);
+    sum(rule_vec(lo,la))
 end
 
 @testset "doctests" begin

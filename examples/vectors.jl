@@ -84,7 +84,7 @@ Here we load `MeshArrays.jl` and packages that provide a climatological estimate
 
 # ╔═╡ 3c2de9d4-b091-464b-9210-aa84f3d4c5f1
 begin
-	pth=MeshArrays.GRID_LLC90
+	pth=MeshArrays.Dataset("GRID_LLC90")
 	γ=GridSpec("LatLonCap",pth)
 	Γ=GridLoad(γ;option="full")
 	LC=LatitudeCircles(-89.0:89.0,Γ)
@@ -521,9 +521,9 @@ version = "0.3.11"
 
 [[deps.Climatology]]
 deps = ["CSV", "DataDeps", "DataFrames", "DataStructures", "Dataverse", "Dates", "Distributed", "Glob", "JLD2", "MeshArrays", "Pkg", "Printf", "RollingFunctions", "STAC", "Scratch", "SharedArrays", "Statistics", "TOML", "URIs"]
-git-tree-sha1 = "12e7b88c1154042f725d914886604e92d59ba29a"
+git-tree-sha1 = "6919ec5589a0424cb1c81b40966f6ae9f0e89ac5"
 uuid = "9e9a4d37-2d2e-41e3-8b85-f7978328d9c7"
-version = "0.5.16"
+version = "0.5.17"
 
     [deps.Climatology.extensions]
     ClimatologyMITgcmExt = ["MITgcm"]
@@ -960,9 +960,9 @@ version = "2.52.0+0"
 
 [[deps.Glib_jll]]
 deps = ["Artifacts", "GettextRuntime_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Zlib_jll"]
-git-tree-sha1 = "50c11ffab2a3d50192a228c313f05b5b5dc5acb2"
+git-tree-sha1 = "6b4d2dc81736fe3980ff0e8879a9fc7c33c44ddf"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
-version = "2.86.0+0"
+version = "2.86.2+0"
 
 [[deps.Glob]]
 git-tree-sha1 = "97285bbd5230dd766e9ef6749b80fc617126d496"
@@ -1425,9 +1425,9 @@ version = "1.1.0"
 
 [[deps.MITgcm]]
 deps = ["ClimateModels", "DataDeps", "Dataverse", "Dates", "Distributed", "FortranFiles", "Glob", "MeshArrays", "Printf", "Scratch", "SharedArrays", "SparseArrays", "Statistics", "StyledStrings", "UUIDs"]
-git-tree-sha1 = "38eaef144504c69593362406b4425d3d2d1a0c9a"
+git-tree-sha1 = "abce854796b41317d2a33eea8714b27cb658cc14"
 uuid = "dce5fa8e-68ce-4431-a242-9469c69627a0"
-version = "0.5.11"
+version = "0.5.12"
 weakdeps = ["NetCDF"]
 
     [deps.MITgcm.extensions]
@@ -1503,10 +1503,10 @@ uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.1010+0"
 
 [[deps.MeshArrays]]
-deps = ["CatViews", "Dates", "Distributed", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "3ea2dc9aaaa4f4aa8799d568a4fef5abcfd2b7bf"
+deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
+git-tree-sha1 = "bc4820b8c8648fc0d60503562a6acae0aeef312d"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.3.24"
+version = "0.4.0"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
