@@ -94,7 +94,7 @@ end
 
 # ╔═╡ 4a3f3b75-1c75-4ce5-8e75-f4dd263199cd
 let
-	γ=GridSpec(ID=:LLC90())
+	γ=GridSpec(ID=:LLC90)
 	
 	a=fill(2.0,MeshArray(γ))
 	aa=write(a)
