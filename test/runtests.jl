@@ -91,8 +91,9 @@ end
     Γ=GridLoad(ID=:LLC90,option=:full)
     @suppress show(Γ.XC)
 
-    Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
-    Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
+    path=MeshArrays.Dataset("GRID_LLC90")
+    Tx=γ.read(joinpath(path,"TrspX.bin"),MeshArray(γ,Float32))
+    Ty=γ.read(joinpath(path,"TrspY.bin"),MeshArray(γ,Float32))
     plot(Γ.XC)
 
     hFacC=GridLoadVar("hFacC",γ)

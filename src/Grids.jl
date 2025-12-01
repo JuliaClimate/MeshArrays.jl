@@ -1,17 +1,4 @@
 
-GRID_LLC90_hash = artifact_hash("GRID_LLC90", artifact_toml)
-GRID_LLC90 = joinpath(artifact_path(GRID_LLC90_hash)*"/","GRID_LLC90-1.1/")
-GRID_LLC90_download() = artifact"GRID_LLC90"
-GRID_LLC270_hash = artifact_hash("GRID_LLC270", artifact_toml)
-GRID_LLC270 = joinpath(artifact_path(GRID_LLC270_hash)*"/","GRID_LLC270-1.0.0/")
-GRID_LLC270_download() = artifact"GRID_LLC270"
-GRID_LL360_hash = artifact_hash("GRID_LL360", artifact_toml)
-GRID_LL360 = joinpath(artifact_path(GRID_LL360_hash)*"/","GRID_LL360-1.0/")
-GRID_LL360_download() = artifact"GRID_LL360"
-GRID_CS32_hash = artifact_hash("GRID_CS32", artifact_toml)
-GRID_CS32 = joinpath(artifact_path(GRID_CS32_hash)*"/","GRID_CS32-1.1/")
-GRID_CS32_download() = artifact"GRID_CS32"
-
 Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 
 """
@@ -65,9 +52,9 @@ Examples:
 ```jldoctest; output = false
 using MeshArrays
 g = GridSpec()
-g = GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
-g = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
-g = GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+g = GridSpec("PeriodicChannel",MeshArrays.Dataset("GRID_LL360"))
+g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
+g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"))
 isa(g,gcmgrid)
 
 # output
@@ -83,9 +70,9 @@ Examples:
 
 ```jldoctest; output = false
 using MeshArrays
-g = GridSpec("LatLonCap",MeshArrays.GRID_LLC90,np=90)
-g = GridSpec("LatLonCap",MeshArrays.GRID_LLC270,np=270)
-g = GridSpec("CubeSphere",MeshArrays.GRID_CS32,np=32)
+g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"),np=90)
+g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC270"),np=270)
+g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"),np=32)
 isa(g,gcmgrid)
 
 # output
@@ -133,15 +120,15 @@ if ID==:unknown
     gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 elseif ID==:LLC90
     np = 90
-    GridSpec("LatLonCap", MeshArrays.GRID_LLC90, np=np)
+    GridSpec("LatLonCap", MeshArrays.Dataset("GRID_LLC90"), np=np)
 elseif ID==:LLC270
     np = 270
-    GridSpec("LatLonCap", MeshArrays.GRID_LLC270, np=np)
+    GridSpec("LatLonCap", MeshArrays.Dataset("GRID_LLC270"), np=np)
 elseif ID==:CS32
     np = 32
-    GridSpec("CubeSphere", MeshArrays.GRID_CS32, np=np)
+    GridSpec("CubeSphere", MeshArrays.Dataset("GRID_CS32"), np=np)
 elseif ID==:onedegree
-    GridSpec("PeriodicChannel", MeshArrays.GRID_LL360)
+    GridSpec("PeriodicChannel", MeshArrays.Dataset("GRID_LL360"))
 elseif ID==:default
     GridSpec()
 else
@@ -186,11 +173,6 @@ true
 function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
 
     gr = (ID!==:default ? GridSpec(ID=ID) : γ)
-
-    gr.path==GRID_CS32 ? GRID_CS32_download() : nothing
-    gr.path==GRID_LL360 ? GRID_LL360_download() : nothing
-    gr.path==GRID_LLC270 ? GRID_LLC270_download() : nothing
-    gr.path==GRID_LLC90 ? GRID_LLC90_download() : nothing
 
     Γ=Dict()
 
@@ -237,7 +219,7 @@ https://mitgcm.readthedocs.io/en/latest/algorithm/algorithm.html#spatial-discret
 ```jldoctest; output = false
 using MeshArrays
 
-γ = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+γ = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
 XC = GridLoadVar("XC",γ)
 
 isa(XC,MeshArray)
@@ -295,7 +277,7 @@ Define sudomain `tiles` of size `ni,nj`. Each tile is defined by a `Dict` where
 
 ```jldoctest; output = false
 using MeshArrays
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+γ=GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"))
 τ=Tiles(γ,30,30)
 
 isa(τ[1],NamedTuple)
@@ -331,7 +313,7 @@ Return an `Array` of tiles which cover `x` according to tile partition `τ`.
 
 ```jldoctest; output = false
 using MeshArrays
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+γ=GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"))
 d=γ.read(γ.path*"Depth.data",MeshArray(γ,γ.ioPrec))
 τ=Tiles(γ,30,30)
 td=Tiles(τ,d)

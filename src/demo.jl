@@ -4,7 +4,7 @@ module demo
     import MeshArrays
     import MeshArrays: read_JLD2, write_JLD2, Transect, rotate_points, rotate_XCYC
     import MeshArrays: edge_mask, MskToTab, shorter_paths!
-    import MeshArrays: GRID_LLC90, GridSpec, MeshArray
+    import MeshArrays: GridSpec, MeshArray
 
     """
         ocean_sections()
@@ -119,7 +119,7 @@ module demo
     """
     function ocean_basins()        
         γ=GridSpec(ID=:LLC90)
-        fil_basin=joinpath(GRID_LLC90,"v4_basin.bin")
+        fil_basin=joinpath(MeshArrays.Dataset("GRID_LLC90"),"v4_basin.bin")
         basins=(mask=read(fil_basin,MeshArray(γ,Float32)),
             name=["Pacific","Atlantic","indian","Arctic","Bering Sea","South China Sea","Gulf of Mexico",
             "Okhotsk Sea","Hudson Bay","Mediterranean Sea","Java Sea","North Sea","Japan Sea",

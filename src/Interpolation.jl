@@ -56,8 +56,8 @@ knn(xgrid::MeshArray,ygrid::MeshArray,lon::Number,lat::Number) = knn(xgrid::Mesh
 
 ```
 using MeshArrays
-
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+path=MeshArrays.Dataset("GRID_LLC90")
+γ=GridSpec("LatLonCap",path)
 Γ=GridLoad(γ; option="full")
 
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
@@ -86,8 +86,8 @@ end
 
 ```
 using MeshArrays
-
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+path=MeshArrays.Dataset("GRID_LLC90")
+γ=GridSpec("LatLonCap",path)
 Γ=GridLoad(γ; option="full")
 
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
@@ -118,7 +118,8 @@ Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
 
 ```jldoctest; output = false
 using MeshArrays
-γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+path=MeshArrays.Dataset("GRID_CS32")
+γ=GridSpec("CubeSphere",path)
 Γ=GridLoad(γ; option="full")
 lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,lon,lat)

@@ -1,10 +1,11 @@
 
 
 """
-    Dataset(d::String)
+    Dataset(d::String; do_read=true, verbose=false)
 
 - get folder name for dataset `d`. 
 - download dataset if needed.
+- read content if `do_read`
 
 """
 function Dataset(d::String; do_read=true, verbose=false)
@@ -32,13 +33,21 @@ function Dataset(d::String; do_read=true, verbose=false)
         end
     catch
         if d=="GRID_LLC90"
-            MeshArrays.GRID_LLC90                
+            artifact"GRID_LLC90"
+            hash = artifact_hash("GRID_LLC90", artifact_toml)
+            joinpath(artifact_path(hash)*"/","GRID_LLC90-1.1/")
         elseif d=="GRID_CS32"
-            MeshArrays.GRID_CS32
+            artifact"GRID_CS32"
+            hash = artifact_hash("GRID_CS32", artifact_toml)
+            joinpath(artifact_path(hash)*"/","GRID_CS32-1.1/")
         elseif d=="GRID_LLC270"
-            MeshArrays.GRID_LLC270
+            artifact"GRID_LLC270"
+            hash = artifact_hash("GRID_LLC270", artifact_toml)
+            joinpath(artifact_path(hash)*"/","GRID_LLC270-1.0.0/")
         elseif d=="GRID_LL360"
-            MeshArrays.GRID_LL360
+            artifact"GRID_LL360"
+            hash = artifact_hash("GRID_LL360", artifact_toml)
+            joinpath(artifact_path(hash)*"/","GRID_LL360-1.0/")
         else
             d
         end
