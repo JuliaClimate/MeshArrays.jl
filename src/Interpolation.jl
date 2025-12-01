@@ -56,8 +56,8 @@ knn(xgrid::MeshArray,ygrid::MeshArray,lon::Number,lat::Number) = knn(xgrid::Mesh
 
 ```
 using MeshArrays
-
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+path=MeshArrays.Dataset("GRID_LLC90")
+γ=GridSpec("LatLonCap",path)
 Γ=GridLoad(γ; option="full")
 
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
@@ -86,8 +86,8 @@ end
 
 ```
 using MeshArrays
-
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+path=MeshArrays.Dataset("GRID_LLC90")
+γ=GridSpec("LatLonCap",path)
 Γ=GridLoad(γ; option="full")
 
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5]
@@ -118,7 +118,8 @@ Compute interpolation coefficients etc from grid `Γ` to `lon,lat`
 
 ```jldoctest; output = false
 using MeshArrays
-γ=GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+path=MeshArrays.Dataset("GRID_CS32")
+γ=GridSpec("CubeSphere",path)
 Γ=GridLoad(γ; option="full")
 lon=collect(45.:0.1:46.); lat=collect(60.:0.1:61.)
 (f,i,j,w,j_f,j_x,j_y)=InterpolationFactors(Γ,lon,lat)
@@ -230,7 +231,7 @@ fil=joinpath(tempdir(),"interp_coeffs_halfdeg.jld2")
 ```
 """
 function interpolation_setup(fil::String)
-        λ = MeshArrays.read_JLD2(fil)
+        λ = MeshArrays.read_jld2(fil)
         λ = MeshArrays.Dict_to_NamedTuple(λ)
 end
 
@@ -250,12 +251,14 @@ function interpolation_setup(;Γ=NamedTuple(),
         lat=[j for i=-179.:2.0:179., j=-89.:2.0:89.],
         filename=tempname()*"_interp_coeffs.jld2")
 
-        if isempty(Γ)
-                fil=joinpath(MeshArrays.mydatadep("interp_halfdeg"),"interp_coeffs_halfdeg.jld2")
+        fil=if isempty(Γ)
+                MeshArrays.Dataset("interp_halfdeg",do_read=false)
+        elseif isfile(filename)
+                filename
         else
 		(f,i,j,w)=InterpolationFactors(Γ,vec(lon),vec(lat))
-                fil=filename
-		MeshArrays.write_JLD2(fil; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
+		MeshArrays.write_jld2(filename; lon=lon, lat=lat, f=f, i=i, j=j, w=w)
+                filename
         end
         interpolation_setup(fil)
 end

@@ -110,7 +110,8 @@ end
 #  T=Float64
 #  fSize=[(90, 270), (90, 270), (90, 90), (270, 90), (270, 90)]
 #  aSize=(105300, 1)
-#  grid=gcmgrid(MeshArrays.GRID_LLC90, "LatLonCap", 5, fSize, [90 1170], T, read, write)
+#  path=MeshArrays.Dataset("GRID_LLC90")
+#  grid=gcmgrid(path, "LatLonCap", 5, fSize, [90 1170], T, read, write)
 #
 #  gcmfaces(grid,T,fSize,aSize)
 #end

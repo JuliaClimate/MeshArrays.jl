@@ -6,11 +6,12 @@ using LazyArtifacts
 p=dirname(pathof(MeshArrays))
 artifact_toml = joinpath(p, "../Artifacts.toml")
 
-function read_polygons end
+import GeoInterface as GI
+
 function read_shp end
 function read_json end
-function read_JLD2 end
-function write_JLD2 end
+function read_jld2 end
+function write_jld2 end
 function ProjAxis end
 function grid_lines! end
 
@@ -27,6 +28,7 @@ include("VerticalDimension.jl")
 include("Grids_simple.jl")
 include("demo.jl")
 include("Integration.jl")
+include("Datasets.jl")
 
 export AbstractMeshArray, MeshArray, MeshArray_wh
 export gcmgrid, varmeta, gridpath, gridmask

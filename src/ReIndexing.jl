@@ -41,8 +41,9 @@ Update location (x,y,fIndex) when out of domain for cube sphere (cs) grid
 as implemented by `MeshArrays.jl` (and MITgcm)
 
 ```jldoctest; output = false
-using MeshArrays 
-γ = GridSpec("CubeSphere",MeshArrays.GRID_CS32)
+using MeshArrays
+path=MeshArrays.Dataset("GRID_CS32")
+γ = GridSpec("CubeSphere",path)
 Γ = GridLoad(γ)
 Γ = merge(Γ,MeshArrays.NeighborTileIndices_cs(Γ))
 
@@ -110,8 +111,9 @@ Update location (x,y,fIndex) when out of domain. Note: initially, this
 only works for the `dpdo` grid type provided by `MeshArrays.jl`.
 
 ```jldoctest; output = false
-using MeshArrays 
-γ = GridSpec("PeriodicChannel",MeshArrays.GRID_LL360)
+using MeshArrays
+path=MeshArrays.Dataset("GRID_LL360")
+γ = GridSpec("PeriodicChannel",path)
 Γ = GridLoad(γ)
 u=[-1.0;20.0;1.0]
 MeshArrays.update_location_dpdo!(u,γ)==[359.0;20.0;1.0]
@@ -164,8 +166,9 @@ Derive list of neighboring tile indices for a cs or llc grid + functions that
 convert indices from one tile to another. Returns a Dict to merge later.
 
 ```jldoctest; output = false
-using MeshArrays 
-γ=GridSpec("LatLonCap",MeshArrays.GRID_LLC90)
+using MeshArrays
+path=MeshArrays.Dataset("GRID_LLC90")
+γ=GridSpec("LatLonCap",path)
 Γ=GridLoad(γ)
 Γ=merge(Γ,MeshArrays.NeighborTileIndices_cs(Γ))
 

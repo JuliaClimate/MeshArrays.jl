@@ -1,12 +1,13 @@
 name = "MeshArrays"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
+version = "0.4.0"
 authors = ["gaelforget <gforget@mit.edu>"]
-version = "0.3.24"
 
 [deps]
 CatViews = "81a5f4ea-a946-549a-aa7e-2a7f63a27d31"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
 LazyArtifacts = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
@@ -36,6 +37,7 @@ MeshArraysShapefileExt = ["Shapefile"]
 [compat]
 CatViews = "1.0"
 DataDeps = "0.7"
+GeoInterface = "1.4, 1.5, 1.6"
 GeoJSON = "0.6, 0.7, 0.8"
 Glob = "1"
 JLD2 = "0.4, 0.5, 0.6"

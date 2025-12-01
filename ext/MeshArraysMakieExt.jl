@@ -3,8 +3,8 @@ module MeshArraysMakieExt
 
 using MeshArrays, Makie
 
+import MeshArrays: GI
 import MeshArrays: land_mask
-import MeshArrays: read_polygons
 import MeshArrays: plot_examples
 import MeshArrays: ProjAxis
 import MeshArrays: grid_lines!
@@ -435,36 +435,16 @@ function smoothing_demo(Rini_a,Rend_a)
 	fig
 end
 
-##
+
+## convert polygon data to use with Makie
 
 """
-	read_polygons(file="countries.geojson")
+	pol_to_Makie(tmp2::Vector)
 
-Call `json_to_Makie` or `shp_to_Makie` depending on file extension.
-
+Convert output of `read_json` or `read_shp`` to a vector of `LineString`.
 """
-function read_polygons(file::String)
-	if !isfile(file)
-		error("file not found ($file)")
-	elseif occursin(".geojson",file)&&file[end-7:end]==".geojson"
-		json_to_Makie(file)
-	elseif occursin(".shp",file)&&file[end-3:end]==".shp"
-		shp_to_Makie(file)
-	else
-		error("unknown file extension ($file)")
-	end
-end
-
-## read data from file
-
-"""
-	json_to_Makie(file="countries.geojson")
-
-Call `GeoJSON.read` then `geo2basic`. Return a vector of `LineString`.
-"""
-function json_to_Makie(file="countries.geojson")
-	tmp2=MeshArrays.read_json(file)
-
+function pol_to_Makie(pol::Vector)
+	tmp2=[GI.coordinates(a.geometry) for a in pol]
 	tmp22=Vector{Point2{Float64}}[]
 	for l1 in tmp2
 		if isa(l1[1][1][1],Number)
@@ -480,20 +460,6 @@ function json_to_Makie(file="countries.geojson")
 end
 
 tuple2vec(x)=[y for y in x]
-
-"""
-	shp_to_Makie(file="countries.geojson")
-
-Done via `Shapefile.shapes` then `geo2basic`. Return a vector of `LineString`.
-"""
-function shp_to_Makie(file="ne_110m_admin_0_countries.shp")
-	tmp2=MeshArrays.read_shp(file)
-
-	tmp22=Vector{Point2{Float64}}[]
-	[[[push!(tmp22,geo2basic(l3)) for l3 in l2] for l2 in l1] for l1 in tmp2]
-	
-	LineString.(tmp22)
-end
 
 ## convert to GeometryBasics
 
@@ -549,22 +515,20 @@ end
 
 """
 ```
-using MeshArrays, CairoMakie, Proj
+import MeshArrays, DataDeps, Shapefile
+pol=MeshArrays.Dataset("countries_shp1")
 
-using DataDeps, Shapefile
-pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-pol=MeshArrays.read_polygons(pol_file)
-
+import CairoMakie, Proj
 lon0=-160
 proj=Proj.Transformation(MA_preset=2,lon0=lon0)
-plot_examples(:baseproj,proj,lon0,pol=pol)
+MeshArrays.plot_examples(:baseproj,proj,lon0,pol=pol)
 ```
 """
 function baseproj(proj,lon0; pol=[])
 	fi0=Figure(size=(900,600),fontsize=24)
 	ax0=Axis(fi0[1,1],backgroundcolor = :gray20)
 	pr_ax=ProjAxis(ax0; proj=proj,lon0=lon0)
-	lines!(pr_ax,polygons=pol;color=:white, linewidth = 0.5)
+	lines!(pr_ax,polygons=pol_to_Makie(pol);color=:white, linewidth = 0.5)
 	grid_lines!(pr_ax;color=:yellow,linewidth=0.5)
 	fi0
 end
@@ -656,7 +620,7 @@ function ProjAxis(ax;proj=(x->x),lon0=0.0,omit_grid_lines=true,polygons=Any[])
     hidedecorations!.(ax)
 	pr_ax=PrAxis(ax,proj,lon0)
 	!omit_grid_lines ? grid_lines!(pr_ax,color=:black,linewidth=0.5) : nothing
-	!isempty(polygons) ? lines!(pr_ax; polygons=polygons,color=:black,linewidth=0.5) : nothing
+	!isempty(polygons) ? lines!(pr_ax; polygons=pol_to_Makie(polygons),color=:black,linewidth=0.5) : nothing
 	
 	pr_ax
 end

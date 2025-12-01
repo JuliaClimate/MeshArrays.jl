@@ -1,10 +1,13 @@
 using Test, Documenter, Suppressor, MeshArrays, CairoMakie
 import DataDeps, JLD2, Shapefile, GeoJSON, Proj
 
-MeshArrays.GRID_LL360_download()
-MeshArrays.GRID_LLC90_download()
-MeshArrays.GRID_LLC270_download()
-MeshArrays.GRID_CS32_download()
+MeshArrays.Dataset("GRID_LL360")
+MeshArrays.Dataset("GRID_LLC90")
+MeshArrays.Dataset("GRID_LLC270")
+MeshArrays.Dataset("GRID_CS32")
+
+pol_shp=MeshArrays.Dataset("countries_shp1")
+pol_json=MeshArrays.Dataset("countries_geojson1")
 
 p=dirname(pathof(MeshArrays))
 include(joinpath(p,"../examples/Demos.jl"))
@@ -88,8 +91,9 @@ end
     Γ=GridLoad(ID=:LLC90,option=:full)
     @suppress show(Γ.XC)
 
-    Tx=γ.read(MeshArrays.GRID_LLC90*"TrspX.bin",MeshArray(γ,Float32))
-    Ty=γ.read(MeshArrays.GRID_LLC90*"TrspY.bin",MeshArray(γ,Float32))
+    path=MeshArrays.Dataset("GRID_LLC90")
+    Tx=γ.read(joinpath(path,"TrspX.bin"),MeshArray(γ,Float32))
+    Ty=γ.read(joinpath(path,"TrspY.bin"),MeshArray(γ,Float32))
     plot(Γ.XC)
 
     hFacC=GridLoadVar("hFacC",γ)
@@ -296,10 +300,9 @@ end
 
     ###
 
-    fil=demo.download_polygons("countries.geojson")
-    pol=MeshArrays.read_polygons(fil)
 
     MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
+    pol=MeshArraysMakieExt.pol_to_Makie(pol_shp)
     dest="+proj=eqearth +lon_0=$(lon0) +lat_1=0.0 +x_0=0.0 +y_0=0.0 +ellps=GRS80"
     MeshArraysMakieExt.split(pol,dest)
     MeshArraysMakieExt.split(pol,Observable(dest))
@@ -308,20 +311,17 @@ end
 
     ###
 
-    fil=demo.download_polygons("ne_110m_admin_0_countries.shp")
-    pol=MeshArrays.read_polygons(fil)
-
     f = Figure()
     ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = "Ocean Depth (m)")
 	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=lon0)
 	surf = surface!(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Dint, 
 			colorrange=(0.0,6000.0), colormap=:berlin, shading = NoShading)
-	lines!(pr_ax; polygons=pol,color=:black,linewidth=0.5)
+	lines!(pr_ax; polygons=pol_shp,color=:black,linewidth=0.5)
 	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
 	f
 
 	meta=(colorrange=(0.0,6000.0),cmap=:BrBG_10,ttl="Ocean Depth (m)",lon0=lon0)
-	data=(lon=λ.lon,lat=λ.lat,var=Dint,meta=meta) #,polygons=pol)
+	data=(lon=λ.lon,lat=λ.lat,var=Dint,meta=meta) #,polygons=pol_shp)
     plot_examples(:projmap,data,lon0,proj)
     plot_examples(:simple_heatmap,data)
 
@@ -344,12 +344,9 @@ end
     lon,lat,earth_img=demo.get_basemap()
     plot_examples(:basemap,lon,lat,earth_img)
 
-    pol_file=demo.download_polygons("ne_110m_admin_0_countries.shp")
-    pol=MeshArrays.read_polygons(pol_file)
-
     lon0=-160
     proj=Proj.Transformation(MA_preset=2,lon0=lon0)
-    plot_examples(:baseproj,proj,lon0,pol=pol)
+    plot_examples(:baseproj,proj,lon0,pol=pol_shp)
 end
 
 @testset "doctests" begin
