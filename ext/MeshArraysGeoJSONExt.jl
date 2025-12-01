@@ -13,13 +13,13 @@ module MeshArraysGeoJSONExt
     """
         read_json(fil; native=false)
 
-    - (default) call `GeoJSON.read` then convert to `GI.coordinates`.
-    - if `native` then skip conversion, just call `GeoJSON.read`.
+    - call `GeoJSON.read`
+    - format 1 : return FeatureCollection (vector of name,geom pairs)
+    - format 2 : convert to `GI.coordinates`.
 
     ```
     import MeshArrays, DataDeps, GeoJSON
-    pol=MeshArrays.Dataset("oceans_geojson1",do_read=false)
-    pol=MeshArrays.read_json(pol,native=true)
+    pol=MeshArrays.Dataset("oceans_geojson1")
 
     ii=11
     nam=pol[ii].name
@@ -33,14 +33,16 @@ module MeshArraysGeoJSONExt
     np_in=sum(rule_pol.(lo,la)); [np_in np-np_in nam]
     ```
     """
-    function read_json(fil; native=false)
-        if native
+    function read_json(fil; format=1)
+        if format==1
             GeoJSON.read(fil)
-        else
+        elseif format==2
             jsonbytes = read(fil)
             geoms = GeoJSON.read(jsonbytes)
             #GeoJSON.GI.coordinates(geoms)
             [GeoJSON.GI.coordinates(a) for a in geoms]
+        else
+            error("unknown format")
         end
     end
 

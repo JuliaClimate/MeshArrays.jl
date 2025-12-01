@@ -3,8 +3,8 @@ module MeshArraysMakieExt
 
 using MeshArrays, Makie
 
+import MeshArrays: GI
 import MeshArrays: land_mask
-import MeshArrays: read_polygons
 import MeshArrays: plot_examples
 import MeshArrays: ProjAxis
 import MeshArrays: grid_lines!
@@ -435,47 +435,16 @@ function smoothing_demo(Rini_a,Rend_a)
 	fig
 end
 
-##
 
-"""
-	read_polygons(file="countries.geojson")
-
-Call `json_to_Makie` or `shp_to_Makie` depending on file extension.
-
-"""
-function read_polygons(file::String)
-	@warn "deprecating read_polygons ..."
-	if !isfile(file)
-		error("file not found ($file)")
-	elseif occursin(".geojson",file)&&file[end-7:end]==".geojson"
-		json_to_Makie(file)
-	elseif occursin(".shp",file)&&file[end-3:end]==".shp"
-		shp_to_Makie(file)
-	else
-		error("unknown file extension ($file)")
-	end
-end
-
-## read data from file
-
-"""
-	json_to_Makie(file="countries.geojson")
-
-- Read file via `read_json`.
-- Call `pol_to_Makie`.
-- Return a vector of `LineString`.
-"""
-function json_to_Makie(file::String)
-	tmp2=MeshArrays.read_json(file)
-	pol_to_Makie(tmp2)
-end
+## convert polygon data to use with Makie
 
 """
 	pol_to_Makie(tmp2::Vector)
 
 Convert output of `read_json` or `read_shp`` to a vector of `LineString`.
 """
-function pol_to_Makie(tmp2::Vector)
+function pol_to_Makie(pol::Vector)
+	tmp2=[GI.coordinates(a.geometry) for a in pol]
 	tmp22=Vector{Point2{Float64}}[]
 	for l1 in tmp2
 		if isa(l1[1][1][1],Number)
@@ -491,32 +460,6 @@ function pol_to_Makie(tmp2::Vector)
 end
 
 tuple2vec(x)=[y for y in x]
-
-"""
-	shp_to_Makie(file="countries.geojson")
-
-- Read file via `read_shp`.
-- Call `shp_to_Makie`.
-- Return a vector of `LineString`.
-"""
-function shp_to_Makie(file::String)
-	tmp2=MeshArrays.read_shp(file)
-	pol_to_Makie(tmp2)
-end
-
-"""
-	old_shp_to_Makie(tmp2::Vector)
-
-Convert output of `read_shp` to a vector of `LineString`.
-"""
-function old_shp_to_Makie(tmp2::Vector)
-	@warn "deprecating old_shp_to_Makie ..."
-
-	tmp22=Vector{Point2{Float64}}[]
-	[[[push!(tmp22,geo2basic(l3)) for l3 in l2] for l2 in l1] for l1 in tmp2]
-	
-	LineString.(tmp22)
-end
 
 ## convert to GeometryBasics
 

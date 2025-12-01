@@ -61,5 +61,21 @@ function mydatafile(nam="countries_shp1")
     end
 end
 
+"""
+	read_polygons(file="countries.geojson")
 
+Call `read_json` or `read_shp` depending on file extension.
+
+"""
+function read_polygons(file::String)
+	if !isfile(file)
+		error("file not found ($file)")
+	elseif occursin(".geojson",file)&&file[end-7:end]==".geojson"
+		read_json(file)
+	elseif occursin(".shp",file)&&file[end-3:end]==".shp"
+		read_shp(file)
+	else
+		error("unknown file extension ($file)")
+	end
+end
 
