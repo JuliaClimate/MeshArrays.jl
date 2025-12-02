@@ -39,6 +39,10 @@ function plot_examples(ID=Symbol,stuff...;kwargs...)
 		basemap(stuff...)
 	elseif ID==:baseproj
 		baseproj(stuff...;kwargs...)
+	elseif ID==:polygons_plot_dev1
+		polygons_plot_dev1(stuff...;kwargs...)
+	elseif ID==:polygons_plot
+		polygons_plot(stuff...;kwargs...)
 	else
 		println("unknown plot ID")
 	end
@@ -740,6 +744,73 @@ function plot!(x::gridpath; kwargs...)
 		lat[p]=x.grid.YC[f][i,j]
 	end
 	scatter!(lon,lat; kwargs...)
+end
+
+##
+
+function polygons_plot_dev1_basis(sphere_view)
+	f=Figure(size=(600,400))
+	if sphere_view
+		scene = LScene(f[1, 1])
+		cam = Makie.Camera3D(scene.scene, projectiontype = Makie.Perspective)
+		sphere = Sphere(Point3f(0), 0.99f0)
+		mesh!(scene,sphere, color = :black)
+		zoom!(scene.scene,cam,2.0)
+		a=scene
+	else
+		a=Axis(f[1,1])
+	end	
+	f,a
+end
+
+cols=[:blue :green :orange :black :red :violet]
+
+
+"""
+    polygons_plot_dev1(pols,pols3D, facets=1:6; 
+		colors=cols, sphere_view=true)
+
+```
+polygons_plot_dev1(pols,pols3D,1:2)
+```
+"""
+function polygons_plot_dev1(pols,pols3D; facets=1:6, colors=cols, sphere_view=true)
+	f,a=polygons_plot_dev1_basis(sphere_view)
+	if sphere_view
+		xyz=vcat([p[:] for p in pols3D[facets]]...)
+		col=vcat([fill(c,32*32) for c in facets]...)
+#		lin=vcat([fill(0.5,32*32) for c in facets]...)
+		plot!(a,xyz,color=col)
+	else
+		xyz=vcat([p[:] for p in pols[facets]]...)
+#		col=vcat([fill(c,32*32) for c in facets]...)
+#		lin=vcat([fill(0.5,32*32) for c in facets]...)
+		lines!(a,xyz)
+	end
+	f
+end
+
+"""
+    polygons_plot(pols; color=:black, outer_edge=false)
+
+```
+polygons_plot(pols,color=Depth,outer_edge=true)
+polygons_plot(pols,color=Depth)
+polygons_plot(pols)
+```
+"""
+function polygons_plot(pols; color=:black, outer_edge=false)
+	pols_Makie=vcat([[Point2.(GI.coordinates(q)[1]) for q in p][:] for p in pols]...)
+	if isa(color,MeshArray)
+		cols_Makie=vcat([D[:] for D in color]...)
+	else
+		cols_Makie=color
+	end
+	if (!outer_edge)&&isa(color,MeshArray)
+		poly(pols_Makie, color = cols_Makie)
+	else
+		poly(pols_Makie,color=:white,strokecolor=cols_Makie,strokewidth=2)
+	end
 end
 
 end # module
