@@ -2,7 +2,7 @@ using Test, Documenter, Suppressor, MeshArrays, CairoMakie
 import DataDeps, JLD2, Shapefile, GeoJSON, Proj, GeometryOps
 import MITgcm
 import MeshArrays: GI
-    
+
 MeshArrays.Dataset("GRID_LL360")
 MeshArrays.Dataset("GRID_LLC90")
 MeshArrays.Dataset("GRID_LLC270")
@@ -368,8 +368,7 @@ end
     fig=MeshArrays.plot_examples(:polygons_plot,pols,color=Depth)
     MeshArrays.plot_examples(:polygons_plot_dev1,pols,pols3D,sphere_view=true)
     MeshArrays.plot_examples(:polygons_plot_dev1,pols,pols3D,sphere_view=false)
-
-    @test isa(fig,Figure)
+    @test isa(fig,Makie.FigureAxisPlot)
 end
 
 @testset "doctests" begin
