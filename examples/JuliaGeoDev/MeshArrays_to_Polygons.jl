@@ -18,10 +18,8 @@ end
 
 # ╔═╡ 540641e2-14e7-47da-9f8e-ac37cd499886
 begin
-	using MeshArrays, MITgcm, Glob
-	using CairoMakie
-	using PlutoUI
-	import GeoInterface as GI
+	using MeshArrays, MITgcm, CairoMakie, PlutoUI
+	import MeshArrays: GI
 	import GeometryOps as GO
 	md"""### Julia packages"""
 end
@@ -35,141 +33,23 @@ md"""# Polygons, 3D LineStrings, and Visualization
 In this example we focus on the cube sphere grid at coarse resolution (`cs32`).
 """
 
-# ╔═╡ 3e5aac32-c82a-45e2-8d7b-05cf96a4ce3c
-begin
-	ui_do_sphere = @bind do_sphere CheckBox(default=true)
-	md"""Show on the sphere? (or 2D plane view)
-
-	$(ui_do_sphere)
-	"""
-end
-
-# ╔═╡ 7bace9d8-4e9e-451d-aef4-5093c62b08e7
-md"""## Main Calculations"""
-
-# ╔═╡ 53b62449-7006-4f2a-a337-0b0e45d82f5e
-function to_sphere(XC,YC)
-	x=sin.(pi/2 .-YC*pi/180).*cos.(XC*pi/180);
-	y=sin.(pi/2 .-YC*pi/180).*sin.(XC*pi/180);
-	z=cos.(pi/2 .-YC*pi/180);
-	(x,y,z)
-end
-
-# ╔═╡ 65dcb624-7f27-4247-bc73-446bf069a67a
-function treat_180lon!(x::Matrix{Float64})
-	if (maximum(x)-minimum(x))>180
-		x[x.>0].=x[x.>0].-360
-	end
-end
-
-# ╔═╡ 7d0afd5e-fa88-4f40-a1f0-1a2a944341cd
-function to_LineStrings3D(pol)
-	arr2=Array{Any}(undef,32,32)
-	b0=Array{Any}(undef,5)
-	for ij in eachindex(pol)
-		geom=GI.getgeom(pol[ij])
-		a=GI.getpoint.(geom)
-		b=GI.coordinates.(geom)
-		b1=GI.coordinates.(a[1])
-		for p in 1:5
-#			b0[p,:].=to_sphere(GI.coordinates(a[1][p])...)
-			b0[p]=GI.Point(to_sphere(GI.coordinates(a[1][p])...))
-		end
-#		arr2[ij]=deepcopy(b0)
-		arr2[ij]=deepcopy(GI.LineString(b0))
-	end
-	arr2
-end
-
-# ╔═╡ a248a2b1-ed63-48a0-922c-b00a3dbfc294
-function to_Polygons(XG,YG,ff=1)
-	arr2=Array{Any}(undef,32,32)
-	IJ=1:32
-	for i in IJ
-		for j in IJ
-			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]]
-			treat_180lon!(x)
-			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  
-			arr2[i,j]=GI.Polygon([ GI.LinearRing(GI.Point.(zip(vec(x),vec(y)))) ])
-#			arr2[i,j]=GI.LineString(GI.Point.(zip(vec(x),vec(y))))
-		end
-	end
-	arr2
-end
-
-# ╔═╡ 87bb371f-c08e-4a31-b7bf-56b58fe9cbda
-function to_LineStrings2D(XG,YG,ff=1;do_sphere=true)
-	arr2=Array{Any}(undef,32,32)
-	IJ=1:32
-	for i in IJ
-		for j in IJ
-			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]] 
-			treat_180lon!(x)
-			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  
-			arr2[i,j]=GI.LineString(GI.Point.(zip(vec(x),vec(y))))
-		end
-	end
-	arr2
-end
-
 # ╔═╡ 915a5f42-9a31-4837-a891-d22f8825930b
-md"""## Read Grid Definition (MITgcm input)
-
-- should have a data structure for these
-- for now just use an array of arrays
-- in the plots : 
-   - `YG` is latitude
-   - `XG` is longitude
-"""
+md"""## Read Grid and Compute Polygons"""
 
 # ╔═╡ 3c2f45b3-b3c3-4704-ba0e-c1ada7c48c13
 begin
 	path_MITgcm=MITgcm.getdata("mitgcmsmallverif")
 	path_grid=joinpath(path_MITgcm,"MITgcm","verification","tutorial_held_suarez_cs","input")
-	files_grid=glob("grid_cs32.face00?.bin",path_grid)
-end
-
-# ╔═╡ 8f3ffcf6-9aa8-4882-b055-583ff2bd82f4
-begin
-	list_fields=["XC","YC","DXF","DYF","RAC","XG","YG","DXV","DYU","RAZ",
-		"DXC","DYC","RAW","RAS","DXG","DYG","AngleCS","AngleSN"]
-
-#	ni=32; nj=32
-#	list_ni=[ni,ni,ni,ni,ni,ni+1,ni+1,ni+1,ni+1,ni+1,ni+1,ni,ni+1,ni,ni,ni+1]
-#	list_nj=[nj,nj,nj,nj,nj,nj+1,nj+1,nj+1,nj+1,nj+1,nj,nj+1,nj,nj+1,nj+1,nj]
-#	sum(list_ni.*list_nj)
 	
-	function read_native_grid(ff=1,va="XG")
-	  fil=files_grid[ff]
-	  fid = open(fil)
-      (n1,n2,n3)=(33,33,18)
-	  xx = Array{Float64,1}(undef,n1*n2*n3)
-	  read!(fid,xx)
-	  xx = reshape(hton.(xx),(n1,n2,n3))
-	  close(fid)
-      vv=findall(list_fields.==va)[1]
-      xx[:,:,vv]
-	end
-
-	#156816/(33*33)/8
-	#length(list_fields)
-
-	native_grid = begin
-		XG=Array{Any}(undef,6)
-		YG=Array{Any}(undef,6)
-		for ff=1:6
-			XG[ff]=read_native_grid(ff,"XG")
-			YG[ff]=read_native_grid(ff,"YG")
-		end
-		(XG=XG,YG=YG)
-	end
+    pols,pols3D=MeshArrays.Polygons.polygons_demo(path_grid)
+    Depth=GridLoadVar("Depth",GridSpec(ID=:CS32))
 end
 
-# ╔═╡ 17dd67f4-0c98-408a-9cf9-b02e9a00b5a3
-pols=[to_Polygons(XG,YG,ff) for ff in 1:6];
+# ╔═╡ 1b5b7cdc-9528-4afc-b282-2828da34ae2f
+MeshArrays.plot_examples(:polygons_plot_dev1,pols,pols3D,sphere_view=false)
 
-# ╔═╡ 2fd20020-8b29-4262-92f3-aabf9bc609fa
-pols3D=[to_LineStrings3D(p) for p in pols];
+# ╔═╡ fd3dc375-7df1-4fdc-afe4-00233bf1d1e0
+MeshArrays.plot_examples(:polygons_plot,pols,color=Depth)
 
 # ╔═╡ f112ecfa-8a66-4ae1-aac3-7b354bb5863f
 let
@@ -180,11 +60,8 @@ let
 	fi
 end
 
-# ╔═╡ 064001b0-286c-44c3-9b9f-95e7d76449d4
-pols[1]
-
 # ╔═╡ 523311f3-8d0a-4b57-b376-da945c4f20a7
-md"""## Read MITgcm Output for this Grid"""
+md"""## Read MITgcm Grid Output"""
 
 # ╔═╡ 4208e083-2971-4b1c-bc72-5df1caaf3d36
 begin
@@ -198,43 +75,6 @@ md"""# Appendix"""
 # ╔═╡ 3549d2f2-ab0f-44a0-a0dd-b9aa64354f31
 md"""### Plotting Functions"""
 
-# ╔═╡ 6a354d1f-eba1-40f6-bdfc-1ecd8d96a0ef
-function fig2_basis(do_sphere)
-	f=Figure()
-	if do_sphere
-		scene = LScene(f[1, 1])
-		cam = Makie.Camera3D(scene.scene, projectiontype = Makie.Perspective)
-		sphere = Sphere(Point3f(0), 0.99f0)
-		mesh!(scene,sphere, color = :white)
-		zoom!(scene.scene,cam,2.0)
-		a=scene
-	else
-		a=Axis(f[1,1])
-	end	
-	f,a
-end
-
-# ╔═╡ 798f41ed-cd77-4890-9148-be278df52ba4
-function fig2(facets=1:6,cc=[:blue :green :orange :black :red :violet];
-	do_sphere=true)
-	f,a=fig2_basis(do_sphere)
-	for ff in facets
-		#here in 3D can we do LineRings or generalized Polygons?
-		if do_sphere
-#			xyz=to_sphere.(vec(Γ.XC[ff]),vec(Γ.YC[ff]))
-#			scatter!(a,xyz,markersize=2,color=cc[ff])
-			[plot!(a,pols3D[ff][i,j],color=cc[ff],linewidth=0.5) for i in 1:32, j in 1:32]
-		else
-			#arr=to_LineStrings2D(ff,do_sphere=false)
-			[lines!(a,pols[ff][i,j],color=cc[ff],linewidth=0.5) for i in 1:32, j in 1:32]
-		end
-	end
-	f
-end
-
-# ╔═╡ 1b5b7cdc-9528-4afc-b282-2828da34ae2f
-f2=fig2(1:3,do_sphere=do_sphere)
-
 # ╔═╡ 1effaab8-8237-4236-ad75-755795f898fc
 function fig1(grid::NamedTuple,va=:XG,na="latitude",cr=(-90,90),cm=:thermal)
 	f=Figure()
@@ -247,12 +87,6 @@ function fig1(grid::NamedTuple,va=:XG,na="latitude",cr=(-90,90),cm=:thermal)
 	f
 end
 
-# ╔═╡ a5fcb7cb-a86c-4f19-a3b9-1e280ce6159b
-fig1(native_grid,:YG)
-
-# ╔═╡ ac64b4cf-a6b5-4dad-a90c-bf1f483690e5
-fig1(native_grid,:XG,"longitude",(-180,180))
-
 # ╔═╡ 98496427-b774-4d9b-b386-ffe5ea775d37
 function fig0()
 	f=Figure()
@@ -263,23 +97,32 @@ function fig0()
 	for f in 1:6
 		XC=Γ.XC[f][:]
 		YC=Γ.YC[f][:]
-		scatter!(to_sphere(XC,YC)...,markersize=5.0,color=cc[f])
+		scatter!(MeshArrays.Polygons.to_sphere(XC,YC)...,markersize=5.0,color=cc[f])
 	end
 	f
 end
 
+# ╔═╡ ac64b4cf-a6b5-4dad-a90c-bf1f483690e5
+[fig1(Γ,:YC,"latitude",(-90,90)) ; fig1(Γ,:XC,"longitude",(-180,180));fig0()]
+
 # ╔═╡ fc2e3116-8a7e-405d-ad6d-bdf5d4ae45c9
-md"""### Incomplete Solution
+md"""## Development Notes
+
+- what would be a nice data structure for these?
+  - for now just use an array of arrays ...
+- can we circumvent need for MITgcm grid input?
+  - this is done because we are missing four points in MITgcm grid output
+  - could e.g. extrapolate in 3D then clip to radius=1
+
+### Incomplete Solution Below
 
 - not really useful 
 - using grid output does not really work for this
 - incl due missing corner data points in CS grid output
 - even if vorticity point was available (as in gcmfaces)
 - need to use the input to MITgcm instead (33x33 v 32x32)
-"""
 
-# ╔═╡ f4d0e938-e544-4add-be50-7942df72a3b8
-incomplete_solution="""
+```
 	arr=get_LineString()
 	arr=Array{Any}(undef,32,32)
 	for i in 2:33
@@ -295,6 +138,7 @@ incomplete_solution="""
 		arr[i-1,j-1]=GI.LineString(GI.Point.(zip(vec(x),vec(y))))
 	end
 	end
+```
 """
 
 # ╔═╡ 5f5e6be3-a7ad-4772-a52c-acb765106593
@@ -304,15 +148,21 @@ begin
 	XGe=exchange(Γ.XG)
 	YGe=exchange(Γ.YG)
 	all_points=(XCe,YCe,XGe,YGe)
-	md"Exchange function calls for incomplete solution"
+	md"""### Exchange function calls for incomplete solution
+	
+	_see this inside code cell_
+	"""
 end
 
 # ╔═╡ a4418a2e-831b-416f-8348-e282b08cfa2d
-md"""### Basic Tests
+md"""### Basic Tests with GO, GI
 
-- `LinearRing` does not seem to work in 3D (`do_two_D=false`)
-- `LineString` works in 3D. 
-- `(x,y,z)` is wrapped in a couple levels of types. 
+Let's construct a simple polygon from scratch, and test things out.
+
+- simple test with `GI.LinearRing`, `GI.Polygon`, or just `GI.LineString` in 2D and 3D.
+- `plotting` of `GI` objects does not seem to work in 3D. Should try with `Makie.Polygon`.
+- to retrieve `(x,y,z)` use `GI.coordinates`.
+- `GO` can be used to calculated intersections etc.
 """
 
 # ╔═╡ 5365dc71-0ddc-4d40-8f38-7c494b3305d9
@@ -322,88 +172,52 @@ begin
 end
 
 # ╔═╡ b494d021-3727-4736-8031-9587d0d542a2
-let #Let's try constructing from scratch again
+let
 	a=( (0.5773502691896258,-0.5773502691896257,-0.5773502691896257),
 		(0.5837494212853372,-0.5643343213894291,-0.5837494212853374),
 		(0.5977118906557506,-0.566895270649142,-0.566895270649142),
 		(0.5837494212853375,-0.5837494212853372,-0.5643343213894292),
 		(0.5773502691896258,-0.5773502691896257,-0.5773502691896257),
 		)
-	#do_two_D=false
 	if do_two_D
 		aa=[b[1:2] for b in a]
 		bb=GI.LinearRing(aa)
-		#	GI.polygon([bb])
-		#	GI.LinearRing(a)
-		#	aa,GI.getpoint(bb)
-		cc=GI.Polygon([bb])
-		plot(cc,color=:cyan)
-		lines!(aa,color=:red)
-		current_figure()
+		cc=GI.Polygon(bb)
+
+		f,a,_=plot(cc,color=:cyan); lines!(aa,color=:red); f
 	else
-		bb=GI.LinearRing(a)
+		aa=[b[1:3] for b in a]
+		bb=GI.LinearRing(aa)
+		cc=GI.Polygon(bb)
+		dd=GI.LineString(aa)
+		lines(aa)
+#		plot(cc)
 	end
 end	
 
-# ╔═╡ e4d61551-c0e7-4a61-b38e-774897862fed
-typeof(to_LineStrings2D(XG,YG,1)[1,1])
-
-# ╔═╡ 50272674-6935-4239-89bf-29997341148b
-b=let #Let's dig into a LineString
-	arr=to_LineStrings2D(XG,YG,1)
-#	polygon1 = GI.Polygon([arr]);
-	typeof(arr[1,1])
-	GI.getgeom(arr[1,1])
-	a=GI.getpoint(arr[1,1])
-	###GI.LinearRing(a)
-	b=a[1]
-	c=b.geom[1:end]
-	(a,b,c)
-end
-
+# ╔═╡ b37855e2-b3f2-4d49-a17b-8a133a31a7fd
+GI.coordinates(pols[1][1,1])[1]
 
 # ╔═╡ 63c58499-c353-4124-9270-6c22b0e6bcd7
 let
-	#[GO.area(pol0) GO.area(pol1)]
-	#GO.intersection(pol0, pol1)
-	#typeof(pol1)
 	line1 = GI.Line([(124.584961,-12.768946), (126.738281,-17.224758)])
 	line2 = GI.Line([(123.354492,-15.961329), (127.22168,-14.008696)])
 	inter_points = GO.intersection(line1, line2; target = GI.PointTrait())
 	GI.coordinates.(inter_points)
 end
 
-# ╔═╡ 9405eb97-1130-427d-a9f4-e45efea361b2
-let
-	#GI.getgeom.
-	geom=GI.getgeom(pols[1][1,1])
-#	ext = exterior(geom)
-	a=GI.getpoint.(geom)
-	b=GI.coordinates.(geom)
-	b1=GI.coordinates.(a[1])
-	b0=zeros(5,2)
-	for p in 1:5
-		b0[p,:].=GI.coordinates(a[1][p])
-	end
-	b0
-end
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
 GeometryOps = "3251bfac-6a57-4b6d-aa61-ac1fef2975ab"
-Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
 MITgcm = "dce5fa8e-68ce-4431-a242-9469c69627a0"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.15.7"
-GeoInterface = "~1.6.0"
 GeometryOps = "~0.1.31"
-Glob = "~1.3.1"
 MITgcm = "~0.5.12"
 MeshArrays = "~0.4.0"
 PlutoUI = "~0.7.75"
@@ -415,7 +229,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "d945ebeb2c21b0a38ac64fc40bc29d3f221e36c7"
+project_hash = "621754fcf1125ccf170eaad89bd3ffdfdd380afd"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1542,13 +1356,14 @@ version = "2.28.1010+0"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "bc4820b8c8648fc0d60503562a6acae0aeef312d"
+git-tree-sha1 = "800287d780dc8ac7ff0e955e56c3c74a5091822a"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.4.0"
+version = "0.4.1"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
     MeshArraysGeoJSONExt = ["GeoJSON"]
+    MeshArraysGeometryOpsExt = ["GeometryOps"]
     MeshArraysJLD2Ext = ["JLD2"]
     MeshArraysMakieExt = ["Makie"]
     MeshArraysProjExt = ["Proj"]
@@ -1557,6 +1372,7 @@ version = "0.4.0"
     [deps.MeshArrays.weakdeps]
     DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
     GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+    GeometryOps = "3251bfac-6a57-4b6d-aa61-ac1fef2975ab"
     JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
@@ -2369,41 +2185,25 @@ version = "4.1.0+0"
 # ╔═╡ Cell order:
 # ╟─6da3809b-4bf4-45d6-bbd2-382312e947b7
 # ╟─7aca186c-efd7-4312-afd2-37fdc1a2bbb6
-# ╟─3e5aac32-c82a-45e2-8d7b-05cf96a4ce3c
 # ╠═1b5b7cdc-9528-4afc-b282-2828da34ae2f
-# ╟─7bace9d8-4e9e-451d-aef4-5093c62b08e7
-# ╠═17dd67f4-0c98-408a-9cf9-b02e9a00b5a3
-# ╠═2fd20020-8b29-4262-92f3-aabf9bc609fa
-# ╟─53b62449-7006-4f2a-a337-0b0e45d82f5e
-# ╟─65dcb624-7f27-4247-bc73-446bf069a67a
-# ╟─7d0afd5e-fa88-4f40-a1f0-1a2a944341cd
-# ╟─a248a2b1-ed63-48a0-922c-b00a3dbfc294
-# ╟─87bb371f-c08e-4a31-b7bf-56b58fe9cbda
+# ╠═fd3dc375-7df1-4fdc-afe4-00233bf1d1e0
 # ╠═f112ecfa-8a66-4ae1-aac3-7b354bb5863f
-# ╠═064001b0-286c-44c3-9b9f-95e7d76449d4
 # ╟─915a5f42-9a31-4837-a891-d22f8825930b
-# ╟─3c2f45b3-b3c3-4704-ba0e-c1ada7c48c13
-# ╟─8f3ffcf6-9aa8-4882-b055-583ff2bd82f4
-# ╠═a5fcb7cb-a86c-4f19-a3b9-1e280ce6159b
-# ╠═ac64b4cf-a6b5-4dad-a90c-bf1f483690e5
+# ╠═3c2f45b3-b3c3-4704-ba0e-c1ada7c48c13
 # ╟─523311f3-8d0a-4b57-b376-da945c4f20a7
-# ╟─4208e083-2971-4b1c-bc72-5df1caaf3d36
+# ╠═4208e083-2971-4b1c-bc72-5df1caaf3d36
+# ╠═ac64b4cf-a6b5-4dad-a90c-bf1f483690e5
 # ╟─199f9dfc-c393-47f9-95d8-c0a783ae47e6
 # ╠═540641e2-14e7-47da-9f8e-ac37cd499886
 # ╟─3549d2f2-ab0f-44a0-a0dd-b9aa64354f31
-# ╟─798f41ed-cd77-4890-9148-be278df52ba4
-# ╟─6a354d1f-eba1-40f6-bdfc-1ecd8d96a0ef
 # ╟─1effaab8-8237-4236-ad75-755795f898fc
 # ╟─98496427-b774-4d9b-b386-ffe5ea775d37
 # ╟─fc2e3116-8a7e-405d-ad6d-bdf5d4ae45c9
-# ╟─f4d0e938-e544-4add-be50-7942df72a3b8
 # ╟─5f5e6be3-a7ad-4772-a52c-acb765106593
 # ╟─a4418a2e-831b-416f-8348-e282b08cfa2d
 # ╟─5365dc71-0ddc-4d40-8f38-7c494b3305d9
-# ╟─b494d021-3727-4736-8031-9587d0d542a2
-# ╟─e4d61551-c0e7-4a61-b38e-774897862fed
-# ╟─50272674-6935-4239-89bf-29997341148b
-# ╟─63c58499-c353-4124-9270-6c22b0e6bcd7
-# ╟─9405eb97-1130-427d-a9f4-e45efea361b2
+# ╠═b494d021-3727-4736-8031-9587d0d542a2
+# ╠═b37855e2-b3f2-4d49-a17b-8a133a31a7fd
+# ╠═63c58499-c353-4124-9270-6c22b0e6bcd7
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
