@@ -350,14 +350,14 @@ end
     plot_examples(:baseproj,proj,lon0,pol=pol_shp)
 end
 
-if false
-#@testset "polygon operations" begin
+@testset "polygon operations" begin
     name,rule=MeshArrays.within_pol(pol_json; ID=11)
     rule_vec = (x,y) -> rule.(x,y)
 
     np=10000; lo=-180 .+360*rand(np); la=-90 .+180*rand(np);
     sum(rule_vec(lo,la))
 
+    if false
     path_MITgcm=MITgcm.getdata("mitgcmsmallverif")
     path_grid=joinpath(path_MITgcm,"MITgcm","verification","tutorial_held_suarez_cs","input")
     pols,pols3D=MeshArrays.Polygons.polygons_demo(path_grid)
@@ -366,6 +366,7 @@ if false
     MeshArrays.plot_examples(:polygons_plot,pols,color=Depth)
     MeshArrays.plot_examples(:polygons_plot_dev1,pols,pols3D,sphere_view=true)
     MeshArrays.plot_examples(:polygons_plot_dev1,pols,pols3D,sphere_view=false)
+    end
 end
 
 @testset "doctests" begin
