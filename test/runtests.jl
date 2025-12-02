@@ -1,6 +1,7 @@
 using Test, Documenter, Suppressor, MeshArrays, CairoMakie
 import DataDeps, JLD2, Shapefile, GeoJSON, Proj, GeometryOps
-#import MITgcm
+import MITgcm
+import MeshArrays: GI
     
 MeshArrays.Dataset("GRID_LL360")
 MeshArrays.Dataset("GRID_LLC90")
@@ -355,18 +356,20 @@ end
     rule_vec = (x,y) -> rule.(x,y)
 
     np=10000; lo=-180 .+360*rand(np); la=-90 .+180*rand(np);
-    sum(rule_vec(lo,la))
+    np_in=sum(rule_vec(lo,la))
+    @test np_in>0
 
-    if false
     path_MITgcm=MITgcm.getdata("mitgcmsmallverif")
     path_grid=joinpath(path_MITgcm,"MITgcm","verification","tutorial_held_suarez_cs","input")
     pols,pols3D=MeshArrays.Polygons.polygons_demo(path_grid)
     Depth=GridLoadVar("Depth",GridSpec(ID=:CS32))
+    @test isa(pols[1][1,1],GI.Polygon)
 
-    MeshArrays.plot_examples(:polygons_plot,pols,color=Depth)
+    fig=MeshArrays.plot_examples(:polygons_plot,pols,color=Depth)
     MeshArrays.plot_examples(:polygons_plot_dev1,pols,pols3D,sphere_view=true)
     MeshArrays.plot_examples(:polygons_plot_dev1,pols,pols3D,sphere_view=false)
-    end
+
+    @test isa(fig,Figure)
 end
 
 @testset "doctests" begin
