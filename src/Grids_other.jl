@@ -1,9 +1,6 @@
-
-
-
 module NEMO_GRID
 
-import MeshArrays
+import MeshArrays: GridSpec
 
 variable_list_2d=(
 	(:hdept, :Depth, :T),
@@ -93,10 +90,8 @@ using CairoMakie
 heatmap(Γ.nanmask*Γ.RAC)
 ```
 """
-function load(grid_data; verbose=false)
-    grid=MeshArrays.NEMO_GRID.read_nc_grid(grid_data,verbose=verbose)
-    MeshArrays.NEMO_GRID.grid_to_MeshArrays(grid)
-end
+load(grid_data; verbose=false)=
+	grid_to_MeshArrays(read_nc_grid(grid_data,verbose=verbose))
 
 function read_nc_grid(grid_data; verbose=false)
 	grid=Dict()
@@ -131,7 +126,7 @@ end
 function grid_to_MeshArrays(grid)
 	ni,nj=size(grid.XC)
 
-    g=MeshArrays.GridSpec("PeriodicChannel")
+    g=GridSpec("PeriodicChannel")
     g.fSize[1]=(ni,nj)
     g.ioSize.=[ni nj]
 
