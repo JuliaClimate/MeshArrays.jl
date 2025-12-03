@@ -77,23 +77,27 @@ function convert_one_grid_variable(grid_data,df_line;
 end
 
 """
-    read_nc_grid(grid_data; verbose=false)
+    load(grid_data; verbose=false)
     
-Read in the grid variables from `NEMO`, so they can 
-then easily be converted to `MeshArrays`.
+Read in the grid variables from `NEMO` grid file 
+and convert them into a `MeshArray` grid.
 
 ```
 using NCDatasets
-data=Dataset("mesh_mask_ORCA025.nc")
+grid_data=Dataset("mesh_mask_ORCA025.nc")
 
-import MeshArrays
-grid=MeshArrays.NEMO_GRID.read_nc_grid(data)
-Γ=MeshArrays.NEMO_GRID.grid_to_MeshArrays(grid)
+using MeshArrays
+Γ=NEMO_GRID.load(grid_data)
 
 using CairoMakie
 heatmap(Γ.nanmask*Γ.RAC)
 ```
 """
+function load(grid_data; verbose=false)
+    grid=MeshArrays.NEMO_GRID.read_nc_grid(grid_data,verbose=verbose)
+    MeshArrays.NEMO_GRID.grid_to_MeshArrays(grid)
+end
+
 function read_nc_grid(grid_data; verbose=false)
 	grid=Dict()
 
