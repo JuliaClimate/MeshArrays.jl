@@ -447,7 +447,7 @@ end
 
 Convert output of `read_json` or `read_shp`` to a vector of `LineString`.
 """
-function pol_to_Makie(pol::Vector)
+function pol_to_Makie(pol)
 	tmp2=[GI.coordinates(a.geometry) for a in pol]
 	tmp22=Vector{Point2{Float64}}[]
 	for l1 in tmp2
