@@ -177,20 +177,23 @@ end
 
 ##
 
-function exchange(x; fac=1.0, U_shift=false)
+"""
+    exchange(x; V_fac=1.0, U_shift=false)
+
+Add Halos with neighboring values, based on NEMO's folds.
+"""
+function exchange(x; V_fac=1.0, U_shift=false)
 	y=zeros(1442,1022)
 	y[2:end-1,2:end-1].=x
 	y[1,:].=y[end-1,:]
 	y[end,:].=y[2,:]
 	if !U_shift
-#		y[2:end,end].=fac*reverse(y[2:end,end-2])
-		y[2:end-1,end].=fac*reverse(y[3:end,end-2])
+		y[2:end-1,end].=V_fac*reverse(y[3:end,end-2])
 		y[1,end]=y[end-1,end]
 		y[end,end]=y[2,end]
 	else
-#		y[2:end,end].=fac*reverse(y[1:end-1,end-2])
 		tmp1=circshift(y[3:end,end-2],-1)
-		y[2:end-1,end].=fac*reverse(tmp1)
+		y[2:end-1,end].=V_fac*reverse(tmp1)
 		y[1,end]=y[end-1,end]
 		y[end,end]=y[2,end]
 	end
