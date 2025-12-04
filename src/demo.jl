@@ -177,11 +177,11 @@ module demo
     """
     function download_polygons(ID::String)
         if ID=="ne_110m_admin_0_countries.shp"
-            joinpath(MeshArrays.mydatadep("countries_shp1"),"ne_110m_admin_0_countries.shp")
+            MeshArrays.Dataset("countries_shp1",do_read=false)
         elseif ID=="countries.geojson"
-            joinpath(MeshArrays.mydatadep("countries_geojson1"),"countries.geojson")
+            MeshArrays.Dataset("countries_geojson1",do_read=false)
         elseif ID=="oceans.geojson"
-            joinpath(MeshArrays.mydatadep("oceans_geojson1"),"ocean_basins_res1000_20251109_GF.json")
+            MeshArrays.Dataset("oceans_geojson1",do_read=false)
         else
             error("unknown data dependency")
         end
@@ -197,9 +197,7 @@ module demo
         lat=[j for i=-0.05:dx:359.95, j=-89.95:dx:89.95]; 
         lon=[i for i=-0.05:dx:359.95, j=-89.95:dx:89.95];
     
-        earth_jpg=joinpath(MeshArrays.mydatadep("basemap_jpg1"),
-        "Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg")
-    
+        earth_jpg=MeshArrays.Dataset("basemap_jpg1")    
         earth_img=read_jld2(earth_jpg)
         earth_img=reverse(permutedims(earth_img),dims=2)
         earth_img=circshift(earth_img,(1800,0))
