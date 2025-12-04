@@ -15,11 +15,11 @@ variable_list_2d=(
 	(:gphit, :YC, :T),
 	(:gphiu, :YW, :U),
 	(:gphiv, :YS, :V),
-	(:gphif, :gphif, :Zeta),
+	(:gphif, :YG, :Zeta),
 	(:glamt, :XC, :T),
 	(:glamu, :XW, :U),
 	(:glamv, :XS, :V),
-	(:glamf, :glamf, :Zeta),
+	(:glamf, :XG, :Zeta),
 )
 #derived variables	
 variable_list_derived=(
