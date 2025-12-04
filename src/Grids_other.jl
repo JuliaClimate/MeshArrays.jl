@@ -15,11 +15,11 @@ variable_list_2d=(
 	(:gphit, :YC, :T),
 	(:gphiu, :YW, :U),
 	(:gphiv, :YS, :V),
-	(:gphif, :gphif, :Zeta),
+	(:gphif, :YG, :Zeta),
 	(:glamt, :XC, :T),
 	(:glamu, :XW, :U),
 	(:glamv, :XS, :V),
-	(:glamf, :glamf, :Zeta),
+	(:glamf, :XG, :Zeta),
 )
 #derived variables	
 variable_list_derived=(
@@ -51,8 +51,15 @@ variable_in_NEMO(v,vl=variable_list_2d)=
 #	filter(p->p.:MITgcm==v,variable_df(variable_list))[1,:NEMO]
 
 function convert_one_grid_variable(grid_data,df_line; 
-				ii=2:1441, jj=2:1021, is_3d=false, verbose=false)
+				is_3d=false, verbose=false)
 
+	ii=2:1441
+	jj=1:1020
+
+	#note on jj:
+	#for V/Zeta points : add a line of zeros at South on V + 1:1019
+	#for T/U points : 1:1020
+	
 	nam_in=df_line.NEMO
 	nam_out=df_line.MITgcm
 	loc=df_line.location
@@ -65,11 +72,24 @@ function convert_one_grid_variable(grid_data,df_line;
 	k=findall(list_loc.==loc)[1]
 	di=list_di[k]
 	dj=list_dj[k]
+
+	jj_m_1=jj[2:end].-1
 	
 	if is_3d
-		grid_data[nam_in][ii.+di,jj.+dj,:]
+		if dj<0
+			tmp=grid_data[nam_in][ii.+di,jj_m_1,:]
+			nr=size(tmp,3)
+			cat(zeros(length(ii),1,nr),tmp, dims=2)
+		else
+			grid_data[nam_in][ii.+di,jj.+dj,:]
+		end
 	else
-		grid_data[nam_in][ii.+di,jj.+dj,1]
+		if dj<0
+			tmp=grid_data[nam_in][ii.+di,jj_m_1,1]
+			cat(zeros(length(ii),1),tmp, dims=2)
+		else
+			grid_data[nam_in][ii.+di,jj.+dj,1]
+		end
 	end
 end
 
@@ -153,6 +173,31 @@ function add_one_dim_variables!(grid,grid_data)
 		tmp=fac*grid_data[nam_in][:]
 		merge!(grid,Dict(nam_out=>tmp))
 	end
+end
+
+##
+
+"""
+    exchange(x; V_fac=1.0, U_shift=false)
+
+Add Halos with neighboring values, based on NEMO's folds.
+"""
+function exchange(x; V_fac=1.0, U_shift=false)
+	y=zeros(1442,1022)
+	y[2:end-1,2:end-1].=x
+	y[1,:].=y[end-1,:]
+	y[end,:].=y[2,:]
+	if !U_shift
+		y[2:end-1,end].=V_fac*reverse(y[3:end,end-2])
+		y[1,end]=y[end-1,end]
+		y[end,end]=y[2,end]
+	else
+		tmp1=circshift(y[3:end,end-2],-1)
+		y[2:end-1,end].=V_fac*reverse(tmp1)
+		y[1,end]=y[end-1,end]
+		y[end,end]=y[2,end]
+	end
+	y
 end
 
 end
