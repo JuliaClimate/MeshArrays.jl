@@ -108,6 +108,16 @@ using MeshArrays
 
 using CairoMakie
 heatmap(Γ.nanmask*Γ.RAC)
+
+LC=LatitudeCircles(-89.0:89.0,Γ)
+
+lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
+lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
+λ=MeshArrays.interpolation_setup(Γ=Γ)
+
+lo,la,z=MeshArrays.Interpolate(Γ.Depth,λ)
+heatmap(z)
+
 ```
 """
 load(grid_data; verbose=false)=
