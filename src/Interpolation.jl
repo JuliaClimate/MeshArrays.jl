@@ -72,7 +72,7 @@ heatmap(vec(lon[:,1]),vec(lat[1,:]),DD,colorrange=(0.,6000.))
 function Interpolate(z_in::MeshArray,f,i,j,w)
     z_out=NaN*similar(f[:,1])
     for jj=1:size(f,1)
-        if !isnan(sum(w[jj,:]))
+        if (!isnan(sum(w[jj,:])))&&(sum(f[jj,:].==0)==0)
             x=[z_in[f[jj,ii]][i[jj,ii],j[jj,ii]] for ii=1:4]
             kk=findall(isfinite.(x))
             ~isempty(kk) ? z_out[jj]=sum(w[jj,kk].*x[kk])/sum(w[jj,kk]) : nothing
