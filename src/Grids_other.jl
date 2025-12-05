@@ -213,22 +213,22 @@ end
 ##
 
 """
-    exchange(x; V_fac=1.0, U_shift=false)
+    exchange(x; fac=1.0, U_shift=false)
 
 Add Halos with neighboring values, based on NEMO's folds.
 """
-function exchange(x; V_fac=1.0, U_shift=false)
+function exchange(x; fac=1.0, U_shift=false)
 	y=zeros(1442,1022)
 	y[2:end-1,2:end-1].=x[1]
 	y[1,:].=y[end-1,:]
 	y[end,:].=y[2,:]
 	if !U_shift
-		y[2:end-1,end].=V_fac*reverse(y[3:end,end-2])
+		y[2:end-1,end].=fac*reverse(y[3:end,end-2])
 		y[1,end]=y[end-1,end]
 		y[end,end]=y[2,end]
 	else
 		tmp1=circshift(y[3:end,end-2],-1)
-		y[2:end-1,end].=V_fac*reverse(tmp1)
+		y[2:end-1,end].=fac*reverse(tmp1)
 		y[1,end]=y[end-1,end]
 		y[end,end]=y[2,end]
 	end
@@ -255,8 +255,8 @@ function calc_angle(Γ)
 
 	uZ=read(uZ,grid)
 	vZ=read(vZ,grid)
-	uu=exchange(uZ).MA[1]
-	vv=exchange(vZ).MA[1]
+	uu=exchange(uZ,fac=-1).MA[1]
+	vv=exchange(vZ,fac=-1).MA[1]
 
 	uZc=(uu[1:ni,1:nj]+uu[2:ni+1,1:nj])/2
 	vZc=(vv[1:ni,1:nj]+vv[1:ni,2:nj+1])/2
