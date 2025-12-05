@@ -105,11 +105,12 @@ grid_data=Dataset("mesh_mask_ORCA025.nc")
 
 using MeshArrays
 Γ=NEMO_GRID.load(grid_data)
+g=Γ.XC.grid
 
 using CairoMakie,
 heatmap(Γ.nanmask*Γ.RAC)
 
-LC=LatitudeCircles(-89.0:89.0,Γ)
+LC=LatitudeCircles(-89.0:89.0,Γ);
 
 using JLD2
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
@@ -120,18 +121,17 @@ lo,la,z=MeshArrays.Interpolate(Γ.Depth,λ)
 heatmap(z)
 
 path="data/NEMO_sample/monthly/"
-function read_vel(path,month=1)
+function read_vel(path,grid,month=1)
 	m=string(month)
 	uT=Dataset(joinpath(path,"ORAS5_uT_1993-"*m*".nc"))["uT"][2:end-1,1:1020,1]
-	uT=read(uT,g)
+	uT=read(uT,grid)
 	vT=Dataset(joinpath(path,"ORAS5_vT_1993-"*m*".nc"))["vT"][2:end-1,1:1020,1]
-	vT=read(vT,g)
+	vT=read(vT,grid)
 	(uT,vT)
 end
 
-G=NEMO_GRID.calc_angle(Γ)
 (uT,vT)=read_vel(path,1)
-uT_E,vT_N=UVtoUEVN(uT,vT,G)
+uT_E,vT_N=UVtoUEVN(uT,vT,Γ)
 _,_,z_E=MeshArrays.Interpolate(uT_E,λ);
 _,_,z_N=MeshArrays.Interpolate(vT_N,λ);
 heatmap(z_E,colorrange=(-1,1).*1e3)
@@ -139,14 +139,29 @@ heatmap(z_N,colorrange=(-1,1).*1e3)
 
 MT=zeros(179,12)
 for m in 1:12
-	uT,vT=read_vel(path,m)
+	uT,vT=read_vel(path,g,m)
 	UV=Dict("U"=>Γ.DYG*uT,"V"=>Γ.DXG*vT,"dimensions"=>["x","y"])
-	MT=1e-15*4e6*[ThroughFlow(UV,lc,Γ) for lc in LC]
+	MT[:,m]=1e-15*4e6*[ThroughFlow(UV,lc,Γ) for lc in LC]
 end
+MOHT_GF=mean(MT,dims=2)[:]
+
+using Statistics
+ds=Dataset("data/MER-EP-SW/MOHT/MOHT_allReanas_75S-88N_1993-2020.nc");
+lon_SW=ds["lat"];
+MOHT_SW=1e-15*Float64.(mean(ds["ORAS5"][:,1:12],dims=2))[:];
+
+fig=Figure(); ax=Axis(fig[1,1], xlabel="latitude", ylabel="PW")
+lines!(-89.0:89.0,MOHT_GF,label="GF")
+lines!(lon_SW,MOHT_SW,label="SW")
+axislegend()
+current_figure()
 ```
 """
-load(grid_data; verbose=false)=
-	grid_to_MeshArrays(read_nc_grid(grid_data,verbose=verbose))
+load(grid_data; verbose=false)=begin
+	G=read_nc_grid(grid_data,verbose=verbose)
+	G=grid_to_MeshArrays(G)
+	add_angle_CS_SN(G)
+end
 
 function read_nc_grid(grid_data; verbose=false)
 	grid=Dict()
@@ -239,7 +254,7 @@ function exchange(x; fac=1.0, U_shift=false)
 	MeshArray_wh(yy,1)
 end
 
-function calc_angle(Γ)
+function add_angle_CS_SN(Γ)
 	r_earth=sqrt(sum(Γ.RAC))./(4 .*pi)
 	ni,nj=Γ.RAC.fSize[1]
 	grid=Γ.RAC.grid
