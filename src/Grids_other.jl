@@ -1,6 +1,6 @@
 module NEMO_GRID
 
-import MeshArrays: GridSpec
+import MeshArrays: GridSpec, MeshArray_wh
 
 variable_list_2d=(
 	(:hdept, :Depth, :T),
@@ -106,18 +106,30 @@ grid_data=Dataset("mesh_mask_ORCA025.nc")
 using MeshArrays
 Γ=NEMO_GRID.load(grid_data)
 
-using CairoMakie
+using CairoMakie,
 heatmap(Γ.nanmask*Γ.RAC)
 
 LC=LatitudeCircles(-89.0:89.0,Γ)
 
+using JLD2
 lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
 lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
-λ=MeshArrays.interpolation_setup(Γ=Γ)
+λ=MeshArrays.interpolation_setup(Γ=Γ,lon=lon,lat=lat);
 
 lo,la,z=MeshArrays.Interpolate(Γ.Depth,λ)
 heatmap(z)
 
+uT=Dataset("data/NEMO_sample/monthly/ORAS5_uT_1993-1.nc")["uT"][2:end-1,1:1020,1];
+uT=read(uT,g);
+vT=Dataset("data/NEMO_sample/monthly/ORAS5_vT_1993-1.nc")["vT"][2:end-1,1:1020,1];
+vT=read(vT,g);
+
+G=NEMO_GRID.calc_angle(Γ)
+uT_E,vT_N=UVtoUEVN(uT,vT,G)
+_,_,z_E=MeshArrays.Interpolate(uT_E,λ);
+_,_,z_N=MeshArrays.Interpolate(vT_N,λ);
+heatmap(z_E,colorrange=(-1,1).*1e3)
+heatmap(z_N,colorrange=(-1,1).*1e3)
 ```
 """
 load(grid_data; verbose=false)=
@@ -194,7 +206,7 @@ Add Halos with neighboring values, based on NEMO's folds.
 """
 function exchange(x; V_fac=1.0, U_shift=false)
 	y=zeros(1442,1022)
-	y[2:end-1,2:end-1].=x
+	y[2:end-1,2:end-1].=x[1]
 	y[1,:].=y[end-1,:]
 	y[end,:].=y[2,:]
 	if !U_shift
@@ -208,6 +220,39 @@ function exchange(x; V_fac=1.0, U_shift=false)
 		y[end,end]=y[2,end]
 	end
 	y
+
+	yy=similar(x;m=x.meta);
+	yy[1]=y
+	MeshArray_wh(yy,1)
+end
+
+function calc_angle(Γ)
+	r_earth=sqrt(sum(Γ.RAC))./(4 .*pi)
+	ni,nj=Γ.RAC.fSize[1]
+	grid=Γ.RAC.grid
+
+	psi=exchange(-deg2rad(1)*r_earth*Γ.YC).MA[1]
+	uZ=psi[1:ni,1:nj]-psi[1:ni,2:nj+1]
+	vZ=psi[2:ni+1,1:nj]-psi[1:ni,1:nj]
+
+	DXG=exchange(Γ.DXG).MA[1]
+	DYG=exchange(Γ.DYG).MA[1]
+	uZ=uZ./DYG[1:ni,1:nj]#shift by 1 point?
+	vZ=vZ./DXG[1:ni,1:nj]
+
+	uZ=read(uZ,grid)
+	vZ=read(vZ,grid)
+	uu=exchange(uZ).MA[1]
+	vv=exchange(vZ).MA[1]
+
+	uZc=(uu[1:ni,1:nj]+uu[2:ni+1,1:nj])/2
+	vZc=(vv[1:ni,1:nj]+vv[1:ni,2:nj+1])/2
+
+	norm=sqrt.(uZc.*uZc+vZc.*vZc)
+	AngleCS =  read(uZc./norm,grid)
+	AngleSN =  read(-vZc./norm,grid)
+
+	merge(Γ,(AngleCS=AngleCS,AngleSN=AngleSN))
 end
 
 end
