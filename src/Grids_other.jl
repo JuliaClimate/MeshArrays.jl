@@ -119,17 +119,30 @@ lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
 lo,la,z=MeshArrays.Interpolate(Γ.Depth,λ)
 heatmap(z)
 
-uT=Dataset("data/NEMO_sample/monthly/ORAS5_uT_1993-1.nc")["uT"][2:end-1,1:1020,1];
-uT=read(uT,g);
-vT=Dataset("data/NEMO_sample/monthly/ORAS5_vT_1993-1.nc")["vT"][2:end-1,1:1020,1];
-vT=read(vT,g);
+path="data/NEMO_sample/monthly/"
+function read_vel(path,month=1)
+	m=string(month)
+	uT=Dataset(joinpath(path,"ORAS5_uT_1993-"*m*".nc"))["uT"][2:end-1,1:1020,1]
+	uT=read(uT,g)
+	vT=Dataset(joinpath(path,"ORAS5_vT_1993-"*m*".nc"))["vT"][2:end-1,1:1020,1]
+	vT=read(vT,g)
+	(uT,vT)
+end
 
 G=NEMO_GRID.calc_angle(Γ)
+(uT,vT)=read_vel(path,1)
 uT_E,vT_N=UVtoUEVN(uT,vT,G)
 _,_,z_E=MeshArrays.Interpolate(uT_E,λ);
 _,_,z_N=MeshArrays.Interpolate(vT_N,λ);
 heatmap(z_E,colorrange=(-1,1).*1e3)
 heatmap(z_N,colorrange=(-1,1).*1e3)
+
+MT=zeros(179,12)
+for m in 1:12
+	uT,vT=read_vel(path,m)
+	UV=Dict("U"=>Γ.DYG*uT,"V"=>Γ.DXG*vT,"dimensions"=>["x","y"])
+	MT=1e-15*4e6*[ThroughFlow(UV,lc,Γ) for lc in LC]
+end
 ```
 """
 load(grid_data; verbose=false)=
