@@ -18,8 +18,6 @@ function within_pol end
 
 include("types/main.jl")
 include("grids/main.jl")
-include("grids/simple.jl")
-include("grids/NEMO.jl")
 include("GridPaths.jl")
 include("Operations.jl")
 include("Exchanges.jl")

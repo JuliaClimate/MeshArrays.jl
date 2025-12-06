@@ -187,6 +187,20 @@ function mask(fld::MeshArray, val::Number, noval::Number)
   return fldmsk
 end
 
+"""
+    land_mask(m::MeshArray)
+
+Define land mask from `m` (1 if m>0; NaN if otherwise).
+"""
+function land_mask(m::MeshArray)
+    μ=m
+    μ[findall(μ.>0.0)].=1.0
+    μ[findall(μ.==0.0)].=NaN
+    μ
+end
+
+land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC[:,1])
+
 ## convergence methods
 
 """
