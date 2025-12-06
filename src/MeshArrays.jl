@@ -17,11 +17,11 @@ function grid_lines! end
 function within_pol end
 
 include("types/main.jl")
+include("ReadWrite.jl")
 include("grids/main.jl")
 include("GridPaths.jl")
 include("Operations.jl")
 include("Exchanges.jl")
-include("ReadWrite.jl")
 include("Solvers.jl")
 include("ReIndexing.jl")
 include("Interpolation.jl")

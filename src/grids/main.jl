@@ -1,4 +1,83 @@
 
+
+"""
+    GridSpec(category="DefaultPeriodicDomain",
+        path=tempname(); np=nothing, ID=:unknown)
+
+- Select one of the pre-defined grids either by ID (keyword) or by category.
+- Return the corresponding `gcmgrid` specification, including the path where grid files can be accessed (`path`).
+
+1. selection by `ID`
+
+- `:LLC90`
+- `:CS32`
+- `:LLC270`
+- `:onedegree`
+- `:default`
+
+Example:
+
+```
+using MeshArrays
+g = GridSpec(ID=:LLC90)
+```
+
+note : input files for these fully supported grids 
+    get downloaded internally via `MeshArrays.Dataset`.
+
+2. by `category` and `path`
+
+- `"PeriodicDomain"`
+- `"PeriodicChannel"`
+- `"CubeSphere"`
+- `"LatLonCap"``
+
+Examples:
+
+```jldoctest; output = false
+using MeshArrays
+g = GridSpec()
+g = GridSpec("PeriodicChannel",MeshArrays.Dataset("GRID_LL360"))
+g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
+g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"))
+isa(g,gcmgrid)
+
+# output
+
+true
+```
+
+3. by `category` and `path` with the `np` argument
+- `np` is the number of grid points in x or y for the `LatLonCap` and `CubeSphere` tiles. 
+`np` defaults to 90 for `LatLonCap` and 32 for `CubeSphere`, and so must be included to access the LLC270 grid with the category argument.
+
+Examples:
+
+```jldoctest; output = false
+using MeshArrays
+g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"),np=90)
+g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"),np=32)
+isa(g,gcmgrid)
+
+# output
+
+true
+```
+"""
+function GridSpec(category="DefaultPeriodicDomain", 
+        path=tempname(); np=nothing, ID=:unknown)
+
+    if category=="DefaultPeriodicDomain"
+        nFaces=4
+        grTopo="DefaultPeriodicDomain"
+        ioSize=[360 160]
+        facesSize=[(180, 80), (180, 80), (180, 80), (180, 80)]
+        ioPrec=Float32
+    else
+        GridSpec_MITgcm(category, path; np=np, ID=ID)
+    end
+end
+
 Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 
 ## GridLoad function

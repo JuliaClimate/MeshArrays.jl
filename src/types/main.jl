@@ -95,6 +95,12 @@ end
 
 defaultmeta = varmeta(missing,fill(0.5,3),missing,"unknown","unknown")
 
+## define thisversion
+
+import Pkg
+thistoml=joinpath(dirname(pathof(MeshArrays)), "..", "Project.toml")
+thisversion=Pkg.TOML.parsefile(thistoml)["version"]
+
 ## concrete types and MeshArray alias:
 
 OuterArray{T,N}=Array{T,N} where {T,N}
@@ -102,6 +108,7 @@ InnerArray{T,N}=Array{T,N} where {T,N}
 include("gcmfaces.jl");
 include("gcmarray.jl");
 include("gcmvector.jl");
+include("polygons.jl");
 
 """
     MeshArray
