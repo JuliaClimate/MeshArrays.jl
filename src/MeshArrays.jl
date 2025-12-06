@@ -16,8 +16,10 @@ function ProjAxis end
 function grid_lines! end
 function within_pol end
 
-include("Types.jl")
-include("Grids.jl")
+include("types/main.jl")
+include("grids/main.jl")
+include("grids/simple.jl")
+include("grids/NEMO.jl")
 include("GridPaths.jl")
 include("Operations.jl")
 include("Exchanges.jl")
@@ -26,8 +28,6 @@ include("Solvers.jl")
 include("ReIndexing.jl")
 include("Interpolation.jl")
 include("VerticalDimension.jl")
-include("Grids_simple.jl")
-include("Grids_other.jl")
 include("demo.jl")
 include("Integration.jl")
 include("Datasets.jl")
