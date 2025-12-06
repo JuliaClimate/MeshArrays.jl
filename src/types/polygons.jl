@@ -9,14 +9,16 @@ end
 
 ```
 pol=MeshArrays.Dataset("oceans_geojson1")
-p=pol[1].geometry.coordinates[1]
+g=pol[1].geometry
+p=MeshArrays.GI.coordinates(g)[1]
 n=pol[1].name
 npol1=MeshArrays.NamedPolygon(p,n,p)
 apol1=MeshArrays.polyarray("anonymous",[npol1 npol1])
+
 ```
 """
 struct NamedPolygon
-    geometry::Vector{Tuple{Float32, Float32}}
+    geometry::Vector{Union{Tuple,Vector}}
     name::String
     points::Vector{}
 end
