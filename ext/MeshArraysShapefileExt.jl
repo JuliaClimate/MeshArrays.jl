@@ -23,7 +23,11 @@ module MeshArraysShapefileExt
     ```
     using MeshArrays, DataDeps, Shapefile
     fil=MeshArrays.Dataset("countries_shp1",do_read=false)
-    pol=MeshArrays.read_shp(fil)
+    pol=MeshArrays.read_shp(fil,format=0.2)
+
+    using CairoMakie
+    MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
+    lines(MeshArraysMakieExt.pol_to_Makie(pol))
     ```
     """
     function read_shp(fil; format=1)

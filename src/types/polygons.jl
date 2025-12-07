@@ -38,12 +38,13 @@ to_polyarray(pol::polyarray) = pol
 
 function to_polyarray(pol)
     nk=length(pol)
-    npol=Array{NamedPolygon}(undef, nk)
+    npol=NamedPolygon[]
     for k in 1:nk
         g=pol[k].geometry
-        p=MeshArrays.GI.coordinates(g)[1]
-        n=pol[k].name
-        npol[k]=MeshArrays.NamedPolygon(p,n,p)
+        for i in MeshArrays.GI.coordinates(g)
+            n=pol[k].name
+            push!(npol,MeshArrays.NamedPolygon(i,n,i))
+        end
     end
     MeshArrays.polyarray("anonymous",npol)
 end
