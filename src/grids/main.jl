@@ -1,73 +1,23 @@
 
-
 """
     GridSpec(category="default",
         path=tempname(); np=nothing, ID=:unknown)
 
-- Select one of the pre-defined grids either by ID (keyword) or by category.
-- Return the corresponding `gcmgrid` specification, including the path where grid files can be accessed (`path`).
-
-1. selection by `ID`
-
-- `:LLC90`
-- `:CS32`
-- `:LLC270`
-- `:onedegree`
-- `:default`
-
-Example:
+- Select one of the pre-defined grids 
+    - or by `category` parameter
+    - either by `ID` keyword (see `MeshArrays.GridSpec_MITgcm`)
+- Return the corresponding `gcmgrid`
+    - incl. a path to grid files (`path`).
 
 ```
 using MeshArrays
-g = GridSpec(ID=:LLC90)
-```
-
-note : input files for these fully supported grids 
-    get downloaded internally via `MeshArrays.Dataset`.
-
-2. by `category` and `path`
-
-- `"PeriodicDomain"`
-- `"PeriodicChannel"`
-- `"CubeSphere"`
-- `"LatLonCap"``
-
-Examples:
-
-```jldoctest; output = false
-using MeshArrays
-g = GridSpec()
-g = GridSpec("PeriodicChannel",MeshArrays.Dataset("GRID_LL360"))
-g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
-g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"))
-isa(g,gcmgrid)
-
-# output
-
-true
-```
-
-3. by `category` and `path` with the `np` argument
-- `np` is the number of grid points in x or y for the `LatLonCap` and `CubeSphere` tiles. 
-`np` defaults to 90 for `LatLonCap` and 32 for `CubeSphere`, and so must be included to access the LLC270 grid with the category argument.
-
-Examples:
-
-```jldoctest; output = false
-using MeshArrays
-g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"),np=90)
-g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"),np=32)
-isa(g,gcmgrid)
-
-# output
-
-true
+γ=GridSpec()
 ```
 """
 function GridSpec(category="default", 
         path=tempname(); np=nothing, ID=:unknown)
     if category=="default"&&ID==:unknown
-        GridSpec_default(Grids_simple.xy_IAP(),1)
+        GridSpec_default(Grids_simple.xy_IAP())
     else
         GridSpec_MITgcm(category, path; np=np, ID=ID)
     end
@@ -103,14 +53,17 @@ Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
   - option=:minimal (default) to get only grid cell center positions (XC, YC). 
   - option=:light to get a complete set of 2D grid variables. 
   - option=:full  to get a complete set of 2D & 3D grid variables. 
+- if `ID` is specified then `GridSpec(ID=ID)` provides `γ`.
 
-Based on the MITgcm naming convention, grid variables are:
+For grid variables, we follow the MITgcm naming convention.
+Grid variables thus typically include :
 
-- XC, XG, YC, YG, AngleCS, AngleSN, hFacC, hFacS, hFacW, Depth.
-- RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
-- DRC, DRF, RC, RF (one-dimensional)
+- XC, XG, YC, YG, AngleCS, AngleSN, Depth
+- RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG
+- three-dimensional : hFacC, hFacS, hFacW
+- one-dimensional : DRC, DRF, RC, RF
 
-MITgcm documentation : 
+For additional detail please refer to the MITgcm documentation : 
 
 https://mitgcm.readthedocs.io/en/latest/algorithm/algorithm.html#spatial-discretization-of-the-dynamical-equations
 
