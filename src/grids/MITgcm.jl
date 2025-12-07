@@ -63,7 +63,6 @@ isa(g,gcmgrid)
 
 true
 ```
-
 """
 function GridSpec_MITgcm(category="PeriodicDomain", 
     path=tempname(); np=nothing, ID=:unknown)

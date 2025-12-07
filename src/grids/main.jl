@@ -5,9 +5,9 @@
 
 - Select one of the pre-defined grids 
     - either by `category` parameter (e.g. "default" or "ones")
-    - or by `ID` keyword (see `MeshArrays.GridSpec_MITgcm`)
+    - or by `ID` keyword via `MeshArrays.GridSpec_default` or `MeshArrays.GridSpec_MITgcm`)
 - Return the corresponding `gcmgrid`
-    - incl. a path to grid files (`path`).
+    - including in `path` either a path to grid files or a placeholder like `_ones` or `_default`.
 
 ```
 using MeshArrays
@@ -16,8 +16,8 @@ using MeshArrays
 """
 function GridSpec(category="default", 
         path=tempname(); np=nothing, ID=:unknown)
-    if category=="default"&&ID==:unknown
-        GridSpec_default(Grids_simple.xy_IAP())
+    if category=="default"&&in(ID,[:unknown, :OISST, :Oscar, :IAP])
+        GridSpec_default(ID=ID)
     elseif category=="ones"&&ID==:unknown
         npoints=(isnothing(np) ? 10 : np)
         GridSpec_ones("PeriodicDomain",1,npoints)
@@ -26,7 +26,41 @@ function GridSpec(category="default",
     end
 end
 
-function GridSpec_default(xy::NamedTuple, nFaces=1)
+"""
+    GridSpec_default(xy=NamedTuple(), nFaces=1; ID=:unknown)
+
+- Select one of the pre-defined grids 
+    - or by providing `xy` parameter (a `NamedTuple` that includes `:xc, :yc, :xg, :yg`)
+    - either by `ID` keyword (e.g., `:OISST`, `:Oscar`, or `:IAP` by default)
+- Return the corresponding `gcmgrid`
+    - incl. `path="_default"`
+
+Example:
+
+```
+using MeshArrays
+a = MeshArrays.GridSpec_default(ID=:OISST)
+b = MeshArrays.GridSpec_default(Grids_simple.xy_OISST())
+```
+"""
+function GridSpec_default(xy=NamedTuple(), nFaces=1; ID=:unknown)
+    if !isempty(xy)
+        GridSpec_default_xy(xy,nFaces)
+    else
+    xy= if ID==:IAP||ID==:unknown
+            Grids_simple.xy_IAP()
+        elseif ID==:Oscar
+            Grids_simple.xy_Oscar()
+        elseif ID==:OISST
+            Grids_simple.xy_OISST()
+        else
+            error("unknown grid ID")
+        end
+        GridSpec_default_xy(xy,nFaces)
+    end
+end
+
+function GridSpec_default_xy(xy::NamedTuple, nFaces=1)
     (; xc, yc, xg, yg) = xy
 
     dx=diff(xg)[1]
@@ -255,6 +289,7 @@ include("NEMO.jl")
 ##
 
 function GridLoad_default(γ=GridSpec())
+    #if IAP
     xy=Grids_simple.xy_IAP()
     gr=Grids_simple.grid_factors(xy)
 
