@@ -3,16 +3,11 @@ module MeshArraysMakieExt
 
 using MeshArrays, Makie
 
-import MeshArrays: GI, polyarray
-import MeshArrays: land_mask
-import MeshArrays: plot_examples
-import MeshArrays: ProjAxis
-import MeshArrays: grid_lines!
+import MeshArrays: GI, polyarray, gridpath
+import MeshArrays: plot_examples, ProjAxis, grid_lines!
 
-import MeshArrays: gridpath
-
-import Makie: plot, plot!, heatmap, scatter, scatter!, surface!
-import Makie: lines!, heatmap!, contour!, contourf!
+import Makie: plot, plot!, scatter, scatter!, surface!
+import Makie: lines, lines!, heatmap, heatmap!, contour!, contourf!
 
 LineString=Makie.LineString
 Observable=Makie.Observable
@@ -817,6 +812,15 @@ function polygons_plot(pols; color=:black, outer_edge=false)
 		poly(pols_Makie,color=:white,strokecolor=cols_Makie,strokewidth=2)
 	end
 end
+
+lines(pa::polyarray,stuff...;kwargs...) = 
+	lines(pol_to_Makie(pa),stuff...;kwargs...)
+lines!(pa::polyarray,stuff...;kwargs...) = 
+	lines!(pol_to_Makie(pa),stuff...;kwargs...)
+plot(pa::polyarray,stuff...;kwargs...) = 
+	plot(pol_to_Makie(pa),stuff...;kwargs...)
+plot!(pa::polyarray,stuff...;kwargs...) = 
+	plot!(pol_to_Makie(pa),stuff...;kwargs...)
 
 end # module
 
