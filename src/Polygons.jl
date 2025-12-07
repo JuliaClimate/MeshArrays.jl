@@ -104,6 +104,9 @@ function demo_grid(path_grid)
 	return pols,pols3D
 end
 
+#alias needed until next version release
+polygons_demo=demo_grid
+
 ## helper functions for demo_grid
 
 function read_native_grid(files_grid,list_fields,ff=1,va="XG")

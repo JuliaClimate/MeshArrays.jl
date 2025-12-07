@@ -73,6 +73,7 @@ function GridSpec(category="DefaultPeriodicDomain",
         ioSize=[360 160]
         facesSize=[(180, 80), (180, 80), (180, 80), (180, 80)]
         ioPrec=Float32
+        gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
     else
         GridSpec_MITgcm(category, path; np=np, ID=ID)
     end

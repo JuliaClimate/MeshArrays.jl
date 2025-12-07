@@ -361,7 +361,7 @@ end
 
     path_MITgcm=MITgcm.getdata("mitgcmsmallverif")
     path_grid=joinpath(path_MITgcm,"MITgcm","verification","tutorial_held_suarez_cs","input")
-    pols,pols3D=MeshArrays.Polygons.demo_grid(path_grid)
+    pols,pols3D=MeshArrays.Polygons.polygons_demo(path_grid)
     Depth=GridLoadVar("Depth",GridSpec(ID=:CS32))
     @test isa(pols[1][1,1],GI.Polygon)
 
