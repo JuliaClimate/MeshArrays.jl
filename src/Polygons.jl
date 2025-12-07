@@ -70,10 +70,10 @@ function to_LineStrings2D(XG,YG,ff=1;do_sphere=true)
 	arr2
 end
 
-## polygons_demo to read in cs32 grid as test case
+## demo_grid to read in cs32 grid as test case
 
 """
-    polygons_demo(path_grid)
+    demo_grid(path_grid)
 
 
 Example that associates each grid cell with a polygon.
@@ -86,12 +86,12 @@ path_MITgcm=MITgcm.getdata("mitgcmsmallverif")
 path_grid=joinpath(path_MITgcm,"MITgcm",
     "verification","tutorial_held_suarez_cs","input")
 
-pols,pols3D=MeshArrays.Polygons.polygons_demo(path_grid)
+pols,pols3D=MeshArrays.Polygons.demo_grid(path_grid)
 Depth=GridLoadVar("Depth",GridSpec(ID=:CS32))
 MeshArrays.plot_examples(:polygons_plot,pols,color=Depth)
 ```
 """
-function polygons_demo(path_grid)
+function demo_grid(path_grid)
     files_grid=glob("grid_cs32.face00?.bin",path_grid)
     list_fields=["XC","YC","DXF","DYF","RAC","XG","YG","DXV","DYU","RAZ",
         "DXC","DYC","RAW","RAS","DXG","DYG","AngleCS","AngleSN"]
@@ -104,7 +104,10 @@ function polygons_demo(path_grid)
 	return pols,pols3D
 end
 
-## helper functions for polygons_demo
+#alias needed until next version release
+polygons_demo=demo_grid
+
+## helper functions for demo_grid
 
 function read_native_grid(files_grid,list_fields,ff=1,va="XG")
     fil=files_grid[ff]

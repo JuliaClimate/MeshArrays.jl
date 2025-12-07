@@ -8,35 +8,29 @@
 module MeshArraysGeoJSONExt
 
     using GeoJSON
-    import MeshArrays: read_json
+    import MeshArrays: read_json, to_polyarray, polyarray, to_Polygon
+    import Base: write
 
     """
-        read_json(fil; native=false)
+        read_json(fil; format=1)
 
-    - call `GeoJSON.read`
-    - format 1 : return FeatureCollection (vector of name,geom pairs)
-    - format 2 : convert to `GI.coordinates`.
+    Call `GeoJSON.read` and return `polyarray` (default)
+
+    - format 1 (default): return `polyarray`
+    - format 0.1 : convert to `GI.coordinates`.
+    - format 0.2 : return FeatureCollection (vector of name,geom pairs)
 
     ```
     import MeshArrays, DataDeps, GeoJSON
     pol=MeshArrays.Dataset("oceans_geojson1")
-
-    ii=11
-    nam=pol[ii].name
-    geom=pol[ii].geometry
-
-    import GeometryOps as GO, GeoInterface as GI
-    rule_pol = (x,y) -> GO.within(GI.Point(x,y), geom)
-    rule_pol_vec = (x,y) -> rule_pol.(x,y)
-
-    np=1000; lo=-180 .+360*rand(np); la=-90 .+180*rand(np);
-    np_in=sum(rule_pol.(lo,la)); [np_in np-np_in nam]
     ```
     """
     function read_json(fil; format=1)
         if format==1
+            to_polyarray(GeoJSON.read(fil))
+        elseif format==1.2
             GeoJSON.read(fil)
-        elseif format==2
+        elseif format==0.1
             jsonbytes = read(fil)
             geoms = GeoJSON.read(jsonbytes)
             #GeoJSON.GI.coordinates(geoms)
@@ -44,6 +38,22 @@ module MeshArraysGeoJSONExt
         else
             error("unknown format")
         end
+    end
+
+    """
+        write(pa::polyarray,file=tempname()*".json")
+
+    ```
+    import MeshArrays, DataDeps, GeoJSON
+    pol=MeshArrays.Dataset("oceans_geojson1")
+    write(pol,tempname()*".json")
+    ```
+    """
+    function write(pa::polyarray,file=tempname()*".json")
+        pol_P,nams=to_Polygon(pa)
+        df=(geom=pol_P,id=nams,name=nams) #warning : use geom, not geometry, for name
+        st=GeoJSON._lower(df,geometrycolumn=:geom)
+        GeoJSON.JSON3.write(file, st)
     end
 
 end #module MeshArraysGeoJSONExt

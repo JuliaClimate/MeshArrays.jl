@@ -352,7 +352,9 @@ end
 end
 
 @testset "polygon operations" begin
-    name,rule=MeshArrays.within_pol(pol_json; ID=11)
+    fil=MeshArrays.Dataset("countries_shp1",do_read=false)
+    pol=MeshArrays.read_shp(fil,format=0.2)
+    name,rule=MeshArrays.within_pol(pol; ID=11)
     rule_vec = (x,y) -> rule.(x,y)
 
     np=10000; lo=-180 .+360*rand(np); la=-90 .+180*rand(np);
