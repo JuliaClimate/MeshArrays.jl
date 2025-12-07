@@ -67,7 +67,7 @@ true
 function GridSpec(category="DefaultPeriodicDomain", 
         path=tempname(); np=nothing, ID=:unknown)
 
-    if category=="DefaultPeriodicDomain"
+    if category=="DefaultPeriodicDomain"&&ID==:unknown
         nFaces=4
         grTopo="DefaultPeriodicDomain"
         ioSize=[360 160]
