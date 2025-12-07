@@ -21,16 +21,16 @@ end
 ```
 using MeshArrays, GeoJSON, DataDeps
 pol=MeshArrays.Dataset("oceans_geojson1")
-apol=MeshArrays.to_polyarray(pol)
+pol_a=MeshArrays.to_polyarray(pol)
 
 using CairoMakie
 MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
-lines(MeshArraysMakieExt.pol_to_Makie(apol))
+lines(MeshArraysMakieExt.pol_to_Makie(pol_a))
 ```
 """
 struct polyarray
    name::String
-   f::Array{NamedPolygon}
+   data::Array{NamedPolygon}
 end
 
 ##
@@ -50,7 +50,7 @@ end
 ##
 
 """
-    to_Polygon(apol::polyarray)
+    to_Polygon(pa::polyarray)
 
 ```
 using DataFrames
@@ -64,19 +64,19 @@ function write_polygons_to_json(pols,nams)
         GeoJSON.write(fn, df)
 end
 
-pols,nams=MeshArrays.to_Polygon(polyarray)
+pols,nams=MeshArrays.to_Polygon(pol_a)
 write_polygons_to_json(pols,nams)
 ```
 """
-function to_Polygon(apol1)
-    nk=length(apol1.f)
+function to_Polygon(pa::polyarray)
+    nk=length(pa.data)
 	pols=Array{GI.Wrappers.Polygon}(undef, nk)
     nams=Array{String}(undef, nk)
 	for kk in 1:nk
-        line=GI.LineString(apol1.f[kk].geometry)
+        line=GI.LineString(pa.data[kk].geometry)
 		pols[kk]=GI.Polygon(line)
-        name=apol1.f[kk].name
-		nams[kk]=apol1.f[kk].name
+        name=pa.data[kk].name
+		nams[kk]=pa.data[kk].name
 	end
     pols,nams
 end

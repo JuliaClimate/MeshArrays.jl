@@ -449,11 +449,11 @@ Convert output of `read_json` or `read_shp`` to a vector of `LineString`.
 """
 function pol_to_Makie(pol) #::polyarray)
 	if isa(pol,polyarray)
-		tmp2=[[x.geometry] for x in pol.f]
+		tmp2=[[x.geometry] for x in pol.data]
 	else
 		tmp2=[GI.coordinates(a.geometry) for a in pol]
 	end	
-#	tmp2=pol.f[1].geometry
+#	tmp2=pol.data[1].geometry
 	tmp22=Vector{Point2{Float64}}[]
 	for l1 in tmp2
 		if isa(l1[1][1][1],Number)
