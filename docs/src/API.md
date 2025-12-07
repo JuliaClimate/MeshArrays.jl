@@ -22,9 +22,21 @@ MeshArrays.gcmfaces
 
 ## 2. Grids And I/O
 
+Grid definitions :
+
 ```@docs
 GridSpec
+MeshArrays.GridSpec_default
+MeshArrays.GridSpec_MITgcm
+MeshArrays.GridSpec_ones
+```
+
+Loading grids :
+
+```@docs
 GridLoad
+MeshArrays.GridLoad_default
+MeshArrays.GridLoad_ones
 GridLoadVar
 ```
 

@@ -263,6 +263,14 @@ end
     @test haskey(gr,:hFacC)
 end
 
+if false
+    γ = GridSpec(ID=:OISST)
+    γ = GridSpec(ID=:LLC90)
+    #γ=MeshArrays.GridSpec_ones("CubeSphere",6,20)
+    γ = GridSpec("ones")
+    Γ = GridLoad(γ;option="full")
+end
+
 @testset "Plotting:" begin
     γ=GridSpec(ID=:LLC90)
     Γ=GridLoad(γ;option="light")

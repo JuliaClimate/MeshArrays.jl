@@ -120,13 +120,13 @@ function GridLoad(γ=GridSpec(); ID=:default, option=:minimal, verbose=false)
     gr = (ID!==:default ? GridSpec(ID=ID) : γ)
     if gr.path=="_default"
         verbose ? println("GridLoad_default") : nothing
-        GridLoad_default(γ)
+        GridLoad_default(gr)
     elseif gr.path=="_ones"
         verbose ? println("GridLoad_ones") : nothing
-        GridLoad_ones(γ; option=option)
+        GridLoad_ones(gr; option=option)
     else
         verbose ? println("GridLoad_main") : nothing
-        GridLoad_main(γ; option=option)
+        GridLoad_main(gr; option=option)
     end
 end
 
@@ -288,10 +288,16 @@ include("NEMO.jl")
 
 ##
 
-function GridLoad_default(γ=GridSpec())
-    #if IAP
-    xy=Grids_simple.xy_IAP()
-    gr=Grids_simple.grid_factors(xy)
+"""
+    GridLoad_default(γ=GridSpec())
+
+```
+MeshArrays.GridSpec_default(ID=:IAP)
+```
+"""
+function GridLoad_default(gr=GridSpec())#; ID=:unknown)
+#    xy=Grids_simple.xy_IAP()
+#    gr=Grids_simple.grid_factors(xy)
 
     dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
     gr=Grids_simple.grid_add_z(gr,dep,msk)
