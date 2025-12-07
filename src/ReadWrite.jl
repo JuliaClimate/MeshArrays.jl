@@ -195,7 +195,7 @@ function read_tiles(xx::Array,x::MeshArray)
 end
 
 function write_tiles(x::MeshArray)
-  tmp = Array{eltype(x),2}(undef,x.grid.ioSize)
+  tmp = Array{eltype(x),2}(undef,x.grid.ioSize...)
 	s=x.grid.ioSize
 	(n1,n2)=x.grid.fSize[1]
 	ni=Int(s[1]/n1)

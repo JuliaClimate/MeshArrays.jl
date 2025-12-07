@@ -4,8 +4,8 @@
         path=tempname(); np=nothing, ID=:unknown)
 
 - Select one of the pre-defined grids 
-    - or by `category` parameter
-    - either by `ID` keyword (see `MeshArrays.GridSpec_MITgcm`)
+    - either by `category` parameter (e.g. "default" or "ones")
+    - or by `ID` keyword (see `MeshArrays.GridSpec_MITgcm`)
 - Return the corresponding `gcmgrid`
     - incl. a path to grid files (`path`).
 
@@ -18,6 +18,9 @@ function GridSpec(category="default",
         path=tempname(); np=nothing, ID=:unknown)
     if category=="default"&&ID==:unknown
         GridSpec_default(Grids_simple.xy_IAP())
+    elseif category=="ones"&&ID==:unknown
+        npoints=(isnothing(np) ? 10 : np)
+        GridSpec_ones("PeriodicDomain",1,npoints)
     else
         GridSpec_MITgcm(category, path; np=np, ID=ID)
     end
@@ -36,7 +39,7 @@ function GridSpec_default(xy::NamedTuple, nFaces=1)
     ioSize=[ni nj]
     facesSize=[(nni, nnj), (nni, nnj), (nni, nnj), (nni, nnj)]
     ioPrec=Float32
-    path=tempname()
+    path="_default"
 
     g=gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 end
@@ -46,14 +49,14 @@ Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 ## GridLoad function
 
 """
-    GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
+    GridLoad(γ=GridSpec(); ID=:default, option=:minimal, verbose=false)
 
 - Return a `NamedTuple` of grid variables read from files located in `γ.path` (see `?GridSpec`).
+- if `ID` is specified then call `GridSpec(ID=ID)` to override `γ` parameter.
 - option : 
   - option=:minimal (default) to get only grid cell center positions (XC, YC). 
   - option=:light to get a complete set of 2D grid variables. 
   - option=:full  to get a complete set of 2D & 3D grid variables. 
-- if `ID` is specified then `GridSpec(ID=ID)` provides `γ`.
 
 For grid variables, we follow the MITgcm naming convention.
 Grid variables thus typically include :
@@ -79,23 +82,33 @@ isa(Γ.XC,MeshArray)
 true
 ```
 """
-function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
-
+function GridLoad(γ=GridSpec(); ID=:default, option=:minimal, verbose=false)
     gr = (ID!==:default ? GridSpec(ID=ID) : γ)
+    if gr.path=="_default"
+        verbose ? println("GridLoad_default") : nothing
+        GridLoad_default(γ)
+    elseif gr.path=="_ones"
+        verbose ? println("GridLoad_ones") : nothing
+        GridLoad_ones(γ; option=option)
+    else
+        verbose ? println("GridLoad_main") : nothing
+        GridLoad_main(γ; option=option)
+    end
+end
 
+function GridLoad_main(γ=GridSpec(); option=:minimal)
     Γ=Dict()
-
     op=string(option)
     if op=="full"
         list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth")
-        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(gr.path))))
+        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
             list_n=(list_n...,"AngleCS","AngleSN");
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
         list_n=(list_n...,"hFacC","hFacS","hFacW")
     elseif op=="light"
         list_n=("XC","XG","YC","YG","RAC","DXC","DXG","DYC","DYG","Depth")
-        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(gr.path))))
+        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
             list_n=(list_n...,"AngleCS","AngleSN")
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
@@ -105,7 +118,7 @@ function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
         error("unknown option")
     end
 
-    [Γ[ii]=GridLoadVar(ii,gr) for ii in list_n]
+    [Γ[ii]=GridLoadVar(ii,γ) for ii in list_n]
     op=="full"||op=="light" ? GridAddWS!(Γ) : nothing
     return Dict_to_NamedTuple(Γ)
 end
@@ -248,3 +261,5 @@ function GridLoad_default(γ=GridSpec())
     dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
     gr=Grids_simple.grid_add_z(gr,dep,msk)
 end
+
+import .Grids_simple: GridSpec_ones, GridLoad_ones

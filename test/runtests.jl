@@ -22,7 +22,8 @@ include(joinpath(p,"../examples/Demos.jl"))
         elseif nTopo==4; grTopo="PeriodicDomain"; nFaces=1; N=400;
         end;
         Npt=nFaces*N*N
-        γ,Γ=Grids_simple.GridOfOnes(grTopo,nFaces,N;option="full")
+        γ=MeshArrays.GridSpec_ones(grTopo,nFaces,N)
+        Γ=MeshArrays.GridLoad_ones(γ;option="full")
         @test γ.class == grTopo
         Rini= 0.; Rend= 0.;
         (Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
@@ -90,7 +91,7 @@ end
     #Load grid and transport / vector field
     γ=GridSpec(ID=:LLC90)
     @suppress show(γ)
-    Γ=GridLoad(ID=:LLC90,option=:full)
+    Γ=GridLoad(γ,option=:full)
     @suppress show(Γ.XC)
 
     path=MeshArrays.Dataset("GRID_LLC90")
@@ -238,8 +239,9 @@ end
     (Γ,γ)=Grids_simple.UnitGrid( (80,90) , (20,30) ; option="full")
     @test isa(γ,gcmgrid)
 
-    tmp=Grids_simple.UnitGrid(γ)
-    @test isa(tmp,NamedTuple)
+    γ=Grids_simple.GridSpec_ones("PeriodicDomain",1,10)
+    Γ=Grids_simple.GridLoad_ones(γ,option="full")
+    @test isa(Γ,NamedTuple)
 
     #various read/write functions
     read(write(Γ.XC),γ)
