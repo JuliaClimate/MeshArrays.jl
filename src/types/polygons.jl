@@ -22,6 +22,8 @@ end
 using MeshArrays, GeoJSON, DataDeps
 pol=MeshArrays.Dataset("oceans_geojson1")
 
+#write(pol,tempname()*".json")
+
 using CairoMakie
 MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
 lines(MeshArraysMakieExt.pol_to_Makie(pol))
@@ -55,20 +57,7 @@ end
     to_Polygon(pa::polyarray)
 
 ```
-using DataFrames
-function write_polygons_to_json(pols,nams)
-    np=length(pols)
-    df = DataFrame(geometry=pols)
-    df[!,:id] = nams
-    df[!, :name] = nams
-    df
-
-    fn = tempname()*".json"
-    GeoJSON.write(fn, df)
-end
-
 pol_P,nams=MeshArrays.to_Polygon(pol)
-write_polygons_to_json(pol_P,nams)
 ```
 """
 function to_Polygon(pa::polyarray)
