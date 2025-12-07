@@ -1,7 +1,7 @@
 
 
 """
-    GridSpec(category="DefaultPeriodicDomain",
+    GridSpec(category="default",
         path=tempname(); np=nothing, ID=:unknown)
 
 - Select one of the pre-defined grids either by ID (keyword) or by category.
@@ -64,19 +64,31 @@ isa(g,gcmgrid)
 true
 ```
 """
-function GridSpec(category="DefaultPeriodicDomain", 
+function GridSpec(category="default", 
         path=tempname(); np=nothing, ID=:unknown)
-
-    if category=="DefaultPeriodicDomain"&&ID==:unknown
-        nFaces=4
-        grTopo="DefaultPeriodicDomain"
-        ioSize=[360 160]
-        facesSize=[(180, 80), (180, 80), (180, 80), (180, 80)]
-        ioPrec=Float32
-        gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
+    if category=="default"&&ID==:unknown
+        GridSpec_default(Grids_simple.xy_IAP(),1)
     else
         GridSpec_MITgcm(category, path; np=np, ID=ID)
     end
+end
+
+function GridSpec_default(xy::NamedTuple, nFaces=1)
+    (; xc, yc, xg, yg) = xy
+
+    dx=diff(xg)[1]
+    ni=length(xc)
+    nj=length(yc)
+    nni=Int(ni/sqrt(nFaces))
+    nnj=Int(nj/sqrt(nFaces))
+
+    grTopo="PeriodicChannel"
+    ioSize=[ni nj]
+    facesSize=[(nni, nnj), (nni, nnj), (nni, nnj), (nni, nnj)]
+    ioPrec=Float32
+    path=tempname()
+
+    g=gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 end
 
 Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
@@ -273,3 +285,13 @@ include("simple.jl")
 include("tiles.jl")
 include("MITgcm.jl")
 include("NEMO.jl")
+
+##
+
+function GridLoad_default(γ=GridSpec())
+    xy=Grids_simple.xy_IAP()
+    gr=Grids_simple.grid_factors(xy)
+
+    dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
+    gr=Grids_simple.grid_add_z(gr,dep,msk)
+end

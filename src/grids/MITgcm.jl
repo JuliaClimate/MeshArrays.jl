@@ -34,13 +34,13 @@ elseif category=="PeriodicChannel"
     ioSize=[360 160]
     facesSize=[(360, 160)]
     ioPrec=Float32
-elseif category=="PeriodicDomain"||category=="DefaultPeriodicDomain"
+elseif category=="PeriodicDomain"
     nFaces=4
     grTopo="PeriodicDomain"
     ioSize=[80 42]
     facesSize=[(40, 21), (40, 21), (40, 21), (40, 21)]
     ioPrec=Float32
-else
+elseif ID==:unknown
     error("unknown category case")
 end
 
@@ -57,8 +57,8 @@ elseif ID==:CS32
     GridSpec("CubeSphere", MeshArrays.Dataset("GRID_CS32"), np=np)
 elseif ID==:onedegree
     GridSpec("PeriodicChannel", MeshArrays.Dataset("GRID_LL360"))
-elseif ID==:default
-    GridSpec()
+elseif ID==:PeriodicDomain
+    GridSpec_MITgcm("PeriodicDomain")
 else
     error("unknwown grid")
 end

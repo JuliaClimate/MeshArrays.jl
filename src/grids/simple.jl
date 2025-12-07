@@ -2,7 +2,8 @@
 module Grids_simple
 
 using Unitful
-import MeshArrays: gcmgrid, varmeta, MeshArray, Dict_to_NamedTuple, read_tiles, write_tiles, GridSpec
+import MeshArrays: gcmgrid, varmeta, MeshArray, Dict_to_NamedTuple
+import MeshArrays: read_tiles, write_tiles, GridSpec_default
 
 """
     GridOfOnes(grTp,nF,nP;option="minimal")
@@ -208,16 +209,16 @@ xy=Grids_simple.xy_OISST()
 gr=Grids_simple.grid_factors(xy)
 ```
 """
-grid_factors(xy::NamedTuple)=begin
+grid_factors(xy::NamedTuple; nFaces=1)=begin
     (; xc, yc, xg, yg) = xy
 
+    dx=diff(xg)[1]
     ni=length(xc)
     nj=length(yc)
-    dx=diff(xg)[1]
+    nni=Int(ni/sqrt(nFaces))
+    nni=Int(nj/sqrt(nFaces))
 
-    g=GridSpec("PeriodicChannel")
-    g.fSize[1]=(ni,nj)
-    g.ioSize.=[ni nj]
+    g=GridSpec_default(xy,nFaces)
 
     dxF = rSphere*deg2rad.(cosd.(yc)*dx)
     dyF = rSphere*deg2rad.(diff(yg))
