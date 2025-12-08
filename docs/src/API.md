@@ -40,15 +40,6 @@ MeshArrays.GridLoad_ones
 GridLoadVar
 ```
 
-### Simple Grids
-
-```@docs
-Grids_simple.periodic_domain
-Grids_simple.grid_factors
-Grids_simple.grid_add_z
-Grids_simple.UnitGrid
-```
-
 ### Functionalities
 
 ```@docs
@@ -89,7 +80,26 @@ UVtoUEVN
 Integration.loops
 ```
 
-## 6. Other
+## 6. Grid Data Sets
+
+```@docs
+MeshArrays.Dataset
+MeshArrays.mydatadep
+```
+
+## 7. Polygons
+
+```@docs
+MeshArrays.NamedPolygon
+MeshArrays.polyarray
+MeshArrays.to_Polygon
+MeshArrays.to_polyarray
+MeshArrays.within_pol
+MeshArrays.read_json
+MeshArrays.read_shp
+```
+
+## 8. Other
 
 ```@docs
 LatitudeCircles
@@ -97,6 +107,4 @@ Transect
 demo.ocean_basins
 demo.extended_basin
 isosurface
-MeshArrays.Dataset
-MeshArrays.mydatadep
 ```

@@ -1,5 +1,6 @@
 using Documenter, MeshArrays
-import PlutoSliderServer, DataDeps, CairoMakie, JLD2, Shapefile
+import PlutoSliderServer, DataDeps, CairoMakie 
+import JLD2, GeometryOps, Shapefile, GeoJSON
 #import Climatology, MITgcm
 
 ENV["DATADEPS_ALWAYS_ACCEPT"]=true
