@@ -22,11 +22,10 @@ end
 using MeshArrays, GeoJSON, DataDeps
 pol=MeshArrays.Dataset("oceans_geojson1")
 
-#write(pol,tempname()*".json")
+write(pol,tempname()*".json")
 
 using CairoMakie
-MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
-lines(MeshArraysMakieExt.pol_to_Makie(pol))
+lines(pol)
 ```
 """
 struct polyarray
@@ -38,6 +37,16 @@ end
 
 to_polyarray(pol::polyarray) = pol
 
+"""
+     to_polyarray(pol)
+
+Convert polygon data into a `polyarray`.
+
+```
+fil="countries.geojson"
+MeshArrays.to_polyarray(GeoJSON.read(fil))
+```
+"""
 function to_polyarray(pol)
     nk=length(pol)
     npol=NamedPolygon[]
@@ -55,6 +64,8 @@ end
 
 """
     to_Polygon(pa::polyarray)
+
+Convert `polyarray` into a `GI.Polygon` array.
 
 ```
 pol_P,nams=MeshArrays.to_Polygon(pol)

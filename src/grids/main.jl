@@ -247,15 +247,15 @@ function GridAddWS!(Γ::Dict)
     for ff=1:nFaces
         tmp1=XC[ff][1:end-2,2:end-1]
         tmp2=XC[ff][2:end-1,2:end-1]
-        tmp2[tmp2.-tmp1.>180]=tmp2[tmp2.-tmp1.>180].-360;
-        tmp2[tmp1.-tmp2.>180]=tmp2[tmp1.-tmp2.>180].+360;
-        XW[ff]=(tmp1.+tmp2)./2;
+        tmp2[tmp2.-tmp1.>180]=tmp2[tmp2.-tmp1.>180].-360
+        tmp2[tmp1.-tmp2.>180]=tmp2[tmp1.-tmp2.>180].+360
+        XW[ff]=(tmp1.+tmp2)./2
        #
         tmp1=XC[ff][2:end-1,1:end-2]
         tmp2=XC[ff][2:end-1,2:end-1]
-        tmp2[tmp2.-tmp1.>180]=tmp2[tmp2.-tmp1.>180].-360;
-        tmp2[tmp1.-tmp2.>180]=tmp2[tmp1.-tmp2.>180].+360;
-        XS[ff]=(tmp1.+tmp2)./2;
+        tmp2[tmp2.-tmp1.>180]=tmp2[tmp2.-tmp1.>180].-360
+        tmp2[tmp1.-tmp2.>180]=tmp2[tmp1.-tmp2.>180].+360
+        XS[ff]=(tmp1.+tmp2)./2
        #
         tmp1=YC[ff][1:end-2,2:end-1]
         tmp2=YC[ff][2:end-1,2:end-1]
@@ -263,14 +263,14 @@ function GridAddWS!(Γ::Dict)
        #
         tmp1=YC[ff][2:end-1,1:end-2]
         tmp2=YC[ff][2:end-1,2:end-1]
-        YS[ff]=(tmp1.+tmp2)./2;
-    end;
+        YS[ff]=(tmp1.+tmp2)./2
+    end
 
-    Xmax=180; Xmin=-180;
-    XS[findall(XS.<Xmin)]=XS[findall(XS.<Xmin)].+360;
-    XS[findall(XS.>Xmax)]=XS[findall(XS.>Xmax)].-360;
-    XW[findall(XW.<Xmin)]=XW[findall(XW.<Xmin)].+360;
-    XW[findall(XW.>Xmax)]=XW[findall(XW.>Xmax)].-360;
+    Xmax=180; Xmin=-180
+    XS[findall(XS.<Xmin)]=XS[findall(XS.<Xmin)].+360
+    XS[findall(XS.>Xmax)]=XS[findall(XS.>Xmax)].-360
+    XW[findall(XW.<Xmin)]=XW[findall(XW.<Xmin)].+360
+    XW[findall(XW.>Xmax)]=XW[findall(XW.>Xmax)].-360
 
     Γ["XW"]=XW
     Γ["XS"]=XS

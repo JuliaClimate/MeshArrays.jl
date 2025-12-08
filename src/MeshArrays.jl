@@ -8,14 +8,7 @@ artifact_toml = joinpath(p, "../Artifacts.toml")
 
 import GeoInterface as GI
 
-function read_shp end
-function read_json end
-function read_jld2 end
-function write_jld2 end
-function ProjAxis end
-function grid_lines! end
-function within_pol end
-
+include("extensions.jl")
 include("types/main.jl")
 include("ReadWrite.jl")
 include("grids/main.jl")
@@ -33,8 +26,9 @@ include("Polygons.jl")
 
 export AbstractMeshArray, MeshArray, MeshArray_wh
 export gcmgrid, varmeta, gridpath, gridmask
-export GridSpec, GridLoad, GridLoadVar, Grids_simple, NEMO_GRID
-export exchange, Tiles, Tiles!, Interpolate, InterpolationFactors, knn, interpolation_setup
+export GridSpec, GridLoad, GridLoadVar
+export exchange, Tiles, Tiles!
+export Interpolate, InterpolationFactors, knn, interpolation_setup
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV
 export nansum, nanmean, nanmax, nanmin
@@ -43,8 +37,6 @@ export Integration
 
 #export InnerArray, OuterArray
 #export smooth, mask
-#export GridOfOnes 
-#export GridAddWS!
 
 export ScalarPotential, VectorPotential
 export UVtoUEVN, UVtoTransport, UVtoTransport!

@@ -1,7 +1,7 @@
 using Test, Documenter, Suppressor, MeshArrays, CairoMakie
 import DataDeps, JLD2, Shapefile, GeoJSON, Proj, GeometryOps
 import MITgcm
-import MeshArrays: GI
+import MeshArrays: GI, NEMO_GRID, Grids_simple
 
 MeshArrays.Dataset("GRID_LL360")
 MeshArrays.Dataset("GRID_LLC90")

@@ -138,7 +138,7 @@ Set up a simple periodic domain of size np x nq
 ```jldoctest; output = false
 using MeshArrays
 np=16 #domain size is np x np
-Γ=Grids_simple.periodic_domain(np)
+Γ=MeshArrays.Grids_simple.periodic_domain(np)
 isa(Γ.XC,MeshArray)
 
 # output
@@ -176,11 +176,12 @@ GridLoad_lonlatdep(depth,mask) = grid_add_z(GridLoad_lonlat(),depth,mask)
     grid_add_z(G,depth,mask)
 
 ```
-xy=Grids_simple.xy_IAP()
-gr=Grids_simple.grid_factors(xy)
+import MeshArrays.Grids_simple: xy_IAP, grid_factors, grid_add_z
 
+xy=xy_IAP()
+gr=grid_factors(xy)
 dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
-gr=Grids_simple.grid_add_z(gr,dep,msk)
+gr=grid_add_z(gr,dep,msk)
 ```
 """
 grid_add_z(G,depth,mask) = begin
@@ -226,6 +227,8 @@ end
     grid_factors(xy::NamedTuple)
 
 ```
+import MeshArrays: Grids_simple
+
 xy=Grids_simple.xy_OISST()
 gr=Grids_simple.grid_factors(xy)
 ```

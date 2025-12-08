@@ -11,26 +11,12 @@ module MeshArraysGeoJSONExt
     import MeshArrays: read_json, to_polyarray, polyarray, to_Polygon
     import Base: write
 
-    """
-        read_json(fil; format=1)
-
-    Call `GeoJSON.read` and return `polyarray` (default)
-
-    - format 1 (default): return `polyarray`
-    - format 0.1 : convert to `GI.coordinates`.
-    - format 0.2 : return FeatureCollection (vector of name,geom pairs)
-
-    ```
-    import MeshArrays, DataDeps, GeoJSON
-    pol=MeshArrays.Dataset("oceans_geojson1")
-    ```
-    """
-    function read_json(fil; format=1)
-        if format==1
+    function read_json(fil; format=:polyarray)
+        if format==:polyarray
             to_polyarray(GeoJSON.read(fil))
-        elseif format==1.2
+        elseif format==:GeoJSON
             GeoJSON.read(fil)
-        elseif format==0.1
+        elseif format==:coord
             jsonbytes = read(fil)
             geoms = GeoJSON.read(jsonbytes)
             #GeoJSON.GI.coordinates(geoms)
