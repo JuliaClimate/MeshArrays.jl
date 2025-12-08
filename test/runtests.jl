@@ -263,6 +263,24 @@ end
     @test haskey(gr,:hFacC)
 end
 
+@testset "NEMO_GRID:" begin
+    lst=NEMO_GRID.variable_NTA()
+    nam=NEMO_GRID.variable_in_NEMO(:XC,lst)
+    @test isa(nam,Symbol)
+
+    grid_data=Dict(:glamt=>zeros(1442,1021))
+    XC_a=NEMO_GRID.convert_one_grid_variable(grid_data,lst[14])
+
+    grid=(XC=XC_a,YC=XC_a,RAC=XC_a,DXG=XC_a,DYG=XC_a)
+    G=NEMO_GRID.grid_to_MeshArrays(grid)
+
+    XC_e=NEMO_GRID.exchange(G.XC)
+    @test isa(XC_e,MeshArray_wh)
+    
+    G=NEMO_GRID.add_angle_CS_SN(G)
+    @test haskey(G,:AngleCS)
+end
+
 if false
     γ = GridSpec(ID=:OISST)
     γ = GridSpec(ID=:LLC90)
