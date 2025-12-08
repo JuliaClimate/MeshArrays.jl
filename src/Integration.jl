@@ -4,7 +4,7 @@ module Integration
 using Distributed, SharedArrays, Glob
 import MeshArrays: read_jld2, write_jld2
 import MeshArrays: GridLoad, GridLoadVar, GridSpec
-import MeshArrays: demo, MeshArray, gridmask
+import MeshArrays: demo, AbstractMeshArray, MeshArray, gridmask
 
 ##
 
@@ -244,7 +244,7 @@ function streamlined_loop(mask::gridmask; files=String[], var=:THETA, rd=read)
   Array(BA)
 end
 
-function one_comp(mask::gridmask, tmp::MeshArray)
+function one_comp(mask::gridmask, tmp::AbstractMeshArray)
   nh=length(mask.names)
   nv=length(mask.depths)
   BA=zeros(nh,nv)

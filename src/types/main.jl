@@ -312,7 +312,8 @@ function Base.show(io::IO, z::gridmask)
 end
 
 Base.@kwdef struct MeshArray_wh
-  MA::MeshArray
+  MA::AbstractMeshArray
   HS::Int #halo size
 end
 
+exchange(x::Any) = x

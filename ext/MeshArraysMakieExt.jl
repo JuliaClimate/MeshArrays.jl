@@ -46,7 +46,7 @@ end
 ##
 
 """
-    scatter(XC::MeshArray,YC::MeshArray;color=:black,colorrange=[],colorbar=true,title="",kwargs...)
+    scatter(XC::AbstractMeshArray,YC::AbstractMeshArray;color=:black,colorrange=[],colorbar=true,title="",kwargs...)
 
 ```
 scatter(Γ.XC,Γ.YC,color=:black)
@@ -54,7 +54,7 @@ MS=log10.(Γ.RAC)*μ
 scatter(Γ.XC,Γ.YC,color=MS)
 ```
 """
-function scatter(XC::MeshArray,YC::MeshArray;
+function scatter(XC::AbstractMeshArray,YC::AbstractMeshArray;
 	color=:black,colorrange=[],colorbar=true,title="",kwargs...)
 
 	if isa(color,MeshArray)
@@ -68,14 +68,14 @@ function scatter(XC::MeshArray,YC::MeshArray;
 
 	fig = Figure(size = (900,600), backgroundcolor = :grey95)
 	ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
-	scatter!(ax,XC::MeshArray,YC::MeshArray; 
+	scatter!(ax,XC::AbstractMeshArray,YC::AbstractMeshArray; 
 	color=color, colorrange=colorrange, colorbar=colorbar, kwargs...)
 
 	fig
 end
 
 """
-    scatter!(ax,XC::MeshArray,YC::MeshArray;color=:black,colorrange=[],colormap=:viridis)
+    scatter!(ax,XC::AbstractMeshArray,YC::AbstractMeshArray;color=:black,colorrange=[],colormap=:viridis)
 
 ```
 fig=heatmap(Γ.Depth,interpolation=λ)
@@ -83,7 +83,7 @@ scatter!(current_axis(),Γ.XC,Γ.YC,color=:red)
 fig
 ```
 """	
-function scatter!(ax,XC::MeshArray,YC::MeshArray;
+function scatter!(ax,XC::AbstractMeshArray,YC::AbstractMeshArray;
 	color=:black,colorrange=[],colorbar=true,colormap=:veridis,kwargs...)
 
 	if isa(color,MeshArray)&&isempty(colorrange)
@@ -111,7 +111,7 @@ function scatter!(ax,XC::MeshArray,YC::MeshArray;
 end
 
 """
-    heatmap(MS::MeshArray; interpolation=nothing,globalmap=false,x=nothing,y=nothing,colorbar=true,title="",kwargs...)
+    heatmap(MS::AbstractMeshArray; interpolation=nothing,globalmap=false,x=nothing,y=nothing,colorbar=true,title="",kwargs...)
 
 Represent a `MeshArray` as a `heatmap`, or several, depending on keyword parameter choices. 
 
@@ -124,11 +124,11 @@ heatmap(MS,interpolation=λ,title="ocean depth") #same but w title
 heatmap(MS,x=lon,y=lat) #only for simple domains; will show MS[1]
 ```
 """
-heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,colorbar=true,title="",kwargs...)=begin
+heatmap(MS::AbstractMeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,colorbar=true,title="",kwargs...)=begin
 	if (!isnothing(interpolation))||globalmap||(!isnothing(x))
 		f=Figure()
 		ax=Axis(f[1,1],title=title)
-		hm1=heatmap!(ax,MS::MeshArray;
+		hm1=heatmap!(ax,MS::AbstractMeshArray;
 				interpolation=interpolation,globalmap=globalmap,x=x,y=y,
 				kwargs...)
 		colorbar ? Colorbar(f[1,2], hm1, height = Relative(0.65)) : nothing
@@ -138,7 +138,7 @@ heatmap(MS::MeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,
 	end
 end
 
-function heatmap!(ax::Axis,MS::MeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,kwargs...)	
+function heatmap!(ax::Axis,MS::AbstractMeshArray;interpolation=nothing,globalmap=false,x=nothing,y=nothing,kwargs...)	
 	if !isnothing(interpolation)
 		heatmap_interpolation!(ax,MS,interpolation;kwargs...)
 	elseif globalmap
@@ -150,14 +150,14 @@ function heatmap!(ax::Axis,MS::MeshArray;interpolation=nothing,globalmap=false,x
 	end
 end
 
-function heatmap_globalmap!(ax,MS::MeshArray;kwargs...)
+function heatmap_globalmap!(ax,MS::AbstractMeshArray;kwargs...)
 	γ=MS.grid
 	DD=γ.write(MS)	
 #	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(DD),nanmax(DD))
 	hm1=heatmap!(ax,DD;kwargs...)
 end
 
-function heatmap_globalmap(MS::MeshArray;title="",colorbar=true,kwargs...)
+function heatmap_globalmap(MS::AbstractMeshArray;title="",colorbar=true,kwargs...)
     fig = Figure(size = (900,900), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="i index",ylabel="j index",title=title)
 	hm1=heatmap_globalmap!(ax,MS;kwargs...)
@@ -165,10 +165,10 @@ function heatmap_globalmap(MS::MeshArray;title="",colorbar=true,kwargs...)
     fig
 end
 
-heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = heatmap!(ax,x,y,MS[1];kwargs...)
-#heatmap_xy!(ax,MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = surface!(ax,x,y,0*x;color=MS[1],shading=NoShading,	kwargs...)
+heatmap_xy!(ax,MS::AbstractMeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = heatmap!(ax,x,y,MS[1];kwargs...)
+#heatmap_xy!(ax,MS::AbstractMeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};kwargs...) = surface!(ax,x,y,0*x;color=MS[1],shading=NoShading,	kwargs...)
 
-function heatmap_xy(MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};title="",colorbar=true,kwargs...)
+function heatmap_xy(MS::AbstractMeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,Array};title="",colorbar=true,kwargs...)
     fig = Figure(size = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
 	hm1=heatmap_xy!(ax,MS,x,y;kwargs...)
@@ -176,13 +176,13 @@ function heatmap_xy(MS::MeshArray,x::Union{UnitRange,Array},y::Union{UnitRange,A
     fig
 end
 
-function heatmap_interpolation!(ax,MS::MeshArray,λ::NamedTuple;kwargs...)
+function heatmap_interpolation!(ax,MS::AbstractMeshArray,λ::NamedTuple;kwargs...)
     DD=Interpolate(MS,λ.f,λ.i,λ.j,λ.w)
 	DD=reshape(DD,size(λ.lon))
 	hm1=heatmap!(ax,λ.lon[:,1],λ.lat[1,:],DD;kwargs...)
 end
 
-function heatmap_interpolation(MS::MeshArray,λ::NamedTuple;title="",colorbar=true,kwargs...)
+function heatmap_interpolation(MS::AbstractMeshArray,λ::NamedTuple;title="",colorbar=true,kwargs...)
     fig = Figure(size = (900,400), backgroundcolor = :grey95)
     ax = Axis(fig[1,1],xlabel="longitude",ylabel="latitude",title=title)
 	hm1=heatmap_interpolation!(ax,MS,λ;kwargs...)
@@ -190,7 +190,7 @@ function heatmap_interpolation(MS::MeshArray,λ::NamedTuple;title="",colorbar=tr
     fig
 end
 
-function heatmap_tiled(MS::MeshArray;title="",
+function heatmap_tiled(MS::AbstractMeshArray;title="",
 	colorbar=true,colorrange=[],colormap=:viridis,kwargs...)
 	fig = Figure(size = (900,900), backgroundcolor = :grey95)
 	nf=length(MS.fSize)
@@ -717,7 +717,7 @@ function scatter!(pr_ax::PrAxis,lon,lat,kargs...; kwargs...)
 	scatter!(pr_ax.ax,x,y,kargs...; kwargs...)
 end
 
-plot(x::MeshArray; kwargs...) = begin
+plot(x::AbstractMeshArray; kwargs...) = begin
 	if ndims(x) == 1
 		heatmap(x; kwargs...)
 	else

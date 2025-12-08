@@ -49,14 +49,14 @@ function MapWetPoints(mskWet)
 end
 
 """
-    SeedWetPoints(tmp::MeshArray,Kmap::MeshArray,Lmap::MeshArray,I...)
+    SeedWetPoints(tmp::AbstractMeshArray,Kmap::AbstractMeshArray,Lmap::AbstractMeshArray,I...)
 
 Seed a subset of grid points.
 ```
-(FLDones,FLDkkFROM)=SeedWetPoints(tmp::MeshArray,Kmap::MeshArray,Lmap::MeshArray,I...)
+(FLDones,FLDkkFROM)=SeedWetPoints(tmp::AbstractMeshArray,Kmap::AbstractMeshArray,Lmap::AbstractMeshArray,I...)
 ```
 """
-function SeedWetPoints(tmp::MeshArray,Kmap::MeshArray,Lmap::MeshArray,I...)
+function SeedWetPoints(tmp::AbstractMeshArray,Kmap::AbstractMeshArray,Lmap::AbstractMeshArray,I...)
     aa=I[1]
     ii=I[2]
     jj=I[3]
@@ -161,7 +161,7 @@ Vector potential inversion.
 TrspPot=ScalarPotential(TrspCon)
 ```
 """
-function VectorPotential(TrspX::MeshArray,TrspY::MeshArray,Γ::NamedTuple,method::Int=1)
+function VectorPotential(TrspX::AbstractMeshArray,TrspY::AbstractMeshArray,Γ::NamedTuple,method::Int=1)
 
     # 1)  streamfunction face by face:
 

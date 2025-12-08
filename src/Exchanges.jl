@@ -5,27 +5,27 @@
 ## User Front Ends
 
 """
-    exchange(fld::MeshArray)
+    exchange(fld::AbstractMeshArray)
 
 Exchange / transfer data between neighboring arrays. Other methods are
 
-    exchange(fld::MeshArray,N::Integer)
-    exchange(u::MeshArray,v::MeshArray)
-    exchange(u::MeshArray,v::MeshArray,N::Integer)
+    exchange(fld::AbstractMeshArray,N::Integer)
+    exchange(u::AbstractMeshArray,v::AbstractMeshArray)
+    exchange(u::AbstractMeshArray,v::AbstractMeshArray,N::Integer)
 """
-function exchange(fld::MeshArray)
+function exchange(fld::AbstractMeshArray)
   MeshArray_wh(exch_T_N(fld,1),1)
 end
 
-function exchange(fld::MeshArray,N::Integer)
+function exchange(fld::AbstractMeshArray,N::Integer)
   MeshArray_wh(exch_T_N(fld,N),N)
 end
 
-function exchange(u::MeshArray,v::MeshArray)
+function exchange(u::AbstractMeshArray,v::AbstractMeshArray)
   MeshArray_wh.(exch_UV_N(u,v,1),1)
 end
 
-function exchange(u::MeshArray,v::MeshArray,N::Integer)
+function exchange(u::AbstractMeshArray,v::AbstractMeshArray,N::Integer)
   MeshArray_wh.(exch_UV_N(u,v,N),N)
 end
 
@@ -89,7 +89,7 @@ end
 
 ## Grid-specific implementations: PeriodicDomain case
 
-function exch_T_N_dpdo(fld::MeshArray,N::Integer)
+function exch_T_N_dpdo(fld::AbstractMeshArray,N::Integer)
 
 fillval=0.0
 
@@ -189,7 +189,7 @@ end
 
 ## Grid-specific implementations: PeriodicChannel case
 
-function exch_T_N_ll(fld::MeshArray,N::Integer)
+function exch_T_N_ll(fld::AbstractMeshArray,N::Integer)
 
 fillval=0.0
 
@@ -253,7 +253,7 @@ end
 
 #note: the "CubeSphere" implementation covers both cs and llc
 
-function exch_T_N_cs(fld::MeshArray,N::Integer)
+function exch_T_N_cs(fld::AbstractMeshArray,N::Integer)
 
 fillval=0.0
 
@@ -301,7 +301,7 @@ end
 
 ##
 
-function exch_UV_N_cs(fldU::MeshArray,fldV::MeshArray,N::Integer)
+function exch_UV_N_cs(fldU::AbstractMeshArray,fldV::AbstractMeshArray,N::Integer)
 
 fillval=0.0
 
@@ -355,7 +355,7 @@ end
 
 ##
 
-function exch_UV_cs(fldU::MeshArray,fldV::MeshArray)
+function exch_UV_cs(fldU::AbstractMeshArray,fldV::AbstractMeshArray)
 
 fillval=0.0
 

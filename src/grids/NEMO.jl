@@ -1,8 +1,8 @@
 module NEMO_GRID
 
-import MeshArrays: GridSpec, MeshArray_wh
+import MeshArrays: GridSpec, MeshArray_wh, exchange
 import MeshArrays: gcmgrid, varmeta, defaultmeta
-import MeshArrays: InnerArray, OuterArray, AbstractMeshArray, thisversion
+import MeshArrays: InnerArray, OuterArray, AbstractMeshArray, thisversion, gcmarray
 
 struct nemoarray{T, N, AT} <: AbstractMeshArray{T, N}
    grid::gcmgrid
@@ -13,17 +13,35 @@ struct nemoarray{T, N, AT} <: AbstractMeshArray{T, N}
    version::String
 end
 
-function Base.similar(A::nemoarray)
+one_nemoarray(g::gcmgrid) = begin
+	T=g.ioPrec
+	f=[zeros(g.fSize[1])]
+	fIndex=[1]
+	nemoarray{T,1,InnerArray{T,2}}(g,defaultmeta,f,g.fSize,[1],thisversion)
+end
+
+gcmarray_to_nemorarray(A::gcmarray) = 
+	nemoarray{eltype(A),ndims(A),InnerArray{eltype(A),2}}(A.grid,defaultmeta,copy(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
+
+function Base.similar(A::nemoarray;m::varmeta=defaultmeta)
 	T=eltype(A)
     if ndims(A)==1
-        B=nemoarray{T,1,InnerArray{T,2}}(similar(A.grid),defaultmeta,similar(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
+        B=nemoarray{T,1,InnerArray{T,2}}(similar(A.grid),m,similar(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
     else
-        B=nemoarray{T,1,InnerArray{T,2}}(similar(A.grid),defaultmeta,similar(A.f),copy(A.fSize),copy(A.fIndex),size(A)[2:end]...,thisversion)
+        B=nemoarray{T,1,InnerArray{T,2}}(similar(A.grid),m,similar(A.f),copy(A.fSize),copy(A.fIndex),size(A)[2:end]...,thisversion)
     end
     return B
 end
 
 Base.dataids(A::nemoarray) = (Base.dataids(A.f)..., Base.dataids(A.fSize)..., Base.dataids(A.fIndex)...)
+
+##
+
+class="PeriodicChannel"
+ioSize=(1440, 1020)
+ioPrec=Float64
+
+GridSpec_NEMO(path) = gcmgrid(path,class,1,[ioSize],ioSize,ioPrec,read,write)
 
 ##
 
@@ -119,20 +137,18 @@ function convert_one_grid_variable(grid_data,df_line;
 end
 
 """
-    load(grid_data; verbose=false)
+    GridLoad_NEMO(grid_data=Any[]; verbose=false)
     
 Read in the grid variables from `NEMO` grid file 
 and convert them into a `MeshArray` grid.
 
 ```
-using NCDatasets
-grid_data=Dataset("mesh_mask_ORCA025.nc")
-
 using MeshArrays
-Γ=MeshArrays.NEMO_GRID.load(grid_data)
-g=Γ.XC.grid
+γ=MeshArrays.GridSpec_NEMO(joinpath("data","mesh_mask_ORCA025.nc"))
+using NCDatasets; grid_data=Dataset(γ.path)
+Γ=MeshArrays.GridLoad_NEMO(grid_data)
 
-using CairoMakie,
+using CairoMakie
 heatmap(Γ.nanmask*Γ.RAC)
 
 LC=LatitudeCircles(-89.0:89.0,Γ);
@@ -145,22 +161,26 @@ lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
 lo,la,z=MeshArrays.Interpolate(Γ.Depth,λ)
 heatmap(z)
 
+import MeshArrays.NEMO_GRID: gcmarray_to_nemorarray
+
 path="data/NEMO_sample/monthly/"
 function read_vel(path,grid,month=1)
 	m=string(month)
 	uT=Dataset(joinpath(path,"ORAS5_uT_1993-"*m*".nc"))["uT"][2:end-1,1:1020,1]
-	uT=read(uT,grid)
+	uT=gcmarray_to_nemorarray(read(uT,grid))
 	vT=Dataset(joinpath(path,"ORAS5_vT_1993-"*m*".nc"))["vT"][2:end-1,1:1020,1]
-	vT=read(vT,grid)
+	vT=gcmarray_to_nemorarray(read(vT,grid))
 	(uT,vT)
 end
 
-(uT,vT)=read_vel(path,1)
+(uT,vT)=read_vel(path,γ,1)
 uT_E,vT_N=UVtoUEVN(uT,vT,Γ)
 _,_,z_E=MeshArrays.Interpolate(uT_E,λ);
 _,_,z_N=MeshArrays.Interpolate(vT_N,λ);
 heatmap(z_E,colorrange=(-1,1).*1e3)
 heatmap(z_N,colorrange=(-1,1).*1e3)
+
+using Statistics
 
 MT=zeros(179,12)
 for m in 1:12
@@ -170,7 +190,6 @@ for m in 1:12
 end
 MOHT_GF=mean(MT,dims=2)[:]
 
-using Statistics
 ds=Dataset("data/MER-EP-SW/MOHT/MOHT_allReanas_75S-88N_1993-2020.nc");
 lon_SW=ds["lat"];
 MOHT_SW=1e-15*Float64.(mean(ds["ORAS5"][:,1:12],dims=2))[:];
@@ -182,6 +201,12 @@ axislegend()
 current_figure()
 ```
 """
+function GridLoad_NEMO(grid_data=Any[]; verbose=false)
+	G=read_nc_grid(grid_data,verbose=verbose)
+	G=grid_to_MeshArrays(G)
+	add_angle_CS_SN(G)
+end
+
 load(grid_data; verbose=false)=begin
 	G=read_nc_grid(grid_data,verbose=verbose)
 	G=grid_to_MeshArrays(G)
@@ -229,6 +254,7 @@ function grid_to_MeshArrays(grid)
 	for i in keys(grid)
 		if ndims(grid[i])>1
 			tmp=read(grid[i],g)
+			tmp=gcmarray_to_nemorarray(tmp)
 			merge!(grid2,Dict(i=>tmp))
 		else
 			merge!(grid2,Dict(i=>grid[i]))
@@ -252,12 +278,14 @@ end
 
 ##
 
+exchange(x::nemoarray) = NEMO_exchange(x)
+
 """
-    exchange(x; fac=1.0, U_shift=false)
+    NEMO_exchange(x; fac=1.0, U_shift=false)
 
 Add Halos with neighboring values, based on NEMO's folds.
 """
-function exchange(x; fac=1.0, U_shift=false)
+function NEMO_exchange(x; fac=1.0, U_shift=false)
 	y=zeros(1442,1022)
 	y[2:end-1,2:end-1].=x[1]
 	y[1,:].=y[end-1,:]
@@ -274,7 +302,7 @@ function exchange(x; fac=1.0, U_shift=false)
 	end
 	y
 
-	yy=similar(x;m=x.meta);
+	yy=similar(x)
 	yy[1]=y
 	MeshArray_wh(yy,1)
 end
@@ -284,19 +312,19 @@ function add_angle_CS_SN(Γ)
 	ni,nj=Γ.RAC.fSize[1]
 	grid=Γ.RAC.grid
 
-	psi=exchange(-deg2rad(1)*r_earth*Γ.YC).MA[1]
+	psi=NEMO_exchange(-deg2rad(1)*r_earth*Γ.YC).MA[1]
 	uZ=psi[1:ni,1:nj]-psi[1:ni,2:nj+1]
 	vZ=psi[2:ni+1,1:nj]-psi[1:ni,1:nj]
 
-	DXG=exchange(Γ.DXG).MA[1]
-	DYG=exchange(Γ.DYG).MA[1]
+	DXG=NEMO_exchange(Γ.DXG).MA[1]
+	DYG=NEMO_exchange(Γ.DYG).MA[1]
 	uZ=uZ./DYG[1:ni,1:nj]#shift by 1 point?
 	vZ=vZ./DXG[1:ni,1:nj]
 
 	uZ=read(uZ,grid)
 	vZ=read(vZ,grid)
-	uu=exchange(uZ,fac=-1).MA[1]
-	vv=exchange(vZ,fac=-1).MA[1]
+	uu=NEMO_exchange(uZ,fac=-1).MA[1]
+	vv=NEMO_exchange(vZ,fac=-1).MA[1]
 
 	uZc=(uu[1:ni,1:nj]+uu[2:ni+1,1:nj])/2
 	vZc=(vv[1:ni,1:nj]+vv[1:ni,2:nj+1])/2
