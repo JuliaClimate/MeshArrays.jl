@@ -683,7 +683,7 @@ end
 
 function heatmap!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
-	heatmap!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
+	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
 end
 
 function contourf!(pr_ax::PrAxis,lon,lat,field; kwargs...)
