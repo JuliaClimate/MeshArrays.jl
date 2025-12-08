@@ -395,7 +395,7 @@ end
 
 @testset "polygon operations" begin
     fil=MeshArrays.Dataset("countries_shp1",do_read=false)
-    pol=MeshArrays.read_shp(fil,format=0.2)
+    pol=MeshArrays.read_shp(fil,format=:Shapefile)
     name,rule=MeshArrays.within_pol(pol; ID=11)
     rule_vec = (x,y) -> rule.(x,y)
 
