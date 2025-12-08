@@ -279,6 +279,11 @@ end
     
     G=NEMO_GRID.add_angle_CS_SN(G)
     @test haskey(G,:AngleCS)
+
+    z=[1:10]; G=Dict()
+    grid_data=(gdept_0=z,gdepw_0=z,e3t_0=z,e3w_0=z)
+    NEMO_GRID.add_one_dim_variables!(G,grid_data)
+    @test isa(G,Dict)
 end
 
 if false
