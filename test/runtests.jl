@@ -286,12 +286,11 @@ end
     @test isa(G,Dict)
 end
 
-if false
-    γ = GridSpec(ID=:OISST)
-    γ = GridSpec(ID=:LLC90)
-    #γ=MeshArrays.GridSpec_ones("CubeSphere",6,20)
-    γ = GridSpec("ones")
-    Γ = GridLoad(γ;option="full")
+@testset "GridSpec:" begin
+    γ = GridSpec(ID=:Oscar)
+    γ = GridSpec(ID=:IAP)
+    GridLoad(GridSpec(ID=:OISST))
+    GridLoad(GridSpec("ones"))
 end
 
 @testset "Plotting:" begin
@@ -395,7 +394,7 @@ end
 
 @testset "polygon operations" begin
     fil=MeshArrays.Dataset("countries_shp1",do_read=false)
-    pol=MeshArrays.read_shp(fil,format=0.2)
+    pol=MeshArrays.read_shp(fil,format=:Shapefile)
     name,rule=MeshArrays.within_pol(pol; ID=11)
     rule_vec = (x,y) -> rule.(x,y)
 
