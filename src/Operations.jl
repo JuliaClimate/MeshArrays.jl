@@ -25,20 +25,20 @@ end
 ## gradient methods
 
 """
-    gradient(inFLD::MeshArray,Γ::NamedTuple)
+    gradient(inFLD::AbstractMeshArray,Γ::NamedTuple)
 
 Compute spatial derivatives. Other methods:
 ```
-gradient(inFLD::MeshArray,Γ::NamedTuple,doDIV::Bool)
-gradient(inFLD::MeshArray,iDXC::MeshArray,iDYC::MeshArray)
+gradient(inFLD::AbstractMeshArray,Γ::NamedTuple,doDIV::Bool)
+gradient(inFLD::AbstractMeshArray,iDXC::AbstractMeshArray,iDYC::AbstractMeshArray)
 ```
 """
-function gradient(inFLD::MeshArray,Γ::NamedTuple)
+function gradient(inFLD::AbstractMeshArray,Γ::NamedTuple)
 (dFLDdx, dFLDdy)=gradient(inFLD,Γ,true)
 return dFLDdx, dFLDdy
 end
 
-function gradient(inFLD::MeshArray,Γ::NamedTuple,doDIV::Bool)
+function gradient(inFLD::AbstractMeshArray,Γ::NamedTuple,doDIV::Bool)
 
 exFLD=exchange(inFLD,1).MA
 dFLDdx=similar(inFLD)
@@ -61,7 +61,7 @@ end
 return dFLDdx, dFLDdy
 end
 
-function gradient(inFLD::MeshArray,iDXC::MeshArray,iDYC::MeshArray)
+function gradient(inFLD::AbstractMeshArray,iDXC::AbstractMeshArray,iDYC::AbstractMeshArray)
 
 exFLD=exchange(inFLD,1).MA
 dFLDdx=similar(inFLD)
@@ -82,11 +82,11 @@ end
 ##
 
 """
-    curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+    curl(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
 
 Compute curl of a velocity field.
 """
-function curl(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+function curl(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
 
 	uvcurl=similar(Γ.XC)
 	fac=exchange(1.0 ./Γ.RAZ,1)
@@ -123,14 +123,14 @@ export f, β
 R = 6.3781 * 10^(6) #m
 #Coriolis Parameter
 f_Coriolis(φ) = 2Ω * sind(φ)
-#f_Coriolis(φ::MeshArray) = 2Ω * sind.(φ)
+#f_Coriolis(φ::AbstractMeshArray) = 2Ω * sind.(φ)
 
 """
-    EkmanTrsp(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+    EkmanTrsp(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
 
 Compute Ekman Transport (in m2/s) from wind stress (in N/m2 , or kg/m/s2).
 """
-function EkmanTrsp(u::MeshArray,v::MeshArray,Γ::NamedTuple)
+function EkmanTrsp(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
 	EkX=similar(Γ.DYG)
 	EkY=similar(Γ.DXG)
 	(U,V)=exchange(u,v,1)
@@ -153,21 +153,21 @@ end
 
 ## mask methods
 
-function mask(fld::MeshArray)
+function mask(fld::AbstractMeshArray)
 fldmsk=mask(fld,NaN)
 return fldmsk
 end
 
 """
-    mask(fld::MeshArray, val::Number)
+    mask(fld::AbstractMeshArray, val::Number)
 
 Replace non finite values with val. Other methods:
 ```
-mask(fld::MeshArray)
-mask(fld::MeshArray, val::Number, noval::Number)
+mask(fld::AbstractMeshArray)
+mask(fld::AbstractMeshArray, val::Number, noval::Number)
 ```
 """
-function mask(fld::MeshArray, val::Number)
+function mask(fld::AbstractMeshArray, val::Number)
   fldmsk=similar(fld)
   for a=1:fld.grid.nFaces
     tmp1=copy(fld.f[a])
@@ -177,7 +177,7 @@ function mask(fld::MeshArray, val::Number)
   return fldmsk
 end
 
-function mask(fld::MeshArray, val::Number, noval::Number)
+function mask(fld::AbstractMeshArray, val::Number, noval::Number)
   fldmsk=similar(fld)
   for a=1:fld.grid.nFaces
     tmp1=copy(fld.f[a])
@@ -188,11 +188,11 @@ function mask(fld::MeshArray, val::Number, noval::Number)
 end
 
 """
-    land_mask(m::MeshArray)
+    land_mask(m::AbstractMeshArray)
 
 Define land mask from `m` (1 if m>0; NaN if otherwise).
 """
-function land_mask(m::MeshArray)
+function land_mask(m::AbstractMeshArray)
     μ=m
     μ[findall(μ.>0.0)].=1.0
     μ[findall(μ.==0.0)].=NaN
@@ -204,11 +204,11 @@ land_mask(Γ::NamedTuple)=land_mask(Γ.hFacC[:,1])
 ## convergence methods
 
 """
-    convergence(uFLD::MeshArray,vFLD::MeshArray)
+    convergence(uFLD::AbstractMeshArray,vFLD::AbstractMeshArray)
 
 Compute convergence of a vector field
 """
-function convergence(uFLD::MeshArray,vFLD::MeshArray)
+function convergence(uFLD::AbstractMeshArray,vFLD::AbstractMeshArray)
 
 #important note:
 #  Normally uFLD, vFLD should not contain any NaN;
@@ -233,11 +233,11 @@ end
 ## smooth function
 
 """
-    smooth(FLD::MeshArray,DXCsm::MeshArray,DYCsm::MeshArray,Γ::NamedTuple)
+    smooth(FLD::AbstractMeshArray,DXCsm::AbstractMeshArray,DYCsm::AbstractMeshArray,Γ::NamedTuple)
 
 Smooth out scales below DXCsm / DYCsm via diffusion
 """
-function smooth(FLD::MeshArray,DXCsm::MeshArray,DYCsm::MeshArray,Γ::NamedTuple)
+function smooth(FLD::AbstractMeshArray,DXCsm::AbstractMeshArray,DYCsm::AbstractMeshArray,Γ::NamedTuple)
 
 #important note:
 #input FLD should be land masked (NaN/1) by caller if needed
@@ -416,13 +416,13 @@ end
 is_in_lon_range(x,range)=(range[2].-range[1]>=360)||
   (mod(x-range[1],360).<mod(range[2].-range[1],360))
 
-function restrict_longitudes!(x::MeshArray,lon::MeshArray;range=(0.0,360.0))
+function restrict_longitudes!(x::AbstractMeshArray,lon::AbstractMeshArray;range=(0.0,360.0))
   for f in 1:x.grid.nFaces
     x[f].=x[f].*is_in_lon_range.(lon[f],Ref(range))
   end
 end
 
-function MskToTab(msk::MeshArray)
+function MskToTab(msk::AbstractMeshArray)
   n=Int(sum(msk .!= 0)); k=0
   tab=Array{Int,2}(undef,n,4)
   for i in eachindex(msk)
@@ -437,12 +437,12 @@ function MskToTab(msk::MeshArray)
 end
 
 """
-    edge_mask(mskCint::MeshArray)
+    edge_mask(mskCint::AbstractMeshArray)
 
 Compute edge mask (mskC,mskW,mskS) from domain interior mask (mskCint). 
 This is used in `LatitudeCircles` and `Transect`.
 """
-function edge_mask(mskCint::MeshArray)
+function edge_mask(mskCint::AbstractMeshArray)
   mskCint=1.0*mskCint
 
   #treat the case of blank tiles:
@@ -538,7 +538,7 @@ end
 
 Note: land masking `u,v` with `NaN`s preemptively can be adequate.
 """
-function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
+function UVtoUEVN(u::AbstractMeshArray,v::AbstractMeshArray,G::NamedTuple)
     #u[findall(G.hFacW[:,1].==0)].=NaN
     #v[findall(G.hFacS[:,1].==0)].=NaN
 
@@ -553,7 +553,7 @@ function UVtoUEVN(u::MeshArray,v::MeshArray,G::NamedTuple)
     return uC.*G.AngleCS-vC.*G.AngleSN, uC.*G.AngleSN+vC.*G.AngleCS
 end
 
-function UVtoSpeed!(uC::MeshArray,vC::MeshArray,G::NamedTuple,dD)
+function UVtoSpeed!(uC::AbstractMeshArray,vC::AbstractMeshArray,G::NamedTuple,dD)
   (u,v)=exch_UV(uC,vC)
   for iF=1:u.grid.nFaces
     for i in 1:size(vC[iF],1)
@@ -573,7 +573,7 @@ end
 
 Convert e.g. velocity (m/s) to transport (m^3/s) by multiplying by `DRF` and `DXG`,`DYG`.
 """
-function UVtoTransport(U::MeshArray,V::MeshArray,G::NamedTuple)
+function UVtoTransport(U::AbstractMeshArray,V::AbstractMeshArray,G::NamedTuple)
   uTr=deepcopy(U)
   vTr=deepcopy(V)
   UVtoTransport!(uTr,vTr,G)
@@ -587,7 +587,7 @@ Convert e.g. velocity (m/s) to transport (m^3/s) by multiplying by `DRF` and `DX
 
 (in place)
 """
-function UVtoTransport!(U::MeshArray,V::MeshArray,G::NamedTuple)
+function UVtoTransport!(U::AbstractMeshArray,V::AbstractMeshArray,G::NamedTuple)
   for i in eachindex(U)
       for j in eachindex(U[i])
           !isfinite(U[i][j]) ? U[i][j]=0.0 : nothing

@@ -199,7 +199,7 @@ end
 
 Define matrix of functions to convert indices across neighboring tiles
 """
-function RelocationFunctions_cs(xmpl::MeshArray)
+function RelocationFunctions_cs(xmpl::AbstractMeshArray)
 
 # f1 : 0-n,0-n => -n-0,0-n     for 1->2, 3->4, 5->6
 # f2 : 0-n,0-n => n-0,-n-0     for 2->4, 4->6, 6->2

@@ -37,7 +37,7 @@ function Tiles(γ::gcmgrid,ni::Int,nj::Int)
 end
 
 """
-    Tiles(τ::Array{Dict},x::MeshArray)
+    Tiles(τ::Array{Dict},x::AbstractMeshArray)
 
 Return an `Array` of tiles which cover `x` according to tile partition `τ`.
 
@@ -58,7 +58,7 @@ isa(td[1],Array)
 true
 ```
 """
-function Tiles(τ::Array,x::MeshArray)
+function Tiles(τ::Array,x::AbstractMeshArray)
     nt=length(τ)
     tx=Array{typeof(x[1]),1}(undef,nt)
     dn=size(x[1],1)-x.fSize[1][1]
@@ -74,11 +74,11 @@ function Tiles(τ::Array,x::MeshArray)
 end
 
 """
-    Tiles!(τ::Array,tx::Array,x::MeshArrays)
+    Tiles!(τ::Array,tx::Array,x::AbstractMeshArray)
 
 Map tiles in `tx` according to tile partition `τ` into `x`.
 """
-function Tiles!(T::Array,tx::Array,x::MeshArray)
+function Tiles!(T::Array,tx::Array,x::AbstractMeshArray)
     nt=length(T)
     dn=size(x[1],1)-x.fSize[1][1]
     for ii=1:nt

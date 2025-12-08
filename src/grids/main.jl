@@ -285,6 +285,8 @@ include("tiles.jl")
 include("MITgcm.jl")
 include("NEMO.jl")
 
+import .NEMO_GRID: GridLoad_NEMO, GridSpec_NEMO
+
 ##
 
 """

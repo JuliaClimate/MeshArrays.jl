@@ -3,7 +3,7 @@ using NearestNeighbors
 import NearestNeighbors: knn
 
 """
-    knn(xgrid,ygrid::MeshArray,x,y::Array{T,1},k::Int)
+    knn(xgrid,ygrid::AbstractMeshArray,x,y::Array{T,1},k::Int)
 
 Find k nearest neighbors to each point in x,y on xgrid,ygrid
 
@@ -12,7 +12,7 @@ lon=collect(0.1:0.5:2.1); lat=collect(0.1:0.5:2.1);
 (f,i,j,c)=knn(Γ.XC,Γ.YC,lon,lat)
 ```
 """
-function knn(xgrid::MeshArray,ygrid::MeshArray,
+function knn(xgrid::AbstractMeshArray,ygrid::AbstractMeshArray,
         xvec::Array{T,1},yvec::Array{T,1},k=1::Int) where {T}
 
         #ancillary variables
@@ -49,10 +49,10 @@ function knn(xgrid::MeshArray,ygrid::MeshArray,
         return a_f[kk[idxs]],a_i[kk[idxs]],a_j[kk[idxs]],kk[idxs]
 end
 
-knn(xgrid::MeshArray,ygrid::MeshArray,lon::Number,lat::Number) = knn(xgrid::MeshArray,ygrid::MeshArray,[lon],[lat])
+knn(xgrid::AbstractMeshArray,ygrid::AbstractMeshArray,lon::Number,lat::Number) = knn(xgrid::AbstractMeshArray,ygrid::AbstractMeshArray,[lon],[lat])
 
 """
-    Interpolate(z_in::MeshArray,f,i,j,w)
+    Interpolate(z_in::AbstractMeshArray,f,i,j,w)
 
 ```
 using MeshArrays
@@ -69,7 +69,7 @@ using CairoMakie
 heatmap(vec(lon[:,1]),vec(lat[1,:]),DD,colorrange=(0.,6000.))
 ```
 """
-function Interpolate(z_in::MeshArray,f,i,j,w)
+function Interpolate(z_in::AbstractMeshArray,f,i,j,w)
     z_out=NaN*similar(f[:,1])
     for jj=1:size(f,1)
         if (!isnan(sum(w[jj,:])))&&(sum(f[jj,:].==0)==0)
@@ -82,7 +82,7 @@ function Interpolate(z_in::MeshArray,f,i,j,w)
 end
 
 """
-    Interpolate(z_in::MeshArray,f,i,j,w)
+    Interpolate(z_in::AbstractMeshArray,f,i,j,w)
 
 ```
 using MeshArrays
@@ -105,7 +105,7 @@ or
 heatmap(Γ.Depth,interpolation=L,colorrange=(0.,6000.))
 ```
 """
-function Interpolate(z_in::MeshArray,λ::NamedTuple)
+function Interpolate(z_in::AbstractMeshArray,λ::NamedTuple)
         z=Interpolate(z_in,λ.f,λ.i,λ.j,λ.w)
         z=reshape(z,size(λ.lon))
         return λ.lon[:,1],λ.lat[1,:],z

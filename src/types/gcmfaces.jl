@@ -299,46 +299,9 @@ function Base.view(a::Union{gcmfaces{T, N},gcmsubset{T, N}}, I::Vararg{Union{Int
   return c;
 end
 
-# Custom pretty-printing
-
-function Base.show(io::IO, z::Union{gcmfaces{T, N},gcmsubset{T, N}}) where {T,N}
-
-#    @printf io " MeshArrays instance with \n"
-    if isa(z,gcmfaces)
-      printstyled(io, " gcmfaces array \n",color=:normal)
-      nm="face"
-      fs=fsize(z.f)
-    elseif isa(z,gcmsubset)
-      printstyled(io, " gcmsubset array \n",color=:normal)
-      fs=fsize(z.i)
-      nm="subset"
-    else
-      error("unknown type")
-    end
-    printstyled(io, "  grid type   = ",color=:normal)
-    printstyled(io, "$(z.grid.class)\n",color=:blue)
-    printstyled(io, "  # of faces  = ",color=:normal)
-    printstyled(io, "$(z.grid.nFaces)\n",color=:blue)
-    if ~isassigned(z.f);
-      printstyled(io, "  data type   = ",color=:normal)
-      printstyled(io, "unassigned\n",color=:green)
-      printstyled(io, "  face sizes  = ",color=:normal)
-      printstyled(io, "unassigned\n",color=:green)
-    else
-      printstyled(io, "  data type   = ",color=:normal)
-      printstyled(io, "$(typeof(z.f[1][1]))\n",color=:blue)
-      printstyled(io, "  $(nm) sizes  = ",color=:normal)
-      printstyled(io, "$(fs[1])\n",color=:blue)
-      for iFace=2:z.grid.nFaces
-        printstyled(io, "                ",color=:normal)
-        printstyled(io, "$(fs[iFace])\n",color=:blue)
-      end
-    end
-
-    return
-end
-
 #
+
+Base.similar(A::gcmfaces) = gcmfaces(A.grid,eltype(A),A.fSize,A.aSize)
 
 function Base.similar(A::gcmfaces, ::Type{T}, dims::Dims) where {T}
   if prod(dims)==length(A)
