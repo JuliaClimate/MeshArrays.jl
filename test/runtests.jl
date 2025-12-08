@@ -286,12 +286,11 @@ end
     @test isa(G,Dict)
 end
 
-if false
-    γ = GridSpec(ID=:OISST)
-    γ = GridSpec(ID=:LLC90)
-    #γ=MeshArrays.GridSpec_ones("CubeSphere",6,20)
-    γ = GridSpec("ones")
-    Γ = GridLoad(γ;option="full")
+@testset "GridSpec:" begin
+    γ = GridSpec(ID=:Oscar)
+    γ = GridSpec(ID=:IAP)
+    GridLoad(GridSpec(ID=:OISST))
+    GridLoad(GridSpec("ones"))
 end
 
 @testset "Plotting:" begin

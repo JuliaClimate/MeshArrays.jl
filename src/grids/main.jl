@@ -56,11 +56,11 @@ function GridSpec_default(xy=NamedTuple(), nFaces=1; ID=:unknown)
         else
             error("unknown grid ID")
         end
-        GridSpec_default_xy(xy,nFaces)
+        GridSpec_default_xy(xy,nFaces,path="_default_"*string(ID))
     end
 end
 
-function GridSpec_default_xy(xy::NamedTuple, nFaces=1)
+function GridSpec_default_xy(xy::NamedTuple, nFaces=1; path="_default")
     (; xc, yc, xg, yg) = xy
 
     dx=diff(xg)[1]
@@ -73,7 +73,6 @@ function GridSpec_default_xy(xy::NamedTuple, nFaces=1)
     ioSize=[ni nj]
     facesSize=[(nni, nnj), (nni, nnj), (nni, nnj), (nni, nnj)]
     ioPrec=Float32
-    path="_default"
 
     g=gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 end
@@ -118,10 +117,10 @@ true
 """
 function GridLoad(γ=GridSpec(); ID=:default, option=:minimal, verbose=false)
     gr = (ID!==:default ? GridSpec(ID=ID) : γ)
-    if gr.path=="_default"
+    if occursin("_default",gr.path)
         verbose ? println("GridLoad_default") : nothing
         GridLoad_default(gr)
-    elseif gr.path=="_ones"
+    elseif occursin("_ones",gr.path)
         verbose ? println("GridLoad_ones") : nothing
         GridLoad_ones(gr; option=option)
     else
@@ -295,10 +294,17 @@ include("NEMO.jl")
 MeshArrays.GridSpec_default(ID=:IAP)
 ```
 """
-function GridLoad_default(gr=GridSpec())#; ID=:unknown)
-#    xy=Grids_simple.xy_IAP()
-#    gr=Grids_simple.grid_factors(xy)
-
+function GridLoad_default(gr=GridSpec())
+    xy=(if gr.path=="_default_IAP"
+            Grids_simple.xy_IAP()
+        elseif gr.path=="_default_Oscar"
+            Grids_simple.xy_Oscar()
+        elseif gr.path=="_default_OISST"
+            Grids_simple.xy_OISST()
+        else
+            error("unknown grid ID")
+        end)
+    gr=Grids_simple.grid_factors(xy)
     dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
     gr=Grids_simple.grid_add_z(gr,dep,msk)
 end
