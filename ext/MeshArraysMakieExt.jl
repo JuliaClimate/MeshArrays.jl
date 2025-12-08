@@ -231,11 +231,12 @@ end
 
 function meriodional_overturning(Γ,ov)
 	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:end-1])); #coordinate variables
-	z=reverse(ov,dims=2); z[z.==0.0].=NaN
+	z=reverse(ov,dims=2); #z[z.==0.0].=NaN
 
 	fig1 = Figure(size = (900,400),markersize=0.1)
 	ax1 = Axis(fig1[1,1], title="Meridional Overturning Streamfunction (in Sv)")
 	hm1=contourf!(ax1,x,y,1e-6*z,levels=(-40.0:5.0:40.0))
+	contour!(ax1,x,y,1e-6*z,color=:black)
 	Colorbar(fig1[1,2], hm1, height = Relative(0.65))
 	fig1
 	#savefig("MOC_mean.png")
@@ -682,17 +683,19 @@ end
 
 function heatmap!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
-	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
+	heatmap!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
 end
 
 function contourf!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
 	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
+	#contourf!(pr_ax.ax,x,y,csfield, kwargs...)
 end
 
 function contour!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
 	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
+	#contour!(pr_ax.ax,x,y,csfield, kwargs...)
 end
 
 function lines!(pr_ax::PrAxis;polygons=Any[], kwargs...)

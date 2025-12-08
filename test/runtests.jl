@@ -280,6 +280,9 @@ end
         lat=[j for i=-170.:20.0:170., j=-80.:20.0:80.])
     λ=interpolation_setup()
 
+    lines(pol_json); lines!(pol_json)
+    plot(pol_json); plot!(pol_json)
+
     basins=demo.ocean_basins()
     AtlExt=demo.extended_basin(basins,:Atl)
     sections,path_sec=demo.ocean_sections(Γ)
@@ -288,7 +291,8 @@ end
     fig=MeshArrays.plot_examples(:smoothing_demo,D,D)
     (fig1,fig2,fig3)=MeshArrays.plot_examples(:interpolation_demo,Γ)
 
-    MeshArrays.plot_examples(:meriodional_overturning,Γ,rand(179,50))
+    fake_ov=40e6*cosd.(360*(1:179)./100)*exp.(-0.1*(-20:29).^2)'
+    MeshArrays.plot_examples(:meriodional_overturning,Γ,fake_ov)
     MeshArrays.plot_examples(:northward_transport,rand(179))
 
     MeshArrays.plot_examples(:gradient_EN,λ,D,D)
@@ -325,8 +329,10 @@ end
     f = Figure()
     ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = "Ocean Depth (m)")
 	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=lon0)
-	surf = surface!(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Dint, 
+    for a in [surface! contourf! contour!]
+        surf = a(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Dint, 
 			colorrange=(0.0,6000.0), colormap=:berlin, shading = NoShading)
+    end
 	lines!(pr_ax; polygons=pol_shp,color=:black,linewidth=0.5)
 	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
 	f
@@ -335,6 +341,10 @@ end
 	data=(lon=λ.lon,lat=λ.lat,var=Dint,meta=meta) #,polygons=pol_shp)
     plot_examples(:projmap,data,lon0,proj)
     plot_examples(:simple_heatmap,data)
+
+    MeshArraysMakieExt.heatmap_globalmap(D)
+    MeshArraysMakieExt.heatmap_interpolation(D,λ)
+    MeshArraysMakieExt.heatmap_xy(D,1:10,1:10)
 
 end
 
