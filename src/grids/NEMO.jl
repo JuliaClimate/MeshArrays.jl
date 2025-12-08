@@ -1,6 +1,31 @@
 module NEMO_GRID
 
 import MeshArrays: GridSpec, MeshArray_wh
+import MeshArrays: gcmgrid, varmeta, defaultmeta
+import MeshArrays: InnerArray, OuterArray, AbstractMeshArray, thisversion
+
+struct nemoarray{T, N, AT} <: AbstractMeshArray{T, N}
+   grid::gcmgrid
+   meta::varmeta
+   f::OuterArray{AT,N}
+   fSize::OuterArray{NTuple{2, Int}}
+   fIndex::OuterArray{Int,1}
+   version::String
+end
+
+function Base.similar(A::nemoarray)
+	T=eltype(A)
+    if ndims(A)==1
+        B=nemoarray{T,1,InnerArray{T,2}}(similar(A.grid),defaultmeta,similar(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
+    else
+        B=nemoarray{T,1,InnerArray{T,2}}(similar(A.grid),defaultmeta,similar(A.f),copy(A.fSize),copy(A.fIndex),size(A)[2:end]...,thisversion)
+    end
+    return B
+end
+
+Base.dataids(A::nemoarray) = (Base.dataids(A.f)..., Base.dataids(A.fSize)..., Base.dataids(A.fIndex)...)
+
+##
 
 variable_list_2d=(
 	(:hdept, :Depth, :T),
@@ -104,7 +129,7 @@ using NCDatasets
 grid_data=Dataset("mesh_mask_ORCA025.nc")
 
 using MeshArrays
-Γ=NEMO_GRID.load(grid_data)
+Γ=MeshArrays.NEMO_GRID.load(grid_data)
 g=Γ.XC.grid
 
 using CairoMakie,
