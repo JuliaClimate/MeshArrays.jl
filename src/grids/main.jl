@@ -1,82 +1,81 @@
 
-
 """
-    GridSpec(category="DefaultPeriodicDomain",
+    GridSpec(category="default",
         path=tempname(); np=nothing, ID=:unknown)
 
-- Select one of the pre-defined grids either by ID (keyword) or by category.
-- Return the corresponding `gcmgrid` specification, including the path where grid files can be accessed (`path`).
+- Select one of the pre-defined grids 
+    - either by `category` parameter (e.g. "default" or "ones")
+    - or by `ID` keyword via `MeshArrays.GridSpec_default` or `MeshArrays.GridSpec_MITgcm`)
+- Return the corresponding `gcmgrid`
+    - including in `path` either a path to grid files or a placeholder like `_ones` or `_default`.
 
-1. selection by `ID`
+```
+using MeshArrays
+γ=GridSpec()
+```
+"""
+function GridSpec(category="default", 
+        path=tempname(); np=nothing, ID=:unknown)
+    if category=="default"&&in(ID,[:unknown, :OISST, :Oscar, :IAP])
+        GridSpec_default(ID=ID)
+    elseif category=="ones"&&ID==:unknown
+        npoints=(isnothing(np) ? 10 : np)
+        GridSpec_ones("PeriodicDomain",1,npoints)
+    else
+        GridSpec_MITgcm(category, path; np=np, ID=ID)
+    end
+end
 
-- `:LLC90`
-- `:CS32`
-- `:LLC270`
-- `:onedegree`
-- `:default`
+"""
+    GridSpec_default(xy=NamedTuple(), nFaces=1; ID=:unknown)
+
+- Select one of the pre-defined grids 
+    - or by providing `xy` parameter (a `NamedTuple` that includes `:xc, :yc, :xg, :yg`)
+    - either by `ID` keyword (e.g., `:OISST`, `:Oscar`, or `:IAP` by default)
+- Return the corresponding `gcmgrid`
+    - incl. `path="_default"`
 
 Example:
 
 ```
 using MeshArrays
-g = GridSpec(ID=:LLC90)
-```
-
-note : input files for these fully supported grids 
-    get downloaded internally via `MeshArrays.Dataset`.
-
-2. by `category` and `path`
-
-- `"PeriodicDomain"`
-- `"PeriodicChannel"`
-- `"CubeSphere"`
-- `"LatLonCap"``
-
-Examples:
-
-```jldoctest; output = false
-using MeshArrays
-g = GridSpec()
-g = GridSpec("PeriodicChannel",MeshArrays.Dataset("GRID_LL360"))
-g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
-g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"))
-isa(g,gcmgrid)
-
-# output
-
-true
-```
-
-3. by `category` and `path` with the `np` argument
-- `np` is the number of grid points in x or y for the `LatLonCap` and `CubeSphere` tiles. 
-`np` defaults to 90 for `LatLonCap` and 32 for `CubeSphere`, and so must be included to access the LLC270 grid with the category argument.
-
-Examples:
-
-```jldoctest; output = false
-using MeshArrays
-g = GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"),np=90)
-g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"),np=32)
-isa(g,gcmgrid)
-
-# output
-
-true
+a = MeshArrays.GridSpec_default(ID=:OISST)
+b = MeshArrays.GridSpec_default(Grids_simple.xy_OISST())
 ```
 """
-function GridSpec(category="DefaultPeriodicDomain", 
-        path=tempname(); np=nothing, ID=:unknown)
-
-    if category=="DefaultPeriodicDomain"&&ID==:unknown
-        nFaces=4
-        grTopo="DefaultPeriodicDomain"
-        ioSize=[360 160]
-        facesSize=[(180, 80), (180, 80), (180, 80), (180, 80)]
-        ioPrec=Float32
-        gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
+function GridSpec_default(xy=NamedTuple(), nFaces=1; ID=:unknown)
+    if !isempty(xy)
+        GridSpec_default_xy(xy,nFaces)
     else
-        GridSpec_MITgcm(category, path; np=np, ID=ID)
+    xy= if ID==:IAP||ID==:unknown
+            Grids_simple.xy_IAP()
+        elseif ID==:Oscar
+            Grids_simple.xy_Oscar()
+        elseif ID==:OISST
+            Grids_simple.xy_OISST()
+        else
+            error("unknown grid ID")
+        end
+        GridSpec_default_xy(xy,nFaces)
     end
+end
+
+function GridSpec_default_xy(xy::NamedTuple, nFaces=1)
+    (; xc, yc, xg, yg) = xy
+
+    dx=diff(xg)[1]
+    ni=length(xc)
+    nj=length(yc)
+    nni=Int(ni/sqrt(nFaces))
+    nnj=Int(nj/sqrt(nFaces))
+
+    grTopo="PeriodicChannel"
+    ioSize=[ni nj]
+    facesSize=[(nni, nnj), (nni, nnj), (nni, nnj), (nni, nnj)]
+    ioPrec=Float32
+    path="_default"
+
+    g=gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 end
 
 Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
@@ -84,21 +83,24 @@ Dict_to_NamedTuple(tmp::Dict) = (; zip(Symbol.(keys(tmp)), values(tmp))...)
 ## GridLoad function
 
 """
-    GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
+    GridLoad(γ=GridSpec(); ID=:default, option=:minimal, verbose=false)
 
 - Return a `NamedTuple` of grid variables read from files located in `γ.path` (see `?GridSpec`).
+- if `ID` is specified then call `GridSpec(ID=ID)` to override `γ` parameter.
 - option : 
   - option=:minimal (default) to get only grid cell center positions (XC, YC). 
   - option=:light to get a complete set of 2D grid variables. 
   - option=:full  to get a complete set of 2D & 3D grid variables. 
 
-Based on the MITgcm naming convention, grid variables are:
+For grid variables, we follow the MITgcm naming convention.
+Grid variables thus typically include :
 
-- XC, XG, YC, YG, AngleCS, AngleSN, hFacC, hFacS, hFacW, Depth.
-- RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG.
-- DRC, DRF, RC, RF (one-dimensional)
+- XC, XG, YC, YG, AngleCS, AngleSN, Depth
+- RAC, RAW, RAS, RAZ, DXC, DXG, DYC, DYG
+- three-dimensional : hFacC, hFacS, hFacW
+- one-dimensional : DRC, DRF, RC, RF
 
-MITgcm documentation : 
+For additional detail please refer to the MITgcm documentation : 
 
 https://mitgcm.readthedocs.io/en/latest/algorithm/algorithm.html#spatial-discretization-of-the-dynamical-equations
 
@@ -114,23 +116,33 @@ isa(Γ.XC,MeshArray)
 true
 ```
 """
-function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
-
+function GridLoad(γ=GridSpec(); ID=:default, option=:minimal, verbose=false)
     gr = (ID!==:default ? GridSpec(ID=ID) : γ)
+    if gr.path=="_default"
+        verbose ? println("GridLoad_default") : nothing
+        GridLoad_default(gr)
+    elseif gr.path=="_ones"
+        verbose ? println("GridLoad_ones") : nothing
+        GridLoad_ones(gr; option=option)
+    else
+        verbose ? println("GridLoad_main") : nothing
+        GridLoad_main(gr; option=option)
+    end
+end
 
+function GridLoad_main(γ=GridSpec(); option=:minimal)
     Γ=Dict()
-
     op=string(option)
     if op=="full"
         list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth")
-        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(gr.path))))
+        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
             list_n=(list_n...,"AngleCS","AngleSN");
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
         list_n=(list_n...,"hFacC","hFacS","hFacW")
     elseif op=="light"
         list_n=("XC","XG","YC","YG","RAC","DXC","DXG","DYC","DYG","Depth")
-        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(gr.path))))
+        if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
             list_n=(list_n...,"AngleCS","AngleSN")
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
@@ -140,7 +152,7 @@ function GridLoad(γ=GridSpec(); ID=:default, option=:minimal)
         error("unknown option")
     end
 
-    [Γ[ii]=GridLoadVar(ii,gr) for ii in list_n]
+    [Γ[ii]=GridLoadVar(ii,γ) for ii in list_n]
     op=="full"||op=="light" ? GridAddWS!(Γ) : nothing
     return Dict_to_NamedTuple(Γ)
 end
@@ -273,3 +285,22 @@ include("simple.jl")
 include("tiles.jl")
 include("MITgcm.jl")
 include("NEMO.jl")
+
+##
+
+"""
+    GridLoad_default(γ=GridSpec())
+
+```
+MeshArrays.GridSpec_default(ID=:IAP)
+```
+"""
+function GridLoad_default(gr=GridSpec())#; ID=:unknown)
+#    xy=Grids_simple.xy_IAP()
+#    gr=Grids_simple.grid_factors(xy)
+
+    dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
+    gr=Grids_simple.grid_add_z(gr,dep,msk)
+end
+
+import .Grids_simple: GridSpec_ones, GridLoad_ones

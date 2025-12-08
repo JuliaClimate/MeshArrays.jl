@@ -2,19 +2,23 @@
 module Grids_simple
 
 using Unitful
-import MeshArrays: gcmgrid, varmeta, MeshArray, Dict_to_NamedTuple, read_tiles, write_tiles, GridSpec
+import MeshArrays: gcmgrid, varmeta, MeshArray, Dict_to_NamedTuple
+import MeshArrays: read_tiles, write_tiles, GridSpec_default
 
 """
-    GridOfOnes(grTp,nF,nP;option="minimal")
+    GridSpec_ones(grTp,nF,nP)
 
-Define all-ones grid variables instead of using `GridSpec` & `GridLoad`. E.g.
+Define grid where all variables will be set 
+to one via `GridLoad_ones`.
 
 ```
-γ,Γ=GridOfOnes("CubeSphere",6,20);
+using MeshArrays
+γ=MeshArrays.GridSpec_ones("CubeSphere",6,20);
+Γ=MeshArrays.GridLoad_ones(γ;option="full")
 ```
 """
-function GridOfOnes(grTp,nF,nP;option="minimal")
-    grDir=""
+function GridSpec_ones(grTp,nF,nP)
+    grDir="_ones"
     grTopo=grTp
     nFaces=nF
     if grTopo=="LatLonCap"
@@ -33,17 +37,28 @@ function GridOfOnes(grTp,nF,nP;option="minimal")
     facesSize[:].=[(nP,nP)]
     ioPrec=Float32
 
-    γ=gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
-
-    return γ, UnitGrid(γ;option=option)
+    gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 end
 
 """
-    UnitGrid(γ::gcmgrid;option="minimal")
+    GridLoad_ones(γ::gcmgrid;option="minimal")
 
 Generate a unit grid, where every grid spacing and area is 1, according to γ. 
 """
-function UnitGrid(γ::gcmgrid;option="minimal")
+
+"""
+    GridLoad_ones(γ::gcmgrid;option="minimal")
+
+Generate a unit grid, where every grid spacing and area is 1, 
+as specified by `γ` obtained from `GridSpec_ones`. 
+
+```
+using MeshArrays
+γ=MeshArrays.GridSpec_ones("CubeSphere",6,20);
+Γ=MeshArrays.GridLoad_ones(γ;option="full")
+```
+"""
+function GridLoad_ones(γ::gcmgrid;option="minimal")
     nFaces=γ.nFaces
     ioSize=(γ.ioSize[1],γ.ioSize[2])
 
@@ -85,7 +100,8 @@ end
 """
     UnitGrid(ioSize, tileSize; option="minimal")
   
-Generate a unit grid, where every grid spacing and area is 1, according to `ioSize, tileSize`. 
+Generates a unit grid, where every grid spacing and area is 1, according to `ioSize, tileSize`,
+and returns `Γ,γ`.
 
 Since `ioSize, tileSize` defines a one to one mapping from global to tiled array, here we use 
 `read_tiles, write_tiles` instead of the default `read, write`. And we overwrite local `XC,YC`
@@ -96,7 +112,7 @@ function UnitGrid(ioSize::NTuple{2, Int},tileSize::NTuple{2, Int}; option="minim
     fSize=fill(tileSize,nF)
 
     γ=gcmgrid("","PeriodicDomain",nF,fSize, ioSize, Float32, read_tiles, write_tiles)
-    Γ=UnitGrid(γ;option=option)
+    Γ=GridLoad_ones(γ;option=option)
 
     Γ.XC[:]=γ.read([i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
     Γ.YC[:]=γ.read([j-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
@@ -106,6 +122,12 @@ function UnitGrid(ioSize::NTuple{2, Int},tileSize::NTuple{2, Int}; option="minim
     end
 
     return Γ,γ
+end
+
+#deprecated method
+function GridOfOnes(grTp,nF,nP;option="minimal")
+    γ=GridSpec_ones(grTp,nF,nP)
+    γ,GridLoad_ones(γ;option=option)
 end
 
 """
@@ -135,7 +157,7 @@ function periodic_domain(np::Integer,nq=missing)
     ioPrec=Float32
     γ=gcmgrid("","PeriodicDomain",1,facesSize, ioSize, ioPrec, read, write)
 
-    return UnitGrid(γ)
+    return GridLoad_ones(γ)
 end
 
 ## Grid_latlon with specified vertical grid and land mask
@@ -208,16 +230,16 @@ xy=Grids_simple.xy_OISST()
 gr=Grids_simple.grid_factors(xy)
 ```
 """
-grid_factors(xy::NamedTuple)=begin
+grid_factors(xy::NamedTuple; nFaces=1)=begin
     (; xc, yc, xg, yg) = xy
 
+    dx=diff(xg)[1]
     ni=length(xc)
     nj=length(yc)
-    dx=diff(xg)[1]
+    nni=Int(ni/sqrt(nFaces))
+    nni=Int(nj/sqrt(nFaces))
 
-    g=GridSpec("PeriodicChannel")
-    g.fSize[1]=(ni,nj)
-    g.ioSize.=[ni nj]
+    g=GridSpec_default(xy,nFaces)
 
     dxF = rSphere*deg2rad.(cosd.(yc)*dx)
     dyF = rSphere*deg2rad.(diff(yg))

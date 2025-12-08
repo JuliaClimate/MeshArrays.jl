@@ -3,16 +3,11 @@ module MeshArraysMakieExt
 
 using MeshArrays, Makie
 
-import MeshArrays: GI, polyarray
-import MeshArrays: land_mask
-import MeshArrays: plot_examples
-import MeshArrays: ProjAxis
-import MeshArrays: grid_lines!
+import MeshArrays: GI, polyarray, gridpath
+import MeshArrays: plot_examples, ProjAxis, grid_lines!
 
-import MeshArrays: gridpath
-
-import Makie: plot, plot!, heatmap, scatter, scatter!, surface!
-import Makie: lines!, heatmap!, contour!, contourf!
+import Makie: plot, plot!, scatter, scatter!, surface!
+import Makie: lines, lines!, heatmap, heatmap!, contour!, contourf!
 
 LineString=Makie.LineString
 Observable=Makie.Observable
@@ -236,11 +231,12 @@ end
 
 function meriodional_overturning(Γ,ov)
 	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:end-1])); #coordinate variables
-	z=reverse(ov,dims=2); z[z.==0.0].=NaN
+	z=reverse(ov,dims=2); #z[z.==0.0].=NaN
 
 	fig1 = Figure(size = (900,400),markersize=0.1)
 	ax1 = Axis(fig1[1,1], title="Meridional Overturning Streamfunction (in Sv)")
 	hm1=contourf!(ax1,x,y,1e-6*z,levels=(-40.0:5.0:40.0))
+	contour!(ax1,x,y,1e-6*z,color=:black)
 	Colorbar(fig1[1,2], hm1, height = Relative(0.65))
 	fig1
 	#savefig("MOC_mean.png")
@@ -693,11 +689,13 @@ end
 function contourf!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
 	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
+	#contourf!(pr_ax.ax,x,y,csfield, kwargs...)
 end
 
 function contour!(pr_ax::PrAxis,lon,lat,field; kwargs...)
 	x,y,csfield=circshift_etc(pr_ax::PrAxis,lon,lat,field)
 	surface!(pr_ax.ax,x,y,0*csfield; color=csfield, kwargs...)
+	#contour!(pr_ax.ax,x,y,csfield, kwargs...)
 end
 
 function lines!(pr_ax::PrAxis;polygons=Any[], kwargs...)
@@ -817,6 +815,15 @@ function polygons_plot(pols; color=:black, outer_edge=false)
 		poly(pols_Makie,color=:white,strokecolor=cols_Makie,strokewidth=2)
 	end
 end
+
+lines(pa::polyarray,stuff...;kwargs...) = 
+	lines(pol_to_Makie(pa),stuff...;kwargs...)
+lines!(pa::polyarray,stuff...;kwargs...) = 
+	lines!(pol_to_Makie(pa),stuff...;kwargs...)
+plot(pa::polyarray,stuff...;kwargs...) = 
+	plot(pol_to_Makie(pa),stuff...;kwargs...)
+plot!(pa::polyarray,stuff...;kwargs...) = 
+	plot!(pol_to_Makie(pa),stuff...;kwargs...)
 
 end # module
 

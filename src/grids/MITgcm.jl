@@ -3,9 +3,66 @@
 ## GridSpec function with category argument:
 
 """
-    GridSpec_MITgcm(category="PeriodicDomain",path=tempname(); np=nothing, ID=:unknown)
+    GridSpec_MITgcm(category="PeriodicDomain", 
+            path=tempname(); np=nothing, ID=:unknown)
 
-See the main `GridSpec` documentation.
+- Select one of the pre-defined grids 
+    - or by `category` parameter
+    - either by `ID` keyword
+- Return the corresponding `gcmgrid`
+    - incl. path to grid files (`path`).
+
+Input files for these fully supported grids get 
+downloaded internally via `MeshArrays.Dataset` if needed.
+
+1. selection by `ID`
+
+- `:onedegree`
+- `:LLC90`
+- `:LLC270`
+- `:CS32`
+- `:default`
+
+Example:
+
+```
+using MeshArrays
+g = GridSpec(ID=:LLC90)
+```
+
+2. by `category` and `path`
+
+- `"PeriodicDomain"` (default)
+- `"PeriodicChannel"`
+- `"CubeSphere"`
+- `"LatLonCap"``
+
+Examples:
+
+```jldoctest; output = false
+using MeshArrays
+g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
+isa(g,gcmgrid)
+
+# output
+
+true
+```
+
+When the `np` keyword argument is specified then it is used 
+to set the number of points in each grid subdomain.
+
+Example:
+
+```jldoctest; output = false
+using MeshArrays
+g = GridSpec("LatLonCap",np=270)
+isa(g,gcmgrid)
+
+# output
+
+true
+```
 """
 function GridSpec_MITgcm(category="PeriodicDomain", 
     path=tempname(); np=nothing, ID=:unknown)
@@ -34,13 +91,13 @@ elseif category=="PeriodicChannel"
     ioSize=[360 160]
     facesSize=[(360, 160)]
     ioPrec=Float32
-elseif category=="PeriodicDomain"||category=="DefaultPeriodicDomain"
+elseif category=="PeriodicDomain"
     nFaces=4
     grTopo="PeriodicDomain"
     ioSize=[80 42]
     facesSize=[(40, 21), (40, 21), (40, 21), (40, 21)]
     ioPrec=Float32
-else
+elseif ID==:unknown
     error("unknown category case")
 end
 
@@ -57,8 +114,8 @@ elseif ID==:CS32
     GridSpec("CubeSphere", MeshArrays.Dataset("GRID_CS32"), np=np)
 elseif ID==:onedegree
     GridSpec("PeriodicChannel", MeshArrays.Dataset("GRID_LL360"))
-elseif ID==:default
-    GridSpec()
+elseif ID==:PeriodicDomain
+    GridSpec_MITgcm("PeriodicDomain")
 else
     error("unknwown grid")
 end

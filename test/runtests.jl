@@ -22,7 +22,8 @@ include(joinpath(p,"../examples/Demos.jl"))
         elseif nTopo==4; grTopo="PeriodicDomain"; nFaces=1; N=400;
         end;
         Npt=nFaces*N*N
-        γ,Γ=Grids_simple.GridOfOnes(grTopo,nFaces,N;option="full")
+        γ=MeshArrays.GridSpec_ones(grTopo,nFaces,N)
+        Γ=MeshArrays.GridLoad_ones(γ;option="full")
         @test γ.class == grTopo
         Rini= 0.; Rend= 0.;
         (Rini,Rend,DXCsm,DYCsm)=demo2(Γ);
@@ -90,7 +91,7 @@ end
     #Load grid and transport / vector field
     γ=GridSpec(ID=:LLC90)
     @suppress show(γ)
-    Γ=GridLoad(ID=:LLC90,option=:full)
+    Γ=GridLoad(γ,option=:full)
     @suppress show(Γ.XC)
 
     path=MeshArrays.Dataset("GRID_LLC90")
@@ -175,7 +176,7 @@ end
 end
 
 @testset "gcmfaces type:" begin
-    for ID in (:default, :CS32, :LLC270)
+    for ID in (:PeriodicDomain, :CS32, :LLC270)
         γ=GridSpec(ID=ID)
         MeshArrays.gcmfaces(γ)
         MeshArrays.gcmfaces(γ,Float32)
@@ -238,8 +239,9 @@ end
     (Γ,γ)=Grids_simple.UnitGrid( (80,90) , (20,30) ; option="full")
     @test isa(γ,gcmgrid)
 
-    tmp=Grids_simple.UnitGrid(γ)
-    @test isa(tmp,NamedTuple)
+    γ=Grids_simple.GridSpec_ones("PeriodicDomain",1,10)
+    Γ=Grids_simple.GridLoad_ones(γ,option="full")
+    @test isa(Γ,NamedTuple)
 
     #various read/write functions
     read(write(Γ.XC),γ)
@@ -261,6 +263,37 @@ end
     @test haskey(gr,:hFacC)
 end
 
+@testset "NEMO_GRID:" begin
+    lst=NEMO_GRID.variable_NTA()
+    nam=NEMO_GRID.variable_in_NEMO(:XC,lst)
+    @test isa(nam,Symbol)
+
+    grid_data=Dict(:glamt=>zeros(1442,1021))
+    XC_a=NEMO_GRID.convert_one_grid_variable(grid_data,lst[14])
+
+    grid=(XC=XC_a,YC=XC_a,RAC=XC_a,DXG=XC_a,DYG=XC_a)
+    G=NEMO_GRID.grid_to_MeshArrays(grid)
+
+    XC_e=NEMO_GRID.exchange(G.XC)
+    @test isa(XC_e,MeshArray_wh)
+    
+    G=NEMO_GRID.add_angle_CS_SN(G)
+    @test haskey(G,:AngleCS)
+
+    z=[1:10]; G=Dict()
+    grid_data=(gdept_0=z,gdepw_0=z,e3t_0=z,e3w_0=z)
+    NEMO_GRID.add_one_dim_variables!(G,grid_data)
+    @test isa(G,Dict)
+end
+
+if false
+    γ = GridSpec(ID=:OISST)
+    γ = GridSpec(ID=:LLC90)
+    #γ=MeshArrays.GridSpec_ones("CubeSphere",6,20)
+    γ = GridSpec("ones")
+    Γ = GridLoad(γ;option="full")
+end
+
 @testset "Plotting:" begin
     γ=GridSpec(ID=:LLC90)
     Γ=GridLoad(γ;option="light")
@@ -270,6 +303,9 @@ end
         lat=[j for i=-170.:20.0:170., j=-80.:20.0:80.])
     λ=interpolation_setup()
 
+    lines(pol_json); lines!(pol_json)
+    plot(pol_json); plot!(pol_json)
+
     basins=demo.ocean_basins()
     AtlExt=demo.extended_basin(basins,:Atl)
     sections,path_sec=demo.ocean_sections(Γ)
@@ -278,7 +314,8 @@ end
     fig=MeshArrays.plot_examples(:smoothing_demo,D,D)
     (fig1,fig2,fig3)=MeshArrays.plot_examples(:interpolation_demo,Γ)
 
-    MeshArrays.plot_examples(:meriodional_overturning,Γ,rand(179,50))
+    fake_ov=40e6*cosd.(360*(1:179)./100)*exp.(-0.1*(-20:29).^2)'
+    MeshArrays.plot_examples(:meriodional_overturning,Γ,fake_ov)
     MeshArrays.plot_examples(:northward_transport,rand(179))
 
     MeshArrays.plot_examples(:gradient_EN,λ,D,D)
@@ -302,7 +339,6 @@ end
 
     ###
 
-
     MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
     pol=MeshArraysMakieExt.pol_to_Makie(pol_shp)
     dest="+proj=eqearth +lon_0=$(lon0) +lat_1=0.0 +x_0=0.0 +y_0=0.0 +ellps=GRS80"
@@ -316,8 +352,10 @@ end
     f = Figure()
     ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = "Ocean Depth (m)")
 	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=lon0)
-	surf = surface!(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Dint, 
+    for a in [surface! contourf! contour!]
+        surf = a(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Dint, 
 			colorrange=(0.0,6000.0), colormap=:berlin, shading = NoShading)
+    end
 	lines!(pr_ax; polygons=pol_shp,color=:black,linewidth=0.5)
 	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
 	f
@@ -326,6 +364,10 @@ end
 	data=(lon=λ.lon,lat=λ.lat,var=Dint,meta=meta) #,polygons=pol_shp)
     plot_examples(:projmap,data,lon0,proj)
     plot_examples(:simple_heatmap,data)
+
+    MeshArraysMakieExt.heatmap_globalmap(D)
+    MeshArraysMakieExt.heatmap_interpolation(D,λ)
+    MeshArraysMakieExt.heatmap_xy(D,1:10,1:10)
 
 end
 
