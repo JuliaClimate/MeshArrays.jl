@@ -2,14 +2,26 @@
 import Base: read, write, read!
 
 """
-    read(fil::String,x::MeshArray)
+    nFacesEtc(a::AbstractMeshArray)
+
+Return nFaces, n3, n4 (1 by default)
+"""
+function nFacesEtc(a::AbstractMeshArray)
+  nFaces=length(a.fIndex)
+  ndims(a.f)>1 ? n3=size(a.f,2) : n3=1
+  ndims(a.f)>2 ? n4=size(a.f,3) : n4=1
+  return nFaces, n3, n4
+end
+
+"""
+    read(fil::String,x::AbstractMeshArray)
 
 Read array from file and return as a MeshArray. 
 
 _The second argument (MeshArray or gcmgrid) provides the grid specifications (x.grid.ioSize)._
 ```
 """
-function read(fil::String,x::MeshArray)
+function read(fil::String,x::AbstractMeshArray)
 
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
@@ -56,22 +68,22 @@ function read(xx::Array,γ::gcmgrid)
 end
 
 """
-    read(xx::Array,x::MeshArray)
+    read(xx::Array,x::AbstractMeshArray)
 
 Reformat Array data into a MeshArray similar to `x`. 
 """
-function read(xx::Array,x::MeshArray)
+function read(xx::Array,x::AbstractMeshArray)
   y=similar(x; m=x.meta)
   read!(xx,y)
   return y
 end
   
 """
-    read!(xx::Array,x::MeshArray)
+    read!(xx::Array,x::AbstractMeshArray)
 
 Reformat array into MeshArray and write into `x`.
 """
-function read!(xx::Array,x::MeshArray)
+function read!(xx::Array,x::AbstractMeshArray)
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
@@ -94,11 +106,11 @@ function read!(xx::Array,x::MeshArray)
 end
 
 """
-    read!(xx::Array,x::MeshArray)
+    read!(xx::Array,x::AbstractMeshArray)
 
 Reformat one array of size x.grid.ioSize, and write **in-place** into MeshArray `x``.
 """
-function read_one!(xx::Array,x::MeshArray)
+function read_one!(xx::Array,x::AbstractMeshArray)
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
@@ -114,22 +126,22 @@ end
 
 
 """
-    write(fil::String,x::MeshArray)
+    write(fil::String,x::AbstractMeshArray)
 
 Write MeshArray to binary file. Other methods:
 
 ```
-write(xx::Array,x::MeshArray) #to Array
+write(xx::Array,x::AbstractMeshArray) #to Array
 ```
 """
-function write(fil::String,x::MeshArray)
+function write(fil::String,x::AbstractMeshArray)
   y=x.grid.write(x)
   fid = open(fil,"w")
   write(fid,ntoh.(y))
   close(fid)
 end
 
-function write(x::MeshArray)
+function write(x::AbstractMeshArray)
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
@@ -160,7 +172,7 @@ end
 
 ## 
 
-function read_tiles(fil::String,x::MeshArray)
+function read_tiles(fil::String,x::AbstractMeshArray)
 
   (n1,n2)=x.grid.ioSize
   (nFaces,n3)=nFacesEtc(x)
@@ -180,7 +192,7 @@ function read_tiles(xx::Array,γ::gcmgrid)
   read_tiles(xx,MeshArray(γ,γ.ioPrec,n3))
 end
 
-function read_tiles(xx::Array,x::MeshArray)
+function read_tiles(xx::Array,x::AbstractMeshArray)
 	tmp=similar(x)
 	s=x.grid.ioSize
 	(n1,n2)=x.grid.fSize[1]
@@ -194,7 +206,7 @@ function read_tiles(xx::Array,x::MeshArray)
 	tmp
 end
 
-function write_tiles(x::MeshArray)
+function write_tiles(x::AbstractMeshArray)
   tmp = Array{eltype(x),2}(undef,x.grid.ioSize...)
 	s=x.grid.ioSize
 	(n1,n2)=x.grid.fSize[1]
@@ -208,7 +220,7 @@ function write_tiles(x::MeshArray)
 	tmp
 end
 
-function write_tiles(fil::String,x::MeshArray)
+function write_tiles(fil::String,x::AbstractMeshArray)
   y=x.grid.write(x)
   fid = open(fil,"w")
   write(fid,ntoh.(y))

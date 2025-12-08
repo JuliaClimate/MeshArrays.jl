@@ -148,13 +148,11 @@ end
 # # Interface Methods
 
 # +
-Base.size(A::gcmarray) = size(A.f)
-Base.size(A::gcmarray, dim::Integer) = size(A)[dim]
 #Base.dataids(A::gcmarray) = Base.dataids(A.f)
 Base.dataids(A::gcmarray) = (Base.dataids(A.f)..., Base.dataids(A.fSize)..., Base.dataids(A.fIndex)...)
 
 # +
-function Base.getindex(A::gcmarray{T, N, Array{T,2}}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
+function Base.getindex(A::AbstractMeshArray{T, N}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
   J=1:length(A.fIndex)
   !isa(I[1],Colon) ? J=J[I[1]] : nothing
   nFaces=length(J)
@@ -173,11 +171,11 @@ function Base.getindex(A::gcmarray{T, N, Array{T,2}}, I::Vararg{Union{Int,Array{
 end
 
 """
-    getindexetc(A::gcmarray, I::Vararg{_}) where {T,N}
+    getindexetc(A::AbstractMeshArray{T, N}, I::Vararg{_}) where {T,N}
 
 Same as getindex but also returns the face size and index
 """
-function getindexetc(A::gcmarray{T, N,InnerArray{T,2}}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
+function getindexetc(A::AbstractMeshArray{T, N}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
     f=A[I...]
     fSize=A.fSize[I[1]]
     fIndex=A.fIndex[I[1]]
@@ -185,11 +183,11 @@ function getindexetc(A::gcmarray{T, N,InnerArray{T,2}}, I::Vararg{Union{Int,Arra
 end
 # -
 
-function Base.setindex!(A::gcmarray{T, N,InnerArray{T,2}}, v, I::Vararg{Int, N}) where {T,N}
+function Base.setindex!(A::AbstractMeshArray{T, N}, v, I::Vararg{Int, N}) where {T,N}
   return (A.f[I...] = v)
 end
 
-function Base.view(A::gcmarray{T, N,InnerArray{T,2}}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
+function Base.view(A::AbstractMeshArray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
   J=1:length(A.fIndex)
   !isa(I[1],Colon) ? J=J[I[1]] : nothing
   nFaces=length(J)
@@ -206,8 +204,8 @@ end
 
 # ### Custom pretty-printing, similar, and broadcast
 
-function Base.show(io::IO, z::gcmarray{T, N, Array{T,2}}) where {T,N}
-    if ~isa(z.meta.unit,Missing)
+function Base.show(io::IO, z::AbstractMeshArray{T, N}) where {T,N}
+    if ~isa(z,MeshArrays.gcmfaces)&&~isa(z.meta.unit,Missing)
       printstyled(io, "  name        = ",color=:normal)
       printstyled(io, "$(z.meta.name)\n",color=:magenta)
       printstyled(io, "  unit        = ",color=:normal)
@@ -215,26 +213,32 @@ function Base.show(io::IO, z::gcmarray{T, N, Array{T,2}}) where {T,N}
     end
     printstyled(io, "  data type   = ",color=:normal)
     printstyled(io, "$(eltype(z))\n",color=:magenta)
-    printstyled(io, "  cell pos.   = ",color=:normal)
-    printstyled(io, "$(z.meta.position)\n",color=:magenta)
+    if ~isa(z,MeshArrays.gcmfaces)
+      printstyled(io, "  cell pos.   = ",color=:normal)
+      printstyled(io, "$(z.meta.position)\n",color=:magenta)
+    end
     printstyled(io, "  tile array  = ",color=:normal)
     printstyled(io, "$(size(z))\n",color=:cyan)
     printstyled(io, "  tile sizes  = ",color=:normal)
-    printstyled(io, "$(size(z[1]))\n",color=:cyan)
-    for iFace=2:length(z.fIndex)
+    #fs=(~isa(z,MeshArrays.gcmfaces) ? z.fSize : fsize(z))
+    fs=z.fSize
+    printstyled(io, "$(fs[1])\n",color=:cyan)
+    for iFace=2:length(fs)
       printstyled(io, "                ",color=:normal)
-      printstyled(io, "$(size(z[iFace]))\n",color=:cyan)
+      printstyled(io, "$(fs[iFace])\n",color=:cyan)
     end
     printstyled(io, "  grid class  = ",color=:normal)
     printstyled(io, "$(z.grid.class)\n",color=:green)
     printstyled(io, "  MeshArray   = ",color=:normal)
-    printstyled(io, "gcmarray \n",color=:green)
-    printstyled(io, "  version     = ",color=:normal)
-    printstyled(io, "$(z.version) \n",color=:green)
+    printstyled(io, "$(typeof(z)) \n",color=:green)
+    if ~isa(z,MeshArrays.gcmfaces)
+     printstyled(io, "  version     = ",color=:normal)
+     printstyled(io, "$(z.version) \n",color=:green)
+    end
   return
 end
 
-import Base: display; display(X::gcmarray)=show(X)
+import Base: display; display(X::AbstractMeshArray)=show(X)
 
 function Base.similar(A::gcmarray;m::varmeta=defaultmeta)
     if ndims(A)==1
@@ -247,9 +251,9 @@ end
 
 # ### Customize broadcasting
 
-Base.BroadcastStyle(::Type{<:gcmarray}) = Broadcast.ArrayStyle{gcmarray}()
+Base.BroadcastStyle(::Type{<:AbstractMeshArray}) = Broadcast.ArrayStyle{AbstractMeshArray}()
 
-function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmarray}}, ::Type{ElType}) where ElType
+function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractMeshArray}}, ::Type{ElType}) where ElType
   # Scan the inputs for the gcmarray:
   A = find_gcmarray(bc)
   # Create the gcmarray output:
@@ -264,7 +268,7 @@ end
 find_gcmarray(bc::Base.Broadcast.Broadcasted) = find_gcmarray(bc.args)
 find_gcmarray(args::Tuple) = find_gcmarray(find_gcmarray(args[1]), Base.tail(args))
 find_gcmarray(x) = x
-find_gcmarray(a::gcmarray, rest) = a
+find_gcmarray(a::AbstractMeshArray, rest) = a
 find_gcmarray(::Any, rest) = find_gcmarray(rest)
 
 ####
@@ -272,7 +276,7 @@ find_gcmarray(::Any, rest) = find_gcmarray(rest)
 import Base: copyto!
 
 # Specialize this method if all you want to do is specialize on typeof(dest)
-@inline function copyto!(dest::MeshArrays.gcmarray, bc::Broadcast.Broadcasted{Nothing})
+@inline function copyto!(dest::AbstractMeshArray, bc::Broadcast.Broadcasted{Nothing})
     axes(dest) == axes(bc) || throwdm(axes(dest), axes(bc))
     # Performance optimization: broadcast!(identity, dest, A) is equivalent to copyto!(dest, A) if indices match
     if bc.f === identity && bc.args isa Tuple{AbstractArray} # only a single input argument to broadcast!
@@ -295,16 +299,3 @@ function gcmarray_getindex_evalf(bc,I)
   return bc.f.(args...)
 end
 
-###
-
-"""
-    nFacesEtc(a::gcmarray)
-
-Return nFaces, n3 (1 in 2D case; >1 otherwise)
-"""
-function nFacesEtc(a::gcmarray)
-  nFaces=length(a.fIndex)
-  ndims(a.f)>1 ? n3=size(a.f,2) : n3=1
-  ndims(a.f)>2 ? n4=size(a.f,3) : n4=1
-  return nFaces, n3, n4
-end

@@ -233,6 +233,8 @@ function ones(a::AbstractMeshArray)
   [b.f[c].=1.0 for c in eachindex(b.f)]
   b
 end
+Base.size(A::AbstractMeshArray) = size(A.f)
+Base.size(A::AbstractMeshArray, dim::Integer) = size(A)[dim]
 
 ## derivative types
 
