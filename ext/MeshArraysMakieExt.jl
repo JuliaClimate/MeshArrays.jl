@@ -24,8 +24,8 @@ function plot_examples(ID=Symbol,stuff...;kwargs...)
 		smoothing_demo(stuff...)
 	elseif ID==:northward_transport
 		northward_transport(stuff...)
-	elseif ID==:meriodional_overturning
-		meriodional_overturning(stuff...)
+	elseif ID==:meridional_overturning
+		meridional_overturning(stuff...)
 	elseif ID==:gradient_EN
 		gradient_EN(stuff...)
 	elseif ID==:gradient_xy
@@ -229,7 +229,7 @@ function northward_transport(MT)
 	fig1
 end
 
-function meriodional_overturning(Γ,ov)
+function meridional_overturning(Γ,ov)
 	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:end-1])); #coordinate variables
 	z=reverse(ov,dims=2); #z[z.==0.0].=NaN
 
