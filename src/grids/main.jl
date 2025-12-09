@@ -71,7 +71,7 @@ function GridSpec_default_xy(xy::NamedTuple, nFaces=1; path="_default")
 
     grTopo="PeriodicChannel"
     ioSize=[ni nj]
-    facesSize=[(nni, nnj), (nni, nnj), (nni, nnj), (nni, nnj)]
+    facesSize=fill((nni,nnj),nFaces)
     ioPrec=Float32
 
     g=gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
