@@ -13,19 +13,34 @@ Exchange / transfer data between neighboring arrays. Other methods are
     exchange(u::AbstractMeshArray,v::AbstractMeshArray)
     exchange(u::AbstractMeshArray,v::AbstractMeshArray,N::Integer)
 """
-function exchange(fld::AbstractMeshArray)
+function exchange(x::AbstractMeshArray)
+	y=MeshArray_wh(similar(x),1)
+	if length(size(x))==1
+    tmp=exchange_main(x).MA
+		[y.MA.f[k]=tmp.f[k] for k in 1:length(x)] 
+	else
+    tmp=exchange_main(x[:,k]).MA
+		for k in 1:size(x)[2]
+			[y.MA.f[kk,k]=tmp.f[kk] for kk in 1:size(x,1)] 
+		end
+	end
+	y
+end
+
+
+function exchange_main(fld::AbstractMeshArray)
   MeshArray_wh(exch_T_N(fld,1),1)
 end
 
-function exchange(fld::AbstractMeshArray,N::Integer)
+function exchange_main(fld::AbstractMeshArray,N::Integer)
   MeshArray_wh(exch_T_N(fld,N),N)
 end
 
-function exchange(u::AbstractMeshArray,v::AbstractMeshArray)
+function exchange_main(u::AbstractMeshArray,v::AbstractMeshArray)
   MeshArray_wh.(exch_UV_N(u,v,1),1)
 end
 
-function exchange(u::AbstractMeshArray,v::AbstractMeshArray,N::Integer)
+function exchange_main(u::AbstractMeshArray,v::AbstractMeshArray,N::Integer)
   MeshArray_wh.(exch_UV_N(u,v,N),N)
 end
 

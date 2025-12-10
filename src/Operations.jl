@@ -40,7 +40,7 @@ end
 
 function gradient(inFLD::AbstractMeshArray,Γ::NamedTuple,doDIV::Bool)
 
-exFLD=exchange(inFLD,1).MA
+exFLD=exchange(inFLD).MA
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
@@ -63,7 +63,7 @@ end
 
 function gradient(inFLD::AbstractMeshArray,iDXC::AbstractMeshArray,iDYC::AbstractMeshArray)
 
-exFLD=exchange(inFLD,1).MA
+exFLD=exchange(inFLD).MA
 dFLDdx=similar(inFLD)
 dFLDdy=similar(inFLD)
 
@@ -81,6 +81,37 @@ end
 
 ##
 
+to_UV(inFLD::AbstractMeshArray) = 
+  length(size(inFLD))==1 ? to_UV_2d(inFLD) : to_UV_3d(inFLD)
+
+function to_UV_3d(inFLD::AbstractMeshArray)
+	TatU=similar(inFLD)
+	TatV=similar(inFLD)
+	for k in 1:size(inFLD)[2]
+		tmpU,tmpV=to_UV_2d(inFLD[:,k])
+		TatU.f[:,k].=tmpU.f
+		TatV.f[:,k].=tmpV.f
+	end
+	TatU,TatV
+end
+
+function to_UV_2d(inFLD::AbstractMeshArray)
+  exFLD=exchange(inFLD).MA
+	TatU=similar(inFLD)
+	TatV=similar(inFLD)
+	for a=1:inFLD.grid.nFaces
+		(s1,s2)=size(exFLD.f[a])
+		tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
+		TatU.f[a]=0.5*(tmpA+view(exFLD.f[a],1:s1-2,2:s2-1))
+		TatV.f[a]=0.5*(tmpA+view(exFLD.f[a],2:s1-1,1:s2-2))
+	end
+	return TatU, TatV
+end
+
+
+
+##
+
 """
     curl(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
 
@@ -89,9 +120,9 @@ Compute curl of a velocity field.
 function curl(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
 
 	uvcurl=similar(Γ.XC)
-	fac=exchange(1.0 ./Γ.RAZ,1)
-	(U,V)=exchange(u,v,1)
-  (DXC,DYC)=exchange(Γ.DXC,Γ.DYC,1)
+	fac=exchange(1.0 ./Γ.RAZ)
+	(U,V)=exchange_main(u,v,1)
+  (DXC,DYC)=exchange_main(Γ.DXC,Γ.DYC,1)
 	[DXC.MA[i].=abs.(DXC.MA[i]) for i in eachindex(U.MA)]
 	[DYC.MA[i].=abs.(DYC.MA[i]) for i in eachindex(V.MA)]
 
@@ -133,7 +164,7 @@ Compute Ekman Transport (in m2/s) from wind stress (in N/m2 , or kg/m/s2).
 function EkmanTrsp(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
 	EkX=similar(Γ.DYG)
 	EkY=similar(Γ.DXG)
-	(U,V)=exchange(u,v,1)
+	(U,V)=exchange_main(u,v,1)
 
 	for i in eachindex(U.MA)
     ucur=1/4* (U.MA[i][2:end-1,1:end-2]+U.MA[i][2:end-1,2:end-1]
@@ -149,6 +180,31 @@ function EkmanTrsp(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
 	end
 
 	(EkX,EkY)
+end
+
+##
+
+function overturning(Utr,Vtr,LC,Γ,mask)
+	nz=size(Γ.hFacC,2); nt=12; nl=length(LC)
+	ov=Array{Float64,2}(undef,nl,nz)
+	#integrate across latitude circles
+	for z=1:nz
+		UV=Dict("U"=>mask.*Utr[:,z],"V"=>mask.*Vtr[:,z],"dimensions"=>["x","y"])
+		[ov[l,z]=ThroughFlow(UV,LC[l],Γ) for l=1:nl]
+	end	
+	#integrate from bottom
+	ov=reverse(cumsum(reverse(ov,dims=2),dims=2),dims=2)
+end
+
+function meridional(Utr,Vtr,LC,Γ,mask)
+	nl=length(LC)
+	nz=size(Utr,2)
+	MT=fill(0.0,nl)
+	for z=1:nz
+		UV=Dict("U"=>mask*Utr[:,z],"V"=>mask*Vtr[:,z],"dimensions"=>["x","y"])
+		[MT[l]=MT[l]+ThroughFlow(UV,LC[l],Γ) for l=1:nl]
+	end
+	MT
 end
 
 ## mask methods
@@ -452,7 +508,7 @@ function edge_mask(mskCint::AbstractMeshArray)
   mskW=similar(mskCint)
   mskS=similar(mskCint)
 
-  mskCint=exchange(mskCint,1).MA
+  mskCint=exchange(mskCint).MA
 
   for i in eachindex(mskCint)
       tmp1=mskCint[i]
