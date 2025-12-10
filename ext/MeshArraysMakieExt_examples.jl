@@ -41,7 +41,8 @@ function northward_transport(MT)
 end
 
 function meridional_overturning(Γ,ov)
-	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:end-1])); #coordinate variables
+#	RF = (length(Γ.RF)==length(Γ.RC) ? Γ.RF : [Γ.RF;2*Γ.RF[end]-Γ.RF[end-1]])
+	x=vec(-89.0:89.0); y=reverse(vec(Γ.RF[1:length(Γ.RC)])); #coordinate variables
 	z=reverse(ov,dims=2); #z[z.==0.0].=NaN
 
 	fig1 = Figure(size = (900,400),markersize=0.1)

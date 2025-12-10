@@ -13,6 +13,8 @@ struct nemoarray{T, N, AT} <: AbstractMeshArray{T, N}
    version::String
 end
 
+nemoarray(stuff...;kwargs...)=gcmarray(stuff...;kwargs...)
+
 one_nemoarray(g::gcmgrid) = begin
 	T=g.ioPrec
 	f=[zeros(g.fSize[1])]
@@ -22,16 +24,21 @@ end
 
 gcmarray_to_nemorarray(A::gcmarray) = 
 	nemoarray{eltype(A),ndims(A),InnerArray{eltype(A),2}}(A.grid,defaultmeta,copy(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
+nemorarray_to_gcmarray(A::nemoarray) = 
+	gcmarray{eltype(A),ndims(A),InnerArray{eltype(A),2}}(A.grid,defaultmeta,copy(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
 
+#this approach works in 3D	
 function Base.similar(A::nemoarray;m::varmeta=defaultmeta)
-	T=eltype(A)
     if ndims(A)==1
-        B=nemoarray{T,1,InnerArray{T,2}}(similar(A.grid),m,similar(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
+        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
     else
-        B=nemoarray{T,1,InnerArray{T,2}}(similar(A.grid),m,similar(A.f),copy(A.fSize),copy(A.fIndex),size(A)[2:end]...,thisversion)
+        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex),size(A)[2:end]...; meta=m)
     end
-    return B
+    return gcmarray_to_nemorarray(B)
 end
+
+#Base.getindex(A::nemoarray,args...;kwargs...)=
+#	Base.getindex(nemorarray_to_gcmarray(A),args...;kwargs...)
 
 Base.dataids(A::nemoarray) = (Base.dataids(A.f)..., Base.dataids(A.fSize)..., Base.dataids(A.fIndex)...)
 
@@ -150,55 +157,6 @@ using NCDatasets; grid_data=Dataset(γ.path)
 
 using CairoMakie
 heatmap(Γ.nanmask*Γ.RAC)
-
-LC=LatitudeCircles(-89.0:89.0,Γ);
-
-using JLD2
-lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
-lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
-λ=MeshArrays.interpolation_setup(Γ=Γ,lon=lon,lat=lat);
-
-lo,la,z=MeshArrays.Interpolate(Γ.Depth,λ)
-heatmap(z)
-
-import MeshArrays.NEMO_GRID: gcmarray_to_nemorarray
-
-path="data/NEMO_sample/monthly/"
-function read_vel(path,grid,month=1)
-	m=string(month)
-	uT=Dataset(joinpath(path,"ORAS5_uT_1993-"*m*".nc"))["uT"][2:end-1,1:1020,1]
-	uT=gcmarray_to_nemorarray(read(uT,grid))
-	vT=Dataset(joinpath(path,"ORAS5_vT_1993-"*m*".nc"))["vT"][2:end-1,1:1020,1]
-	vT=gcmarray_to_nemorarray(read(vT,grid))
-	(uT,vT)
-end
-
-(uT,vT)=read_vel(path,γ,1)
-uT_E,vT_N=UVtoUEVN(uT,vT,Γ)
-_,_,z_E=MeshArrays.Interpolate(uT_E,λ);
-_,_,z_N=MeshArrays.Interpolate(vT_N,λ);
-heatmap(z_E,colorrange=(-1,1).*1e3)
-heatmap(z_N,colorrange=(-1,1).*1e3)
-
-using Statistics
-
-MT=zeros(179,12)
-for m in 1:12
-	uT,vT=read_vel(path,g,m)
-	UV=Dict("U"=>Γ.DYG*uT,"V"=>Γ.DXG*vT,"dimensions"=>["x","y"])
-	MT[:,m]=1e-15*4e6*[ThroughFlow(UV,lc,Γ) for lc in LC]
-end
-MOHT_GF=mean(MT,dims=2)[:]
-
-ds=Dataset("data/MER-EP-SW/MOHT/MOHT_allReanas_75S-88N_1993-2020.nc");
-lon_SW=ds["lat"];
-MOHT_SW=1e-15*Float64.(mean(ds["ORAS5"][:,1:12],dims=2))[:];
-
-fig=Figure(); ax=Axis(fig[1,1], xlabel="latitude", ylabel="PW")
-lines!(-89.0:89.0,MOHT_GF,label="GF")
-lines!(lon_SW,MOHT_SW,label="SW")
-axislegend()
-current_figure()
 ```
 """
 function GridLoad_NEMO(grid_data=Any[]; verbose=false)
@@ -278,7 +236,19 @@ end
 
 ##
 
-exchange(x::nemoarray) = NEMO_exchange(x)
+#exchange(x::nemoarray) = NEMO_exchange(x)
+
+exchange(x::nemoarray)=begin
+	y=MeshArray_wh(similar(x),1)
+	if length(size(x))==1
+		y.MA.f[1]=NEMO_exchange(x).MA.f[1]
+	else
+		for k in 1:size(x)[2]
+			y.MA.f[k]=NEMO_exchange(x[:,k]).MA.f[1]
+		end
+	end
+	y
+end
 
 """
     NEMO_exchange(x; fac=1.0, U_shift=false)

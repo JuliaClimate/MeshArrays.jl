@@ -35,9 +35,9 @@ include(joinpath(p,"../examples/Demos.jl"))
         @test isapprox(Sini,1.000; atol=1e-2)
         @test isapprox(Send,0.093; atol=1e-2)
         (dRdx,dRdy)=gradient(Rend,Γ)
-        exchange(Rend,2)
-        exchange(dRdx,dRdy,1)        
-        (dRdx_e,dRdy_e)=exchange(dRdx,dRdy,1)        
+        MeshArrays.exchange_main(Rend,2)
+        MeshArrays.exchange_main(dRdx,dRdy,1)        
+        (dRdx_e,dRdy_e)=MeshArrays.exchange_main(dRdx,dRdy,1)        
         @test isa(dRdx_e,MeshArray_wh)
     end
 end
