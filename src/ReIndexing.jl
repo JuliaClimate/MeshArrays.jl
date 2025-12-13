@@ -63,6 +63,51 @@ function update_location!(u::AbstractArray,Γ)
     end
 end
 
+##
+
+"""
+    neighbor_locations(Γ; verbose=false, format=:default)
+
+Return arrays of grid locations (`x,y,f`). Format:
+
+- `:default` : c,w,e,s,n
+- `:wh` : _wh
+"""
+function neighbor_locations(Γ; verbose=false, format=:default)
+    fld=[fill(zeros(3),s.+4) for s in Γ.XC.fSize]
+    γ=Γ.XC.grid
+    fs=Γ.XC.fSize
+
+    for f in 1:length(fld)
+        siz=fs[f]
+        x=Float32.(-1:siz[1]+2)
+        y=Float32.(-1:siz[2]+2)
+        u=[[x[i],y[j],f] for j in eachindex(y) for i in eachindex(x)]
+        v=reshape(u,(siz.+4))
+
+        vv=deepcopy(v)
+        if verbose
+            println(typeof(fld[f]))
+            println(typeof(MeshArrays.update_location!.(vv,Ref(Γ))))
+        end
+        fld[f].=MeshArrays.update_location!.(vv,Ref(Γ))
+        verbose ? display(fld[f][1:3,1:3]) : nothing
+    end
+
+    if format==:wh
+        MeshArray_wh(MeshArrays.gcmarray(γ,fld),4)
+    else
+        ( 	c=MeshArrays.gcmarray(γ,[t[2:end-1,2:end-1] for t in fld]),
+        w=MeshArrays.gcmarray(γ,[t[1:end-2,2:end-1] for t in fld]),
+        e=MeshArrays.gcmarray(γ,[t[3:end,2:end-1] for t in fld]),
+        s=MeshArrays.gcmarray(γ,[t[2:end-1,1:end-2] for t in fld]),
+        n=MeshArrays.gcmarray(γ,[t[2:end-1,3:end] for t in fld]),
+        )
+    end
+end
+
+##
+
 """
     update_location_cs!
 
