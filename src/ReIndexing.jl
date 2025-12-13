@@ -2,21 +2,25 @@
     location_is_out(u::AbstractArray{T,1},grid::gcmgrid)
 
 Test whether location (x,y,fIndex) is out of domain. If true then
-one typically needs to call update_location_cs! or update_location_dpdo!
+one typically needs to call an update function like :
+    - `update_location_PeriodicDomain!`
+    - `update_location_cs!`
+    - `update_location_llc!`
 """
-
 function location_is_out(u::AbstractArray{T,1},grid::gcmgrid) where T
     u[1]<0|| u[1]> grid.fSize[Int(u[end])][1]|| 
     u[2]<0|| u[2]> grid.fSize[Int(u[end])][2]
 end
 
 """
-    NeighborTileIndices_dpdo(ni::Int,nj::Int)
+    NeighborTileIndices_PeriodicDomain(ni::Int,nj::Int)
 
 List of W, E, S, N neighbor tile IDs in the case of a doubly
 periodic domain with ni x nj tiles.
+
+Returns an array of size `(ni*nj,4)`.
 """
-function NeighborTileIndices_dpdo(ni::Int,nj::Int)
+function NeighborTileIndices_PeriodicDomain(ni::Int,nj::Int)
     tmp=fill(0,ni*nj,4)
     for i=1:ni
         for j=1:nj
@@ -42,9 +46,7 @@ as implemented by `MeshArrays.jl` (and MITgcm)
 
 ```jldoctest; output = false
 using MeshArrays
-path=MeshArrays.Dataset("GRID_CS32")
-γ = GridSpec("CubeSphere",path)
-Γ = GridLoad(γ)
+Γ = GridLoad(ID=:CS32)
 Γ = merge(Γ,MeshArrays.NeighborTileIndices_cs(Γ))
 
 u=[-1.0;20.0;3.0]
@@ -105,31 +107,29 @@ end
 
 
 """
-    update_location_dpdo!
+    update_location_PeriodicDomain!
 
 Update location (x,y,fIndex) when out of domain. Note: initially, this
 only works for the `dpdo` grid type provided by `MeshArrays.jl`.
 
 ```jldoctest; output = false
 using MeshArrays
-path=MeshArrays.Dataset("GRID_LL360")
-γ = GridSpec("PeriodicChannel",path)
-Γ = GridLoad(γ)
+Γ = GridLoad(ID=:onedegree)
 u=[-1.0;20.0;1.0]
-MeshArrays.update_location_dpdo!(u,γ)==[359.0;20.0;1.0]
+MeshArrays.update_location_PeriodicDomain!(u,γ)==[359.0;20.0;1.0]
 
 # output
 
 true
 ```
 """
-function update_location_dpdo!(u::AbstractArray{T,1},grid::gcmgrid) where T
+function update_location_PeriodicDomain!(u::AbstractArray{T,1},grid::gcmgrid) where T
     x,y = u[1:2]
     fIndex = Int(u[3])
     #
     nx,ny=grid.fSize[fIndex]
     ni,nj=Int.(transpose(grid.ioSize)./grid.fSize[1])
-    WESN=NeighborTileIndices_dpdo(ni,nj)
+    WESN=NeighborTileIndices_PeriodicDomain(ni,nj)
     #
     if x<0
         x=x+nx
@@ -167,9 +167,7 @@ convert indices from one tile to another. Returns a Dict to merge later.
 
 ```jldoctest; output = false
 using MeshArrays
-path=MeshArrays.Dataset("GRID_LLC90")
-γ=GridSpec("LatLonCap",path)
-Γ=GridLoad(γ)
+Γ = GridLoad(ID=:LLC90)
 Γ=merge(Γ,MeshArrays.NeighborTileIndices_cs(Γ))
 
 u=[-1.0;20.0;3.0]

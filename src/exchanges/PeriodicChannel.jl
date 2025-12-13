@@ -1,6 +1,6 @@
 ## Grid-specific implementations: PeriodicChannel case
 
-function exch_T_N_ll(fld::AbstractMeshArray,N::Integer)
+function exch_T_N_PeriodicChannel(fld::AbstractMeshArray,N::Integer)
 
 fillval=0.0
 
@@ -26,10 +26,10 @@ end
 
 ##
 
-function exch_UV_N_ll(fldU,fldV,N);
+function exch_UV_N_PeriodicChannel(fldU,fldV,N);
 
-FLDU=exch_T_N_ll(fldU,N);
-FLDV=exch_T_N_ll(fldV,N);
+FLDU=exch_T_N_PeriodicChannel(fldU,N);
+FLDV=exch_T_N_PeriodicChannel(fldV,N);
 
 return FLDU,FLDV
 
@@ -37,7 +37,7 @@ end
 
 ##
 
-function exch_UV_ll(fldU,fldV);
+function exch_UV_PeriodicChannel(fldU,fldV);
 
 fillval=0.0
 

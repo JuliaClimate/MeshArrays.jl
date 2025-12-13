@@ -1,7 +1,7 @@
 
 ## Grid-specific implementations: PeriodicDomain case
 
-function exch_T_N_dpdo(fld::AbstractMeshArray,N::Integer)
+function exch_T_N_PeriodicDomain(fld::AbstractMeshArray,N::Integer)
 
 fillval=0.0
 
@@ -47,13 +47,13 @@ return FLD
 
 end
 
-function exch_UV_N_dpdo(fldU,fldV,N)
-  FLDU=exch_T_N_dpdo(fldU,N)
-  FLDV=exch_T_N_dpdo(fldV,N)
+function exch_UV_N_PeriodicDomain(fldU,fldV,N)
+  FLDU=exch_T_N_PeriodicDomain(fldU,N)
+  FLDV=exch_T_N_PeriodicDomain(fldV,N)
   return FLDU,FLDV
 end
 
-function exch_UV_dpdo(fldU,fldV);
+function exch_UV_PeriodicDomain(fldU,fldV);
 
 fillval=0.0
 

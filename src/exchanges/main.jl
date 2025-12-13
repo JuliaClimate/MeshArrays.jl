@@ -55,9 +55,9 @@ if fld.grid.class=="LatLonCap"
 elseif fld.grid.class=="CubeSphere"
   FLD=exch_T_N_cs(fld,N)
 elseif fld.grid.class=="PeriodicChannel"
-  FLD=exch_T_N_ll(fld,N)
+  FLD=exch_T_N_PeriodicChannel(fld,N)
 elseif fld.grid.class=="PeriodicDomain"
-  FLD=exch_T_N_dpdo(fld,N)
+  FLD=exch_T_N_PeriodicDomain(fld,N)
 else
   error("unknown grid.class case")
 end
@@ -73,9 +73,9 @@ if u.grid.class=="LatLonCap"
 elseif u.grid.class=="CubeSphere"
   (uex,vex)=exch_UV_N_cs(u,v,N)
 elseif u.grid.class=="PeriodicChannel"
-  (uex,vex)=exch_UV_N_ll(u,v,N)
+  (uex,vex)=exch_UV_N_PeriodicChannel(u,v,N)
 elseif u.grid.class=="PeriodicDomain"
-  (uex,vex)=exch_UV_N_dpdo(u,v,N)
+  (uex,vex)=exch_UV_N_PeriodicDomain(u,v,N)
 else
   error("unknown grid.class case")
 end
@@ -91,9 +91,9 @@ if u.grid.class=="LatLonCap"
 elseif u.grid.class=="CubeSphere"
   (uex,vex)=exch_UV_cs(u,v)
 elseif u.grid.class=="PeriodicChannel"
-  (uex,vex)=exch_UV_ll(u,v)
+  (uex,vex)=exch_UV_PeriodicChannel(u,v)
 elseif u.grid.class=="PeriodicDomain"
-  (uex,vex)=exch_UV_dpdo(u,v)
+  (uex,vex)=exch_UV_PeriodicDomain(u,v)
 else
   error("unknown grid.class case")
 end
