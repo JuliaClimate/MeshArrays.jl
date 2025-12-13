@@ -83,8 +83,9 @@ true
 ```
 """
 function update_location_cs!(u::AbstractArray{T,1},𝑃::NamedTuple) where T
-    x,y = u[1:2]
-    fIndex = Int(u[end])
+    v=Float64.(u)
+    x,y = Float64.(v[1:2])
+    fIndex = Int(v[end])
     nx,ny=𝑃.XC.fSize[fIndex]
     if x<0||x>nx||y<0||y>ny
         j = 0
@@ -108,8 +109,9 @@ Update location (x,y,fIndex) when out of domain for lat-lon-cap (llc) grid
 as implemented by `MeshArrays.jl` (and MITgcm)
 """
 function update_location_llc!(u::AbstractArray{T,1},𝑃::NamedTuple) where T
-    x,y = u[1:2]
-    fIndex = Int(u[end])
+    v=Float64.(u)
+    x,y = v[1:2]
+    fIndex = Int(v[end])
     nx,ny=𝑃.XC.fSize[fIndex]
     if y<0&&(fIndex==1||fIndex==2)
         u[2]=eps(y)
@@ -156,8 +158,9 @@ true
 ```
 """
 function update_location_PeriodicDomain!(u::AbstractArray{T,1},grid::gcmgrid) where T
-    x,y = u[1:2]
-    fIndex = Int(u[3])
+    v=Float64.(u)
+    x,y = v[1:2]
+    fIndex = Int(v[3])
     #
     nx,ny=grid.fSize[fIndex]
     ni,nj=Int.(transpose(grid.ioSize)./grid.fSize[1])
