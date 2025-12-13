@@ -27,8 +27,6 @@ end;
 
 #step 2
 
-(ovfW,ovfE,ovfS,ovfN,evfW,evfE,evfS,evfN)=exch_cs_viewfunctions();
-
 for a=1:nf
 (jW, jE, jS, jN)=exch_cs_target(s[a],N)
 (aW,aE,aS,aN,iW,iE,iS,iN)=exch_cs_sources(a,s,N)
@@ -72,8 +70,6 @@ for i=1:nf;
 end;
 
 #step 2
-
-(ovfW,ovfE,ovfS,ovfN,evfW,evfE,evfS,evfN)=exch_cs_viewfunctions();
 
 for a=1:nf
 (jW, jE, jS, jN)=exch_cs_target(s[a],N)
@@ -126,8 +122,6 @@ for i=1:nf
 end
 
  #step 2
-
-(ovfW,ovfE,ovfS,ovfN,evfW,evfE,evfS,evfN)=exch_cs_viewfunctions();
 
 for a=1:nf
 (jW, jE, jS, jN)=exch_cs_target(s[a],1)
@@ -205,3 +199,5 @@ return ovfW,ovfE,ovfS,ovfN,evfW,evfE,evfS,evfN
 end
 
 ##
+
+(ovfW,ovfE,ovfS,ovfN,evfW,evfE,evfS,evfN)=exch_cs_viewfunctions()
