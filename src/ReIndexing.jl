@@ -39,6 +39,31 @@ function NeighborTileIndices_PeriodicDomain(ni::Int,nj::Int)
 end
 
 """
+    update_location!(u::Array,Γ)
+
+Update location (`x,y,fIndex``) when out of domain 
+for grids supported in `MeshArrays.jl` (and MITgcm)
+
+```
+using MeshArrays
+Γ=GridLoad(ID=:LLC90)
+Γ=merge(Γ,MeshArrays.NeighborTileIndices_cs(Γ))
+MeshArrays.update_location!([-1,20,1],Γ)
+```    
+"""
+function update_location!(u::AbstractArray,Γ)
+    if in(Γ.XC.grid.class,("PeriodicDomain","PeriodicChannel"))
+        update_location_PeriodicDomain!(u,Γ)
+    elseif Γ.XC.grid.class=="CubeSphere"
+        update_location_cs!(u,Γ)
+    elseif Γ.XC.grid.class=="LatLonCap"
+        update_location_llc!(u,Γ)
+    else
+        error("unknown grid class")
+    end
+end
+
+"""
     update_location_cs!
 
 Update location (x,y,fIndex) when out of domain for cube sphere (cs) grid 
@@ -46,18 +71,18 @@ as implemented by `MeshArrays.jl` (and MITgcm)
 
 ```jldoctest; output = false
 using MeshArrays
-Γ = GridLoad(ID=:CS32)
-Γ = merge(Γ,MeshArrays.NeighborTileIndices_cs(Γ))
+Γ=GridLoad(ID=:CS32)
+Γ=merge(Γ,MeshArrays.NeighborTileIndices_cs(Γ))
 
 u=[-1.0;20.0;3.0]
-MeshArrays.update_location_cs!(u,Γ)==[12.0;31.0;1.0]
+MeshArrays.update_location!(u,Γ)==[12.0;31.0;1.0]
 
 # output
 
 true
 ```
 """
-function update_location_cs!(u::Array{Float64,1},𝑃::NamedTuple)
+function update_location_cs!(u::AbstractArray{T,1},𝑃::NamedTuple) where T
     x,y = u[1:2]
     fIndex = Int(u[end])
     nx,ny=𝑃.XC.fSize[fIndex]
@@ -82,7 +107,7 @@ end
 Update location (x,y,fIndex) when out of domain for lat-lon-cap (llc) grid 
 as implemented by `MeshArrays.jl` (and MITgcm)
 """
-function update_location_llc!(u::Array{Float64,1},𝑃::NamedTuple)
+function update_location_llc!(u::AbstractArray{T,1},𝑃::NamedTuple) where T
     x,y = u[1:2]
     fIndex = Int(u[end])
     nx,ny=𝑃.XC.fSize[fIndex]
@@ -105,18 +130,25 @@ function update_location_llc!(u::Array{Float64,1},𝑃::NamedTuple)
     return u
 end
 
+"""
+    update_location_PeriodicDomain!(u::AbstractArray{T,1},Γ::NamedTuple)
+"""
+function update_location_PeriodicDomain!(u::AbstractArray{T,1},Γ::NamedTuple) where T 
+    update_location_PeriodicDomain!(u,Γ.XC.grid)
+end
 
 """
-    update_location_PeriodicDomain!
+    update_location_PeriodicDomain!(u::AbstractArray{T,1},grid::gcmgrid) where T 
 
-Update location (x,y,fIndex) when out of domain. Note: initially, this
-only works for the `dpdo` grid type provided by `MeshArrays.jl`.
+Update location (`x,y,fIndex``) when out of domain. Note: initially, this
+only works for the `PeriodicDomain` grid type provided by `MeshArrays.jl`.
 
 ```jldoctest; output = false
 using MeshArrays
 Γ = GridLoad(ID=:onedegree)
+
 u=[-1.0;20.0;1.0]
-MeshArrays.update_location_PeriodicDomain!(u,γ)==[359.0;20.0;1.0]
+MeshArrays.update_location!(u,Γ)==[359.0;20.0;1.0]
 
 # output
 
@@ -160,18 +192,18 @@ end
 
 
 """
-    NeighborTileIndices_cs(grid::Dict)
+    NeighborTileIndices_cs(grid::NamedTuple)
 
 Derive list of neighboring tile indices for a cs or llc grid + functions that
 convert indices from one tile to another. Returns a Dict to merge later.
 
 ```jldoctest; output = false
 using MeshArrays
-Γ = GridLoad(ID=:LLC90)
+Γ=GridLoad(ID=:LLC90)
 Γ=merge(Γ,MeshArrays.NeighborTileIndices_cs(Γ))
 
 u=[-1.0;20.0;3.0]
-MeshArrays.location_is_out(u,γ)
+MeshArrays.location_is_out(u,Γ.XC.grid)
 MeshArrays.update_location_llc!(u,Γ)==[70.0;269.0;1.0]
 
 # output
