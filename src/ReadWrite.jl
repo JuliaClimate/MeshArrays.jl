@@ -96,8 +96,6 @@ function read!(xx::Array,x::AbstractMeshArray)
   for i3 in 1:n3
     for i4 in 1:n4
       read_one!(xx[:,:,i3,i4],tmp)
-#      println("gf1")
-#      println(size(tmp))
       for f in 1:nFaces
         if (n3>1)&&(n4>1)
           x[f,i3,i4].=tmp[f]

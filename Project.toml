@@ -1,6 +1,6 @@
 name = "MeshArrays"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["gaelforget <gforget@mit.edu>"]
 
 [deps]
