@@ -148,9 +148,28 @@ function heatmap_tiled(MS::AbstractMeshArray;title="",
 	colorbar=true,colorrange=[],colormap=:viridis,kwargs...)
 	fig = Figure(size = (900,900), backgroundcolor = :grey95)
 	nf=length(MS.fSize)
-	nn=Int(ceil(nf/2))
-	ii=[i for j in 1:2, i in 1:nn]
-	jj=[j for j in 1:2, i in 1:nn]
+
+	test1=in(MS.grid.class,["PeriodicChannel","PeriodicDomain"])
+	test2=in(MS.grid.class,["CubeSphere"])
+	test3=in(MS.grid.class,["LatLonCap"])
+	if test1
+		(np,nq)=Int.(MS.grid.ioSize[:]./MS.fSize[1][:])
+		ii=[i for j in 1:np, i in nq:-1:1]
+		jj=[j for j in 1:np, i in nq:-1:1]
+		kk=(1:nq,np+1)
+	elseif test2
+		(np,nq)=Int.(MS.grid.ioSize[:]./MS.fSize[3][:])
+		ii=[3, 3, 2, 2, 1, 1]
+		jj=[1, 2, 2, 3, 3, 4]
+		kk=(1:3,5)
+	elseif test3
+		(np,nq)=Int.(MS.grid.ioSize[:]./MS.fSize[3][:])
+		ii=[3, 3, 2, 2, 1]
+		jj=[1, 2, 2, 3, 3]
+		kk=(1:3,4)
+	else
+		error("unknown grid class")
+	end
 	
 	!isempty(colorrange) ? cr=colorrange : cr=(nanmin(write(MS)),nanmax(write(MS)))
 	cr[1]==cr[2] ? cr=(cr[1]-eps(),cr[2]+eps()) : nothing
@@ -166,8 +185,7 @@ function heatmap_tiled(MS::AbstractMeshArray;title="",
 		hm1=heatmap!(ax,x,y,z;colorrange=cr,colormap=colormap,kwargs...)
 	end
 
-	nf > 1 ? jj=(1:nn,3) : jj=(1,2)
-	colorbar ? Colorbar(fig[jj...], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
+	colorbar ? Colorbar(fig[kk...], limits=cr, colormap=colormap, height = Relative(0.65)) : nothing
 	
 	fig
 end

@@ -40,9 +40,11 @@ end
 
 Reformat Array data into a MeshArray shaped after `γ`.
 """
-function read(xx::Array,γ::gcmgrid)
+function read(xx::Array,γ::gcmgrid; verbose=false)
   siz=size.(Ref(xx),[1,2,3,4])
   S=[i for i in γ.ioSize[:]]
+  verbose ? println(siz) : nothing
+  verbose ? println(S) : nothing
   if siz[1:2]==S||siz[1:2]==transpose(S)
     n3=siz[3]; n4=siz[4]
     yy=reshape(xx,(γ.ioSize...,n3,n4))
@@ -57,6 +59,8 @@ function read(xx::Array,γ::gcmgrid)
     error("unexpected array size")
   end
   yy
+
+  verbose ? println(size(yy)) : nothing
 
   if n3==1&&n4==1
     read(yy,MeshArray(γ,γ.ioPrec))
@@ -110,16 +114,27 @@ end
 
 Reformat one array of size x.grid.ioSize, and write **in-place** into MeshArray `x``.
 """
-function read_one!(xx::Array,x::AbstractMeshArray)
+function read_one!(xx::Array,x::AbstractMeshArray; verbose=false)
+  test1=in(x.grid.class,["PeriodicChannel","PeriodicDomain"])
+  format=(test1 ? :simple : :compact)
+
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
-  i0=0; i1=0;
+  i0=1; i1=0;
+  j0=1; j1=0;
   for iFace=1:nFaces
-    i0=i1+1;
     nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
-    i1=i1+nn*mm;
-    x.f[iFace]=reshape(xx[:][i0:i1,:],(nn,mm))
+    if format==:compact
+      i0=i1+1
+      i1=i1+nn*mm
+      x.f[iFace]=reshape(xx[:][i0:i1,:],(nn,mm))
+    else
+      i0=(mod(i1,n1)==0 ? 1 : i1+1)
+      j0=(mod(i1,n1)==0&&iFace!==1 ? j0+mm : j0)
+      i1=i0+nn-1; j1=j0+mm-1
+      x.f[iFace]=reshape(xx[i0:i1,j0:j1],(nn,mm))
+    end
 end
 
 end
@@ -141,26 +156,51 @@ function write(fil::String,x::AbstractMeshArray)
   close(fid)
 end
 
-function write(x::AbstractMeshArray)
+function write(x::AbstractMeshArray; verbose=false)
+  test1=in(x.grid.class,["PeriodicChannel","PeriodicDomain"])
+  format=(test1 ? :simple : :compact)
+
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
 
-  y = Array{eltype(x),3}(undef,(n1*n2,n3,n4))
-  i0=0; i1=0;
+  if format==:compact
+    y = Array{eltype(x),3}(undef,(n1*n2,n3,n4))
+  else
+    y = Array{eltype(x),4}(undef,(n1,n2,n3,n4))
+  end
+
+  i0=1; i1=0;
+  j0=1; j1=0;
   for iFace=1:nFaces;
-    i0=i1+1;
     nn=facesSize[iFace][1];
     mm=facesSize[iFace][2];
-    i1=i1+nn*mm;
+    if format==:compact
+      i0=i1+1
+      i1=i1+nn*mm
+    else
+      i0=(mod(i1,n1)==0 ? 1 : i1+1)
+      j0=(mod(i1,n1)==0&&iFace!==1 ? j0+mm : j0)
+      i1=i0+nn-1; j1=j0+mm-1
+      verbose ? println((i0,i1,j0,j1)) : false
+    end
     for i4=1:n4
       for i3=1:n3
-        y[i0:i1,i3,i4]=reshape(x.f[iFace,i3,i4],(nn*mm,1))
+        if format==:compact
+          y[i0:i1,i3,i4]=reshape(x.f[iFace,i3,i4],(nn*mm,1))
+        else
+          y[i0:i1,j0:j1,i3,i4]=reshape(x.f[iFace,i3,i4],(nn,mm))
+        end
       end
     end
   end
 
-  y=reshape(y,(n1,n2,n3,n4));
+  if format==:compact
+    y=reshape(y,(n1,n2,n3,n4))
+  else
+    y=y
+  end
+
   yy=if n3==1&&n4==1
     dropdims(y,dims=(3,4))
   elseif n4==1
