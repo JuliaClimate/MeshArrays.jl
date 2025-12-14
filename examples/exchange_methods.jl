@@ -26,9 +26,16 @@ begin
 end
 
 # ╔═╡ 7e32b36f-2a80-4637-a8be-306e7a0efa9a
-md"""# Exploration of exchange functions
+md"""# Visualization of `neighbor` Methods
 
-Recent additions :
+Here we visualize methods that connect nearest neighbors, which can be in different subdomains. 
+
+This currently includes two sets of methods in `MeshArrays`:
+
+- using `i,j,f` indices across subdomains (`neighbor_locations`, `update_location!`)
+- appending extra rows and columns at the edges of each subdomain (`exchange`)
+
+## Recent Code Additions
 
 - `MeshArrays.update_location!` that dispatches to specific methods
 - `MeshArrays.neighbor_locations` that returns location (x,y,f) arrays
@@ -36,27 +43,18 @@ Recent additions :
 ## Current Algorithm (v~0.5.1)
 
 ```
+exchange 						#top level function > exchange_main 
 exchange_main 					#calls MeshArray_wh(exch_T_N())
+> exch_cs_viewfunctions 		#defines generix functions (now call in moduled)
 > exch_T_N_cs 					#gets MeshArray, returns MeshArray
-	> exch_cs_viewfunctions 	#defines generix functions **should be called once and for all!!**
 	> exch_cs_target 			#computes (jW, jE, jS, jN) for current face
 	> exch_cs_sources 			#computes (aW,aE,aS,aN,iW,iE,iS,iN) for current face
 	#return an array of functions like ovfW(fld.f[aW],iW[1],iW[2])
 
-NeighborTileIndices_cs 		#gets grid NamedTuple, returns merged NamedTuple
-> RelocationFunctions_cs 	#gets MeshArray, returns Array{Function,2}(undef, 6, 6)
 update_location! 			#gets AbstractArray{T,1} and 𝑃, returns AbstractArray{T,1}
 > update_location_cs! 		#uses 𝑃.RelocFunctions, returns AbstractArray{T,1}
-```
-
-and
-
-```
-(ovfW,ovfE,ovfS,ovfN,evfW,evfE,evfS,evfN)=exch_cs_viewfunctions();
-
-function exch_cs_target(sa::Tuple{Int64,Int64},N::Integer)
-function exch_cs_sources(a::Integer,s::Array{Tuple{Int64,Int64},1},N::Integer)
-function exch_cs_viewfunctions()
+NeighborTileIndices_cs 		#gets grid NamedTuple, returns merged NamedTuple
+> RelocationFunctions_cs 	#gets MeshArray, returns Array{Function,2}(undef, 6, 6)
 ```
 """
 
@@ -163,6 +161,9 @@ md"""### `neighbor_locations` in default format"""
 # ╔═╡ 5dc274c1-9488-46c9-93a2-83ece3535265
 cwesn=MeshArrays.neighbor_locations(Γ_CS32)
 
+# ╔═╡ e30b7eae-6e41-47b4-9b1b-5b7b030cc211
+md"""## Appendix"""
+
 # ╔═╡ 2b097439-61f2-4023-a7da-8022abadc086
 function plot_cwesn(cwesn;option=:default)
 #	k,cr=if option==:default
@@ -191,9 +192,6 @@ end
 
 # ╔═╡ 46a69a2f-9fb1-4007-b704-a79c58e0988d
 plot_cwesn(cwesn,option=:f)
-
-# ╔═╡ e30b7eae-6e41-47b4-9b1b-5b7b030cc211
-md"""## Appendix"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1895,7 +1893,7 @@ version = "4.1.0+0"
 # ╠═46a69a2f-9fb1-4007-b704-a79c58e0988d
 # ╟─e30b7eae-6e41-47b4-9b1b-5b7b030cc211
 # ╠═079b968c-df36-476b-ad68-2d71460f4b3a
-# ╠═6ccb3546-d827-11f0-9886-c3f464f69333
+# ╟─6ccb3546-d827-11f0-9886-c3f464f69333
 # ╟─2b097439-61f2-4023-a7da-8022abadc086
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
