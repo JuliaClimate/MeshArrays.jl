@@ -40,12 +40,14 @@ Example:
 ```
 using MeshArrays
 a = MeshArrays.GridSpec_default(ID=:OISST)
-b = MeshArrays.GridSpec_default(Grids_simple.xy_OISST())
+b = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST(),tile=(1440,1020))
+c = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST(),tile=(720,510))
 ```
 """
-function GridSpec_default(xy=NamedTuple(), nFaces=1; ID=:unknown)
+function GridSpec_default(xy=NamedTuple(); 
+        ID=:unknown, ioPrec=Float64, tile=[])
     if !isempty(xy)
-        GridSpec_default_xy(xy,nFaces)
+        GridSpec_default_xy(xy,ioPrec=ioPrec,tile=tile)
     else
     xy= if ID==:IAP||ID==:unknown
             Grids_simple.xy_IAP()
@@ -56,23 +58,29 @@ function GridSpec_default(xy=NamedTuple(), nFaces=1; ID=:unknown)
         else
             error("unknown grid ID")
         end
-        GridSpec_default_xy(xy,nFaces,path="_default_"*string(ID))
+        GridSpec_default_xy(xy,path="_default_"*string(ID),
+            ioPrec=ioPrec,tile=tile)
     end
 end
 
-function GridSpec_default_xy(xy::NamedTuple, nFaces=1; path="_default")
+function GridSpec_default_xy(xy::NamedTuple; verbose=false,
+        path="_default", ioPrec=Float64, tile=[])
     (; xc, yc, xg, yg) = xy
 
+    fullSize=(length(xc),length(yc))
+    tileSize=(isempty(tile) ? fullSize : tile)
+    nFaces=Int(prod(fullSize)/prod(tileSize))
+    verbose ? println.([fullSize,tileSize,nFaces]) : false
+
     dx=diff(xg)[1]
-    ni=length(xc)
-    nj=length(yc)
-    nni=Int(ni/sqrt(nFaces))
-    nnj=Int(nj/sqrt(nFaces))
+    ni=fullSize[1]
+    nj=fullSize[2]
+    nni=tileSize[1]
+    nnj=tileSize[2]
 
     grTopo="PeriodicChannel"
     ioSize=[ni nj]
     facesSize=fill((nni,nnj),nFaces)
-    ioPrec=Float32
 
     g=gcmgrid(path, grTopo, nFaces, facesSize, ioSize, ioPrec, read, write)
 end
@@ -306,7 +314,8 @@ function GridLoad_default(gr=GridSpec())
         else
             error("unknown grid ID")
         end)
-    gr=Grids_simple.grid_factors(xy)
+    (ni,nj)=(length(xy.xc),length(xy.yc)) #still needs fixing ... set according to gr ...
+    gr=Grids_simple.grid_factors(xy,tile=(ni,nj))
     dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
     gr=Grids_simple.grid_add_z(gr,dep,msk)
 end

@@ -17,7 +17,7 @@ using MeshArrays
 Γ=MeshArrays.GridLoad_ones(γ;option="full")
 ```
 """
-function GridSpec_ones(grTp,nF,nP)
+function GridSpec_ones(grTp,nF,nP; ioPrec=Float64)
     grDir="_ones"
     grTopo=grTp
     nFaces=nF
@@ -35,7 +35,6 @@ function GridSpec_ones(grTp,nF,nP)
     end
     facesSize=Array{NTuple{2, Int},1}(undef,nFaces)
     facesSize[:].=[(nP,nP)]
-    ioPrec=Float32
 
     gcmgrid(grDir,grTopo,nFaces,facesSize, ioSize, ioPrec, read, write)
 end
@@ -86,12 +85,22 @@ function GridLoad_ones(γ::gcmgrid;option="minimal")
         Γ[list_n[ii]]=tmp1
     end
 
+    XC=[i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]]
+    YC=[j-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]]
+    if option=="full"
+        XG=[i-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]]
+        YG=[j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]]
+    end
+
+    (mp,mq)=Int.(γ.ioSize[:]./γ.fSize[1][:])
     for i in 1:nFaces
         (np,nq)=γ.fSize[i]
-        Γ["XC"][i]=vec(0.5:1.0:np-0.5)*ones(1,nq)
-        option=="full" ? Γ["XG"][i]=vec(0.0:1.0:np-1.0)*ones(1,nq) : nothing
-        Γ["YC"][i]=ones(np,1)*transpose(vec(0.5:1.0:nq-0.5))
-        option=="full" ? Γ["YG"][i]=ones(np,1)*transpose(vec(0.0:1.0:nq-1.0)) : nothing
+        ip=(1:np) .+ (mod1(i,mp)-1).*np
+        iq=(1:nq) .+ (Int(ceil(i/mp))-1)*nq
+        Γ["XC"][i]=XC[ip,iq]
+        option=="full" ? Γ["XG"][i]=XG[ip,iq] : nothing
+        Γ["YC"][i]=YC[ip,iq]
+        option=="full" ? Γ["YG"][i]=YG[ip,iq] : nothing
     end
     
     Dict_to_NamedTuple(Γ)
@@ -150,12 +159,12 @@ true
 function periodic_domain(np::Integer,nq=missing)
     ismissing(nq) ? nq=np : nothing
 
-    nFaces=1
+    nFaces=1 #still needs fixing ...
     ioSize=[np nq]
     facesSize=Array{NTuple{2, Int},1}(undef,nFaces)
     facesSize[:].=[(np,nq)]
     ioPrec=Float32
-    γ=gcmgrid("","PeriodicDomain",1,facesSize, ioSize, ioPrec, read, write)
+    γ=gcmgrid("","PeriodicDomain",nFaces,facesSize, ioSize, ioPrec, read, write)
 
     return GridLoad_ones(γ)
 end
@@ -230,19 +239,17 @@ end
 import MeshArrays: Grids_simple
 
 xy=Grids_simple.xy_OISST()
-gr=Grids_simple.grid_factors(xy)
+gr=Grids_simple.grid_factors(xy,nFaces=1)
 ```
 """
-grid_factors(xy::NamedTuple; nFaces=1)=begin
+grid_factors(xy::NamedTuple; tile=[])=begin
     (; xc, yc, xg, yg) = xy
 
     dx=diff(xg)[1]
     ni=length(xc)
     nj=length(yc)
-    nni=Int(ni/sqrt(nFaces))
-    nni=Int(nj/sqrt(nFaces))
 
-    g=GridSpec_default(xy,nFaces)
+    g=GridSpec_default(xy,tile=tile)
 
     dxF = rSphere*deg2rad.(cosd.(yc)*dx)
     dyF = rSphere*deg2rad.(diff(yg))
@@ -252,7 +259,7 @@ grid_factors(xy::NamedTuple; nFaces=1)=begin
     dyC = rSphere*deg2rad.(diff(yg))
     x=sind.(yg[2:end])-sind.(yg[1:end-1])
     RAC = rSphere*rSphere*dx*deg2rad.(abs.(x))
-  
+
     (
     XG=read(xg[1:end-1]*ones(1,nj),g),
     YG=read(permutedims(yc*ones(1,ni)),g),
