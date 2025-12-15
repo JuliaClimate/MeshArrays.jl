@@ -6,33 +6,35 @@ import MeshArrays: gcmgrid, varmeta, MeshArray, Dict_to_NamedTuple
 import MeshArrays: read_tiles, write_tiles, GridSpec_default
 
 """
-    GridSpec_ones(grTp,nF,nP)
+    GridSpec_ones(grTp; ioPrec=Float64,nP=10,nF=1)
 
-Define grid where all variables will be set 
-to one via `GridLoad_ones`.
+Define grid where all variables will be set to one via `GridLoad_ones`.
+
+- Possible values for `grTp`` : "LatLonCap","CubeSphere","PeriodicChannel","PeriodicDomain".
+- `nP` : number of points at each subdomain edge.
+- `nF` (only for "PeriodicChannel", "PeriodicDomain" grids) : number of subdomains.
 
 ```
 using MeshArrays
-γ=MeshArrays.GridSpec_ones("CubeSphere",6,20);
+γ=MeshArrays.GridSpec_ones("CubeSphere")
 Γ=MeshArrays.GridLoad_ones(γ;option="full")
 ```
 """
-function GridSpec_ones(grTp,nF,nP; ioPrec=Float64)
+function GridSpec_ones(grTp; ioPrec=Float64,nP=10,nF=1)
     grDir="_ones"
     grTopo=grTp
-    nFaces=nF
     if grTopo=="LatLonCap"
-        ioSize=[nP nP*nF]
+        nFaces=5
     elseif grTopo=="CubeSphere"
-        ioSize=[nP nP*nF]
+        nFaces=6
     elseif grTopo=="PeriodicChannel"
-        ioSize=[nP nP]
+        nFaces=nF
     elseif grTopo=="PeriodicDomain"
-        nFsqrt=Int(sqrt(nF))
-        ioSize=[nP*nFsqrt nP*nFsqrt]
+        nFaces=nF
     else
         error("unknown configuration (grTopo)")
     end
+    ioSize=[nP nP*nFaces]
     facesSize=Array{NTuple{2, Int},1}(undef,nFaces)
     facesSize[:].=[(nP,nP)]
 
@@ -154,12 +156,11 @@ isa(Γ.XC,MeshArray)
 
 true
 ```
-
 """
 function periodic_domain(np::Integer,nq=missing)
     ismissing(nq) ? nq=np : nothing
 
-    nFaces=1 #still needs fixing ...
+    nFaces=1
     ioSize=[np nq]
     facesSize=Array{NTuple{2, Int},1}(undef,nFaces)
     facesSize[:].=[(np,nq)]

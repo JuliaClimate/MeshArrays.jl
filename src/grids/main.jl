@@ -20,14 +20,14 @@ function GridSpec(category="default",
         GridSpec_default(ID=ID)
     elseif category=="ones"&&ID==:unknown
         npoints=(isnothing(np) ? 10 : np)
-        GridSpec_ones("PeriodicDomain",1,npoints)
+        GridSpec_ones("PeriodicDomain",nP=npoints)
     else
         GridSpec_MITgcm(category, path; np=np, ID=ID)
     end
 end
 
 """
-    GridSpec_default(xy=NamedTuple(), nFaces=1; ID=:unknown)
+    GridSpec_default(xy=NamedTuple(); ID=:unknown, ioPrec=Float64, tile=[])
 
 - Select one of the pre-defined grids 
     - or by providing `xy` parameter (a `NamedTuple` that includes `:xc, :yc, :xg, :yg`)
@@ -304,19 +304,18 @@ import .NEMO_GRID: GridLoad_NEMO, GridSpec_NEMO
 MeshArrays.GridSpec_default(ID=:IAP)
 ```
 """
-function GridLoad_default(gr=GridSpec())
-    xy=(if gr.path=="_default_IAP"
+function GridLoad_default(γ=GridSpec())
+    xy=(if γ.path=="_default_IAP"
             Grids_simple.xy_IAP()
-        elseif gr.path=="_default_Oscar"
+        elseif γ.path=="_default_Oscar"
             Grids_simple.xy_Oscar()
-        elseif gr.path=="_default_OISST"
+        elseif γ.path=="_default_OISST"
             Grids_simple.xy_OISST()
         else
             error("unknown grid ID")
         end)
-    (ni,nj)=(length(xy.xc),length(xy.yc)) #still needs fixing ... set according to gr ...
-    gr=Grids_simple.grid_factors(xy,tile=(ni,nj))
-    dep=[10 100 1000]; msk=ones(gr[:XC].fSize[1]...,3)
+    gr=Grids_simple.grid_factors(xy,tile=γ.fSize[1])
+    dep=[10 100 1000]; msk=ones(γ.ioSize...,3)
     gr=Grids_simple.grid_add_z(gr,dep,msk)
 end
 
