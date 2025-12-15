@@ -22,7 +22,7 @@ include(joinpath(p,"../examples/Demos.jl"))
         elseif nTopo==4; grTopo="PeriodicDomain"; nFaces=1; N=400;
         end;
         Npt=nFaces*N*N
-        γ=MeshArrays.GridSpec_ones(grTopo,nFaces,N)
+        γ=MeshArrays.GridSpec_ones(grTopo,nP=N)
         Γ=MeshArrays.GridLoad_ones(γ;option="full")
         @test γ.class == grTopo
         Rini= 0.; Rend= 0.;
@@ -239,7 +239,7 @@ end
     (Γ,γ)=Grids_simple.UnitGrid( (80,90) , (20,30) ; option="full")
     @test isa(γ,gcmgrid)
 
-    γ=Grids_simple.GridSpec_ones("PeriodicDomain",1,10)
+    γ=Grids_simple.GridSpec_ones("PeriodicDomain",nP=10)
     Γ=Grids_simple.GridLoad_ones(γ,option="full")
     @test isa(Γ,NamedTuple)
 
