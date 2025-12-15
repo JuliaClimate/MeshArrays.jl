@@ -64,6 +64,17 @@ PlutoUI.TableOfContents()
 # ╔═╡ 71612f73-1051-4e97-a308-21a407d32642
 md"""## Load Grids"""
 
+# ╔═╡ 4f164c56-3a0f-4c81-b017-505d8b734e0f
+function set_OISST_grid()
+	γ = MeshArrays.GridSpec_default(ID=:OISST,tile=(180,180))
+#	Γ_OISST=GridLoad(ID=:OISST,γ)
+	Γ_OISST=MeshArrays.GridLoad_default(γ)
+#	heatmap(Γ_OISST.XC)
+end
+
+# ╔═╡ 6d54a652-484a-4886-978f-7435e2818287
+Γ_OISST=set_OISST_grid();
+
 # ╔═╡ 32d493af-0e5f-44ef-8c4a-e6c38f22c38a
 begin
 	Γ_LL360 = GridLoad(ID=:onedegree)
@@ -142,8 +153,13 @@ This uses the new `MeshArrays.neighbor_locations` method to provide arrays of lo
 
 ### `neighbor_locations` in `:wh` format"""
 
+# ╔═╡ 9b407b06-cacd-44ba-8612-6aa942d4c057
+@bind gr2 Select([:CS32,:OISST])
+
 # ╔═╡ 002a877c-fdae-4937-b786-eaa58163082a
-locs_wh=MeshArrays.neighbor_locations(Γ_CS32,format=:wh)
+locs_wh=(gr2==:CS32 ? MeshArrays.neighbor_locations(Γ_CS32,format=:wh)
+					: MeshArrays.neighbor_locations(Γ_OISST,format=:wh)
+		)
 
 # ╔═╡ fe278b93-3643-47e3-b38a-6f7402ba7e46
 @bind ff Select(1:length(locs_wh.MA))
@@ -151,7 +167,7 @@ locs_wh=MeshArrays.neighbor_locations(Γ_CS32,format=:wh)
 # ╔═╡ b4d43587-e358-4feb-a4fc-98f5e5b23247
 begin
 	fig=Figure(size=(300,300)); ax=Axis(fig[1,1])
-	heatmap!([x[3] for x in locs_wh.MA.f[ff]],colorrange=(1,6))
+	heatmap!([x[3] for x in locs_wh.MA.f[ff]],colorrange=(1,length(locs_wh.MA)))
 	fig
 end
 
@@ -203,7 +219,6 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.15.8"
-MeshArrays = "~0.5.1"
 PlutoUI = "~0.7.76"
 """
 
@@ -213,7 +228,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "2ba776f762950a75975eb5aa688bbbd8dacbdda7"
+project_hash = "82fd984eb91a1771f46441a1db146d67a7b4f7b9"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -920,9 +935,9 @@ version = "0.1.6"
 
 [[deps.JpegTurbo_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "4255f0032eafd6451d707a51d5f0248b8a165e4d"
+git-tree-sha1 = "b6893345fd6658c8e475d40155789f4860ac3b21"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
-version = "3.1.3+0"
+version = "3.1.4+0"
 
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
@@ -1110,9 +1125,9 @@ version = "0.6.7"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
-path = "/Users/gaelforget/work/code/julia_pkg/MeshArrays.jl/"
+git-tree-sha1 = "d333bc6aa00ba7be0636af73698d85b306ff49f4"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.5.1"
+version = "0.5.2"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
@@ -1875,6 +1890,8 @@ version = "4.1.0+0"
 # ╟─7e32b36f-2a80-4637-a8be-306e7a0efa9a
 # ╟─6dc76c23-ff3a-4182-ab90-a87d5b65c768
 # ╟─71612f73-1051-4e97-a308-21a407d32642
+# ╠═4f164c56-3a0f-4c81-b017-505d8b734e0f
+# ╠═6d54a652-484a-4886-978f-7435e2818287
 # ╟─32d493af-0e5f-44ef-8c4a-e6c38f22c38a
 # ╟─c1c0e7ff-7c4f-48ba-be26-94d85dc1504a
 # ╟─7af41d1e-1013-49e2-823f-4aafc0a5ef49
@@ -1885,6 +1902,7 @@ version = "4.1.0+0"
 # ╟─a171ef2e-f942-4552-8f27-a544cbed7dff
 # ╟─e90245cc-0b2c-4877-9d18-de036eba37ce
 # ╟─5b3c9b52-4d9d-47a7-a824-645173f1d49e
+# ╟─9b407b06-cacd-44ba-8612-6aa942d4c057
 # ╟─002a877c-fdae-4937-b786-eaa58163082a
 # ╟─fe278b93-3643-47e3-b38a-6f7402ba7e46
 # ╟─b4d43587-e358-4feb-a4fc-98f5e5b23247

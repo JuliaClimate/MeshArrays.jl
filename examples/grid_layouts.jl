@@ -4,220 +4,130 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ ce0e774c-d5bf-11f0-ab9e-1fb06d7f9678
+# ╔═╡ 9e7ec612-d4c2-4672-8c45-74816cdbbc30
+using Pkg; Pkg.status()
+
+# ╔═╡ 38446abc-d8e6-11f0-8e42-f53ce9814e18
 begin
-	using MeshArrays, NCDatasets, CairoMakie, JLD2, Statistics, Pkg, PlutoUI
-	Pkg.status()
+	using MeshArrays
+	using CairoMakie, NCDatasets, PlutoUI
 end
 
-# ╔═╡ 331a7116-b8af-45bf-b843-e3a1758f558f
+# ╔═╡ 65092d25-a8d0-4ad8-8b2b-e819f5fc8cea
 PlutoUI.TableOfContents()
 
-# ╔═╡ 73bf2685-b933-4a75-87bc-cb9970db2a69
-md"""## Read and Compute"""
+# ╔═╡ e34e50fc-67af-413f-a0d6-0926c06f44ef
+md"""## Real Life Example"""
 
-# ╔═╡ cf5420aa-95b7-4484-9f09-86571691df68
-begin
-	γ=MeshArrays.GridSpec_NEMO(joinpath("data","mesh_mask_ORCA025.nc"))
-	Γ=MeshArrays.GridLoad_NEMO(Dataset(γ.path))
-	"""Done with Grid"""
+# ╔═╡ 35bbfba9-7b7c-47f8-874b-304dcc825560
+function read_OISST(;fil="oisst-avhrr-v02r01.20250301.nc",tile=(360,120))
+	ds=Dataset(fil)
+	γ = MeshArrays.GridSpec_default(ID=:OISST,tile=tile)
+	z = ds["sst"][:,:,1,1]; z[ismissing.(z)].=NaN
+	read(z,γ)
 end
 
-# ╔═╡ 326d378c-abde-4f5e-b90d-dc1a3e4b044d
-LC=LatitudeCircles(-89.0:89.0,Γ);
-
-# ╔═╡ a62f4e07-4877-48ec-8ecc-4b5bd4c4b3c0
-begin
-	lon=[i for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
-	lat=[j for i=-179.5:1.0:179.5, j=-89.5:1.0:89.5];
-	λ=MeshArrays.interpolation_setup(Γ=Γ,lon=lon,lat=lat);
-	lo,la,z=MeshArrays.Interpolate(Γ.Depth,λ);
-	"Done with interpolation, zonal lines"
+# ╔═╡ 9c036635-82d0-414d-995a-1944efad9e1e
+function query_OISST(fil="oisst-avhrr-v02r01.20250301.nc")
+	ds=Dataset(fil);
+	lon=ds["lon"][:]
+	lat=ds["lat"][:]
+	k=keys(ds)
+	(lon=lon,lat=lat,keys=k)
 end
 
-# ╔═╡ 689989e4-5865-4034-8c56-731caff35334
-md"""## Meridional Transport
+# ╔═╡ 0389235a-0f33-4dea-b8c4-dced7f9cb180
+query_OISST().keys
 
-1. from vertically integrated uT,vT
-	- MeshArrays.overturning
-2. volume transport
-	- (Utr,Vtr)=UVtoTransport(U,V,Γ)
-	- MeshArrays.meridional
-3. heat transport
-	- rho * cp / 1e15 * uv * to_UV
-	- (Utr,Vtr)=UVtoTransport(U,V,Γ)
-	- MeshArrays.meridional
-"""
+# ╔═╡ e6f9122d-a10b-4ff0-8064-09c899d0b2a0
+sst=read_OISST()
 
-# ╔═╡ ef9f4b4f-7fd8-4710-af72-87b2a455fd13
-md"""## Volume Transport"""
+# ╔═╡ 993aec2c-6a8b-43e0-9243-cb53a6d130f6
+heatmap(sst)
 
-# ╔═╡ 5969de7f-cbfb-4281-a435-5e74f5f23a1e
-md"""## Overturning"""
+# ╔═╡ 2bb88007-1078-40ca-ac25-cf632a2c157b
+md"""## Initial Tests"""
 
-# ╔═╡ e4d1091d-9ae2-489b-b2fc-809e8e373079
-md"""## Methods"""
-
-# ╔═╡ 5c314ad6-5e5c-40c1-b501-54d0917dad6e
-function read_vel_3d_array(month=1)
-		m=string(month)
-		fil="data/MER-EP-SW/Test/ORAS5_uo_2000-"*m*".nc"
-		ds=Dataset(fil)["vozocrtx"][2:end-1,1:1020,:]
-		ds[ismissing.(ds)].=NaN
-		U=ds
-		fil="data/MER-EP-SW/Test/ORAS5_vo_2000-"*m*".nc"
-		ds=Dataset(fil)["vomecrty"][2:end-1,1:1020,:]
-		ds[ismissing.(ds)].=NaN
-		V=ds
-		fil="data/MER-EP-SW/Test/ORAS5_thetao_2000-"*m*".nc"
-		ds=Dataset(fil)["votemper"][2:end-1,1:1020,:]
-		ds[ismissing.(ds)].=NaN
-		T=ds
-		(U=U,V=V,T=T)
-	end
-
-# ╔═╡ 15d6085d-e2af-4285-9a30-b036c730ad83
-function read_vel_3d_nemoarray(month=1:12)
-	U,V,T=(zeros(1440,1020,75),zeros(1440,1020,75),zeros(1440,1020,75))
-	uT,vT=(zeros(1440,1020,75),zeros(1440,1020,75))
+# ╔═╡ d9573736-1b68-4740-a789-26324581f032
+function initial_tests()
+    γ_1 = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST())
+    γ_4 = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST(),tile=(720,360))
+    γ_16 = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST(),tile=(360,360))
 	
-	for m in month
-		tmp=read_vel_3d_array(m)
-		U.+=tmp.U./length(month)
-		V.+=tmp.V./length(month)
-		T.+=tmp.T./length(month)
-		#
-		TatU,TatV=MeshArrays.to_UV(read(tmp.T,γ))
-		uT.+=(write(TatU).*tmp.U./length(month))
-		vT.+=(write(TatV).*tmp.V./length(month))
-	end
-	(U=read(U,γ),V=read(V,γ),T=read(T,γ),uT=read(uT,γ),vT=read(vT,γ))
-end
-
-# ╔═╡ 4542e819-f76b-4188-a365-d978c9b9d038
-begin
-	uvt=read_vel_3d_nemoarray(1);
-	TatU,TatV=MeshArrays.to_UV(uvt.T);
-	[heatmap(TatU[:,1]);heatmap(TatV[:,71])]
-end
-
-# ╔═╡ dd1f651a-f665-4bb2-a0cc-0cc047227d8c
-uvt_mean=read_vel_3d_nemoarray(1:12)
-
-# ╔═╡ 19d782de-ae2d-4180-8312-dd4b9409bb20
-(Utr,Vtr)=UVtoTransport(uvt_mean.U,uvt_mean.V,Γ)
-
-# ╔═╡ f0723ff8-477e-4aec-b756-001d0669ffb6
-begin
-	mask=ones(Γ.XC.grid)
-#    MT_vol=MT_comp(Utr,Vtr,mask)./1e6
-    MT_vol=MeshArrays.meridional(Utr,Vtr,LC,Γ,mask)./1e6
-end
-
-# ╔═╡ 06a1e780-9d69-4fc5-8b67-c105813999e0
-begin
-	(UT_tr,VT_tr)=UVtoTransport(uvt_mean.uT,uvt_mean.vT,Γ);
-	rhoconst =1029; #sea water density
-	rcp      =3994*rhoconst; # sea water rho X heat capacity
-    MT_heat=MeshArrays.meridional(UT_tr,VT_tr,LC,Γ,mask)*rcp/1e15
-	"MOHT recomputed from monthly 3D u,v,t"
-end
-
-# ╔═╡ b53e4149-cb41-4bac-bb55-b8b2e8c202b6
-begin
-	fig_MHT=Figure(); ax_MHT=Axis(fig_MHT[1,1],title="meridional heat transport in PW")
-	lines!(-89:89,MT_heat); #limits!(-90,90,-0.5,0.5)
-	fil_MHT=joinpath(tempdir(),"NEMO_MT_heat.png"); println(fil_MHT); save(fil_MHT,fig_MHT)
-end
-
-# ╔═╡ 43331d0d-ffdb-4cfe-9376-1f4c8cafb642
-begin
-	fig_MVT=Figure(); Axis(fig_MVT[1,1],title="meridional volume transport in Sv")
-	lines!(-89:89,MT_vol); limits!(-90,90,-10,10)
-	fil_MVT=joinpath(tempdir(),"NEMO_MT_vol.png"); println(fil_MVT); save(fil_MVT,fig_MVT)
-end
-
-# ╔═╡ d22af756-89cb-48e2-a835-88ee2feb7635
-ov=MeshArrays.overturning(Utr,Vtr,LC,Γ,mask)
-
-# ╔═╡ 91535321-0943-4441-b687-86a23cc9bdd9
-begin
-    MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
-    ov_fig=MeshArraysMakieExt.meridional_overturning(Γ,ov)
-	fil=joinpath(tempdir(),"NEMO_ov.png"); println(fil); save(fil,ov_fig)
-	ov_fig
-end
-
-# ╔═╡ 4382098d-b822-4a84-9bfc-0971eeb399e2
-function read_uTvT(path,Γ,month=1)
-	f=MeshArrays.NEMO_GRID.gcmarray_to_nemorarray
-	grid=Γ.XC.grid
-	m=string(month)
-	uT=Dataset(joinpath(path,"ORAS5_uT_1993-"*m*".nc"))["uT"][2:end-1,1:1020,1]
-	uT=f(read(uT,grid))
-	vT=Dataset(joinpath(path,"ORAS5_vT_1993-"*m*".nc"))["vT"][2:end-1,1:1020,1]
-	vT=f(read(vT,grid))
-	(uT,vT)
-end
-
-# ╔═╡ 887cdf28-25fd-4aa9-873c-14d15a0e2c28
-(uT,vT)=read_uTvT("data/NEMO_sample/monthly/",Γ,1)
-
-# ╔═╡ d0bcb388-503e-4729-a1e5-3c033a71b60e
-begin
-	uT_E,vT_N=UVtoUEVN(uT,vT,Γ)
-	_,_,z_E=MeshArrays.Interpolate(uT_E,λ);
-	_,_,z_N=MeshArrays.Interpolate(vT_N,λ);
-	[heatmap(z),heatmap(z_E,colorrange=(-1,1).*1e3),heatmap(z_N,colorrange=(-1,1).*1e3)]
-end
-
-
-# ╔═╡ aebc7ac0-b7b9-4a73-a015-44bc64530d9e
-begin
-	uT_m=zeros(Γ.XC)
-	vT_m=zeros(Γ.XC)
-	for m in 1:12
-		_uT,_vT=read_uTvT("data/NEMO_sample/monthly/",Γ,m)
-		uT_m+=_uT/12; vT_m+=_vT/12;
-	end
-	UV=Dict("U"=>Γ.DYG*uT_m,"V"=>Γ.DXG*vT_m,"dimensions"=>["x","y"])
-	MOHT_GF=1e-15*4e6*[ThroughFlow(UV,lc,Γ) for lc in LC]
-	"MOHT from precomputed uT,vT"
-end
-
-# ╔═╡ cb328ede-795e-43d6-8a73-ca7b61ea652b
-begin
-	ds=Dataset("data/MER-EP-SW/MOHT/MOHT_allReanas_75S-88N_1993-2020.nc");
-	lon_SW=ds["lat"];
-	MOHT_SW=1e-15*Float64.(mean(ds["ORAS5"][:,1:12],dims=2))[:];
+	Γ_1=GridLoad(ID=:OISST,γ_1,option=:minimum)
+	Γ_4=GridLoad(ID=:OISST,γ_4,option=:minimum)
+	Γ_16=GridLoad(ID=:OISST,γ_16,option=:minimum)
 	
-	fig=Figure(); ax=Axis(fig[1,1], xlabel="latitude", ylabel="PW")
-	lines!(-89.0:89.0,MT_heat,label="GF from u,v,T")
-	lines!(-89.0:89.0,MOHT_GF,label="GF from uT,vT")
-	lines!(lon_SW,MOHT_SW,label="SW")
-	axislegend()
-	fig_MHT_ref=current_figure()
+	XC_1=Γ_1.XC; YC_1=Γ_1.YC; 
+	XC_4=Γ_4.XC; YC_4=Γ_4.YC; 
+
+	# test 1
+	
+	function to_4_from_tiles(X_in=Γ_1.XC)
+	    τ=Tiles(γ_1,360*2,180*2)
+	    td=Tiles(τ,X_in)
+	    TD=MeshArray(γ_4)
+#		println(size(td))
+#		println(size(TD))
+	    [x[2].=td[x[1]] for x in enumerate(TD.f)]
+	    TD
+	end
+
+	XC_4_from_tiles,YC_4_from_tiles=try
+		XC_4_from_tiles=to_4_from_tiles(Γ_1.XC)
+		YC_4_from_tiles=to_4_from_tiles(Γ_1.YC)
+		XC_4_from_tiles,YC_4_from_tiles
+	catch
+		@warn "FAIL : to_4_from_tiles"
+		XC_4_from_tiles=[]
+		YC_4_from_tiles=[]
+		XC_4_from_tiles,YC_4_from_tiles
+	end
+	
+	# test 2
+	
+	γ=MeshArrays.GridSpec_ones("PeriodicDomain",nF=4,nP=50)
+	Γ=GridLoad(γ)
+	XC_4_ones=Γ.XC; YC_4_ones=Γ.YC
+	
+	# test 3
+	
+	XC_4_from_1=read(Γ_1.XC.f[1],γ_4)
+	YC_4_from_1=read(Γ_1.YC.f[1],γ_4)
+
+	(
+        XC_4=XC_4,YC_4=YC_4,
+        XC_4_from_1=XC_4_from_1,YC_4_from_1=YC_4_from_1,
+        XC_4_from_tiles=XC_4_from_tiles,YC_4_from_tiles=YC_4_from_tiles,
+        XC_4_ones=XC_4_ones,YC_4_ones=YC_4_ones,
+	)
 end
 
-# ╔═╡ b329f537-50ca-4f1c-8986-4216af5719af
-[fig_MVT , fig_MHT , fig_MHT_ref]
+# ╔═╡ 46d46588-b7d2-4a87-97f8-73ff8f48914e
+a=initial_tests()
+
+# ╔═╡ df9f4c66-891e-4a77-a491-847410fcec9f
+[heatmap(a.XC_4_from_1) , heatmap(a.XC_4_from_tiles) , heatmap(a.XC_4_ones)]
+
+# ╔═╡ 2a2fd5db-35fb-4a18-9503-235f4c02896a
+[heatmap(a.YC_4_from_1) , heatmap(a.YC_4_from_tiles) , heatmap(a.YC_4_ones)]
+
+# ╔═╡ 6926e46a-9754-4736-81a1-6a65b047ebbe
+md"""## Julia Packages"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
 CairoMakie = "~0.15.8"
-JLD2 = "~0.6.3"
 NCDatasets = "~0.14.10"
-PlutoUI = "~0.7.75"
+PlutoUI = "~0.7.76"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -226,7 +136,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "f79e429962cf1e19dd512ba6adad64f324a38281"
+project_hash = "229b1a7260e5e2bc3f51f0bbfb683b51c16a7edf"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -385,23 +295,6 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
-
-[[deps.ChunkCodecCore]]
-git-tree-sha1 = "51f4c10ee01bda57371e977931de39ee0f0cdb3e"
-uuid = "0b6fb165-00bc-4d37-ab8b-79f91016dbe1"
-version = "1.0.0"
-
-[[deps.ChunkCodecLibZlib]]
-deps = ["ChunkCodecCore", "Zlib_jll"]
-git-tree-sha1 = "cee8104904c53d39eb94fd06cbe60cb5acde7177"
-uuid = "4c0bbee4-addc-4d73-81a0-b6caacae83c8"
-version = "1.0.0"
-
-[[deps.ChunkCodecLibZstd]]
-deps = ["ChunkCodecCore", "Zstd_jll"]
-git-tree-sha1 = "34d9873079e4cb3d0c62926a225136824677073f"
-uuid = "55437552-ac27-4d47-9aa3-63184e8fd398"
-version = "1.0.0"
 
 [[deps.ColorBrewer]]
 deps = ["Colors", "JSON"]
@@ -789,11 +682,6 @@ git-tree-sha1 = "f923f9a774fcf3f5cb761bfa43aeadd689714813"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "8.5.1+0"
 
-[[deps.HashArrayMappedTries]]
-git-tree-sha1 = "2eaa69a7cab70a52b9687c8bf950a5a93ec895ae"
-uuid = "076d061b-32b6-4027-95e0-9a2c6f6d7e74"
-version = "0.2.0"
-
 [[deps.Hwloc_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "XML2_jll", "Xorg_libpciaccess_jll"]
 git-tree-sha1 = "3d468106a05408f9f7b6f161d9e7715159af247b"
@@ -965,18 +853,6 @@ git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
 
-[[deps.JLD2]]
-deps = ["ChunkCodecLibZlib", "ChunkCodecLibZstd", "FileIO", "MacroTools", "Mmap", "OrderedCollections", "PrecompileTools", "ScopedValues"]
-git-tree-sha1 = "8f8ff711442d1f4cfc0d86133e7ee03d62ec9b98"
-uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
-version = "0.6.3"
-
-    [deps.JLD2.extensions]
-    UnPackExt = "UnPack"
-
-    [deps.JLD2.weakdeps]
-    UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
-
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
 git-tree-sha1 = "0533e564aae234aff59ab625543145446d8b6ec2"
@@ -1003,9 +879,9 @@ version = "0.1.6"
 
 [[deps.JpegTurbo_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "4255f0032eafd6451d707a51d5f0248b8a165e4d"
+git-tree-sha1 = "b6893345fd6658c8e475d40155789f4860ac3b21"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
-version = "3.1.3+0"
+version = "3.1.4+0"
 
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
@@ -1226,9 +1102,9 @@ version = "0.6.7"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "6b256a7d5c13337f304b79b30aa351e2142759cd"
+git-tree-sha1 = "d333bc6aa00ba7be0636af73698d85b306ff49f4"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.5.1"
+version = "0.5.2"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
@@ -1293,10 +1169,10 @@ uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.1.3"
 
 [[deps.NearestNeighbors]]
-deps = ["Distances", "StaticArrays"]
-git-tree-sha1 = "5a47e9b249869754ac274953fbe9b7232856eb20"
+deps = ["AbstractTrees", "Distances", "StaticArrays"]
+git-tree-sha1 = "2949f294f82b5ad7192fd544a988a1e785438ee2"
 uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
-version = "0.4.25"
+version = "0.4.26"
 
 [[deps.NetCDF_jll]]
 deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML", "XML2_jll", "Zlib_jll", "Zstd_jll", "libaec_jll", "libzip_jll"]
@@ -1587,12 +1463,6 @@ deps = ["PrecompileTools"]
 git-tree-sha1 = "e24dc23107d426a096d3eae6c165b921e74c18e4"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.7.2"
-
-[[deps.ScopedValues]]
-deps = ["HashArrayMappedTries", "Logging"]
-git-tree-sha1 = "c3b2323466378a2ba15bea4b2f73b081e022f473"
-uuid = "7e506255-f358-4e82-b7e4-beb19740aa63"
-version = "1.5.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -2048,32 +1918,20 @@ version = "4.1.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═ce0e774c-d5bf-11f0-ab9e-1fb06d7f9678
-# ╟─331a7116-b8af-45bf-b843-e3a1758f558f
-# ╟─73bf2685-b933-4a75-87bc-cb9970db2a69
-# ╟─cf5420aa-95b7-4484-9f09-86571691df68
-# ╠═326d378c-abde-4f5e-b90d-dc1a3e4b044d
-# ╟─a62f4e07-4877-48ec-8ecc-4b5bd4c4b3c0
-# ╟─887cdf28-25fd-4aa9-873c-14d15a0e2c28
-# ╟─d0bcb388-503e-4729-a1e5-3c033a71b60e
-# ╟─4542e819-f76b-4188-a365-d978c9b9d038
-# ╟─dd1f651a-f665-4bb2-a0cc-0cc047227d8c
-# ╟─689989e4-5865-4034-8c56-731caff35334
-# ╟─cb328ede-795e-43d6-8a73-ca7b61ea652b
-# ╟─aebc7ac0-b7b9-4a73-a015-44bc64530d9e
-# ╟─06a1e780-9d69-4fc5-8b67-c105813999e0
-# ╟─b53e4149-cb41-4bac-bb55-b8b2e8c202b6
-# ╠═b329f537-50ca-4f1c-8986-4216af5719af
-# ╟─ef9f4b4f-7fd8-4710-af72-87b2a455fd13
-# ╟─19d782de-ae2d-4180-8312-dd4b9409bb20
-# ╟─f0723ff8-477e-4aec-b756-001d0669ffb6
-# ╟─43331d0d-ffdb-4cfe-9376-1f4c8cafb642
-# ╟─5969de7f-cbfb-4281-a435-5e74f5f23a1e
-# ╟─d22af756-89cb-48e2-a835-88ee2feb7635
-# ╟─91535321-0943-4441-b687-86a23cc9bdd9
-# ╟─e4d1091d-9ae2-489b-b2fc-809e8e373079
-# ╟─15d6085d-e2af-4285-9a30-b036c730ad83
-# ╟─5c314ad6-5e5c-40c1-b501-54d0917dad6e
-# ╟─4382098d-b822-4a84-9bfc-0971eeb399e2
+# ╠═65092d25-a8d0-4ad8-8b2b-e819f5fc8cea
+# ╟─e34e50fc-67af-413f-a0d6-0926c06f44ef
+# ╟─35bbfba9-7b7c-47f8-874b-304dcc825560
+# ╟─9c036635-82d0-414d-995a-1944efad9e1e
+# ╠═0389235a-0f33-4dea-b8c4-dced7f9cb180
+# ╠═e6f9122d-a10b-4ff0-8064-09c899d0b2a0
+# ╠═993aec2c-6a8b-43e0-9243-cb53a6d130f6
+# ╟─2bb88007-1078-40ca-ac25-cf632a2c157b
+# ╟─d9573736-1b68-4740-a789-26324581f032
+# ╠═46d46588-b7d2-4a87-97f8-73ff8f48914e
+# ╠═df9f4c66-891e-4a77-a491-847410fcec9f
+# ╠═2a2fd5db-35fb-4a18-9503-235f4c02896a
+# ╟─6926e46a-9754-4736-81a1-6a65b047ebbe
+# ╠═38446abc-d8e6-11f0-8e42-f53ce9814e18
+# ╠═9e7ec612-d4c2-4672-8c45-74816cdbbc30
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
