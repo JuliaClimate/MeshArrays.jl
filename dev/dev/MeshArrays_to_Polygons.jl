@@ -206,14 +206,12 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 GeometryOps = "3251bfac-6a57-4b6d-aa61-ac1fef2975ab"
 MITgcm = "dce5fa8e-68ce-4431-a242-9469c69627a0"
-MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.15.7"
 GeometryOps = "~0.1.31"
 MITgcm = "~0.5.12"
-MeshArrays = "~0.4.0"
 PlutoUI = "~0.7.75"
 """
 
@@ -223,7 +221,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "621754fcf1125ccf170eaad89bd3ffdfdd380afd"
+project_hash = "98fcc991a2150e4e795d97b4f0693eb5fd12b3ac"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
