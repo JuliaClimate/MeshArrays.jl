@@ -4,324 +4,130 @@
 using Markdown
 using InteractiveUtils
 
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    #! format: off
-    return quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-    #! format: on
-end
-
-# ╔═╡ 3df1fb35-e0a4-4894-8089-86f5d557c350
+# ╔═╡ 9e7ec612-d4c2-4672-8c45-74816cdbbc30
 using Pkg; Pkg.status()
 
-# ╔═╡ d123161e-49f1-11ec-1c1b-51871624545d
+# ╔═╡ 38446abc-d8e6-11f0-8e42-f53ce9814e18
 begin
-	using MeshArrays, Climatology
-	using PlutoUI, Statistics, JLD2, DataDeps
-	using CairoMakie, Proj
-	using GeoJSON, Shapefile
-	using Downloads, ZipFile
-
-	"Done with packages"
+	using MeshArrays
+	using CairoMakie, NCDatasets, PlutoUI
 end
 
-# ╔═╡ 39788eec-dd8b-4d65-a0f9-ea73a2d6690c
-TableOfContents()
+# ╔═╡ 65092d25-a8d0-4ad8-8b2b-e819f5fc8cea
+PlutoUI.TableOfContents()
 
-# ╔═╡ cc3e9d0c-8b71-432b-b68d-a8b832ca5f26
-md"""# Geography and Visualization
+# ╔═╡ e34e50fc-67af-413f-a0d6-0926c06f44ef
+md"""## Real Life Example"""
 
-This tutorial focuses on the relation between the gridded space in [MeshArrays.jl](https://juliaclimate.github.io/MeshArrays.jl/dev/) and the geospatial space (longitude, lattitude). A common use case is for plotting in the form of maps. Going back and forth between the two is also often useful for analysis of simulations (transports, averages, etc) and e.g. simulating particle trajectories.
-"""
+# ╔═╡ 35bbfba9-7b7c-47f8-874b-304dcc825560
+function read_OISST(;fil="oisst-avhrr-v02r01.20250301.nc",tile=(360,120))
+	ds=Dataset(fil)
+	γ = MeshArrays.GridSpec_default(ID=:OISST,tile=tile)
+	z = ds["sst"][:,:,1,1]; z[ismissing.(z)].=NaN
+	read(z,γ)
+end
 
-# ╔═╡ ca8a8f1b-a225-46c4-93c1-ce1a4b016461
-md"""## Interpolation
+# ╔═╡ 9c036635-82d0-414d-995a-1944efad9e1e
+function query_OISST(fil="oisst-avhrr-v02r01.20250301.nc")
+	ds=Dataset(fil);
+	lon=ds["lon"][:]
+	lat=ds["lat"][:]
+	k=keys(ds)
+	(lon=lon,lat=lat,keys=k)
+end
 
-Here we interpolate from the global grid (see [MeshArrays.jl](https://github.com/JuliaClimate/MeshArrays.jl)) to a set of arbitary locations (longitude, latitude pairs) as is commonly done, for example, to plot gridded fields in geographic coordinates (example below shows Ocean bottom depth) or to compare climate models to sparse field observations (e.g., [Argo profiles](https://github.com/JuliaOcean/ArgoData.jl)).
+# ╔═╡ 0389235a-0f33-4dea-b8c4-dced7f9cb180
+query_OISST().keys
 
-Later in this notebook, we break down the `MeshArrays.Interpolate` function into several steps. In brief, the program finds a grid point quadrilateral (4 grid points) that encloses the target location. Computation is chuncked in subdomains (tiles) to allow for parallelism. `MeshArrays.InterpolationFactors` outputs interpolation coefficients, which can then be reused repeatedly -- e.g. to speed up calls to `MeshArrays.Interpolate` in loops that generate animations.
-"""
+# ╔═╡ e6f9122d-a10b-4ff0-8064-09c899d0b2a0
+sst=read_OISST()
 
-# ╔═╡ 85aac4c5-bf04-4f9a-a233-a3f24231762e
-begin
-	source_bind = @bind source Select([:shp_example,:json_example])
-	list=["wintri","natearth2","longlat"]
-	proj_bind = @bind proj_name Select(list, default="natearth2")
-	lon0_bind = @bind lon0 Select(collect(-160:40:160),default=-160)
-	md"""## Projection
+# ╔═╡ 993aec2c-6a8b-43e0-9243-cb53a6d130f6
+heatmap(sst)
+
+# ╔═╡ 2bb88007-1078-40ca-ac25-cf632a2c157b
+md"""## Initial Tests"""
+
+# ╔═╡ d9573736-1b68-4740-a789-26324581f032
+function initial_tests()
+    γ_1 = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST())
+    γ_4 = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST(),tile=(720,360))
+    γ_16 = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST(),tile=(360,360))
 	
-	See `simple_heatmap` function (in appendices), which uses `Proj.jl` and `Makie.jl`.
+	Γ_1=GridLoad(ID=:OISST,γ_1,option=:minimum)
+	Γ_4=GridLoad(ID=:OISST,γ_4,option=:minimum)
+	Γ_16=GridLoad(ID=:OISST,γ_16,option=:minimum)
 	
-	$(proj_bind)
-	$(lon0_bind)
-	$(source_bind)
-	"""
-end
+	XC_1=Γ_1.XC; YC_1=Γ_1.YC; 
+	XC_4=Γ_4.XC; YC_4=Γ_4.YC; 
 
-# ╔═╡ 6aab5feb-06b6-4fbd-8732-83b70f397f00
-begin
-	#push!(lonPairs,[-68 -63]); push!(latPairs,[-54 -66]); push!(namPairs,"Drake Passage");
-
-	lon1_slct = @bind lon1 Select(-179.0:180.0;default=20.0)
-	lon2_slct = @bind lon2 Select(-179.0:180.0;default=-63.0)
-	lat1_slct = @bind lat1 Select(-89.0:89.0;default=-20.0)
-	lat2_slct = @bind lat2 Select(-89.0:89.0;default=-66.0)
-	md"""## Grid Line Paths
-
-The shortest path between two locations on the surface of a sphere is the one that follows a [great circle](https://en.wikipedia.org/wiki/Great-circle_distance). The method used in `MeshArrays.jl` identifies the path along grid cell edges that corresponds closely to the great circle path.
-
-`MeshArrays.jl` provides the `Transect` function to this end, which relies on the `MeshArrays.edge_mask` function. `MeshArrays.edge_mask` can also be used find paths that approximate circles of constant latitude, or delineate a subdomain for example.
-
-| Location 1         | Location 2         | 
-|:------------------:|:------------------:|
-| lon = $(lon1_slct) | lon = $(lon2_slct) | 
-| lat = $(lat1_slct) | lat = $(lat2_slct) | 
-	"""
-end
-
-# ╔═╡ c81ad3bb-a924-4393-bc73-0607cfebf75f
-begin
-	faceID_slct = @bind faceID Select(1:5;default=1)
+	# test 1
 	
-	md"""## Grid Cell Areas
-
-	When the goal is to compute averages or integrals over a subdomain or e.g. the whole Ocean, it is important to account for the corresponding land mask and grid cell areas. Here we visualize variations in grid cell areas for a specific global grid. Here the grid resolution is increased towards the Equator and at high latitudes. Details will differ for other grids, but they should not be overlooked in computing e.g. global means or zonal averages.
-	
-	- select a grid subdomain : $(faceID_slct)
-	"""
-end
-
-# ╔═╡ f5d7639e-f524-4134-9188-7bc8586c6883
-md"""## More"""
-
-# ╔═╡ 8d2e6d5f-7d89-4a27-82cb-0a587914d717
-md"""#### Interpolation Scheme
-
-
-The Interpolation Code? Let's Break It Down:
-
-- find nearest neighbor (`MeshArray` & `set`)
-- define subdomain tiles (`MeshArray` -> `tiles`)
-- exchange and start loop (`tile` & `subset`)
-    - local stereographic projection
-    - define array of quadrilaterals
-    - find enclosing quadrilaterals
-    - compute interpolation coefficients
-"""
-
-# ╔═╡ bf537ab9-b0b0-43f8-a6ad-61798e7b5016
-md"""#### Simple Polygon Map"""
-
-# ╔═╡ 25144e1b-21fc-4cc9-b63d-7b26eab1a673
-md"""## Appendices
-
-#### Data
-"""
-
-# ╔═╡ 39924391-38ce-46a1-877f-80a7975340a0
-begin
-    pth=MeshArrays.Dataset("GRID_LLC90")
-	γ=GridSpec("LatLonCap",pth)
-	Γ=GridLoad(γ;option="light")	
-	#LC=LatitudeCircles(-89.0:89.0,Γ)
-	basins=demo.ocean_basins()
-	sections,path_sec=demo.ocean_sections(Γ)
-	"Done with grid"
-end
-
-# ╔═╡ be38ff51-3526-44a0-9d8c-9209355e4a4a
-begin
-	λ=interpolation_setup()
-    hFacC=GridLoadVar("hFacC",γ)
-    μ=land_mask(hFacC[:,1])
-	
-	Depth_interpolated=Interpolate(λ.μ*Γ.Depth,λ.f,λ.i,λ.j,λ.w)
-	Depth_interpolated=reshape(Depth_interpolated,size(λ.lon))
-	#Depth_interpolated[findall(Depth_interpolated.==0.0)].=NaN
-	
-	"Done with interpolating Γ.Depth"
-end
-
-# ╔═╡ 303b2f54-a446-4dbe-a9a4-e6f424003722
-begin
-	nn=30
-
-	mm=Int(round(size(Γ.XC[3],1)/nn))
-	oo=Int(floor(mm*mm*13/10))
-	#tileID=0*Γ.YC; [tileID[t.face][t.i,t.j].=t.tile for t in τ];	
-	tileID_select = @bind ii NumberField(1:mm*mm*13,default=oo)
-
-	τ=Tiles(γ,nn,nn)
-	XC_tiled=Tiles(τ,Γ.XC)
-	YC_tiled=Tiles(τ,Γ.YC)
-	Depth_tiled=Tiles(τ,Γ.Depth)
-
-	md"""
-	!!! note 
-	    The rest of this notebook focuses on using fields defined on native ocean model grids --without interpolation to a regular grid. This approach generally allows for improved accuracy calculations in model space.
-	
-	## Domain Splitting
-
-	Here we decompose the global domain into $(mm*mm) tiles of $(nn) by $(nn).
-	
-	- tile size : $(nn)
-	- tile ID : $(tileID_select)
-	"""
-end
-
-# ╔═╡ d9a53bc6-19e2-48d9-b9c3-f76c3a533197
-begin
-    fig_tile=heatmap(Γ.Depth,interpolation=λ,colormap=:grayC,colorbar=false)
-    scatter!(current_axis(),XC_tiled[ii][:],YC_tiled[ii][:],color=Depth_tiled[ii][:],
-            markersize=4.0,colormap=:thermal,colorrange=(0.0,6000.0))
-    fig_tile
-end
-
-# ╔═╡ 42562cd8-04c5-4aef-87dc-5d0f87a9d204
-begin
-		lons=[lon1 lon2]
-		lats=[lat1 lat2]
-		my_section=demo.one_section(Γ,lons,lats)
-end
-
-# ╔═╡ 794d822e-2101-41ba-8780-fac95fc02075
-begin
-	fig_section=heatmap(λ.μ*Γ.Depth,interpolation=λ,colormap=:spring)
-	ax=current_axis(fig_section)
-	scatter!(ax,my_section.lon[:],my_section.lat[:],color=:blue,markersize=2.0)
-	scatter!(ax,my_section.lon[:],my_section.lat[:],color=:black,markersize=4.0)
-	scatter!(ax,lons[:],lats[:],color=:blue)
-	fig_section
-end
-
-# ╔═╡ b0d576fc-971a-47c7-9a57-f2c788083bcd
-begin
-
-	basin_slct = @bind basin_nam Select(basins.name;default=basins.name[1])
-
-	#basinID_slct = @bind basinID Select(1:maximum(basins);default=1)
-	
-	md"""## Regional Masks
-
-	There are many ways to split up the global domain into Oceans, Seas, etc. Here is one example.
-	
-	- select a basin nam : $(basin_slct)
-	"""
-end
-
-# ╔═╡ 2afc6934-9e07-46bf-a4f1-df33ce5a6fe9
-begin
-    fig_basins=scatter(Γ.XC,Γ.YC,color=basins.mask*μ,colormap=:lisbon,markersize=3.0)
-    basin_ID=findall(basins.name.==basin_nam)[1]
-    jj=findall(basins.mask.==basin_ID)
-    [scatter!(current_axis(),Γ.XC[jj][k],Γ.YC[jj][k],color=:red,markersize=3) for k in 1:length(jj)] 
-    fig_basins
-end
-
-# ╔═╡ a8defb50-fce4-4a0b-ac33-deb95f0b826b
-begin
-    fig_area=scatter(Γ.XC,Γ.YC,color=:black,markersize=2.0,)
-    MS=log10.(Γ.RAC)*μ
-    scatter!(current_axis(),Γ.XC[faceID][:],Γ.YC[faceID][:],color=MS[faceID][:],
-				colorrange = (8.8,10.2),markersize=3.0,colormap=:thermal)
-    fig_area
-end
-
-# ╔═╡ 6b72d272-eefc-45f2-9442-ef38057e4f09
-(fig1,fig2,fig3)=MeshArrays.plot_examples(:interpolation_demo,Γ)
-
-# ╔═╡ 897a49b2-9763-4020-a476-5e0fccda1cfb
-begin
-	LC=LatitudeCircles(79.0,Γ)
-	aa=LC.C
-	locClat=( lon=[Γ.XC[aa[i,1]][aa[i,2],aa[i,3]] for i in 1:size(aa,1)],
-				lat=[Γ.YC[aa[i,1]][aa[i,2],aa[i,3]] for i in 1:size(aa,1)])
-
-	"Done with latitude line"
-end
-
-# ╔═╡ 229d395f-f3b4-40df-a482-264d540be875
-begin
-	if source==:shp_example
-		fil=MeshArrays.Dataset("countries_shp1",do_read=false)
-	    pol=MeshArrays.read_shp(fil,format=:Shapefile)
-	elseif source==:json_example
-		fil=MeshArrays.Dataset("countries_geojson1",do_read=false)
-	    pol=MeshArrays.read_json(fil,format=:GeoJSON)
+	function to_4_from_tiles(X_in=Γ_1.XC)
+	    τ=Tiles(γ_1,360*2,180*2)
+	    td=Tiles(τ,X_in)
+	    TD=MeshArray(γ_4)
+#		println(size(td))
+#		println(size(TD))
+	    [x[2].=td[x[1]] for x in enumerate(TD.f)]
+	    TD
 	end
-	#pol=MeshArrays.read_polygons(fil)
-	"Done With Reading Country Polygons"
+
+	XC_4_from_tiles,YC_4_from_tiles=try
+		XC_4_from_tiles=to_4_from_tiles(Γ_1.XC)
+		YC_4_from_tiles=to_4_from_tiles(Γ_1.YC)
+		XC_4_from_tiles,YC_4_from_tiles
+	catch
+		@warn "FAIL : to_4_from_tiles"
+		XC_4_from_tiles=[]
+		YC_4_from_tiles=[]
+		XC_4_from_tiles,YC_4_from_tiles
+	end
+	
+	# test 2
+	
+	γ=MeshArrays.GridSpec_ones("PeriodicDomain",nF=4,nP=50)
+	Γ=GridLoad(γ)
+	XC_4_ones=Γ.XC; YC_4_ones=Γ.YC
+	
+	# test 3
+	
+	XC_4_from_1=read(Γ_1.XC.f[1],γ_4)
+	YC_4_from_1=read(Γ_1.YC.f[1],γ_4)
+
+	(
+        XC_4=XC_4,YC_4=YC_4,
+        XC_4_from_1=XC_4_from_1,YC_4_from_1=YC_4_from_1,
+        XC_4_from_tiles=XC_4_from_tiles,YC_4_from_tiles=YC_4_from_tiles,
+        XC_4_ones=XC_4_ones,YC_4_ones=YC_4_ones,
+	)
 end
 
-# ╔═╡ 54f6cb2f-025e-40e4-97a8-0f8ad4b35278
-begin
-	fig_polygons=Figure()
-	ax1=Axis(fig_polygons[1,1])
-	[lines!(ax1,l1.geometry,color = :black, linewidth = 0.5) for l1 in pol]
-	fig_polygons
-end
+# ╔═╡ 46d46588-b7d2-4a87-97f8-73ff8f48914e
+a=initial_tests()
 
-# ╔═╡ f4067238-a2da-414c-b7ca-6076034911a6
-let
-	MeshArraysMakieExt = Base.get_extension(MeshArrays, :MeshArraysMakieExt)
-	lines(MeshArraysMakieExt.pol_to_Makie(pol))
-end
+# ╔═╡ df9f4c66-891e-4a77-a491-847410fcec9f
+[heatmap(a.XC_4_from_1) , heatmap(a.XC_4_from_tiles) , heatmap(a.XC_4_ones)]
 
-# ╔═╡ 41960267-fff9-4bc4-a7bc-aceea2217c63
-begin
-	meta=(colorrange=(0.0,6000.0),cmap=:berlin,gridcolor=:lightgreen,ttl="Ocean Depth (m)")
-	data=(lon=λ.lon,lat=λ.lat,var=Depth_interpolated,meta=meta,polygons=pol)
-end
+# ╔═╡ 2a2fd5db-35fb-4a18-9503-235f4c02896a
+[heatmap(a.YC_4_from_1) , heatmap(a.YC_4_from_tiles) , heatmap(a.YC_4_ones)]
 
-# ╔═╡ d448431e-13a9-440c-9463-9174d7400cf1
-begin
-	proj_ID=findall(list.==proj_name)[1]
-	proj=Proj.Transformation(MA_preset=proj_ID,lon0=lon0)
-end
-
-# ╔═╡ 485f16de-b324-43a5-a634-783381910556
-fig0=let
-	f = Figure()
-    ax = f[1, 1] = Axis(f, aspect = DataAspect(), title = "Ocean Depth (m)")
-
-	pr_ax=MeshArrays.ProjAxis(ax; proj=proj,lon0=lon0)
-    
-	surf = surface!(pr_ax,λ.lon,λ.lat,0*λ.lat; color=Depth_interpolated, 
-			colorrange=(0.0,6000.0), colormap=:berlin, shading = NoShading)
-	lines!(pr_ax; polygons=pol,color=:black,linewidth=0.5)
-	#y1=-90:5:90; x1=lon0.+0*y1; scatter!(pr_ax,x1,y1,color=:yellow,markersize=5,marker=:x)
-	MeshArrays.grid_lines!(pr_ax;color=:lightgreen,linewidth=0.5)
-
-	Colorbar(f[1,2], surf, height = Relative(0.5))
-	f
-end
-
-# ╔═╡ 7fc02644-b037-425a-b660-cc6904a95037
-md"""#### Code"""
-
-
+# ╔═╡ 6926e46a-9754-4736-81a1-6a65b047ebbe
+md"""## Julia Packages"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-Climatology = "9e9a4d37-2d2e-41e3-8b85-f7978328d9c7"
-DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
-Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
-GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
-JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
+NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
-Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
+
+[compat]
+CairoMakie = "~0.15.8"
+NCDatasets = "~0.14.10"
+PlutoUI = "~0.7.76"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -330,7 +136,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "c6516aa6d91e34c7ce18c3a5547710556f2307e5"
+project_hash = "229b1a7260e5e2bc3f51f0bbfb683b51c16a7edf"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -417,10 +223,11 @@ git-tree-sha1 = "bca794632b8a9bbe159d56bf9e31c422671b35e0"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.3.2"
 
-[[deps.BitFlags]]
-git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
-uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
-version = "0.1.9"
+[[deps.Blosc_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Lz4_jll", "Zlib_jll", "Zstd_jll"]
+git-tree-sha1 = "535c80f1c0847a4c967ea945fca21becc9de1522"
+uuid = "0b7ba130-8d10-5ba8-a3d6-c5182647fed9"
+version = "1.21.7+0"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -435,9 +242,9 @@ version = "0.5.0"
 
 [[deps.CFTime]]
 deps = ["Dates", "Printf"]
-git-tree-sha1 = "937628bf8b377208ac359f57314fd85d3e0165d9"
+git-tree-sha1 = "0836c647014903bedccf23ba72b5ebb8c89a7db8"
 uuid = "179af706-886a-5703-950a-314cd64e0468"
-version = "0.1.4"
+version = "0.2.5"
 
 [[deps.CRC32c]]
 uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
@@ -454,12 +261,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "e329286945d0cfc04456972ea732551869af1cfc"
 uuid = "4e9b3aee-d8a1-5a3d-ad8b-7d824db253f0"
 version = "1.0.1+0"
-
-[[deps.CSV]]
-deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "PrecompileTools", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
-git-tree-sha1 = "deddd8725e5e1cc49ee205a1964256043720a6c3"
-uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.10.15"
 
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
@@ -494,45 +295,6 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
-
-[[deps.ChunkCodecCore]]
-git-tree-sha1 = "1a3ad7e16a321667698a19e77362b35a1e94c544"
-uuid = "0b6fb165-00bc-4d37-ab8b-79f91016dbe1"
-version = "1.0.1"
-
-[[deps.ChunkCodecLibZlib]]
-deps = ["ChunkCodecCore", "Zlib_jll"]
-git-tree-sha1 = "cee8104904c53d39eb94fd06cbe60cb5acde7177"
-uuid = "4c0bbee4-addc-4d73-81a0-b6caacae83c8"
-version = "1.0.0"
-
-[[deps.ChunkCodecLibZstd]]
-deps = ["ChunkCodecCore", "Zstd_jll"]
-git-tree-sha1 = "34d9873079e4cb3d0c62926a225136824677073f"
-uuid = "55437552-ac27-4d47-9aa3-63184e8fd398"
-version = "1.0.0"
-
-[[deps.Climatology]]
-deps = ["CSV", "DataDeps", "DataFrames", "DataStructures", "Dataverse", "Dates", "Distributed", "Glob", "JLD2", "MeshArrays", "Pkg", "Printf", "RollingFunctions", "STAC", "Scratch", "SharedArrays", "Statistics", "TOML", "URIs"]
-git-tree-sha1 = "aa24d0e54f235b8fc26881a1ed4d84f77536db18"
-uuid = "9e9a4d37-2d2e-41e3-8b85-f7978328d9c7"
-version = "0.5.18"
-
-    [deps.Climatology.extensions]
-    ClimatologyMITgcmExt = ["MITgcm"]
-    ClimatologyMakieExt = ["Makie"]
-    ClimatologyNCDatasetsExt = ["NCDatasets"]
-
-    [deps.Climatology.weakdeps]
-    MITgcm = "dce5fa8e-68ce-4431-a242-9469c69627a0"
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
-
-[[deps.CodecZlib]]
-deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "962834c22b66e32aa10f7611c08c8ca4e20749a9"
-uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.8"
 
 [[deps.ColorBrewer]]
 deps = ["Colors", "JSON"]
@@ -572,6 +334,12 @@ git-tree-sha1 = "37ea44092930b1811e666c3bc38065d7d87fcc74"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.13.1"
 
+[[deps.CommonDataModel]]
+deps = ["CFTime", "DataStructures", "Dates", "DiskArrays", "Preferences", "Printf", "Statistics"]
+git-tree-sha1 = "cd10f8b38725a6458dd971464daa5a751a67e6b0"
+uuid = "1fbeeb36-5f17-413c-809b-666fb144f157"
+version = "0.4.2"
+
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
 git-tree-sha1 = "9d8a54ce4b17aa5bdce0ea5c34bc5e7c340d16ad"
@@ -593,12 +361,6 @@ git-tree-sha1 = "76dab592fa553e378f9dd8adea16fe2591aa3daa"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.6"
 
-[[deps.ConcurrentUtilities]]
-deps = ["Serialization", "Sockets"]
-git-tree-sha1 = "d9d26935a0bcffc87d2613ce14c527c99fc543fd"
-uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
-version = "2.5.0"
-
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
@@ -615,64 +377,21 @@ git-tree-sha1 = "439e35b0b36e2e5881738abc8857bd92ad6ff9a8"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.3"
 
-[[deps.CoordinateTransformations]]
-deps = ["LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "a692f5e257d332de1e554e4566a4e5a8a72de2b2"
-uuid = "150eb455-5306-5404-9cee-2592286d6298"
-version = "0.6.4"
-
-[[deps.Crayons]]
-git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
-uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
-version = "4.1.1"
-
-[[deps.DBFTables]]
-deps = ["Dates", "Printf", "Tables", "WeakRefStrings"]
-git-tree-sha1 = "25f7e32f980605f8261ed8008418e41f5faec4b1"
-uuid = "75c7ada1-017a-5fb6-b8c7-2125ff2d6c93"
-version = "1.2.7"
-
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.16.0"
 
-[[deps.DataDeps]]
-deps = ["HTTP", "Libdl", "Reexport", "SHA", "Scratch", "p7zip_jll"]
-git-tree-sha1 = "8ae085b71c462c2cb1cfedcb10c3c877ec6cf03f"
-uuid = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
-version = "0.7.13"
-
-[[deps.DataFrames]]
-deps = ["Compat", "DataAPI", "DataStructures", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrecompileTools", "PrettyTables", "Printf", "Random", "Reexport", "SentinelArrays", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
-git-tree-sha1 = "d8928e9169ff76c6281f39a659f9bca3a573f24c"
-uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "1.8.1"
-
 [[deps.DataStructures]]
-deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "4e1fe97fdaed23e9dc21d4d664bea76b65fc50a0"
+deps = ["OrderedCollections"]
+git-tree-sha1 = "e357641bb3e0638d353c4b29ea0e40ea644066a6"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.18.22"
+version = "0.19.3"
 
 [[deps.DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
 uuid = "e2d170a0-9d28-54be-80f0-106bbe20a464"
 version = "1.0.0"
-
-[[deps.Dataverse]]
-deps = ["CSV", "CodecZlib", "DataFrames", "Downloads", "HTTP", "JSON", "NetworkOptions", "Tar", "ZipFile"]
-git-tree-sha1 = "84ad16bc3c21a8d13e07c55287f7049cda236349"
-uuid = "9c0b9be8-e31e-490f-90fe-77697562404d"
-version = "0.2.7"
-
-    [deps.Dataverse.extensions]
-    DataverseCondaPkgExt = ["CondaPkg"]
-    DataversePythonCallExt = ["PythonCall"]
-
-    [deps.Dataverse.weakdeps]
-    CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
-    PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -684,6 +403,12 @@ deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "Random"]
 git-tree-sha1 = "c55f5a9fd67bdbc8e089b5a3111fe4292986a8e8"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 version = "1.6.6"
+
+[[deps.DiskArrays]]
+deps = ["ConstructionBase", "LRUCache", "Mmap", "OffsetArrays"]
+git-tree-sha1 = "e8c9406f3164633756a0db93334ef23102933eef"
+uuid = "3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
+version = "0.4.18"
 
 [[deps.Distances]]
 deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
@@ -744,12 +469,6 @@ git-tree-sha1 = "83231673ea4d3d6008ac74dc5079e77ab2209d8f"
 uuid = "429591f6-91af-11e9-00e2-59fbe8cec110"
 version = "2.2.9"
 
-[[deps.ExceptionUnwrapping]]
-deps = ["Test"]
-git-tree-sha1 = "d36f682e590a83d63d1c7dbd287573764682d12a"
-uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
-version = "0.1.11"
-
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "27af30de8b5445644e8ffe3bcb0d72049c089cf1"
@@ -784,10 +503,12 @@ deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "d60eb76f37d7e5a40cc2e7c36974d864b82dc802"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.17.1"
-weakdeps = ["HTTP"]
 
     [deps.FileIO.extensions]
     HTTPExt = "HTTP"
+
+    [deps.FileIO.weakdeps]
+    HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 
 [[deps.FilePaths]]
 deps = ["FilePathsBase", "MacroTools", "Reexport"]
@@ -873,11 +594,6 @@ git-tree-sha1 = "7a214fdac5ed5f59a22c2d9a885a16da1c74bbc7"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.17+0"
 
-[[deps.Future]]
-deps = ["Random"]
-uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
-version = "1.11.0"
-
 [[deps.GeoFormatTypes]]
 git-tree-sha1 = "7528a7956248c723d01a0a9b0447bf254bf4da52"
 uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
@@ -895,20 +611,6 @@ version = "1.6.0"
 
     [deps.GeoInterface.weakdeps]
     GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-
-[[deps.GeoJSON]]
-deps = ["Extents", "GeoFormatTypes", "GeoInterface", "JSON3", "StructTypes", "Tables"]
-git-tree-sha1 = "ce64817b826c36b30493b31be2ce53c55a277835"
-uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
-version = "0.8.4"
-
-    [deps.GeoJSON.extensions]
-    GeoJSONMakieExt = "Makie"
-    GeoJSONRecipesBaseExt = "RecipesBase"
-
-    [deps.GeoJSON.weakdeps]
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
@@ -968,11 +670,11 @@ git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
 
-[[deps.HTTP]]
-deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "5e6fe50ae7f23d171f44e311c2960294aaa0beb5"
-uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.10.19"
+[[deps.HDF5_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "OpenSSL_jll", "TOML", "Zlib_jll", "libaec_jll"]
+git-tree-sha1 = "e94f84da9af7ce9c6be049e9067e511e17ff89ec"
+uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
+version = "1.14.6+0"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -980,10 +682,11 @@ git-tree-sha1 = "f923f9a774fcf3f5cb761bfa43aeadd689714813"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "8.5.1+0"
 
-[[deps.HashArrayMappedTries]]
-git-tree-sha1 = "2eaa69a7cab70a52b9687c8bf950a5a93ec895ae"
-uuid = "076d061b-32b6-4027-95e0-9a2c6f6d7e74"
-version = "0.2.0"
+[[deps.Hwloc_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "XML2_jll", "Xorg_libpciaccess_jll"]
+git-tree-sha1 = "3d468106a05408f9f7b6f161d9e7715159af247b"
+uuid = "e33a78d0-f292-5ffc-b300-72abe9b543c8"
+version = "2.12.2+0"
 
 [[deps.HypergeometricFunctions]]
 deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
@@ -1054,19 +757,6 @@ version = "1.0.0"
 git-tree-sha1 = "d1b1b796e47d94588b3757fe84fbf65a5ec4a80d"
 uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 version = "0.1.5"
-
-[[deps.InlineStrings]]
-git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
-uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
-version = "1.4.5"
-
-    [deps.InlineStrings.extensions]
-    ArrowTypesExt = "ArrowTypes"
-    ParsersExt = "Parsers"
-
-    [deps.InlineStrings.weakdeps]
-    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
-    Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
@@ -1142,11 +832,6 @@ weakdeps = ["Dates", "Test"]
     InverseFunctionsDatesExt = "Dates"
     InverseFunctionsTestExt = "Test"
 
-[[deps.InvertedIndices]]
-git-tree-sha1 = "6da3c4316095de0f5ee2ebd875df8721e7e0bdbe"
-uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
-version = "1.3.1"
-
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "b2d91fe939cae05960e760110b328288867b5758"
 uuid = "92d709cd-6900-40b7-9082-c6be49f344b6"
@@ -1168,18 +853,6 @@ git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
 
-[[deps.JLD2]]
-deps = ["ChunkCodecLibZlib", "ChunkCodecLibZstd", "FileIO", "MacroTools", "Mmap", "OrderedCollections", "PrecompileTools", "ScopedValues"]
-git-tree-sha1 = "8f8ff711442d1f4cfc0d86133e7ee03d62ec9b98"
-uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
-version = "0.6.3"
-
-    [deps.JLD2.extensions]
-    UnPackExt = "UnPack"
-
-    [deps.JLD2.weakdeps]
-    UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
-
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
 git-tree-sha1 = "0533e564aae234aff59ab625543145446d8b6ec2"
@@ -1187,21 +860,15 @@ uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 version = "1.7.1"
 
 [[deps.JSON]]
-deps = ["Dates", "Mmap", "Parsers", "Unicode"]
-git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
+deps = ["Dates", "Logging", "Parsers", "PrecompileTools", "StructUtils", "UUIDs", "Unicode"]
+git-tree-sha1 = "5b6bb73f555bc753a6153deec3717b8904f5551c"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.21.4"
+version = "1.3.0"
 
-[[deps.JSON3]]
-deps = ["Dates", "Mmap", "Parsers", "PrecompileTools", "StructTypes", "UUIDs"]
-git-tree-sha1 = "411eccfe8aba0814ffa0fdf4860913ed09c34975"
-uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
-version = "1.14.3"
+    [deps.JSON.extensions]
+    JSONArrowExt = ["ArrowTypes"]
 
-    [deps.JSON3.extensions]
-    JSON3ArrowExt = ["ArrowTypes"]
-
-    [deps.JSON3.weakdeps]
+    [deps.JSON.weakdeps]
     ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
 
 [[deps.JpegTurbo]]
@@ -1220,11 +887,6 @@ version = "3.1.4+0"
 deps = ["StyledStrings"]
 uuid = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
 version = "1.12.0"
-
-[[deps.KahanSummation]]
-git-tree-sha1 = "6292e7878fe190651e74148edb11356dbbc2e194"
-uuid = "8e2b3108-d4c1-50be-a7a2-16352aec75c3"
-version = "0.3.1"
 
 [[deps.KernelDensity]]
 deps = ["Distributions", "DocStringExtensions", "FFTW", "Interpolations", "StatsBase"]
@@ -1370,11 +1032,11 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
-[[deps.LoggingExtras]]
-deps = ["Dates", "Logging"]
-git-tree-sha1 = "f00544d95982ea270145636c181ceda21c4e2575"
-uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
-version = "1.2.0"
+[[deps.Lz4_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "191686b1ac1ea9c89fc52e996ad15d1d241d1e33"
+uuid = "5ced341a-0733-55b8-9ab6-a4889d929147"
+version = "1.10.1+0"
 
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
@@ -1386,6 +1048,24 @@ deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl",
 git-tree-sha1 = "282cadc186e7b2ae0eeadbd7a4dffed4196ae2aa"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
 version = "2025.2.0+0"
+
+[[deps.MPICH_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
+git-tree-sha1 = "9341048b9f723f2ae2a72a5269ac2f15f80534dc"
+uuid = "7cb0a576-ebde-5e09-9194-50597f1243b4"
+version = "4.3.2+0"
+
+[[deps.MPIPreferences]]
+deps = ["Libdl", "Preferences"]
+git-tree-sha1 = "c105fe467859e7f6e9a852cb15cb4301126fac07"
+uuid = "3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"
+version = "0.1.11"
+
+[[deps.MPItrampoline_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML"]
+git-tree-sha1 = "e214f2a20bdd64c04cd3e4ff62d3c9be7e969a59"
+uuid = "f1f71cc9-e9ae-5b93-9b94-4fe0e1ad3748"
+version = "5.5.4+0"
 
 [[deps.MacroTools]]
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
@@ -1420,18 +1100,6 @@ git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
 
-[[deps.MbedTLS]]
-deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
-git-tree-sha1 = "c067a280ddc25f196b5e7df3877c6b226d390aaf"
-uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.9"
-
-[[deps.MbedTLS_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "ff69a2b1330bcb730b9ac1ab7dd680176f5896b8"
-uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.1010+0"
-
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
 git-tree-sha1 = "d333bc6aa00ba7be0636af73698d85b306ff49f4"
@@ -1456,6 +1124,12 @@ version = "0.5.2"
     Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
     Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
 
+[[deps.MicrosoftMPI_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "bc95bf4149bf535c09602e3acdf950d9b4376227"
+uuid = "9237b28f-5490-5468-be7b-bb81f5f5e6cf"
+version = "10.1.4+3"
+
 [[deps.Missings]]
 deps = ["DataAPI"]
 git-tree-sha1 = "ec4f7fbeab05d7747bdf98eb74d130a2a2ed298d"
@@ -1476,6 +1150,18 @@ version = "0.3.4"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2025.5.20"
 
+[[deps.NCDatasets]]
+deps = ["CFTime", "CommonDataModel", "DataStructures", "Dates", "DiskArrays", "NetCDF_jll", "NetworkOptions", "Printf"]
+git-tree-sha1 = "c82c73e2e0c57a0fe13d3414d7c5a6a821d24016"
+uuid = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
+version = "0.14.10"
+
+    [deps.NCDatasets.extensions]
+    NCDatasetsMPIExt = "MPI"
+
+    [deps.NCDatasets.weakdeps]
+    MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
+
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
 git-tree-sha1 = "9b8215b1ee9e78a293f99797cd31375471b2bcae"
@@ -1487,6 +1173,12 @@ deps = ["AbstractTrees", "Distances", "StaticArrays"]
 git-tree-sha1 = "2949f294f82b5ad7192fd544a988a1e785438ee2"
 uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 version = "0.4.26"
+
+[[deps.NetCDF_jll]]
+deps = ["Artifacts", "Blosc_jll", "Bzip2_jll", "HDF5_jll", "JLLWrappers", "LazyArtifacts", "LibCURL_jll", "Libdl", "MPICH_jll", "MPIPreferences", "MPItrampoline_jll", "MicrosoftMPI_jll", "OpenMPI_jll", "TOML", "XML2_jll", "Zlib_jll", "Zstd_jll", "libaec_jll", "libzip_jll"]
+git-tree-sha1 = "d574803b6055116af212434460adf654ce98e345"
+uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3"
+version = "401.900.300+0"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1546,11 +1238,11 @@ deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.7+0"
 
-[[deps.OpenSSL]]
-deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "1d1aaa7d449b58415f97d2839c318b70ffb525a0"
-uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.6.1"
+[[deps.OpenMPI_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Hwloc_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "MPIPreferences", "TOML", "Zlib_jll"]
+git-tree-sha1 = "ab6596a9d8236041dcd59b5b69316f28a8753592"
+uuid = "fe0851c0-eecd-5654-98d4-656369965a5c"
+version = "5.0.9+0"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1594,12 +1286,6 @@ deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpn
 git-tree-sha1 = "cf181f0b1e6a18dfeb0ee8acc4a9d1672499626c"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
 version = "0.4.4"
-
-[[deps.PROJ_jll]]
-deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Libtiff_jll", "SQLite_jll"]
-git-tree-sha1 = "817778f5802156bff35b472c73b0c4e611bd23c3"
-uuid = "58948b4f-47e0-5654-a9ad-f609743f8632"
-version = "902.700.0+0"
 
 [[deps.Packing]]
 deps = ["GeometryBasics"]
@@ -1663,12 +1349,6 @@ git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.2"
 
-[[deps.PooledArrays]]
-deps = ["DataAPI", "Future"]
-git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
-uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
-version = "1.4.3"
-
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
 git-tree-sha1 = "07a921781cab75691315adc645096ed5e370cb77"
@@ -1681,12 +1361,6 @@ git-tree-sha1 = "0f27480397253da18fe2c12a4ba4eb9eb208bf3d"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.5.0"
 
-[[deps.PrettyTables]]
-deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "c5a07210bd060d6a8491b0ccdee2fa0235fc00bf"
-uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "3.1.2"
-
 [[deps.Printf]]
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
@@ -1697,12 +1371,6 @@ deps = ["Distributed", "Printf"]
 git-tree-sha1 = "fbb92c6c56b34e1a2c4c36058f68f332bec840e7"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.11.0"
-
-[[deps.Proj]]
-deps = ["CEnum", "CoordinateTransformations", "GeoFormatTypes", "GeoInterface", "NetworkOptions", "PROJ_jll"]
-git-tree-sha1 = "61188669db4f5b400173e4ec60da8bcb72d6e749"
-uuid = "c94c279d-25a6-4763-9509-64d165bea63e"
-version = "1.9.0"
 
 [[deps.PtrArrays]]
 git-tree-sha1 = "1d36ef11a9aaf1e8b74dacc6a731dd1de8fd493d"
@@ -1781,12 +1449,6 @@ git-tree-sha1 = "58cdd8fb2201a6267e1db87ff148dd6c1dbd8ad8"
 uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
 version = "0.5.1+0"
 
-[[deps.RollingFunctions]]
-deps = ["KahanSummation", "LinearAlgebra", "Statistics", "StatsBase"]
-git-tree-sha1 = "4c67c9d97498ca54c14b02bb051721272f56cede"
-uuid = "b0e4dd01-7b14-53d8-9b45-175a3e362653"
-version = "0.8.1"
-
 [[deps.RoundingEmulator]]
 git-tree-sha1 = "40b9edad2e5287e05bd413a38f61a8ff55b9557b"
 uuid = "5eaf0fd0-dfba-4ccb-bf02-d820a40db705"
@@ -1802,35 +1464,11 @@ git-tree-sha1 = "e24dc23107d426a096d3eae6c165b921e74c18e4"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.7.2"
 
-[[deps.SQLite_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "9a325057cdb9b066f1f96dc77218df60fe3007cb"
-uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
-version = "3.48.0+0"
-
-[[deps.STAC]]
-deps = ["CFTime", "DataStructures", "Dates", "GeoJSON", "HTTP", "JSON3", "LRUCache", "Preferences", "Printf", "URIs"]
-git-tree-sha1 = "7157a414f324cc0594c3a0d1f30535a4454bf20f"
-uuid = "08e62803-e111-4f53-be9b-274ff296e9da"
-version = "0.1.3"
-
-[[deps.ScopedValues]]
-deps = ["HashArrayMappedTries", "Logging"]
-git-tree-sha1 = "c3b2323466378a2ba15bea4b2f73b081e022f473"
-uuid = "7e506255-f358-4e82-b7e4-beb19740aa63"
-version = "1.5.0"
-
 [[deps.Scratch]]
 deps = ["Dates"]
 git-tree-sha1 = "9b81b8393e50b7d4e6d0a9f14e192294d3b7c109"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.3.0"
-
-[[deps.SentinelArrays]]
-deps = ["Dates", "Random"]
-git-tree-sha1 = "712fb0231ee6f9120e005ccd56297abbc053e7e0"
-uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.8"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -1841,22 +1479,6 @@ deps = ["ColorTypes", "FixedPointNumbers", "GeometryBasics", "LinearAlgebra", "O
 git-tree-sha1 = "818554664a2e01fc3784becb2eb3a82326a604b6"
 uuid = "65257c39-d410-5151-9873-9b3e5be5013e"
 version = "0.5.0"
-
-[[deps.Shapefile]]
-deps = ["DBFTables", "DataAPI", "Extents", "GeoFormatTypes", "GeoInterface", "OrderedCollections", "Tables"]
-git-tree-sha1 = "761a19d86ab3e90ed4dcb07692b2ce225124feb3"
-uuid = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
-version = "0.13.3"
-
-    [deps.Shapefile.extensions]
-    ShapefileMakieExt = "Makie"
-    ShapefileRecipesBaseExt = "RecipesBase"
-    ShapefileZipFileExt = "ZipFile"
-
-    [deps.Shapefile.weakdeps]
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-    ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [[deps.SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
@@ -1874,11 +1496,6 @@ deps = ["Random", "Statistics", "Test"]
 git-tree-sha1 = "d263a08ec505853a5ff1c1ebde2070419e3f28e9"
 uuid = "73760f76-fbc4-59ce-8f25-708e95d2df96"
 version = "0.4.0"
-
-[[deps.SimpleBufferStream]]
-git-tree-sha1 = "f305871d2f381d21527c770d4788c06c097c9bc1"
-uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
-version = "1.2.0"
 
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
@@ -1978,12 +1595,6 @@ weakdeps = ["ChainRulesCore", "InverseFunctions"]
     StatsFunsChainRulesCoreExt = "ChainRulesCore"
     StatsFunsInverseFunctionsExt = "InverseFunctions"
 
-[[deps.StringManipulation]]
-deps = ["PrecompileTools"]
-git-tree-sha1 = "a3c1536470bf8c5e02096ad4853606d7c8f62721"
-uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
-version = "0.4.2"
-
 [[deps.StructArrays]]
 deps = ["ConstructionBase", "DataAPI", "Tables"]
 git-tree-sha1 = "a2c37d815bf00575332b7bd0389f771cb7987214"
@@ -2005,11 +1616,19 @@ version = "0.7.2"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
     StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
-[[deps.StructTypes]]
+[[deps.StructUtils]]
 deps = ["Dates", "UUIDs"]
-git-tree-sha1 = "159331b30e94d7b11379037feeb9b690950cace8"
-uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
-version = "1.11.0"
+git-tree-sha1 = "79529b493a44927dd5b13dde1c7ce957c2d049e4"
+uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
+version = "2.6.0"
+
+    [deps.StructUtils.extensions]
+    StructUtilsMeasurementsExt = ["Measurements"]
+    StructUtilsTablesExt = ["Tables"]
+
+    [deps.StructUtils.weakdeps]
+    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
@@ -2121,12 +1740,6 @@ version = "1.27.0"
     NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
-[[deps.WeakRefStrings]]
-deps = ["DataAPI", "InlineStrings", "Parsers"]
-git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
-uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
-version = "1.4.2"
-
 [[deps.WebP]]
 deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libwebp_jll"]
 git-tree-sha1 = "aa1ca3c47f119fbdae8770c29820e5e6119b83f2"
@@ -2139,10 +1752,11 @@ git-tree-sha1 = "c1a7aa6219628fcd757dede0ca95e245c5cd9511"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 version = "1.0.0"
 
-[[deps.WorkerUtilities]]
-git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
-uuid = "76eceee3-57b5-4d4a-8e66-0e911cebbf60"
-version = "1.6.1"
+[[deps.XML2_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
+git-tree-sha1 = "80d3930c6347cfce7ccf96bd3bafdf079d9c0390"
+uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
+version = "2.13.9+0"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2180,6 +1794,12 @@ git-tree-sha1 = "7ed9347888fac59a618302ee38216dd0379c480d"
 uuid = "ea2f1a96-1ddc-540d-b46f-429655e07cfa"
 version = "0.9.12+0"
 
+[[deps.Xorg_libpciaccess_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "4909eb8f1cbf6bd4b1c30dd18b2ead9019ef2fad"
+uuid = "a65dc6b1-eb27-53a1-bb3e-dea574b5389e"
+version = "0.18.1+0"
+
 [[deps.Xorg_libxcb_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libXau_jll", "Xorg_libXdmcp_jll"]
 git-tree-sha1 = "bfcaf7ec088eaba362093393fe11aa141fa15422"
@@ -2191,12 +1811,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "a63799ff68005991f9d9491b6e95bd3478d783cb"
 uuid = "c5fb5394-a638-5e4d-96e5-b29de1b5cf10"
 version = "1.6.0+0"
-
-[[deps.ZipFile]]
-deps = ["Libdl", "Printf", "Zlib_jll"]
-git-tree-sha1 = "f492b7fe1698e623024e873244f10d89c95c340a"
-uuid = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
-version = "0.10.1"
 
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
@@ -2214,6 +1828,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "51b5eeb3f98367157a7a12a1fb0aa5328946c03c"
 uuid = "9a68df92-36a6-505f-a73e-abb412b6bfb4"
 version = "0.2.3+0"
+
+[[deps.libaec_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "1aa23f01927b2dac46db77a56b31088feee0a491"
+uuid = "477f73a3-ac25-53e9-8cc3-50b2fa2566f0"
+version = "1.1.4+0"
 
 [[deps.libaom_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2262,6 +1882,12 @@ git-tree-sha1 = "4e4282c4d846e11dce56d74fa8040130b7a95cb3"
 uuid = "c5f90fcd-3b7e-5836-afba-fc50a0988cb2"
 version = "1.6.0+0"
 
+[[deps.libzip_jll]]
+deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "OpenSSL_jll", "XZ_jll", "Zlib_jll", "Zstd_jll"]
+git-tree-sha1 = "86addc139bca85fdf9e7741e10977c45785727b7"
+uuid = "337d8026-41b4-5cde-a456-74a10e5b31d1"
+version = "1.11.3+0"
+
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
@@ -2292,35 +1918,20 @@ version = "4.1.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─39788eec-dd8b-4d65-a0f9-ea73a2d6690c
-# ╟─cc3e9d0c-8b71-432b-b68d-a8b832ca5f26
-# ╟─ca8a8f1b-a225-46c4-93c1-ce1a4b016461
-# ╟─be38ff51-3526-44a0-9d8c-9209355e4a4a
-# ╟─85aac4c5-bf04-4f9a-a233-a3f24231762e
-# ╟─485f16de-b324-43a5-a634-783381910556
-# ╟─303b2f54-a446-4dbe-a9a4-e6f424003722
-# ╟─d9a53bc6-19e2-48d9-b9c3-f76c3a533197
-# ╟─6aab5feb-06b6-4fbd-8732-83b70f397f00
-# ╟─794d822e-2101-41ba-8780-fac95fc02075
-# ╟─42562cd8-04c5-4aef-87dc-5d0f87a9d204
-# ╟─b0d576fc-971a-47c7-9a57-f2c788083bcd
-# ╟─2afc6934-9e07-46bf-a4f1-df33ce5a6fe9
-# ╟─c81ad3bb-a924-4393-bc73-0607cfebf75f
-# ╟─a8defb50-fce4-4a0b-ac33-deb95f0b826b
-# ╟─f5d7639e-f524-4134-9188-7bc8586c6883
-# ╟─8d2e6d5f-7d89-4a27-82cb-0a587914d717
-# ╟─6b72d272-eefc-45f2-9442-ef38057e4f09
-# ╟─bf537ab9-b0b0-43f8-a6ad-61798e7b5016
-# ╠═54f6cb2f-025e-40e4-97a8-0f8ad4b35278
-# ╠═f4067238-a2da-414c-b7ca-6076034911a6
-# ╟─25144e1b-21fc-4cc9-b63d-7b26eab1a673
-# ╟─41960267-fff9-4bc4-a7bc-aceea2217c63
-# ╟─39924391-38ce-46a1-877f-80a7975340a0
-# ╟─897a49b2-9763-4020-a476-5e0fccda1cfb
-# ╠═229d395f-f3b4-40df-a482-264d540be875
-# ╟─d448431e-13a9-440c-9463-9174d7400cf1
-# ╟─7fc02644-b037-425a-b660-cc6904a95037
-# ╟─d123161e-49f1-11ec-1c1b-51871624545d
-# ╟─3df1fb35-e0a4-4894-8089-86f5d557c350
+# ╠═65092d25-a8d0-4ad8-8b2b-e819f5fc8cea
+# ╟─e34e50fc-67af-413f-a0d6-0926c06f44ef
+# ╟─35bbfba9-7b7c-47f8-874b-304dcc825560
+# ╟─9c036635-82d0-414d-995a-1944efad9e1e
+# ╠═0389235a-0f33-4dea-b8c4-dced7f9cb180
+# ╠═e6f9122d-a10b-4ff0-8064-09c899d0b2a0
+# ╠═993aec2c-6a8b-43e0-9243-cb53a6d130f6
+# ╟─2bb88007-1078-40ca-ac25-cf632a2c157b
+# ╟─d9573736-1b68-4740-a789-26324581f032
+# ╠═46d46588-b7d2-4a87-97f8-73ff8f48914e
+# ╠═df9f4c66-891e-4a77-a491-847410fcec9f
+# ╠═2a2fd5db-35fb-4a18-9503-235f4c02896a
+# ╟─6926e46a-9754-4736-81a1-6a65b047ebbe
+# ╠═38446abc-d8e6-11f0-8e42-f53ce9814e18
+# ╠═9e7ec612-d4c2-4672-8c45-74816cdbbc30
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

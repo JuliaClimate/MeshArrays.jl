@@ -29,8 +29,10 @@ makedocs(;
     authors="gaelforget <gforget@mit.edu>",
 )
 
-lst=("basics.jl","geography.jl","vectors.jl","JuliaGeoDev/MeshArrays_to_Polygons.jl","JuliaGeoDev/GeometryOps_exploration.jl")
-pth=("tutorials","tutorials","tutorials","dev","dev")
+lst=("basics.jl","geography.jl","vectors.jl",
+	"dev/MeshArrays_to_Polygons.jl","dev/GeometryOps_exploration.jl")
+pth=("tutorials","tutorials","tutorials",
+	"dev","dev")
 
 for ii in 1:length(lst)
     i=lst[ii]

@@ -4,255 +4,222 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 36203c0f-7684-4ae9-953d-c63d6a52b77b
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
+# ╔═╡ 079b968c-df36-476b-ad68-2d71460f4b3a
 using Pkg; Pkg.status()
 
-# ╔═╡ 878c045e-d004-11ef-2ea9-57541c120d86
+# ╔═╡ 6ccb3546-d827-11f0-9886-c3f464f69333
 begin
-	using GeometryOps, Makie, CairoMakie, GeoInterfaceMakie
-	import GeoInterface as GI
-	import GeometryOps as GO
+	using MeshArrays, CairoMakie, PlutoUI
+    "done with packages"
 end
 
-# ╔═╡ 389aa7d8-e9c5-41c8-95f7-a2be0687c3d5
-begin
-	import GeoFormatTypes as GFT
-	using GeoJSON # to load some data
-	# Packages for coordinate transformation and projection
-	import CoordinateTransformations
-	import Proj
-	# Plotting
-	using GeoMakie
+# ╔═╡ 7e32b36f-2a80-4637-a8be-306e7a0efa9a
+md"""# Visualization of `neighbor` Methods
+
+Here we visualize methods that connect nearest neighbors, which can be in different subdomains. 
+
+This currently includes two sets of methods in `MeshArrays`:
+
+- using `i,j,f` indices across subdomains (`neighbor_locations`, `update_location!`)
+- appending extra rows and columns at the edges of each subdomain (`exchange`)
+
+## Recent Code Additions
+
+- `MeshArrays.update_location!` that dispatches to specific methods
+- `MeshArrays.neighbor_locations` that returns location (x,y,f) arrays
+
+## Current Algorithm (v~0.5.1)
+
+```
+exchange 						#top level function > exchange_main 
+exchange_main 					#calls MeshArray_wh(exch_T_N())
+> exch_cs_viewfunctions 		#defines generix functions (now call in moduled)
+> exch_T_N_cs 					#gets MeshArray, returns MeshArray
+	> exch_cs_target 			#computes (jW, jE, jS, jN) for current face
+	> exch_cs_sources 			#computes (aW,aE,aS,aN,iW,iE,iS,iN) for current face
+	#return an array of functions like ovfW(fld.f[aW],iW[1],iW[2])
+
+update_location! 			#gets AbstractArray{T,1} and 𝑃, returns AbstractArray{T,1}
+> update_location_cs! 		#uses 𝑃.RelocFunctions, returns AbstractArray{T,1}
+NeighborTileIndices_cs 		#gets grid NamedTuple, returns merged NamedTuple
+> RelocationFunctions_cs 	#gets MeshArray, returns Array{Function,2}(undef, 6, 6)
+```
+"""
+
+# ╔═╡ 6dc76c23-ff3a-4182-ab90-a87d5b65c768
+PlutoUI.TableOfContents()
+
+# ╔═╡ 71612f73-1051-4e97-a308-21a407d32642
+md"""## Load Grids"""
+
+# ╔═╡ 4f164c56-3a0f-4c81-b017-505d8b734e0f
+function set_OISST_grid()
+	γ = MeshArrays.GridSpec_default(ID=:OISST,tile=(180,180))
+#	Γ_OISST=GridLoad(ID=:OISST,γ)
+	Γ_OISST=MeshArrays.GridLoad_default(γ)
+#	heatmap(Γ_OISST.XC)
 end
 
-# ╔═╡ 0125991c-0772-4ae7-86bd-75c19abd5c0e
+# ╔═╡ 6d54a652-484a-4886-978f-7435e2818287
+Γ_OISST=set_OISST_grid();
+
+# ╔═╡ 32d493af-0e5f-44ef-8c4a-e6c38f22c38a
 begin
-n = 49
-xs, ys = LinRange(-3, 3, n), LinRange(-3, 3, n)
-zs = Makie.peaks(n)
-z_max_value = maximum(abs.(extrema(zs)))
-f, a, p = heatmap(
-    xs, ys, zs;
-    axis = (; aspect = DataAspect(), title = "Exact function")
-)
-cb = Colorbar(f[1, 2], p; label = "Z-value")
-f
+	Γ_LL360 = GridLoad(ID=:onedegree)
+	Γ_LL360.XC.grid.class
 end
 
-# ╔═╡ d03b8eee-b66a-470e-8a48-b6637809505f
-polygons = polygonize(xs, ys, 0.8 .< zs .< 3.2)
+# ╔═╡ c1c0e7ff-7c4f-48ba-be26-94d85dc1504a
+begin
+	Γ_CS32=GridLoad(ID=:CS32)
+	Γ_CS32=merge(Γ_CS32,MeshArrays.NeighborTileIndices_cs(Γ_CS32))
+	Γ_CS32.XC.grid.class
+end
 
-# ╔═╡ cbc99f37-3847-4c43-abcd-c43ae080fe45
+# ╔═╡ 7af41d1e-1013-49e2-823f-4aafc0a5ef49
+begin
+	Γ_LLC90=GridLoad(ID=:LLC90)
+	Γ_LLC90=merge(Γ_LLC90,MeshArrays.NeighborTileIndices_cs(Γ_LLC90))
+	Γ_LLC90.XC.grid.class
+end
+
+# ╔═╡ 2bd533ec-dbc9-461d-81e2-8062821b8bd6
+md"""## Single Location Test"""
+
+# ╔═╡ bfe1156f-1410-4663-a701-c595be93f6ba
 let
-#	f, a, p = poly(collect(GI.getpoint(polygons)))
-	f, a, p = poly(polygons; label = "Polygonized polygons", axis = (; aspect = DataAspect()))
-	contour!(a, xs, ys, zs; labels = true, levels = [0.8, 3.2], label = "Contour lines")
-	f
+	u=[-1.0;20.0;1.0]; Γ=Γ_LL360
+	MeshArrays.update_location!(u,Γ)==[359.0;20.0;1.0]
 end
 
-# ╔═╡ cbedecf8-eeb6-4f7f-8444-3522f3d2f9a4
-one_polygon=GI.getgeom(polygons)[1]
+# ╔═╡ 0c28fb51-0dc7-4f8a-954a-bf1f877d5e83
+md"""## One Dimensional Test"""
 
-# ╔═╡ 686ffe03-d81b-44fe-a811-deb9b0b7744e
-plot(one_polygon)
+# ╔═╡ 17883d99-70a6-43c8-9eaa-f11a0c7371ef
+@bind gr Select([:onedegree,:CS32,:LLC90])
 
-# ╔═╡ 4c6ca95c-e1ba-4c5c-8141-c11911455106
-linear_rings=GI.getgeom(one_polygon)
+# ╔═╡ e90245cc-0b2c-4877-9d18-de036eba37ce
+function one_dim_view(gr)
+	if gr==:onedegree
+		Γ=Γ_LL360
+		uu0=-2:1:363; uu0=[[u,20,1] for u in uu0] 
+	elseif gr==:CS32
+		Γ=Γ_CS32
+		uu0=-2:1:35; uu0=[[10.0,u,3] for u in uu0] 
+	elseif gr==:LLC90
+		Γ=Γ_LLC90
+		uu0=-20:1:290; uu0=[[10.0,u,1] for u in uu0] 
+	else
+		uu0=[]
+	end
+	uu=deepcopy(uu0)	
+	MeshArrays.update_location!.(uu,Ref(Γ))
 
-# ╔═╡ 1987c8b1-e942-4b05-8055-9aa42d77a70e
-plot(GI.Polygon([linear_rings[1]]))
-#	GI.Polygon([GI.LinearRing(GI.getgeom(linear_rings[1]))])
-
-# ╔═╡ 0784c3d6-d208-4afc-9f52-4121abc386b8
-md"""### more examples from docs"""
-
-# ╔═╡ 4651bda4-14c1-42da-84de-2041d8bace6d
-let
-	point = GI.Point(0, 0)
-	fig, ax, plt = plot(point)
-
-	x = [-5, -5, 5, 5];
-	y = [-5, 5, 5, -5];
-	multipoint = GI.MultiPoint(GI.Point.(zip(x, y)));
-	plot!(ax, multipoint; marker = '☁', markersize = 30)
-
-	p1 = GI.Point.(-5, 0);
-	p2 = GI.Point.(5, 0);
-	line = GI.LineString([p1,p2])
-	plot!(ax, line; color = :red)
-#	plot!(ax, multipoint; color = :red)
-
-	r = 2;
-	k = 10;
-	ϴ = 0:0.01:2pi;
-	x = r .* (k + 1) .* cos.(ϴ) .- r .* cos.((k + 1) .* ϴ);
-	y = r .* (k + 1) .* sin.(ϴ) .- r .* sin.((k + 1) .* ϴ);
-	lines = GI.LineString(GI.Point.(zip(x,y)));
-	plot!(ax, lines; linewidth = 5)
-
-	ring1 = GI.LinearRing(GI.getpoint(lines));
-	polygon1 = GI.Polygon([ring1]);
-	xoffset = 0.;
-	yoffset = 50.;
-	f = CoordinateTransformations.Translation(xoffset, yoffset);
-	polygon1 = GO.transform(f, polygon1);
-	plot!(polygon1)
-
-	hole = GI.LinearRing(GI.getpoint(multipoint))
-	polygon2 = GI.Polygon([ring1, hole])
-	xoffset = 50.; yoffset = 0.;
-	f = CoordinateTransformations.Translation(xoffset, yoffset);
-	polygon2 = GO.transform(f, polygon2);
-	plot!(polygon2)
-
-	r = 5;
-	x = cos.(reverse(ϴ)) .* r .+ xoffset;
-	y = sin.(reverse(ϴ)) .* r .+ yoffset;
-	ring2 =  GI.LinearRing(GI.Point.(zip(x,y)));
-	polygon3 = GI.Polygon([ring2]);
-	multipolygon = GI.MultiPolygon([polygon2, polygon3])
-
-	xoffset = 0.;
-	yoffset = 50.;
-	f = CoordinateTransformations.Translation(xoffset, yoffset);
-	multipolygon = GO.transform(f, multipolygon);
-	plot!(multipolygon)
-
+	Axis(Figure(size=(1000,500))[1,1],title="i ($gr)")
+	lines!([u[1] for u in uu])
+	lines!([u[1] for u in uu0])
+	fig=current_figure()
+	Axis(fig[2,1],title="j ($gr)")
+	lines!([u[2] for u in uu])
+	lines!([u[2] for u in uu0])
+	Axis(fig[3,1],title="f ($gr)")
+	lines!([u[3] for u in uu])
+	lines!([u[3] for u in uu0])
 	fig
-	[area(polygon1) area(polygon2) area(multipolygon)]
-	#plot(multipolygon)
 end
 
-# ╔═╡ 9db9040a-5c14-44b3-890b-a631cc64db20
-let
-	point = GI.Point(0, 0)
-	fig, ax, plt = plot(point)
+# ╔═╡ a171ef2e-f942-4552-8f27-a544cbed7dff
+one_dim_view(gr)
 
-	r = 2;
-	k = 10;
-	ϴ = 0:0.01:2pi;
-	x = r .* (k + 1) .* cos.(ϴ) .- r .* cos.((k + 1) .* ϴ);
-	y = r .* (k + 1) .* sin.(ϴ) .- r .* sin.((k + 1) .* ϴ);
-	lines = GI.LineString(GI.Point.(zip(x,y)));
-#	plot!(ax, lines; linewidth = 5)
+# ╔═╡ 5b3c9b52-4d9d-47a7-a824-645173f1d49e
+md"""## Full Grid Demo
 
-	ring0 = GI.LinearRing(GI.getpoint(lines));
-	ring1 = GI.LinearRing(GI.Point.(zip(x,y)));
-	polygon1 = GI.Polygon([ring1]);
-	xoffset = 0.;
-	yoffset = 50.;
-	f = CoordinateTransformations.Translation(xoffset, yoffset);
-	polygon1 = GO.transform(f, polygon1);
-	plot!(polygon1)
+This uses the new `MeshArrays.neighbor_locations` method to provide arrays of locations (x,y,f) in two formats :
 
+- `:wh` format : as one of `MeshArray_wh`
+- `:standard` format : as a `NamedTuple` of `MeshArray` (center, west, east, south, north)
+
+### `neighbor_locations` in `:wh` format"""
+
+# ╔═╡ 9b407b06-cacd-44ba-8612-6aa942d4c057
+@bind gr2 Select([:CS32,:OISST])
+
+# ╔═╡ 002a877c-fdae-4937-b786-eaa58163082a
+locs_wh=(gr2==:CS32 ? MeshArrays.neighbor_locations(Γ_CS32,format=:wh)
+					: MeshArrays.neighbor_locations(Γ_OISST,format=:wh)
+		)
+
+# ╔═╡ fe278b93-3643-47e3-b38a-6f7402ba7e46
+@bind ff Select(1:length(locs_wh.MA))
+
+# ╔═╡ b4d43587-e358-4feb-a4fc-98f5e5b23247
+begin
+	fig=Figure(size=(300,300)); ax=Axis(fig[1,1])
+	heatmap!([x[3] for x in locs_wh.MA.f[ff]],colorrange=(1,length(locs_wh.MA)))
 	fig
-#	area(polygon1)
-#	typeof(lines)
 end
 
-# ╔═╡ 791ed101-7f07-471c-86fe-c530fb0ed577
-let
-	r = 2;
-	k = 10;
-	ϴ = 0:0.01:2pi;
-	x = r .* (k + 1) .* cos.(ϴ) .- r .* cos.((k + 1) .* ϴ);
-	y = r .* (k + 1) .* sin.(ϴ) .- r .* sin.((k + 1) .* ϴ);
-	z = fill(r,size(x))
-	lines1 = GI.LineString(GI.Point.(zip(x,y,z)));
-	lines2 = GI.LineString(GI.Point.(zip(x,y,-z)));
-	plot(lines1); plot!(lines2)
-	
-	xoffset = 0.;
-	yoffset = 50.;
-	zoffset = 0.;
-	f = CoordinateTransformations.Translation(xoffset, yoffset, zoffset);
-	lines3 = GO.transform(f, lines1);
-	plot!(lines3)
+# ╔═╡ 6db465b9-b3d2-49b4-897d-fece13a0fff5
+md"""### `neighbor_locations` in default format"""
 
-	for zoff in 1:10
-		f = CoordinateTransformations.Translation(0, 0, r*zoff);
-		lines4 = GO.transform(f, lines3);
-		plot!(lines4)
+# ╔═╡ 5dc274c1-9488-46c9-93a2-83ece3535265
+cwesn=MeshArrays.neighbor_locations(Γ_CS32)
+
+# ╔═╡ e30b7eae-6e41-47b4-9b1b-5b7b030cc211
+md"""## Appendix"""
+
+# ╔═╡ 2b097439-61f2-4023-a7da-8022abadc086
+function plot_cwesn(cwesn;option=:default)
+#	k,cr=if option==:default
+#		3,(1,6)
+	if option==:default||option==:f
+		k=3; cr=(1,6)
+	elseif option==:i
+		k=1; cr=(1,maximum(maximum.(cwesn.c.fSize)))
+	elseif option==:j
+		k=2; cr=(1,maximum(maximum.(cwesn.c.fSize)))
 	end
 	
-	current_figure()	
+	figs=Figure[]
+		for ff in 1:length(cwesn.c)
+		fig=Figure(colormap=:thermal); 
+		heatmap!(Axis(fig[2,1]),[x[k] for x in cwesn.w[ff]],colorrange=cr)	
+		heatmap!(Axis(fig[2,2]),[x[k] for x in cwesn.c[ff]],colorrange=cr)
+		heatmap!(Axis(fig[2,3]),[x[k] for x in cwesn.e[ff]],colorrange=cr)
+		heatmap!(Axis(fig[1,2]),[x[k] for x in cwesn.s[ff]],colorrange=cr)
+		heatmap!(Axis(fig[3,2]),[x[k] for x in cwesn.n[ff]],colorrange=cr)
+		text!(Axis(fig[3,3]),string(ff),fontsize=48); hidedecorations!()
+		push!(figs,fig)
+	end
+	figs
 end
 
-# ╔═╡ 0260170d-ea3f-47f8-863e-856a11b6a169
-x1=let
-	source_crs1 = GFT.EPSG(4326)
-	destination_crs = "+proj=natearth2"
-	land_path = GeoMakie.assetpath("ne_110m_land.geojson")
-	land_geo = GeoJSON.read(land_path)
-	land_geo[1]
-end
-
-# ╔═╡ 03c5a40e-de96-4fb2-a4f9-d6a264f39d13
-x1.geometry[1]
-
-# ╔═╡ f55e96c0-4290-455a-b7b2-ac2c46ac94fe
-let
-	source_crs1 = GFT.EPSG(4326)
-	destination_crs = "+proj=natearth2"
-	land_path = GeoMakie.assetpath("ne_110m_land.geojson")
-	land_geo = GeoJSON.read(land_path)
-
-	fig = Figure(size=(1000, 500));
-	ga = GeoAxis(
-    fig[1, 1];
-    source = source_crs1,
-    dest = destination_crs,
-    xticklabelsvisible = false,
-    yticklabelsvisible = false,
-	);
-
-	poly!(ga, land_geo, color=:black)
-	#plot!(multipolygon; color = :green)
-
-	source_crs2 = GFT.EPSG(32610)
-	r = 1000000;
-	ϴ = 0:0.01:2pi;
-	x = r .* cos.(ϴ).^3 .+ 500000;
-	y = r .* sin.(ϴ) .^ 3 .+5000000;
-
-	ring3 = GI.LinearRing(Point.(zip(x, y)))
-	polygon3 = GI.Polygon([ring3])
-	plot!(ga,polygon3; color=:red, source = source_crs2)
-	
-	fig
-end
-
-# ╔═╡ 24bfc8b7-9453-459e-87b3-ee3722b541ac
-begin
-	#plot(polygons)
-	p1=polygons.geom[1]
-	p11=p1.geom[1]
-	#plot(p11[1])
-end
-
-# ╔═╡ 7a64a37b-fbf3-4c35-88ef-3f3610b66863
-#using FlexiJoins, DataFrames
+# ╔═╡ 46a69a2f-9fb1-4007-b704-a79c58e0988d
+plot_cwesn(cwesn,option=:f)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
-GeoFormatTypes = "68eda718-8dee-11e9-39e7-89f7f65f511f"
-GeoInterface = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
-GeoInterfaceMakie = "0edc0954-3250-4c18-859d-ec71c1660c08"
-GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
-GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
-GeometryOps = "3251bfac-6a57-4b6d-aa61-ac1fef2975ab"
-Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-CoordinateTransformations = "~0.6.3"
-GeoFormatTypes = "~0.4.2"
-GeoInterfaceMakie = "~0.1.8"
-GeometryOps = "~0.1.13"
+CairoMakie = "~0.15.8"
+PlutoUI = "~0.7.76"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -261,7 +228,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "8f941ff0a344338b2e21e970929c8dd5dcc8695d"
+project_hash = "82fd984eb91a1771f46441a1db146d67a7b4f7b9"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -273,6 +240,12 @@ weakdeps = ["ChainRulesCore", "Test"]
     [deps.AbstractFFTs.extensions]
     AbstractFFTsChainRulesCoreExt = "ChainRulesCore"
     AbstractFFTsTestExt = "Test"
+
+[[deps.AbstractPlutoDingetjes]]
+deps = ["Pkg"]
+git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
+uuid = "6e696c72-6542-2067-7265-42206c756150"
+version = "1.3.2"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -387,6 +360,12 @@ git-tree-sha1 = "fde3bf89aead2e723284a8ff9cdf5b551ed700e8"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.5+0"
 
+[[deps.CatViews]]
+deps = ["Random", "Test"]
+git-tree-sha1 = "23d1f1e10d4e24374112fcf800ac981d14a54b24"
+uuid = "81a5f4ea-a946-549a-aa7e-2a7f63a27d31"
+version = "1.0.0"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
 git-tree-sha1 = "e4c6a16e77171a5f5e25e9646617ab1c276c5607"
@@ -472,12 +451,6 @@ git-tree-sha1 = "439e35b0b36e2e5881738abc8857bd92ad6ff9a8"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.3"
 
-[[deps.CoordinateTransformations]]
-deps = ["LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "a692f5e257d332de1e554e4566a4e5a8a72de2b2"
-uuid = "150eb455-5306-5404-9cee-2592286d6298"
-version = "0.6.4"
-
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -501,9 +474,20 @@ version = "1.11.0"
 
 [[deps.DelaunayTriangulation]]
 deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "Random"]
-git-tree-sha1 = "783b21581a051ac91a3921ee37e26a23ed7f57a6"
+git-tree-sha1 = "c55f5a9fd67bdbc8e089b5a3111fe4292986a8e8"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "1.6.5"
+version = "1.6.6"
+
+[[deps.Distances]]
+deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "c7e3a542b999843086e2f29dac96a618c105be1d"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.12"
+weakdeps = ["ChainRulesCore", "SparseArrays"]
+
+    [deps.Distances.extensions]
+    DistancesChainRulesCoreExt = "ChainRulesCore"
+    DistancesSparseArraysExt = "SparseArrays"
 
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -698,38 +682,6 @@ version = "1.6.0"
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
     RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
-[[deps.GeoInterfaceMakie]]
-deps = ["GeoInterface", "GeometryBasics", "MakieCore"]
-git-tree-sha1 = "378afe561ba990392146e1a7abd472c7db7f1479"
-uuid = "0edc0954-3250-4c18-859d-ec71c1660c08"
-version = "0.1.9"
-
-[[deps.GeoJSON]]
-deps = ["Extents", "GeoFormatTypes", "GeoInterface", "JSON3", "StructTypes", "Tables"]
-git-tree-sha1 = "ce64817b826c36b30493b31be2ce53c55a277835"
-uuid = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
-version = "0.8.4"
-
-    [deps.GeoJSON.extensions]
-    GeoJSONMakieExt = "Makie"
-    GeoJSONRecipesBaseExt = "RecipesBase"
-
-    [deps.GeoJSON.weakdeps]
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-
-[[deps.GeoMakie]]
-deps = ["Colors", "CoordinateTransformations", "Downloads", "GeoFormatTypes", "GeoInterface", "GeoJSON", "Geodesy", "GeometryBasics", "GeometryOps", "ImageIO", "LinearAlgebra", "Makie", "NaturalEarth", "Proj", "Reexport", "Statistics", "StructArrays"]
-git-tree-sha1 = "9d4bd9dbf25be0fa96bf26eac94a1316db374ede"
-uuid = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
-version = "0.7.16"
-
-[[deps.Geodesy]]
-deps = ["CoordinateTransformations", "Dates", "LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "d48fa6a8d49350670b5ba409dbe2ddec791b4808"
-uuid = "0ef565a4-170c-5f04-8de2-149903a85f3d"
-version = "1.2.0"
-
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "IterTools", "LinearAlgebra", "PrecompileTools", "Random", "StaticArrays"]
 git-tree-sha1 = "1f5a80f4ed9f5a4aada88fc2db456e637676414b"
@@ -739,32 +691,6 @@ weakdeps = ["GeoInterface"]
 
     [deps.GeometryBasics.extensions]
     GeometryBasicsGeoInterfaceExt = "GeoInterface"
-
-[[deps.GeometryOps]]
-deps = ["AbstractTrees", "AdaptivePredicates", "CoordinateTransformations", "DataAPI", "DelaunayTriangulation", "ExactPredicates", "Extents", "GeoFormatTypes", "GeoInterface", "GeometryOpsCore", "LinearAlgebra", "Random", "SortTileRecursiveTree", "StaticArrays", "Statistics", "Tables"]
-git-tree-sha1 = "9fa16be9c28d9c01bf2b5d73f7768d482c12b118"
-uuid = "3251bfac-6a57-4b6d-aa61-ac1fef2975ab"
-version = "0.1.31"
-
-    [deps.GeometryOps.extensions]
-    GeometryOpsDataFramesExt = "DataFrames"
-    GeometryOpsFlexiJoinsExt = "FlexiJoins"
-    GeometryOpsLibGEOSExt = "LibGEOS"
-    GeometryOpsProjExt = "Proj"
-    GeometryOpsTGGeometryExt = "TGGeometry"
-
-    [deps.GeometryOps.weakdeps]
-    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-    FlexiJoins = "e37f2e79-19fa-4eb7-8510-b63b51fe0a37"
-    LibGEOS = "a90b1aa1-3769-5649-ba7e-abc5a9d163eb"
-    Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
-    TGGeometry = "d7e755d2-3c95-4bcf-9b3c-79ab1a78647b"
-
-[[deps.GeometryOpsCore]]
-deps = ["DataAPI", "GeoInterface", "StableTasks", "Tables"]
-git-tree-sha1 = "69fc98947b06f8ac4279cf5bf8810373fe042be4"
-uuid = "05efe853-fabf-41c8-927e-7063c8b9f013"
-version = "0.1.7"
 
 [[deps.GettextRuntime_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll"]
@@ -783,6 +709,11 @@ deps = ["Artifacts", "GettextRuntime_jll", "JLLWrappers", "Libdl", "Libffi_jll",
 git-tree-sha1 = "6b4d2dc81736fe3980ff0e8879a9fc7c33c44ddf"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.86.2+0"
+
+[[deps.Glob]]
+git-tree-sha1 = "83cb0092e2792b9e3a865b6655e88f5b862607e2"
+uuid = "c27321d9-0574-5035-807b-f59d2c89b15c"
+version = "1.4.0"
 
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
@@ -818,6 +749,24 @@ deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
 git-tree-sha1 = "68c173f4f449de5b438ee67ed0c9c748dc31a2ec"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 version = "0.3.28"
+
+[[deps.Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.5"
+
+[[deps.HypertextLiteral]]
+deps = ["Tricks"]
+git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
+uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
+version = "0.9.5"
+
+[[deps.IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "0ee181ec08df7d7c911901ea38baf16f755114dc"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "1.0.0"
 
 [[deps.ImageAxes]]
 deps = ["AxisArrays", "ImageBase", "ImageCore", "Reexport", "SimpleTraits"]
@@ -978,18 +927,6 @@ version = "1.3.0"
     [deps.JSON.weakdeps]
     ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
 
-[[deps.JSON3]]
-deps = ["Dates", "Mmap", "Parsers", "PrecompileTools", "StructTypes", "UUIDs"]
-git-tree-sha1 = "411eccfe8aba0814ffa0fdf4860913ed09c34975"
-uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
-version = "1.14.3"
-
-    [deps.JSON3.extensions]
-    JSON3ArrowExt = ["ArrowTypes"]
-
-    [deps.JSON3.weakdeps]
-    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
-
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
 git-tree-sha1 = "9496de8fb52c224a2e3f9ff403947674517317d9"
@@ -998,9 +935,9 @@ version = "0.1.6"
 
 [[deps.JpegTurbo_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "4255f0032eafd6451d707a51d5f0248b8a165e4d"
+git-tree-sha1 = "b6893345fd6658c8e475d40155789f4860ac3b21"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
-version = "3.1.3+0"
+version = "3.1.4+0"
 
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
@@ -1142,6 +1079,11 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.MIMEs]]
+git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "1.1.0"
+
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
 git-tree-sha1 = "282cadc186e7b2ae0eeadbd7a4dffed4196ae2aa"
@@ -1165,16 +1107,10 @@ version = "0.24.8"
     [deps.Makie.weakdeps]
     DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 
-[[deps.MakieCore]]
-deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
-git-tree-sha1 = "c3159eb1e3aa3e409edbb71f4035ed8b1fc16e23"
-uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
-version = "0.9.5"
-
 [[deps.MappedArrays]]
-git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
+git-tree-sha1 = "0ee4497a4e80dbd29c058fcee6493f5219556f40"
 uuid = "dbb5928d-eab1-5f90-85c2-b9b0edb7c900"
-version = "0.4.2"
+version = "0.4.3"
 
 [[deps.Markdown]]
 deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
@@ -1186,6 +1122,30 @@ deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "Geo
 git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
+
+[[deps.MeshArrays]]
+deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
+git-tree-sha1 = "d333bc6aa00ba7be0636af73698d85b306ff49f4"
+uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
+version = "0.5.2"
+
+    [deps.MeshArrays.extensions]
+    MeshArraysDataDepsExt = ["DataDeps"]
+    MeshArraysGeoJSONExt = ["GeoJSON"]
+    MeshArraysGeometryOpsExt = ["GeometryOps"]
+    MeshArraysJLD2Ext = ["JLD2"]
+    MeshArraysMakieExt = ["Makie"]
+    MeshArraysProjExt = ["Proj"]
+    MeshArraysShapefileExt = ["Shapefile"]
+
+    [deps.MeshArrays.weakdeps]
+    DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+    GeoJSON = "61d90e0f-e114-555e-ac52-39dfb47a3ef9"
+    GeometryOps = "3251bfac-6a57-4b6d-aa61-ac1fef2975ab"
+    JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
+    Shapefile = "8e980c4a-a4fe-5da2-b3a7-4b4b0353a2f4"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -1213,11 +1173,11 @@ git-tree-sha1 = "9b8215b1ee9e78a293f99797cd31375471b2bcae"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.1.3"
 
-[[deps.NaturalEarth]]
-deps = ["Downloads", "GeoJSON", "Pkg", "Scratch"]
-git-tree-sha1 = "3f75210ac08fe4496a55f9694b95859c40b8eaea"
-uuid = "436b0209-26ab-4e65-94a9-6526d86fea76"
-version = "0.1.0"
+[[deps.NearestNeighbors]]
+deps = ["AbstractTrees", "Distances", "StaticArrays"]
+git-tree-sha1 = "2949f294f82b5ad7192fd544a988a1e785438ee2"
+uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
+version = "0.4.26"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1320,12 +1280,6 @@ git-tree-sha1 = "cf181f0b1e6a18dfeb0ee8acc4a9d1672499626c"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
 version = "0.4.4"
 
-[[deps.PROJ_jll]]
-deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "Libtiff_jll", "SQLite_jll"]
-git-tree-sha1 = "817778f5802156bff35b472c73b0c4e611bd23c3"
-uuid = "58948b4f-47e0-5654-a9ad-f609743f8632"
-version = "902.700.0+0"
-
 [[deps.Packing]]
 deps = ["GeometryBasics"]
 git-tree-sha1 = "bc5bf2ea3d5351edf285a06b0016788a121ce92c"
@@ -1377,6 +1331,12 @@ git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
 
+[[deps.PlutoUI]]
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "0d751d4ceb9dbd402646886332c2f99169dc1cfd"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.76"
+
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
@@ -1404,12 +1364,6 @@ deps = ["Distributed", "Printf"]
 git-tree-sha1 = "fbb92c6c56b34e1a2c4c36058f68f332bec840e7"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.11.0"
-
-[[deps.Proj]]
-deps = ["CEnum", "CoordinateTransformations", "GeoFormatTypes", "GeoInterface", "NetworkOptions", "PROJ_jll"]
-git-tree-sha1 = "61188669db4f5b400173e4ec60da8bcb72d6e749"
-uuid = "c94c279d-25a6-4763-9509-64d165bea63e"
-version = "1.9.0"
 
 [[deps.PtrArrays]]
 git-tree-sha1 = "1d36ef11a9aaf1e8b74dacc6a731dd1de8fd493d"
@@ -1503,12 +1457,6 @@ git-tree-sha1 = "e24dc23107d426a096d3eae6c165b921e74c18e4"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.7.2"
 
-[[deps.SQLite_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "9a325057cdb9b066f1f96dc77218df60fe3007cb"
-uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
-version = "3.48.0+0"
-
 [[deps.Scratch]]
 deps = ["Dates"]
 git-tree-sha1 = "9b81b8393e50b7d4e6d0a9f14e192294d3b7c109"
@@ -1558,12 +1506,6 @@ version = "0.1.5"
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 version = "1.11.0"
 
-[[deps.SortTileRecursiveTree]]
-deps = ["AbstractTrees", "Extents", "GeoInterface"]
-git-tree-sha1 = "f9aa6616a9b3bd01f93f27c010f1d25fc5a094a9"
-uuid = "746ee33f-1797-42c2-866d-db2fce69d14d"
-version = "0.1.4"
-
 [[deps.SortingAlgorithms]]
 deps = ["DataStructures"]
 git-tree-sha1 = "64d974c2e6fdf07f8155b5b2ca2ffa9069b608d9"
@@ -1590,11 +1532,6 @@ deps = ["Random"]
 git-tree-sha1 = "4f96c596b8c8258cc7d3b19797854d368f243ddc"
 uuid = "860ef19b-820b-49d6-a774-d7a799459cd3"
 version = "1.0.4"
-
-[[deps.StableTasks]]
-git-tree-sha1 = "c4f6610f85cb965bee5bfafa64cbeeda55a4e0b2"
-uuid = "91464d47-22a1-43fe-8b7f-2d57ee82463f"
-version = "0.1.7"
 
 [[deps.StackViews]]
 deps = ["OffsetArrays"]
@@ -1672,12 +1609,6 @@ version = "0.7.2"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
     StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
-[[deps.StructTypes]]
-deps = ["Dates", "UUIDs"]
-git-tree-sha1 = "159331b30e94d7b11379037feeb9b690950cace8"
-uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
-version = "1.11.0"
-
 [[deps.StructUtils]]
 deps = ["Dates", "UUIDs"]
 git-tree-sha1 = "79529b493a44927dd5b13dde1c7ce957c2d049e4"
@@ -1749,10 +1680,20 @@ git-tree-sha1 = "0c45878dcfdcfa8480052b6ab162cdd138781742"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.11.3"
 
+[[deps.Tricks]]
+git-tree-sha1 = "311349fd1c93a31f783f977a71e8b062a57d4101"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.13"
+
 [[deps.TriplotBase]]
 git-tree-sha1 = "4d4ed7f294cda19382ff7de4c137d24d16adc89b"
 uuid = "981d1d27-644d-49a2-9326-4793e63143c3"
 version = "0.1.0"
+
+[[deps.URIs]]
+git-tree-sha1 = "bef26fb046d031353ef97a82e3fdb6afe7f21b1a"
+uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
+version = "1.6.1"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
@@ -1771,15 +1712,16 @@ version = "0.4.1"
 
 [[deps.Unitful]]
 deps = ["Dates", "LinearAlgebra", "Random"]
-git-tree-sha1 = "9046387d65115030265736cd264d0b4eae3881f9"
+git-tree-sha1 = "c25751629f5baaa27fef307f96536db62e1d754e"
 uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
-version = "1.26.0"
+version = "1.27.0"
 
     [deps.Unitful.extensions]
     ConstructionBaseUnitfulExt = "ConstructionBase"
     ForwardDiffExt = "ForwardDiff"
     InverseFunctionsUnitfulExt = "InverseFunctions"
     LatexifyExt = ["Latexify", "LaTeXStrings"]
+    NaNMathExt = "NaNMath"
     PrintfExt = "Printf"
 
     [deps.Unitful.weakdeps]
@@ -1788,6 +1730,7 @@ version = "1.26.0"
     InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
     LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
     Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+    NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[deps.WebP]]
@@ -1892,9 +1835,9 @@ version = "2.0.4+0"
 
 [[deps.libpng_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "5cb3c5d039f880c0b3075803c8bf45cb95ae1e91"
+git-tree-sha1 = "de8ab4f01cb2d8b41702bab9eaad9e8b7d352f73"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
-version = "1.6.51+0"
+version = "1.6.53+0"
 
 [[deps.libsixel_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "libpng_jll"]
@@ -1944,24 +1887,31 @@ version = "4.1.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═878c045e-d004-11ef-2ea9-57541c120d86
-# ╠═389aa7d8-e9c5-41c8-95f7-a2be0687c3d5
-# ╠═0125991c-0772-4ae7-86bd-75c19abd5c0e
-# ╠═cbc99f37-3847-4c43-abcd-c43ae080fe45
-# ╠═686ffe03-d81b-44fe-a811-deb9b0b7744e
-# ╠═d03b8eee-b66a-470e-8a48-b6637809505f
-# ╠═cbedecf8-eeb6-4f7f-8444-3522f3d2f9a4
-# ╠═4c6ca95c-e1ba-4c5c-8141-c11911455106
-# ╠═1987c8b1-e942-4b05-8055-9aa42d77a70e
-# ╟─0784c3d6-d208-4afc-9f52-4121abc386b8
-# ╟─4651bda4-14c1-42da-84de-2041d8bace6d
-# ╟─9db9040a-5c14-44b3-890b-a631cc64db20
-# ╟─791ed101-7f07-471c-86fe-c530fb0ed577
-# ╠═03c5a40e-de96-4fb2-a4f9-d6a264f39d13
-# ╟─0260170d-ea3f-47f8-863e-856a11b6a169
-# ╟─f55e96c0-4290-455a-b7b2-ac2c46ac94fe
-# ╠═24bfc8b7-9453-459e-87b3-ee3722b541ac
-# ╠═7a64a37b-fbf3-4c35-88ef-3f3610b66863
-# ╠═36203c0f-7684-4ae9-953d-c63d6a52b77b
+# ╟─7e32b36f-2a80-4637-a8be-306e7a0efa9a
+# ╟─6dc76c23-ff3a-4182-ab90-a87d5b65c768
+# ╟─71612f73-1051-4e97-a308-21a407d32642
+# ╠═4f164c56-3a0f-4c81-b017-505d8b734e0f
+# ╠═6d54a652-484a-4886-978f-7435e2818287
+# ╟─32d493af-0e5f-44ef-8c4a-e6c38f22c38a
+# ╟─c1c0e7ff-7c4f-48ba-be26-94d85dc1504a
+# ╟─7af41d1e-1013-49e2-823f-4aafc0a5ef49
+# ╟─2bd533ec-dbc9-461d-81e2-8062821b8bd6
+# ╠═bfe1156f-1410-4663-a701-c595be93f6ba
+# ╟─0c28fb51-0dc7-4f8a-954a-bf1f877d5e83
+# ╟─17883d99-70a6-43c8-9eaa-f11a0c7371ef
+# ╟─a171ef2e-f942-4552-8f27-a544cbed7dff
+# ╟─e90245cc-0b2c-4877-9d18-de036eba37ce
+# ╟─5b3c9b52-4d9d-47a7-a824-645173f1d49e
+# ╟─9b407b06-cacd-44ba-8612-6aa942d4c057
+# ╟─002a877c-fdae-4937-b786-eaa58163082a
+# ╟─fe278b93-3643-47e3-b38a-6f7402ba7e46
+# ╟─b4d43587-e358-4feb-a4fc-98f5e5b23247
+# ╟─6db465b9-b3d2-49b4-897d-fece13a0fff5
+# ╟─5dc274c1-9488-46c9-93a2-83ece3535265
+# ╠═46a69a2f-9fb1-4007-b704-a79c58e0988d
+# ╟─e30b7eae-6e41-47b4-9b1b-5b7b030cc211
+# ╠═079b968c-df36-476b-ad68-2d71460f4b3a
+# ╟─6ccb3546-d827-11f0-9886-c3f464f69333
+# ╟─2b097439-61f2-4023-a7da-8022abadc086
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
