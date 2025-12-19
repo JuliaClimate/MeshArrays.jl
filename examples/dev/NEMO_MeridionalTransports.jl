@@ -18,9 +18,13 @@ md"""## Read and Compute"""
 
 # ╔═╡ cf5420aa-95b7-4484-9f09-86571691df68
 begin
-	γ=MeshArrays.GridSpec_NEMO(joinpath("data","mesh_mask_ORCA025.nc"))
-	Γ=MeshArrays.GridLoad_NEMO(Dataset(γ.path))
-	"""Done with Grid"""
+    ds_grid=Dataset("data/mesh_mask_ORCA025.nc")
+    path_vo="data/MER-EP-SW/Test"
+    ds_e3=Dataset("data/mesh_e3_fields_ORCA025.nc")
+    Γ=MeshArrays.GridLoad_NEMO((ds_grid,ds_e3))
+    γ=Γ.XC.grid
+
+    """Done with Grid"""
 end
 
 # ╔═╡ 326d378c-abde-4f5e-b90d-dc1a3e4b044d
@@ -33,6 +37,13 @@ begin
 	λ=MeshArrays.interpolation_setup(Γ=Γ,lon=lon,lat=lat);
 	lo,la,z=MeshArrays.Interpolate(Γ.Depth,λ);
 	"Done with interpolation, zonal lines"
+end
+
+# ╔═╡ 4542e819-f76b-4188-a365-d978c9b9d038
+begin
+#	uvt=read_vel_3d_nemoarray(1:1,Γ);
+#	TatU,TatV=MeshArrays.to_UV(uvt_mean.T);
+#	[heatmap(TatU[:,1]);heatmap(TatV[:,71])]
 end
 
 # ╔═╡ 689989e4-5865-4034-8c56-731caff35334
@@ -59,30 +70,28 @@ md"""## Overturning"""
 md"""## Methods"""
 
 # ╔═╡ 5c314ad6-5e5c-40c1-b501-54d0917dad6e
-function read_vel_3d_array(month=1)
+function read_vel_3d_array(month=1,Γ=[])
 		m=string(month)
-		fil="data/MER-EP-SW/Test/ORAS5_uo_2000-"*m*".nc"
-		ds=Dataset(fil)["vozocrtx"][2:end-1,1:1020,:]
-		ds[ismissing.(ds)].=NaN
-		U=ds
-		fil="data/MER-EP-SW/Test/ORAS5_vo_2000-"*m*".nc"
-		ds=Dataset(fil)["vomecrty"][2:end-1,1:1020,:]
-		ds[ismissing.(ds)].=NaN
-		V=ds
-		fil="data/MER-EP-SW/Test/ORAS5_thetao_2000-"*m*".nc"
-		ds=Dataset(fil)["votemper"][2:end-1,1:1020,:]
-		ds[ismissing.(ds)].=NaN
-		T=ds
+		fil=joinpath(path_vo,"ORAS5_uo_2000-"*m*".nc")
+		U=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["vozocrtx"],:U,true)
+		fil=joinpath(path_vo,"ORAS5_vo_2000-"*m*".nc")
+		V=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["vomecrty"],:V,true)
+		fil=joinpath(path_vo,"ORAS5_thetao_2000-"*m*".nc")
+		T=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["votemper"],:T,true)
 		(U=U,V=V,T=T)
 	end
 
 # ╔═╡ 15d6085d-e2af-4285-9a30-b036c730ad83
-function read_vel_3d_nemoarray(month=1:12)
+function read_vel_3d_nemoarray(month=1:12,Γ=[])
 	U,V,T=(zeros(1440,1020,75),zeros(1440,1020,75),zeros(1440,1020,75))
 	uT,vT=(zeros(1440,1020,75),zeros(1440,1020,75))
 	
 	for m in month
-		tmp=read_vel_3d_array(m)
+		tmp=read_vel_3d_array(m,Γ)
+		#
+		tmp.U.=tmp.U.*write(Γ.hFacW)
+		tmp.V.=tmp.V.*write(Γ.hFacS)
+		#
 		U.+=tmp.U./length(month)
 		V.+=tmp.V./length(month)
 		T.+=tmp.T./length(month)
@@ -94,18 +103,11 @@ function read_vel_3d_nemoarray(month=1:12)
 	(U=read(U,γ),V=read(V,γ),T=read(T,γ),uT=read(uT,γ),vT=read(vT,γ))
 end
 
-# ╔═╡ 4542e819-f76b-4188-a365-d978c9b9d038
-begin
-	uvt=read_vel_3d_nemoarray(1);
-	TatU,TatV=MeshArrays.to_UV(uvt.T);
-	[heatmap(TatU[:,1]);heatmap(TatV[:,71])]
-end
-
 # ╔═╡ dd1f651a-f665-4bb2-a0cc-0cc047227d8c
-uvt_mean=read_vel_3d_nemoarray(1:12)
-
-# ╔═╡ 19d782de-ae2d-4180-8312-dd4b9409bb20
-(Utr,Vtr)=UVtoTransport(uvt_mean.U,uvt_mean.V,Γ)
+begin
+    uvt_mean=read_vel_3d_nemoarray(1:12,Γ)
+    (Utr,Vtr)=UVtoTransport(uvt_mean.U,uvt_mean.V,Γ)
+end
 
 # ╔═╡ f0723ff8-477e-4aec-b756-001d0669ffb6
 begin
@@ -130,6 +132,9 @@ begin
 	fil_MHT=joinpath(tempdir(),"NEMO_MT_heat.png"); println(fil_MHT); save(fil_MHT,fig_MHT)
 end
 
+# ╔═╡ 8266013a-b6aa-4820-801f-7edc290aab9e
+fig_MHT
+
 # ╔═╡ 43331d0d-ffdb-4cfe-9376-1f4c8cafb642
 begin
 	fig_MVT=Figure(); Axis(fig_MVT[1,1],title="meridional volume transport in Sv")
@@ -153,10 +158,10 @@ function read_uTvT(path,Γ,month=1)
 	f=MeshArrays.NEMO_GRID.gcmarray_to_nemorarray
 	grid=Γ.XC.grid
 	m=string(month)
-	uT=Dataset(joinpath(path,"ORAS5_uT_1993-"*m*".nc"))["uT"][2:end-1,1:1020,1]
-	uT=f(read(uT,grid))
-	vT=Dataset(joinpath(path,"ORAS5_vT_1993-"*m*".nc"))["vT"][2:end-1,1:1020,1]
-	vT=f(read(vT,grid))
+    fil=joinpath(path,"ORAS5_uT_1993-"*m*".nc")
+    uT=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["uT"],:U,false)
+    fil=joinpath(path,"ORAS5_vT_1993-"*m*".nc")
+    vT=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["vT"],:V,false)
 	(uT,vT)
 end
 
@@ -178,7 +183,7 @@ begin
 	vT_m=zeros(Γ.XC)
 	for m in 1:12
 		_uT,_vT=read_uTvT("data/NEMO_sample/monthly/",Γ,m)
-		uT_m+=_uT/12; vT_m+=_vT/12;
+		uT_m.+=read(_uT/12,γ); vT_m.+=read(_vT/12,γ);
 	end
 	UV=Dict("U"=>Γ.DYG*uT_m,"V"=>Γ.DXG*vT_m,"dimensions"=>["x","y"])
 	MOHT_GF=1e-15*4e6*[ThroughFlow(UV,lc,Γ) for lc in LC]
@@ -216,8 +221,9 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 [compat]
 CairoMakie = "~0.15.8"
 JLD2 = "~0.6.3"
+MeshArrays = "~0.5.2"
 NCDatasets = "~0.14.10"
-PlutoUI = "~0.7.75"
+PlutoUI = "~0.7.76"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -226,7 +232,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "f79e429962cf1e19dd512ba6adad64f324a38281"
+project_hash = "4b05666cfb6f16041f788f7c9ec0a19977ce402c"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1226,7 +1232,7 @@ version = "0.6.7"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "d333bc6aa00ba7be0636af73698d85b306ff49f4"
+path = "/Users/gaelforget/work/code/julia_pkg/MeshArrays.jl/"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 version = "0.5.2"
 
@@ -1481,9 +1487,9 @@ version = "1.3.3"
 
 [[deps.Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "0f27480397253da18fe2c12a4ba4eb9eb208bf3d"
+git-tree-sha1 = "522f093a29b31a93e34eaea17ba055d850edea28"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.5.0"
+version = "1.5.1"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -2056,8 +2062,8 @@ version = "4.1.0+0"
 # ╟─a62f4e07-4877-48ec-8ecc-4b5bd4c4b3c0
 # ╟─887cdf28-25fd-4aa9-873c-14d15a0e2c28
 # ╟─d0bcb388-503e-4729-a1e5-3c033a71b60e
-# ╟─4542e819-f76b-4188-a365-d978c9b9d038
-# ╟─dd1f651a-f665-4bb2-a0cc-0cc047227d8c
+# ╠═4542e819-f76b-4188-a365-d978c9b9d038
+# ╠═dd1f651a-f665-4bb2-a0cc-0cc047227d8c
 # ╟─689989e4-5865-4034-8c56-731caff35334
 # ╟─cb328ede-795e-43d6-8a73-ca7b61ea652b
 # ╟─aebc7ac0-b7b9-4a73-a015-44bc64530d9e
@@ -2065,14 +2071,14 @@ version = "4.1.0+0"
 # ╟─b53e4149-cb41-4bac-bb55-b8b2e8c202b6
 # ╠═b329f537-50ca-4f1c-8986-4216af5719af
 # ╟─ef9f4b4f-7fd8-4710-af72-87b2a455fd13
-# ╟─19d782de-ae2d-4180-8312-dd4b9409bb20
-# ╟─f0723ff8-477e-4aec-b756-001d0669ffb6
-# ╟─43331d0d-ffdb-4cfe-9376-1f4c8cafb642
+# ╠═f0723ff8-477e-4aec-b756-001d0669ffb6
+# ╠═43331d0d-ffdb-4cfe-9376-1f4c8cafb642
+# ╠═8266013a-b6aa-4820-801f-7edc290aab9e
 # ╟─5969de7f-cbfb-4281-a435-5e74f5f23a1e
 # ╟─d22af756-89cb-48e2-a835-88ee2feb7635
 # ╟─91535321-0943-4441-b687-86a23cc9bdd9
 # ╟─e4d1091d-9ae2-489b-b2fc-809e8e373079
-# ╟─15d6085d-e2af-4285-9a30-b036c730ad83
+# ╠═15d6085d-e2af-4285-9a30-b036c730ad83
 # ╟─5c314ad6-5e5c-40c1-b501-54d0917dad6e
 # ╟─4382098d-b822-4a84-9bfc-0971eeb399e2
 # ╟─00000000-0000-0000-0000-000000000001
