@@ -14,15 +14,18 @@ using MeshArrays
 γ=GridSpec()
 ```
 """
-function GridSpec(category="default", 
-        path=tempname(); np=nothing, ID=:unknown)
+function GridSpec(category="default", path=tempname(); 
+    np=nothing, ID=:unknown, ioPrec=Float64, verbose=false)
     if category=="default"&&in(ID,[:unknown, :OISST, :Oscar, :IAP])
-        GridSpec_default(ID=ID)
+        verbose ? println("branch 1") : nothing
+        GridSpec_default(ID=ID,ioPrec=ioPrec)
     elseif category=="ones"&&ID==:unknown
+        verbose ? println("branch 2") : nothing
         npoints=(isnothing(np) ? 10 : np)
         GridSpec_ones("PeriodicDomain",nP=npoints)
     else
-        GridSpec_MITgcm(category, path; np=np, ID=ID)
+        verbose ? println("branch 3") : nothing
+        GridSpec_MITgcm(category, path; np=np, ID=ID,ioPrec=ioPrec)
     end
 end
 
