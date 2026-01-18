@@ -101,19 +101,23 @@ variable_in_NEMO(v,vl=variable_list_2d)=
 #	filter(p->p.:MITgcm==v,variable_df(variable_list))[1,:NEMO]
 
 function convert_one_grid_variable(grid_data,df_line; 
-				is_3d=false, verbose=false)
-
-	ii=2:1441
-	jj=1:1020
-
-	#note on jj:
-	#for V/Zeta points : add a line of zeros at South on V + 1:1019
-	#for T/U points : 1:1020
-	
+				is_3d=false, verbose=false)	
 	nam_in=df_line.NEMO
 	nam_out=df_line.MITgcm
 	loc=df_line.location
 	verbose ? println([nam_in nam_out loc]) : nothing
+	read_one(grid_data[nam_in],loc,is_3d)
+end
+
+nomissing64(x) = [(ismissing(a) ? 0 : Float64(a)) for a in x]
+nomissing64(x::UnitRange) = Float64.(x)
+nonan64(x) = [(isnan(a) ? 0 : Float64(a)) for a in x]
+
+function read_one(fld,loc,is_3d)
+	#for T/U points : jj=1:1020
+	#for V/Zeta points : add a line of zeros at South on V + 1:1019
+	ii=2:1441
+	jj=1:1020
 
 	list_loc=[:T :Zeta :U :V :RC :RF]
 	list_di =[ 0 -1    -1  0  0   0  ]
@@ -125,22 +129,23 @@ function convert_one_grid_variable(grid_data,df_line;
 
 	jj_m_1=jj[2:end].-1
 	
-	if is_3d
+	tmp=if is_3d
 		if dj<0
-			tmp=grid_data[nam_in][ii.+di,jj_m_1,:]
+			tmp=fld[ii.+di,jj_m_1,:]
 			nr=size(tmp,3)
 			cat(zeros(length(ii),1,nr),tmp, dims=2)
 		else
-			grid_data[nam_in][ii.+di,jj.+dj,:]
+			fld[ii.+di,jj.+dj,:]
 		end
 	else
 		if dj<0
-			tmp=grid_data[nam_in][ii.+di,jj_m_1,1]
+			tmp=fld[ii.+di,jj_m_1,1]
 			cat(zeros(length(ii),1),tmp, dims=2)
 		else
-			grid_data[nam_in][ii.+di,jj.+dj,1]
+			fld[ii.+di,jj.+dj,1]
 		end
 	end
+	nomissing64(tmp)
 end
 
 """
@@ -171,7 +176,15 @@ load(grid_data; verbose=false)=begin
 	add_angle_CS_SN(G)
 end
 
-function read_nc_grid(grid_data; verbose=false)
+function read_nc_grid(all_grid_data; verbose=false)
+	if isa(all_grid_data,Tuple)
+		grid_data=all_grid_data[1]
+		ds_e3=all_grid_data[2]
+	else
+		grid_data=all_grid_data
+		ds_e3=missing
+	end
+
 	grid=Dict()
 
 	for i in variable_NTA(variable_list_2d)
@@ -179,10 +192,10 @@ function read_nc_grid(grid_data; verbose=false)
 		merge!(grid,Dict(i.MITgcm=>tmp))
 	end
 
-	merge!(grid,Dict("RAC"=>grid[:DXW].*grid[:DYS]))
-	merge!(grid,Dict("RAW"=>grid[:DXC].*grid[:DYG]))
-	merge!(grid,Dict("RAS"=>grid[:DXG].*grid[:DYC]))
-	merge!(grid,Dict("RAZ"=>grid[:DXS].*grid[:DYW]))
+	merge!(grid,Dict(:RAC=>grid[:DXW].*grid[:DYS]))
+	merge!(grid,Dict(:RAW=>grid[:DXC].*grid[:DYG]))
+	merge!(grid,Dict(:RAS=>grid[:DXG].*grid[:DYC]))
+	merge!(grid,Dict(:RAZ=>grid[:DXS].*grid[:DYW]))
 
 	for i in variable_NTA(variable_list_3d)
 		tmp=convert_one_grid_variable(grid_data,i,is_3d=true,verbose=verbose)
@@ -190,6 +203,8 @@ function read_nc_grid(grid_data; verbose=false)
 	end
 
 	add_one_dim_variables!(grid,grid_data)
+
+	ismissing(ds_e3) ? nothing : overwrite_hFac!(grid,ds_e3)
 
 	mask=Float64.(1*grid[:hFacC][:,:,1])
 	mask[findall(mask.==0)].=NaN
@@ -204,7 +219,7 @@ end
 function grid_to_MeshArrays(grid)
 	ni,nj=size(grid.XC)
 
-    g=GridSpec("PeriodicChannel")
+    g=GridSpec("PeriodicChannel",ioPrec=Float64)
     g.fSize[1]=(ni,nj)
     g.ioSize.=[ni nj]
 
@@ -222,16 +237,35 @@ function grid_to_MeshArrays(grid)
 	NamedTuple((Symbol(key),value) for (key,value) in grid2)
 end
 
-function add_one_dim_variables!(grid,grid_data)
+function add_one_dim_variables!(grid,grid_data; verbose=false)
 	for df_line in variable_NTA(variable_list_1d)
 		nam_in=df_line.NEMO
 		nam_out=df_line.MITgcm
 		loc=df_line.location
 
 		fac=(in(nam_out,[:RC,:RF]) ? -1 : 1)
-		tmp=fac*grid_data[nam_in][:]
+		verbose ? println(typeof(grid_data[nam_in])) : nothing
+		tmp=fac*nomissing64.(grid_data[nam_in][:])
 		merge!(grid,Dict(nam_out=>tmp))
 	end
+end
+
+## 3D grid factors needed for transport calculations
+
+function overwrite_hFac!(Γ,ds; verbose=false)
+	verbose ? println("overwriting hFac") : nothing
+	DRF=Γ[:DRF]
+	e3t=read_one(ds["e3t_0_field"],:T,true)
+	e3u=read_one(ds["e3u_0_field"],:U,true)
+	e3v=read_one(ds["e3v_0_field"],:V,true)
+#why is e3t_0_field ~ 2xDRF at last point? 
+#and this seems necessary to compute correct top-bottom transports
+#	e3t[:,:,end-1].=e3t[:,:,end-1]./2
+#	e3u[:,:,end-1].=e3u[:,:,end-1]./2
+#	e3v[:,:,end-1].=e3v[:,:,end-1]./2
+	[Γ[:hFacC][:,:,k].=e3t[:,:,k]./Float64(DRF[k]) for k in 1:75]
+	[Γ[:hFacW][:,:,k].=e3u[:,:,k]./Float64(DRF[k]) for k in 1:75]
+	[Γ[:hFacS][:,:,k].=e3v[:,:,k]./Float64(DRF[k]) for k in 1:75]
 end
 
 ##

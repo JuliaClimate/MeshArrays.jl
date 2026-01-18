@@ -87,28 +87,41 @@ to_UV(inFLD::AbstractMeshArray) =
 function to_UV_3d(inFLD::AbstractMeshArray)
 	TatU=similar(inFLD)
 	TatV=similar(inFLD)
-	for k in 1:size(inFLD)[2]
-		tmpU,tmpV=to_UV_2d(inFLD[:,k])
-		TatU.f[:,k].=tmpU.f
-		TatV.f[:,k].=tmpV.f
-	end
+  to_UV_3d!(inFLD,TatU,TatV)
 	TatU,TatV
 end
 
+function to_UV_3d!(inFLD::AbstractMeshArray,TatU::AbstractMeshArray,TatV::AbstractMeshArray)
+	tmpU=similar(inFLD[:,1])
+	tmpV=similar(inFLD[:,1])
+	for k in 1:size(inFLD)[2]
+    exFLD=exchange(inFLD[:,k])
+    to_UV_2d!(exFLD,tmpU,tmpV)
+		TatU.f[:,k].=tmpU.f
+		TatV.f[:,k].=tmpV.f
+	end
+end
+
 function to_UV_2d(inFLD::AbstractMeshArray)
-  exFLD=exchange(inFLD).MA
 	TatU=similar(inFLD)
 	TatV=similar(inFLD)
-	for a=1:inFLD.grid.nFaces
-		(s1,s2)=size(exFLD.f[a])
-		tmpA=view(exFLD.f[a],2:s1-1,2:s2-1)
-		TatU.f[a]=0.5*(tmpA+view(exFLD.f[a],1:s1-2,2:s2-1))
-		TatV.f[a]=0.5*(tmpA+view(exFLD.f[a],2:s1-1,1:s2-2))
-	end
+  to_UV_2d!(inFLD,TatU,TatV)
 	return TatU, TatV
 end
 
+function to_UV_2d!(inFLD::AbstractMeshArray,TatU::AbstractMeshArray,TatV::AbstractMeshArray)
+  exFLD=exchange(inFLD)
+  to_UV_2d!(exFLD,TatU,TatV)
+end
 
+function to_UV_2d!(exFLD::MeshArray_wh,TatU::AbstractMeshArray,TatV::AbstractMeshArray)
+	for a=1:exFLD.MA.grid.nFaces
+		(s1,s2)=size(exFLD.MA.f[a])
+		tmpA=view(exFLD.MA.f[a],2:s1-1,2:s2-1)
+		TatU.f[a].=0.5*(tmpA+view(exFLD.MA.f[a],1:s1-2,2:s2-1))
+		TatV.f[a].=0.5*(tmpA+view(exFLD.MA.f[a],2:s1-1,1:s2-2))
+	end
+end
 
 ##
 

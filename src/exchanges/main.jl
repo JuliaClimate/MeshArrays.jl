@@ -19,8 +19,8 @@ function exchange(x::AbstractMeshArray)
     tmp=exchange_main(x).MA
 		[y.MA.f[k]=tmp.f[k] for k in 1:length(x)] 
 	else
-    tmp=exchange_main(x[:,k]).MA
 		for k in 1:size(x)[2]
+      tmp=exchange_main(x[:,k]).MA
 			[y.MA.f[kk,k]=tmp.f[kk] for kk in 1:size(x,1)] 
 		end
 	end
