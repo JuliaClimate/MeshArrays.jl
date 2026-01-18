@@ -245,7 +245,7 @@ function add_one_dim_variables!(grid,grid_data; verbose=false)
 
 		fac=(in(nam_out,[:RC,:RF]) ? -1 : 1)
 		verbose ? println(typeof(grid_data[nam_in])) : nothing
-		tmp=fac*nomissing64(grid_data[nam_in][:])
+		tmp=fac*nomissing64.(grid_data[nam_in][:])
 		merge!(grid,Dict(nam_out=>tmp))
 	end
 end
