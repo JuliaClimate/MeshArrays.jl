@@ -205,7 +205,7 @@ true
 function update_location_PeriodicDomain!(u::AbstractArray{T,1},grid::gcmgrid) where T
     v=Float64.(u)
     x,y = v[1:2]
-    fIndex = Int(v[3])
+    fIndex = Int(v[end])
     #
     nx,ny=grid.fSize[fIndex]
     ni,nj=Int.(transpose(grid.ioSize)./grid.fSize[1])
@@ -215,24 +215,24 @@ function update_location_PeriodicDomain!(u::AbstractArray{T,1},grid::gcmgrid) wh
         x=x+nx
         u[1]=x
         fIndex=WESN[fIndex,1]
-        u[3]=fIndex
+        u[end]=fIndex
     elseif x>=nx
         x=x-nx
         u[1]=x
         fIndex=WESN[fIndex,2]
-        u[3]=fIndex
+        u[end]=fIndex
     end
     #
     if y<0
         y=y+ny
         u[2]=y
         fIndex=WESN[fIndex,3]
-        u[3]=fIndex
+        u[end]=fIndex
     elseif y>=ny
         y=y-ny
         u[2]=y
         fIndex=WESN[fIndex,4]
-        u[3]=fIndex
+        u[end]=fIndex
     end
     #
     return u
