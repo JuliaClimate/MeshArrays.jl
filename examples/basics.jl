@@ -248,7 +248,7 @@ end
 
 # ╔═╡ dacc2261-1d75-4d68-b82c-174e4fae3631
 begin
-	γ_b=GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
+	γ_b=GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"),ioPrec=Float32)
 	Γ_b=GridLoad(γ_b;option="full")
 
 	Rini_b,Rend_b=smoothing_example(Γ_b)

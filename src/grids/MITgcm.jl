@@ -41,7 +41,7 @@ Examples:
 
 ```jldoctest; output = false
 using MeshArrays
-g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
+g = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"),ioPrec=Float32)
 isa(g,gcmgrid)
 
 # output
