@@ -185,7 +185,7 @@ https://mitgcm.readthedocs.io/en/latest/algorithm/algorithm.html#spatial-discret
 ```jldoctest; output = false
 using MeshArrays
 
-γ = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"))
+γ = GridSpec("CubeSphere",MeshArrays.Dataset("GRID_CS32"),ioPrec=Float32)
 XC = GridLoadVar("XC",γ)
 
 isa(XC,MeshArray)
