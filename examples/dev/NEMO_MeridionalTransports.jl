@@ -39,8 +39,21 @@ begin
 	"Done with interpolation, zonal lines"
 end
 
-# ╔═╡ cf6c5965-4b50-4370-a428-f4feb3f19396
+# ╔═╡ d0bcb388-503e-4729-a1e5-3c033a71b60e
+#begin
+#	uT_E,vT_N=UVtoUEVN(uT,vT,Γ)
+#	_,_,z_E=MeshArrays.Interpolate(uT_E,λ);
+#	_,_,z_N=MeshArrays.Interpolate(vT_N,λ);
+#	[heatmap(z),heatmap(z_E,colorrange=(-1,1).*1e3),heatmap(z_N,colorrange=(-1,1).*1e3)]
+#end
 
+
+# ╔═╡ 4542e819-f76b-4188-a365-d978c9b9d038
+begin
+#	uvt=read_vel_3d_nemoarray(1:1,Γ);
+#	TatU,TatV=MeshArrays.to_UV(uvt_mean.T);
+#	[heatmap(TatU[:,1]);heatmap(TatV[:,71])]
+end
 
 # ╔═╡ 689989e4-5865-4034-8c56-731caff35334
 md"""## Meridional Transport
@@ -197,15 +210,6 @@ end
 # ╔═╡ 887cdf28-25fd-4aa9-873c-14d15a0e2c28
 (uT,vT)=read_uTvT("data/NEMO_sample/monthly/",Γ,1)
 
-# ╔═╡ d0bcb388-503e-4729-a1e5-3c033a71b60e
-begin
-	uT_E,vT_N=UVtoUEVN(uT,vT,Γ)
-	_,_,z_E=MeshArrays.Interpolate(uT_E,λ);
-	_,_,z_N=MeshArrays.Interpolate(vT_N,λ);
-	[heatmap(z),heatmap(z_E,colorrange=(-1,1).*1e3),heatmap(z_N,colorrange=(-1,1).*1e3)]
-end
-
-
 # ╔═╡ aebc7ac0-b7b9-4a73-a015-44bc64530d9e
 begin
 	uT_m=zeros(Γ.XC)
@@ -251,8 +255,9 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 [compat]
 CairoMakie = "~0.15.8"
 JLD2 = "~0.6.3"
-NCDatasets = "~0.14.10"
-PlutoUI = "~0.7.76"
+MeshArrays = "~0.5.4"
+NCDatasets = "~0.14.11"
+PlutoUI = "~0.7.79"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -261,7 +266,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "3c9a172b6d8789c6ec657d2954e7a96f8dd8a41c"
+project_hash = "3bba973731ce8a9e3bb1a48cc06db4f3411109b9"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1249,9 +1254,9 @@ version = "0.6.7"
 
 [[deps.MeshArrays]]
 deps = ["CatViews", "Dates", "Distributed", "GeoInterface", "Glob", "LazyArtifacts", "NearestNeighbors", "Pkg", "Printf", "SharedArrays", "SparseArrays", "Statistics", "Unitful"]
-git-tree-sha1 = "19e7464371ad3af9f0c0f3a2aac718a772f6c578"
+git-tree-sha1 = "b9b1389807c4d535c046c8849fb05e752120c0bd"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.5.3"
+version = "0.5.4"
 
     [deps.MeshArrays.extensions]
     MeshArraysDataDepsExt = ["DataDeps"]
@@ -1304,9 +1309,9 @@ version = "0.2.4"
 
 [[deps.NCDatasets]]
 deps = ["CFTime", "CommonDataModel", "DataStructures", "Dates", "DiskArrays", "NetCDF_jll", "NetworkOptions", "Printf"]
-git-tree-sha1 = "c82c73e2e0c57a0fe13d3414d7c5a6a821d24016"
+git-tree-sha1 = "0d3e499c8fd5b2549b4299eade61de601e5fe6e2"
 uuid = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
-version = "0.14.10"
+version = "0.14.11"
 
     [deps.NCDatasets.extensions]
     NCDatasetsMPIExt = "MPI"
@@ -2102,8 +2107,7 @@ version = "4.1.0+0"
 # ╟─d22af756-89cb-48e2-a835-88ee2feb7635
 # ╟─91535321-0943-4441-b687-86a23cc9bdd9
 # ╟─e4d1091d-9ae2-489b-b2fc-809e8e373079
-# ╠═f789dcf4-a381-478f-9a5c-7676985ed754
-# ╠═15d6085d-e2af-4285-9a30-b036c730ad83
+# ╟─15d6085d-e2af-4285-9a30-b036c730ad83
 # ╟─5c314ad6-5e5c-40c1-b501-54d0917dad6e
 # ╟─4382098d-b822-4a84-9bfc-0971eeb399e2
 # ╟─00000000-0000-0000-0000-000000000001
