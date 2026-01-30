@@ -91,15 +91,21 @@ function to_UV_3d(inFLD::AbstractMeshArray)
 	TatU,TatV
 end
 
-function to_UV_3d!(inFLD::AbstractMeshArray,TatU::AbstractMeshArray,TatV::AbstractMeshArray)
-	tmpU=similar(inFLD[:,1])
-	tmpV=similar(inFLD[:,1])
-	for k in 1:size(inFLD)[2]
+function to_UV_3d!(inFLD::AbstractMeshArray,
+  TatU::AbstractMeshArray,TatV::AbstractMeshArray;
+  verbose=false)
+  tmpU=similar(inFLD[:,1])
+  tmpV=similar(inFLD[:,1])
+  verbose ? println(size(inFLD)[2]) : nothing
+  for k in 1:size(inFLD)[2]
+    verbose ? println(k) : nothing
     exFLD=exchange(inFLD[:,k])
     to_UV_2d!(exFLD,tmpU,tmpV)
-		TatU.f[:,k].=tmpU.f
-		TatV.f[:,k].=tmpV.f
-	end
+    for i in 1:size(inFLD)[1]
+      TatU[i,k].=tmpU[i]
+      TatV[i,k].=tmpV[i]
+    end
+  end
 end
 
 function to_UV_2d(inFLD::AbstractMeshArray)
