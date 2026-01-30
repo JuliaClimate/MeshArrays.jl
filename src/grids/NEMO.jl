@@ -109,8 +109,9 @@ function convert_one_grid_variable(grid_data,df_line;
 	read_one(grid_data[nam_in],loc,is_3d)
 end
 
-nomissing64(x) = [(ismissing(a) ? 0 : Float64(a)) for a in x]
-nomissing64(x::UnitRange) = Float64.(x)
+nomissing64(x::Array) = nomissing64.(x)
+nomissing64(x::UnitRange) = nomissing64.(x)
+nomissing64(a) = (ismissing(a) ? 0 : Float64(a))
 nonan64(x) = [(isnan(a) ? 0 : Float64(a)) for a in x]
 
 function read_one(fld,loc,is_3d)
@@ -245,7 +246,7 @@ function add_one_dim_variables!(grid,grid_data; verbose=false)
 
 		fac=(in(nam_out,[:RC,:RF]) ? -1 : 1)
 		verbose ? println(typeof(grid_data[nam_in])) : nothing
-		tmp=fac*nomissing64.(grid_data[nam_in][:])
+		tmp=fac*nomissing64(grid_data[nam_in][:])
 		merge!(grid,Dict(nam_out=>tmp))
 	end
 end
@@ -258,7 +259,7 @@ function overwrite_hFac!(Γ,ds; verbose=false)
 	e3t=read_one(ds["e3t_0_field"],:T,true)
 	e3u=read_one(ds["e3u_0_field"],:U,true)
 	e3v=read_one(ds["e3v_0_field"],:V,true)
-#why is e3t_0_field ~ 2xDRF at last point? 
+#why is e3t_0_field ~ 2xDRF at last point?
 #and this seems necessary to compute correct top-bottom transports
 #	e3t[:,:,end-1].=e3t[:,:,end-1]./2
 #	e3u[:,:,end-1].=e3u[:,:,end-1]./2
