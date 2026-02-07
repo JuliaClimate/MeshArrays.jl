@@ -78,8 +78,11 @@ md"""## Overturning"""
 # ╔═╡ e4d1091d-9ae2-489b-b2fc-809e8e373079
 md"""## Methods"""
 
+# ╔═╡ f789dcf4-a381-478f-9a5c-7676985ed754
+Pkg.status()
+
 # ╔═╡ 5c314ad6-5e5c-40c1-b501-54d0917dad6e
-function read_vel_3d_array(month=1,Γ=[])
+function read_vel_3d_array(month=1,γ=missing; calc_uTvT=false)
 		m=string(month)
 		fil=joinpath(path_vo,"ORAS5_uo_2000-"*m*".nc")
 		U=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["vozocrtx"],:U,true)
@@ -87,36 +90,66 @@ function read_vel_3d_array(month=1,Γ=[])
 		V=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["vomecrty"],:V,true)
 		fil=joinpath(path_vo,"ORAS5_thetao_2000-"*m*".nc")
 		T=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["votemper"],:T,true)
-		(U=U,V=V,T=T)
+
+        if calc_uTvT
+            TatU,TatV=MeshArrays.to_UV(read(T,γ)) #15s
+            uT=(write(TatU).*U)
+            vT=(write(TatV).*V)
+    		(U=U,V=V,T=T,uT=uT,vT=vT)
+        else
+    		(U=U,V=V,T=T)
+        end
+
 	end
 
 # ╔═╡ 15d6085d-e2af-4285-9a30-b036c730ad83
-function read_vel_3d_nemoarray(month=1:12,Γ=[])
+function read_vel_3d_nemoarray(month=1:12,Γ=[]; option=1, verbose=false)
 	U,V,T=(zeros(1440,1020,75),zeros(1440,1020,75),zeros(1440,1020,75))
 	uT,vT=(zeros(1440,1020,75),zeros(1440,1020,75))
 	
+    γ=(!haskey(Γ,:XC) ? missing : Γ.XC.grid)
 	for m in month
-		tmp=read_vel_3d_array(m,Γ)
-		#
-		tmp.U.=tmp.U.*write(Γ.hFacW)
-		tmp.V.=tmp.V.*write(Γ.hFacS)
-		#
-		U.+=tmp.U./length(month)
-		V.+=tmp.V./length(month)
-		T.+=tmp.T./length(month)
-		#
-		TatU,TatV=MeshArrays.to_UV(read(tmp.T,γ))
-		uT.+=(write(TatU).*tmp.U./length(month))
-		vT.+=(write(TatV).*tmp.V./length(month))
+		tmp=read_vel_3d_array(m,γ) #9s
+		U.+=tmp.U
+		V.+=tmp.V
+        T.+=tmp.T
+        #
+        if option>1
+            TatU,TatV=MeshArrays.to_UV(read(tmp.T,γ)) #15s
+            uT.+=(write(TatU).*tmp.U)
+            vT.+=(write(TatV).*tmp.V)
+        end
 	end
-	(U=read(U,γ),V=read(V,γ),T=read(T,γ),uT=read(uT,γ),vT=read(vT,γ))
+    hFacW=write(Γ.hFacW)
+    hFacS=write(Γ.hFacS)
+    
+    UU=read(U.*hFacW,γ)/length(month)
+    VV=read(V.*hFacS,γ)/length(month)
+    TT=read(T,γ)/length(month)
+    if option>1
+        UUT=read(uT.*hFacW,γ)/length(month)
+        VVT=read(vT.*hFacS,γ)/length(month)
+    	(U=UU,V=VV,T=TT,uT=UUT,vT=VVT)
+    else
+    	(U=UU,V=VV,T=TT)
+    end
 end
 
 # ╔═╡ dd1f651a-f665-4bb2-a0cc-0cc047227d8c
 begin
-    uvt_mean=read_vel_3d_nemoarray(1:12,Γ)
+    uvt_mean=read_vel_3d_nemoarray(1:12,Γ,option=2)
     (Utr,Vtr)=UVtoTransport(uvt_mean.U,uvt_mean.V,Γ)
 end
+
+# ╔═╡ 4542e819-f76b-4188-a365-d978c9b9d038
+begin
+#	uvt=read_vel_3d_nemoarray(1:1,Γ);
+	TatU,TatV=MeshArrays.to_UV(uvt_mean.T);
+	[heatmap(TatU[:,1]);heatmap(TatV[:,71])]
+end
+
+# ╔═╡ 60149351-6da6-4bdb-a61b-4692ca86313a
+uvt_mean
 
 # ╔═╡ f0723ff8-477e-4aec-b756-001d0669ffb6
 begin
@@ -171,7 +204,7 @@ function read_uTvT(path,Γ,month=1)
     uT=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["uT"],:U,false)
     fil=joinpath(path,"ORAS5_vT_1993-"*m*".nc")
     vT=MeshArrays.NEMO_GRID.read_one(Dataset(fil)["vT"],:V,false)
-	(uT,vT)
+	(read(uT,γ),read(vT,γ))
 end
 
 # ╔═╡ 887cdf28-25fd-4aa9-873c-14d15a0e2c28
@@ -183,7 +216,7 @@ begin
 	vT_m=zeros(Γ.XC)
 	for m in 1:12
 		_uT,_vT=read_uTvT("data/NEMO_sample/monthly/",Γ,m)
-		uT_m.+=read(_uT/12,γ); vT_m.+=read(_vT/12,γ);
+		uT_m.+=_uT/12; vT_m.+=_vT/12;
 	end
 	UV=Dict("U"=>Γ.DYG*uT_m,"V"=>Γ.DXG*vT_m,"dimensions"=>["x","y"])
 	MOHT_GF=1e-15*4e6*[ThroughFlow(UV,lc,Γ) for lc in LC]
@@ -211,6 +244,7 @@ end
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
@@ -2055,11 +2089,13 @@ version = "4.1.0+0"
 # ╟─a62f4e07-4877-48ec-8ecc-4b5bd4c4b3c0
 # ╟─887cdf28-25fd-4aa9-873c-14d15a0e2c28
 # ╟─d0bcb388-503e-4729-a1e5-3c033a71b60e
+# ╠═cf6c5965-4b50-4370-a428-f4feb3f19396
 # ╠═4542e819-f76b-4188-a365-d978c9b9d038
 # ╠═dd1f651a-f665-4bb2-a0cc-0cc047227d8c
 # ╟─689989e4-5865-4034-8c56-731caff35334
 # ╟─cb328ede-795e-43d6-8a73-ca7b61ea652b
 # ╟─aebc7ac0-b7b9-4a73-a015-44bc64530d9e
+# ╠═60149351-6da6-4bdb-a61b-4692ca86313a
 # ╟─06a1e780-9d69-4fc5-8b67-c105813999e0
 # ╟─b53e4149-cb41-4bac-bb55-b8b2e8c202b6
 # ╠═b329f537-50ca-4f1c-8986-4216af5719af
