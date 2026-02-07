@@ -18,7 +18,7 @@ end
 
 # ╔═╡ 1a714fba-2a8e-11ec-182f-8f85cc17b02a
 begin
-	using MeshArrays, CairoMakie, PlutoUI
+	using MeshArrays, CairoMakie, PlutoUI, JLD2
 	toc=PlutoUI.TableOfContents()
 	
 	md"""
@@ -317,9 +317,11 @@ let
 	D[findall(D .< 1.)] .= NaN
 
 	#Exchange funtions
-	Dexch=exchange(D,4)
+	#Dexch=MeshArrays.exchange_main(D,4)
+	Dexch=exchange(D)
+	
 	(dDdx, dDdy)=gradient(D,Γ)
-	(dDdxEx,dDdyEx)=exchange(dDdx,dDdy,4)
+	(dDdxEx,dDdyEx)=MeshArrays.exchange_main(dDdx,dDdy,4)
 
 	#display
 	PlutoUI.with_terminal() do
@@ -337,6 +339,12 @@ JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MeshArrays = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+
+[compat]
+CairoMakie = "~0.15.8"
+JLD2 = "~0.6.3"
+MeshArrays = "~0.5.4"
+PlutoUI = "~0.7.79"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -345,7 +353,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "014c3ca0ba2e6a0412eeed219248b04ab2494cdb"
+project_hash = "522926595610f15f3388401ce8173de31b9e2bd9"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2058,7 +2066,7 @@ version = "4.1.0+0"
 # ╠═6dfd7770-0197-4e74-ab27-bb666709c5d6
 # ╠═1bb1b658-7462-4837-8214-24618b9b343b
 # ╟─2c29ba59-ffc9-4763-8405-250029016ca5
-# ╠═169f9cdd-28f1-4574-ade4-237eab46a541
+# ╟─169f9cdd-28f1-4574-ade4-237eab46a541
 # ╟─1a714fba-2a8e-11ec-182f-8f85cc17b02a
 # ╟─dec3cc17-bd5d-4fb0-a85c-df71a679264b
 # ╟─58f95665-9687-4b4f-af99-1239818f71a3
