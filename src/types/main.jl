@@ -316,4 +316,8 @@ Base.@kwdef struct MeshArray_wh
   HS::Int #halo size
 end
 
+function Base.similar(A::MeshArray_wh)
+  MeshArray_wh(A.MA,A.HS)
+end
+
 exchange(x::Any) = x
