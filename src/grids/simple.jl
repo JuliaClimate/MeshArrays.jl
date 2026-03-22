@@ -157,7 +157,7 @@ isa(Γ.XC,MeshArray)
 true
 ```
 """
-function periodic_domain(np::Integer,nq=missing)
+function periodic_domain(np::Integer,nq=missing; option=:minimal)
     ismissing(nq) ? nq=np : nothing
 
     nFaces=1
@@ -167,7 +167,7 @@ function periodic_domain(np::Integer,nq=missing)
     ioPrec=Float32
     γ=gcmgrid("","PeriodicDomain",nFaces,facesSize, ioSize, ioPrec, read, write)
 
-    return GridLoad_ones(γ)
+    return GridLoad_ones(γ,option=option)
 end
 
 ## Grid_latlon with specified vertical grid and land mask
