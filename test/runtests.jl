@@ -295,6 +295,13 @@ end
 
 @testset "Interpolation" begin
     λ=interpolation_setup()
+    @test isa(λ,NamedTuple)
+    @test all(isfinite.(λ.f))
+    # Test LLC90 interpolation coefficients
+    γ=GridSpec(ID=:LLC90)
+    λ=interpolation_setup(γ)
+    @test isa(λ,NamedTuple)
+    @test all(isfinite.(λ.f))
     # Test LLC270 interpolation coefficients
     γ=GridSpec(ID=:LLC270)
     λ=interpolation_setup(γ)
