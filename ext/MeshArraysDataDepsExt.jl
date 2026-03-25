@@ -26,6 +26,10 @@ module MeshArraysDataDepsExt
          "Interpolation coefficients example, from LLC90 grid to half degree grid, created with MeshArrays.jl",
          ["https://zenodo.org/record/5784905/files/interp_coeffs_halfdeg.jld2"],
          "a0e2806ad2a88c0acb5d3baef942fcbcf69fe27310487894cd38f6c782f55e99"))
+      register(DataDep("interp_quarterdeg",
+         "Interpolation coefficients from LLC270 grid to quarter degree grid, created with MeshArrays.jl",
+         ["https://zenodo.org/records/19211947/files/interp_coeffs_quarterdeg.jld2"],
+         "b4c49ebf553af390cebc040f210fee1124e89a1eb9ab0cad137dd7b4e457156c"))
       end
 
  
@@ -39,6 +43,7 @@ module MeshArraysDataDepsExt
    "countries_geojson1"
    "basemap_jpg1"
    "interp_halfdeg"
+   "interp_quarterdeg"
    "oceans_geojson1"
    ```    
    """
@@ -52,6 +57,8 @@ module MeshArraysDataDepsExt
             datadep"basemap_jpg1"
          elseif nam=="interp_halfdeg"
             datadep"interp_halfdeg"
+         elseif nam=="interp_quarterdeg"
+            datadep"interp_quarterdeg"
          elseif nam=="oceans_geojson1"
             datadep"oceans_geojson1"
          else
