@@ -236,6 +236,20 @@ function interpolation_setup(fil::String)
 end
 
 """
+        interpolation_setup(Γ::gcmgrid)
+
+Read 
+"""
+function interpolation_setup(γ::gcmgrid)
+        fil=if γ.class*string(γ.ioSize[1])=="LatLonCap90"
+                MeshArrays.Dataset("interp_halfdeg",do_read=false)
+        elseif γ.class*string(γ.ioSize[1])=="LatLonCap270"
+                MeshArrays.Dataset("interp_quarterdeg",do_read=false)
+        end     
+        interpolation_setup(fil)
+end
+
+"""
     interpolation_setup(;Γ,lon,lat,filename)
     
 Download or recompute interpolation coefficients.

@@ -300,6 +300,7 @@ end
     λ=interpolation_setup(Γ=Γ,
         lon=[i for i=-170.:20.0:170., j=-80.:20.0:80.], 
         lat=[j for i=-170.:20.0:170., j=-80.:20.0:80.])
+    λ=interpolation_setup(γ)
     λ=interpolation_setup()
 
     lines(pol_json); lines!(pol_json)
