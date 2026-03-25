@@ -236,17 +236,26 @@ function interpolation_setup(fil::String)
 end
 
 """
-        interpolation_setup(Γ::gcmgrid)
+        interpolation_setup(γ::gcmgrid)
 
-Read 
+Download/read precomputed interpolation coefficients for gcmgrid `γ` if they exist,
+        currently for LLC90 and LLC270, otherwise compute interpolation coefficients 
+        defaulting to 2° grid.
 """
 function interpolation_setup(γ::gcmgrid)
-        fil=if γ.class*string(γ.ioSize[1])=="LatLonCap90"
-                MeshArrays.Dataset("interp_halfdeg",do_read=false)
+        if γ.class*string(γ.ioSize[1])=="LatLonCap90"
+                interpolation_setup(
+                        MeshArrays.Dataset("interp_halfdeg",do_read=false)
+                )
         elseif γ.class*string(γ.ioSize[1])=="LatLonCap270"
-                MeshArrays.Dataset("interp_quarterdeg",do_read=false)
+                interpolation_setup(
+                        MeshArrays.Dataset("interp_quarterdeg",do_read=false)
+                )
+        else
+                # Default to 2 degree interpolation weights for other grids
+                Γ=GridLoad(γ; option="full")
+                interpolation_setup(; Γ)
         end     
-        interpolation_setup(fil)
 end
 
 """
