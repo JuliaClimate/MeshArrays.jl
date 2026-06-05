@@ -126,12 +126,12 @@ md"""## Appendices
 # ╔═╡ 39924391-38ce-46a1-877f-80a7975340a0
 begin
     pth=MeshArrays.Dataset("GRID_LLC90")
-	γ=GridSpec("LatLonCap",pth)
-	Γ=GridLoad(γ;option="light")	
-	#LC=LatitudeCircles(-89.0:89.0,Γ)
-	basins=demo.ocean_basins()
-	sections,path_sec=demo.ocean_sections(Γ)
-	"Done with grid"
+    γ=GridSpec("LatLonCap",pth)
+    Γ=GridLoad(γ;option="light")	
+    #LC=LatitudeCircles(-89.0:89.0,Γ)
+    basins=demo.ocean_basins()
+    sections,path_sec=demo.ocean_sections(Γ)
+    "Done with grid"
 end
 
 # ╔═╡ be38ff51-3526-44a0-9d8c-9209355e4a4a
