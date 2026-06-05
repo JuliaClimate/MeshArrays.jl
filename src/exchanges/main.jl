@@ -32,11 +32,11 @@ function exchange(u::AbstractMeshArray,v::AbstractMeshArray)
   vv=MeshArray_wh(similar(v),1)
 	if length(size(v))==1
     tmp_u,tmp_v=exchange_main(u,v)
-		[uu.MA.f[k]=tmp_u.f[k] for k in 1:length(u)] 
-		[vv.MA.f[k]=tmp_v.f[k] for k in 1:length(v)] 
+		[uu.MA.f[k]=tmp_u.MA.f[k] for k in 1:length(u)] 
+		[vv.MA.f[k]=tmp_v.MA.f[k] for k in 1:length(v)] 
 	else
 		for k in 1:size(v)[2]
-      tmp_u,tmp_v=exchange_main(u[:,k],vu[:,k])
+      tmp_u,tmp_v=exchange_main(u[:,k],v[:,k])
 			[uu.MA.f[kk,k]=tmp_u.MA.f[kk] for kk in 1:size(u,1)] 
 			[vv.MA.f[kk,k]=tmp_v.MA.f[kk] for kk in 1:size(v,1)] 
 		end
