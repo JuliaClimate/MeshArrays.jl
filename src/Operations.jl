@@ -422,8 +422,8 @@ function ThroughFlow(VectorField,IntegralPath,Γ::NamedTuple,msk=[])
         #do_dz==1 ? mskS=Γ.DRF[i3]*mskS : nothing
         #
         #method 2: less slow
-        tabW=(isa(IntegralPath,NamedTuple) ? IntegralPath.tabW : IntegralPath.W)
-        tabS=(isa(IntegralPath,NamedTuple) ? IntegralPath.tabS : IntegralPath.S)
+        tabW=IntegralPath.W
+        tabS=IntegralPath.S
         for i4=1:n[4]
             #method 1: quite slow
             #trsp[1,i3,i4]=sum(mskW*U[:,:,i3,i4])+sum(mskS*V[:,:,i3,i4])
@@ -480,13 +480,12 @@ function LatitudeCircle(lat,Γ::NamedTuple;
       restrict_longitudes!(mskS,Γ.XS,range=range)
       restrict_longitudes!(mskW,Γ.XW,range=range)
       LC=if format==:NamedTuple
-        (lat=LatValues[j],tabC=MskToTab(mskC),
-        tabW=MskToTab(mskW),tabS=MskToTab(mskS))
+        (lat=lat,name="Parallel $lat", grid=Γ,
+        C=MskToTab(mskC),W=MskToTab(mskW),S=MskToTab(mskS))
       else
         gridpath(name="Parallel $lat", grid=Γ,
         C=MskToTab(mskC),W=MskToTab(mskW),S=MskToTab(mskS))
       end
-
 end
 
 is_in_lon_range(x,range)=(range[2].-range[1]>=360)||
@@ -578,7 +577,7 @@ function Transect(name,lons,lats,Γ; segment=:short, format=:gridpath)
   tabS=MskToTab(mskSedge)
   
   if format==:NamedTuple
-    (name=name,tabC=tabC,tabW=tabW,tabS=tabS)
+    (name=name,C=tabC,W=tabW,S=tabS)
   else
     gridpath(name=name,grid=Γ,C=tabC,W=tabW,S=tabS)
   end
