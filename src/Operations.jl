@@ -189,8 +189,8 @@ function EkmanTrsp(u::AbstractMeshArray,v::AbstractMeshArray,Γ::NamedTuple)
     fcur=f_Coriolis.(Γ.YS[i])
     fcur[abs.(Γ.YS[i]).<10].=NaN
     EkY[i]=-ucur./fcur./1029.0
-    ucur=1/4* (V.MA[i][1:end-2,2:end-1]+V.MA[i][1:end-2,2:end-1]
-              +V.MA[i][2:end-1,3:end]+V.MA[i][2:end-1,3:end])
+    ucur=1/4* (V.MA[i][1:end-2,2:end-1]+V.MA[i][1:end-2,3:end]
+              +V.MA[i][2:end-1,2:end-1]+V.MA[i][2:end-1,3:end])
     fcur=f_Coriolis.(Γ.YW[i])
     fcur[abs.(Γ.YW[i]).<10].=NaN
     EkX[i]=ucur./fcur./1029.0

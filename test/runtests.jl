@@ -176,7 +176,7 @@ end
 
     #Ekman transport
     de4=demo4()
-    @test isapprox(de4.Tr[120],1.317456)
+    @test isapprox(de4.Tr[120],1.318311; atol=1e-5)
 
 end
 
