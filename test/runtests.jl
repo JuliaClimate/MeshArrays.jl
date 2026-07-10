@@ -129,6 +129,11 @@ end
     plot(LC)
     plot(LC[1])
 
+    LC_nt=LatitudeCircles(L,Γ,format=:NamedTuple)
+    @test isa(LC_nt,Array) && isa(LC_nt[1],NamedTuple)
+    @test LC_nt[1].lat == L[1]
+    @test isapprox(ThroughFlow(uv,LC_nt[1],Γ), ThroughFlow(uv,LC[1],Γ))
+
     x=zeros(γ)
     fill!(x,1.0)
     y=fill(-1.0,γ)
