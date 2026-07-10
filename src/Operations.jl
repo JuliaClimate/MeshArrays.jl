@@ -167,8 +167,6 @@ end
 
 
 
-export f, β
-
 Ω = 7.2921 * 10^(-5) #rad/s
 R = 6.3781 * 10^(6) #m
 #Coriolis Parameter
