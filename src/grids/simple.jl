@@ -55,7 +55,7 @@ as specified by `γ` obtained from `GridSpec_ones`.
 
 ```
 using MeshArrays
-γ=MeshArrays.GridSpec_ones("CubeSphere",6,20);
+γ=MeshArrays.GridSpec_ones("CubeSphere",6,20)
 Γ=MeshArrays.GridLoad_ones(γ;option="full")
 ```
 """
@@ -65,25 +65,25 @@ function GridLoad_ones(γ::gcmgrid;option="minimal")
 
     Γ=Dict()
 
-    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.]
     if option=="full"
-        list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW");
+        list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW")
         list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
         list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
     elseif option=="light"
-        list_n=("XC","XG","YC","YG","RAC","DXC","DXG","DYC","DYG","Depth");
+        list_n=("XC","XG","YC","YG","RAC","DXC","DXG","DYC","DYG","Depth")
         list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m",u"m",u"m",u"m",u"m")
         list_p=(pc,pg,pc,pg,pc,pu,pv,pv,pu,pc)
     else
-        list_n=("XC","YC");
+        list_n=("XC","YC")
         list_u=(u"°",u"°")
         list_p=(pc,pc)
     end
 
-    for ii=1:length(list_n);
+    for ii=1:length(list_n)
         tmp1=fill(1.,(ioSize[:]))
-        m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii]);
-        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m));
+        m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii])
+        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m))
         Γ[list_n[ii]]=tmp1
     end
 

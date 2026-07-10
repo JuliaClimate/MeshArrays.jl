@@ -287,9 +287,9 @@ Compute convergence of a vector field
 function convergence(uFLD::AbstractMeshArray,vFLD::AbstractMeshArray)
 
 #important note:
-#  Normally uFLD, vFLD should not contain any NaN;
+#  Normally uFLD, vFLD should not contain any NaN
 #  if otherwise then something this may be needed:
-#  uFLD=mask(uFLD,0.0); vFLD=mask(vFLD,0.0);
+#  uFLD=mask(uFLD,0.0); vFLD=mask(vFLD,0.0)
 
 CONV=similar(uFLD)
 
@@ -339,15 +339,15 @@ for a=1:FLD.grid.nFaces
 end
 
 #Before scaling the diffusive operator ...
-tmp0=DXCsm*iDXC*mskW;
-tmp00=maximum(tmp0);
-tmp0=DYCsm*iDYC*mskS;
-tmp00=max(tmp00,maximum(tmp0));
+tmp0=DXCsm*iDXC*mskW
+tmp00=maximum(tmp0)
+tmp0=DYCsm*iDYC*mskS
+tmp00=max(tmp00,maximum(tmp0))
 
 #... determine a suitable time period:
-nbt=ceil(1.1*2*tmp00^2);
-dt=1.;
-T=nbt*dt;
+nbt=ceil(1.1*2*tmp00^2)
+dt=1.
+T=nbt*dt
 #println("nbt="*"$nbt")
 
 #diffusion operator times DYG / DXG
@@ -359,16 +359,16 @@ dtFac=dt*mskC/Γ.RAC
 
 #loop:
 for it=1:nbt
-  (dTdxAtU,dTdyAtV)=gradient(FLD,iDXC,iDYC);
+  (dTdxAtU,dTdyAtV)=gradient(FLD,iDXC,iDYC)
   tmpU=similar(FLD)
   tmpV=similar(FLD)
   for a=1:FLD.grid.nFaces
-      tmpU.f[a]=dTdxAtU.f[a].*KuxFac.f[a];
-      tmpV.f[a]=dTdyAtV.f[a].*KvyFac.f[a];
+      tmpU.f[a]=dTdxAtU.f[a].*KuxFac.f[a]
+      tmpV.f[a]=dTdyAtV.f[a].*KvyFac.f[a]
   end
-  tmpC=convergence(tmpU,tmpV);
+  tmpC=convergence(tmpU,tmpV)
   for a=1:FLD.grid.nFaces
-      FLD.f[a]=FLD.f[a]-dtFac.f[a].*tmpC.f[a];
+      FLD.f[a]=FLD.f[a]-dtFac.f[a].*tmpC.f[a]
   end
 end
 
@@ -461,18 +461,18 @@ end
 
 Compute integration paths that follow latitude circles, within the specified longitude `range`.
 """
-function LatitudeCircles(LatValues,Γ::NamedTuple; 
+function LatitudeCircles(LatValues,Γ::NamedTuple;
   format=:gridpath, range=(0.0,360.0))
   T=(format==:NamedTuple ? NamedTuple : gridpath)
   LatitudeCircles=Array{T}(undef,length(LatValues))
     for j=1:length(LatValues)
-        LatitudeCircles[j]=LatitudeCircle(LatValues[j],Γ; 
+        LatitudeCircles[j]=LatitudeCircle(LatValues[j],Γ;
         format=format,range=range)
     end
     (length(LatValues)==1 ? LatitudeCircles[1] : LatitudeCircles)
 end
 
-function LatitudeCircle(lat,Γ::NamedTuple; 
+function LatitudeCircle(lat,Γ::NamedTuple;
   format=:gridpath, range=(0.0,360.0))
       mskCint=1*(Γ.YC .>= lat)
       mskC,mskW,mskS=edge_mask(mskCint)
@@ -678,29 +678,29 @@ compute bolus velocty field (bolusU,bolusV,bolusW)
 	from gm streamfunction (GM_PsiX,GM_PsiY)
 """
 function calc_bolus(GM_PsiX,GM_PsiY, Γ)
-    nr=length(Γ.RC);
-    mskW = 0 .*Γ.hFacW; mskS = 0 .*Γ.hFacS; 
-    mskC = 0 .*Γ.hFacC;
+    nr=length(Γ.RC)
+    mskW = 0 .*Γ.hFacW; mskS = 0 .*Γ.hFacS
+    mskC = 0 .*Γ.hFacC
     for ff in eachindex(mskC)
         mskW.f[ff][Γ.hFacW.f[ff] .> 0] .= 1
-        mskS.f[ff][Γ.hFacS.f[ff] .> 0] .= 1;
-        mskC.f[ff][Γ.hFacC.f[ff] .> 0] .= 1;
+        mskS.f[ff][Γ.hFacS.f[ff] .> 0] .= 1
+        mskC.f[ff][Γ.hFacC.f[ff] .> 0] .= 1
     end
 
-    GM_PsiX[findall((!isfinite).(GM_PsiX))]=0;
-    GM_PsiY[findall((!isfinite).(GM_PsiY))]=0;
+    GM_PsiX[findall((!isfinite).(GM_PsiX))]=0
+    GM_PsiY[findall((!isfinite).(GM_PsiY))]=0
     
-    bolusU=0*Γ.hFacW;
-    bolusV=0*Γ.hFacS;
-    for k=1:nr-1;
-        bolusU.f[:,k].=(GM_PsiX.f[:,k+1].-GM_PsiX.f[:,k])/Γ.DRF[k];
-        bolusV.f[:,k].=(GM_PsiY.f[:,k+1].-GM_PsiY.f[:,k])/Γ.DRF[k];
-    end;
-    bolusU.f[:, nr] .= 0*GM_PsiX.f[:,nr] .-GM_PsiX.f[:,nr]./Γ.DRF[nr];
-    bolusV.f[:, nr] .= 0*GM_PsiY.f[:,nr] .-GM_PsiY.f[:,nr]./Γ.DRF[nr];
+    bolusU=0*Γ.hFacW
+    bolusV=0*Γ.hFacS
+    for k=1:nr-1
+        bolusU.f[:,k].=(GM_PsiX.f[:,k+1].-GM_PsiX.f[:,k])/Γ.DRF[k]
+        bolusV.f[:,k].=(GM_PsiY.f[:,k+1].-GM_PsiY.f[:,k])/Γ.DRF[k]
+    end
+    bolusU.f[:, nr] .= 0*GM_PsiX.f[:,nr] .-GM_PsiX.f[:,nr]./Γ.DRF[nr]
+    bolusV.f[:, nr] .= 0*GM_PsiY.f[:,nr] .-GM_PsiY.f[:,nr]./Γ.DRF[nr]
 
-    bolusU=bolusU.*mskW;
-    bolusV=bolusV.*mskS;
+    bolusU=bolusU.*mskW
+    bolusV=bolusV.*mskS
     
     #and its vertical part
     #   (seems correct, leading to 0 divergence)
@@ -721,7 +721,7 @@ function calc_bolus(GM_PsiX,GM_PsiY, Γ)
         end
     end
 
-    bolusW=tmp_w.*mskC;
+    bolusW=tmp_w.*mskC
 
     return bolusU, bolusV, bolusW
 end

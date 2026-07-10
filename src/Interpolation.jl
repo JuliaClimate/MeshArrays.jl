@@ -8,7 +8,7 @@ import NearestNeighbors: knn
 Find k nearest neighbors to each point in x,y on xgrid,ygrid
 
 ```
-lon=collect(0.1:0.5:2.1); lat=collect(0.1:0.5:2.1);
+lon=collect(0.1:0.5:2.1); lat=collect(0.1:0.5:2.1)
 (f,i,j,c)=knn(Γ.XC,Γ.YC,lon,lat)
 ```
 """
@@ -32,12 +32,12 @@ function knn(xgrid::AbstractMeshArray,ygrid::AbstractMeshArray,
         kk=findall(isfinite.(a_x))
         x=sin.(pi/2 .-a_y[kk]*pi/180).*cos.(a_x[kk]*pi/180)
         y=sin.(pi/2 .-a_y[kk]*pi/180).*sin.(a_x[kk]*pi/180)
-        z=cos.(pi/2 .-a_y[kk]*pi/180);
+        z=cos.(pi/2 .-a_y[kk]*pi/180)
 
         #vector of target points in Cartesian, 3D, coordinates
-        xx=sin.(pi/2 .-yvec*pi/180).*cos.(xvec*pi/180);
-        yy=sin.(pi/2 .-yvec*pi/180).*sin.(xvec*pi/180);
-        zz=cos.(pi/2 .-yvec*pi/180);
+        xx=sin.(pi/2 .-yvec*pi/180).*cos.(xvec*pi/180)
+        yy=sin.(pi/2 .-yvec*pi/180).*sin.(xvec*pi/180)
+        zz=cos.(pi/2 .-yvec*pi/180)
 
         #define tree
         kdtree = KDTree([x y z]')
@@ -152,7 +152,7 @@ function InterpolationFactors(Γ,lon::Array{T,1},lat::Array{T,1}) where {T}
         s=fill(0,2*length(fs))
         [s[collect(1:2) .+ (i-1)*2]=collect(fs[i]) for i in 1:length(fs)]
         ni=gcd(s); nj=gcd(s); γ=Γ.XC.grid
-        τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int);
+        τ=Tiles(γ,ni,nj); tiles=MeshArray(γ,Int)
         [tiles[τ[ii].face][τ[ii].i,τ[ii].j].=ii for ii in 1:length(τ)]
 
         #2. t_XC, t_XC, t_f, t_i, t_j        
@@ -278,32 +278,32 @@ x,y=StereographicProjection(45.,60.,lon,lat)
 """
 function StereographicProjection(XC0::Number,YC0::Number,XC,YC)
         #compute spherical coordinates:
-        phi=XC; theta=90 .-YC;
-        phi0=XC0; theta0=90-YC0;
+        phi=XC; theta=90 .-YC
+        phi0=XC0; theta0=90-YC0
 
         #compute cartesian coordinates:
-        X=sind.(theta).*cosd.(phi);
-        Y=sind.(theta).*sind.(phi);
-        Z=cosd.(theta);
+        X=sind.(theta).*cosd.(phi)
+        Y=sind.(theta).*sind.(phi)
+        Z=cosd.(theta)
 
-        x=X; y=Y; z=Z;
+        x=X; y=Y; z=Z
 
         #bring chosen point to the north pole:
-        xx=x; yy=y; zz=z;
-        x=cosd(phi0).*xx+sind(phi0).*yy;
-        y=-sind(phi0).*xx+cosd(phi0).*yy;
-        z=zz;
+        xx=x; yy=y; zz=z
+        x=cosd(phi0).*xx+sind(phi0).*yy
+        y=-sind(phi0).*xx+cosd(phi0).*yy
+        z=zz
 
-        xx=x; yy=y; zz=z;
-        x=cosd(theta0)*xx-sind(theta0)*zz;
-        y=yy;
-        z=sind(theta0)*xx+cosd(theta0)*zz;
+        xx=x; yy=y; zz=z
+        x=cosd(theta0)*xx-sind(theta0)*zz
+        y=yy
+        z=sind(theta0)*xx+cosd(theta0)*zz
 
         #stereographic projection from the south pole:
-        xx=x./(1 .+z);
-        yy=y./(1 .+z);
+        xx=x./(1 .+z)
+        yy=y./(1 .+z)
 
-        #nrm=sqrt(xx.^2+yy.^2);
+        #nrm=sqrt(xx.^2+yy.^2)
         #msk=1+0*nrm; msk(nrm>tan(pi/4/2))=NaN;%mask points outside of pi/4 cone
 
         return xx,yy
@@ -344,8 +344,8 @@ specifies one polygon. (optional) `x,y` are position vectors.
 
 ```jldoctest; output = false
 using MeshArrays
-px=[0. 0. 1. 1.]; py=[0. 1. 1. 0.];
-x=collect(-1.0:0.25:2.0); y=x;
+px=[0. 0. 1. 1.]; py=[0. 1. 1. 0.]
+x=collect(-1.0:0.25:2.0); y=x
 angsum=fill(0.0,1,length(x))
 MeshArrays.PolygonAngle(px,py,x,y,angsum)
 
@@ -416,7 +416,7 @@ function QuadArrays(x_grid::Array{T,2},y_grid::Array{T,2}) where {T}
 
                 tmp=collect(0+di:ni+di)*ones(1,nj+1)
                 i_quad[:,pp]=vec(tmp)
-                tmp=ones(ni+1,1)*transpose(collect(0+dj:nj+dj));
+                tmp=ones(ni+1,1)*transpose(collect(0+dj:nj+dj))
                 j_quad[:,pp]=vec(tmp)
         end
 
@@ -446,13 +446,13 @@ function QuadCoeffs(px,py,ox=[],oy=[],ow=[])
         #  ParaCoeffs([0., 2., 3., 1.]',[0., 0., 1., 1.]',0.1,0.1)
 
         #1. solve linear problem (`a,b` vectors from `px,py`)
-        #  A=[1 0 0 0;1 1 0 0;1 1 1 1;1 0 1 0]; AI = inv(A);
-        #  AI=[1 0 0 0;-1 1 0 0;-1 0 0 1; 1 -1 1 -1];
-        #  a = AI*px';
-        #  b = AI*py';
+        #  A=[1 0 0 0;1 1 0 0;1 1 1 1;1 0 1 0]; AI = inv(A)
+        #  AI=[1 0 0 0;-1 1 0 0;-1 0 0 1; 1 -1 1 -1]
+        #  a = AI*px'
+        #  b = AI*py'
         #This defines the mapping from logical `l,m` to physical `x,y` as
-        #  x=a(1)+a(2)*l+a(3)*m+a(2)*l*m;
-        #  y=b(1)+b(2)*l+b(3)*m+b(2)*l*m;
+        #  x=a(1)+a(2)*l+a(3)*m+a(2)*l*m
+        #  y=b(1)+b(2)*l+b(3)*m+b(2)*l*m
 
         a=[px[1] -px[1]+px[2] -px[1]+px[4] px[1]-px[2]+px[3]-px[4]]
         a[findall(abs.(a).<1e-8)].=0.0
@@ -473,18 +473,18 @@ function QuadCoeffs(px,py,ox=[],oy=[],ow=[])
         #3. solve non-linear problem for `pl,pm` from `px,py` & `a,b`
         # This defines the mapping from physical `x,y` to logical `l,m`
 
-        a=reshape(a,(size(a,1),1,size(a,2))); 
-        b=reshape(b,(size(b,1),1,size(b,2))); 
+        a=reshape(a,(size(a,1),1,size(a,2)))
+        b=reshape(b,(size(b,1),1,size(b,2)))
 
         # quadratic equation coeffs, `aa*mm^2+bb*m+cc=0`
-        if ~isempty(ox);
-                x=ox; y=oy;
-        else;
-                x=px; y=py;
-                a=repeat(a,1,size(x,2),1);
-                b=repeat(b,1,size(x,2),1);
-                sgn=repeat(sgn,1,size(x,2));
-        end;
+        if ~isempty(ox)
+                x=ox; y=oy
+        else
+                x=px; y=py
+                a=repeat(a,1,size(x,2),1)
+                b=repeat(b,1,size(x,2),1)
+                sgn=repeat(sgn,1,size(x,2))
+        end
         #
         det=fill(0.0,size(x))
         pm=fill(0.0,size(x))
@@ -500,7 +500,7 @@ function QuadCoeffs(px,py,ox=[],oy=[],ow=[])
                 pl[ii,jj]  = (x[ii,jj]-a[ii,jj,1]-a[ii,jj,3]*pm[ii,jj])/(a[ii,jj,2]+a[ii,jj,4]*pm[ii,jj])
         end
 
-        if ~isempty(ox);
+        if ~isempty(ox)
                 tmp1=(1 .-pl).*(1 .-pm)
                 tmp2=pl.*(1 .-pm)
                 tmp3=pl.*pm
@@ -533,21 +533,21 @@ println(vec(QuadCoeffs([0., 2.01, 3., 1.]',[0., 0., 1., 1.]',x,y)))
 """
 function ParaCoeffs(px,py,ox=[],oy=[])
 
-        tmp1=px[:,1];
-        tmp2=-px[:,1]+px[:,2];
-        tmp3=-px[:,2]+px[:,3];
-        a=[tmp1 tmp2 tmp3];
+        tmp1=px[:,1]
+        tmp2=-px[:,1]+px[:,2]
+        tmp3=-px[:,2]+px[:,3]
+        a=[tmp1 tmp2 tmp3]
 
-        tmp1=py[:,1];
-        tmp2=-py[:,1]+py[:,2];
-        tmp3=-py[:,2]+py[:,3];
-        b=[tmp1 tmp2 tmp3];
+        tmp1=py[:,1]
+        tmp2=-py[:,1]+py[:,2]
+        tmp3=-py[:,2]+py[:,3]
+        b=[tmp1 tmp2 tmp3]
 
 #        (m,l)=inv([a[1,2] a[1,3];b[1,2] b[1,3]])*[ox[1]-a[1,1]; oy[1]-b[1,1]]
         m=( b[:,3].*(ox-a[:,1])-a[:,3].*(oy-b[:,1]) ) ./(a[:,2].*b[:,3]-a[:,3].*b[:,2])
         l=( -b[:,2].*(ox-a[:,1])+a[:,2].*(oy-b[:,1]) ) ./(a[:,2].*b[:,3]-a[:,3].*b[:,2])
 
-        ow=[];
+        ow=[]
         tmp1=(1 .-l).*(1 .-m)
         tmp4=l.*(1 .-m)
         tmp3=l.*m

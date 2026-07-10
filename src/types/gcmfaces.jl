@@ -156,11 +156,11 @@ function fijind(A::gcmfaces,ij::Int)
     tmp11=tmpsize[1]*tmpsize[2]
     tmp2=tmp1+tmp11
     if tmp1<ij<=tmp2
-      f=iFace;
-      tmp3=(ij-tmp1);
+      f=iFace
+      tmp3=(ij-tmp1)
       k=Int(ceil(tmp3/tmpsize[1]))
       j=Int(tmp3-tmpsize[1]*(k-1))
-    end;
+    end
     tmp1=tmp1+tmp11
   end
   return (f,j,k)
@@ -180,7 +180,7 @@ fsize(A::Array{Array{T,N},1},i::Int) where {T,N}
 function fsize(A::Union{gcmfaces{T, N},gcmsubset{T, N}}) where {T,N}
   fs=Array{NTuple{N, Int}}(undef,A.grid.nFaces)
   for i=1:A.grid.nFaces
-    fs[i]=size(A.f[i]);
+    fs[i]=size(A.f[i])
   end
   return fs
 end
@@ -201,7 +201,7 @@ end
 function fsize(A::Array{Array{T,N},1}) where {T,N}
   fs=Array{NTuple{N, Int}}(undef,length(A))
   for i=1:length(A)
-    fs[i]=size(A[i]);
+    fs[i]=size(A[i])
   end
   return fs
 end
@@ -290,13 +290,13 @@ function Base.view(a::Union{gcmfaces{T, N},gcmsubset{T, N}}, I::Vararg{Union{Int
   else
     J=I
   end
-  Nout=length(size(view(a.f[1],J...)));
-  v1=Array{Array{T,Nout}}(undef,nFaces);
+  Nout=length(size(view(a.f[1],J...)))
+  v1=Array{Array{T,Nout}}(undef,nFaces)
   for iFace=1:nFaces
-    v1[iFace]=view(a.f[iFace],J...);
+    v1[iFace]=view(a.f[iFace],J...)
   end
-  c=gcmfaces(a.grid,v1);
-  return c;
+  c=gcmfaces(a.grid,v1)
+  return c
 end
 
 #

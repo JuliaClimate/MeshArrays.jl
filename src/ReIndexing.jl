@@ -264,7 +264,7 @@ function NeighborTileIndices_cs(grid::NamedTuple)
     nFaces = length(s)
     nFaces == 5 ? s = vcat(s, s[3]) : nothing
     aW=Array{Int,1}(undef,nFaces)
-    aE=similar(aW); aS=similar(aW); aN=similar(aW);
+    aE=similar(aW); aS=similar(aW); aN=similar(aW)
     for i = 1:nFaces
         (aW[i], aE[i], aS[i], aN[i], _, _, _, _) = MeshArrays.exch_cs_sources(i, s, 1)
     end

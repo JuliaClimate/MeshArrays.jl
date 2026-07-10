@@ -15,15 +15,15 @@ nf==5 ? s=vcat(s,s[3]) : nothing
 tp=fld.grid.class
 FLD=similar(fld;m=fld.meta)
 
-for i=1:nf; FLD.f[i]=fill(fillval,s[i].+2N); end;
+for i=1:nf; FLD.f[i]=fill(fillval,s[i].+2N); end
 #code below yields strange, seemingly incorrect results:
-#for i=1:nf; FLD.f[i]=Array{eltype(fld.f[i])}(undef,s[i].+2N); end;
+#for i=1:nf; FLD.f[i]=Array{eltype(fld.f[i])}(undef,s[i].+2N); end
 
 #all versions below yield same @time and memory (despite diff in allocs)
-for i=1:nf;
-# FLD.f[i][N+1:end-N,N+1:end-N]=fld.f[i];
- @views FLD.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fld.f[i];
-end;
+for i=1:nf
+# FLD.f[i][N+1:end-N,N+1:end-N]=fld.f[i]
+ @views FLD.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fld.f[i]
+end
 
 #step 2
 
@@ -62,12 +62,12 @@ tp=fldU.grid.class
 FLDU=similar(fldU;m=fldU.meta)
 FLDV=similar(fldV;m=fldV.meta)
 
-for i=1:nf;
- FLDU.f[i]=fill(fillval,s[i].+2N);
- FLDV.f[i]=fill(fillval,s[i].+2N);
- @views FLDU.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fldU.f[i];
- @views FLDV.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fldV.f[i];
-end;
+for i=1:nf
+ FLDU.f[i]=fill(fillval,s[i].+2N)
+ FLDV.f[i]=fill(fillval,s[i].+2N)
+ @views FLDU.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fldU.f[i]
+ @views FLDV.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fldV.f[i]
+end
 
 #step 2
 
@@ -115,10 +115,10 @@ FLDU=similar(fldU;m=fldU.meta)
 FLDV=similar(fldV;m=fldV.meta)
 
 for i=1:nf
-  FLDU.f[i]=fill(fillval,s[i][1]+1,s[i][2]);
-  FLDV.f[i]=fill(fillval,s[i][1],s[i][2]+1);
-  @views FLDU.f[i][1:s[i][1],1:s[i][2]]=fldU.f[i];
-  @views FLDV.f[i][1:s[i][1],1:s[i][2]]=fldV.f[i];
+  FLDU.f[i]=fill(fillval,s[i][1]+1,s[i][2])
+  FLDV.f[i]=fill(fillval,s[i][1],s[i][2]+1)
+  @views FLDU.f[i][1:s[i][1],1:s[i][2]]=fldU.f[i]
+  @views FLDV.f[i][1:s[i][1],1:s[i][2]]=fldV.f[i]
 end
 
  #step 2
@@ -144,10 +144,10 @@ end
 function exch_cs_target(sa::Tuple{Int64,Int64},N::Integer)
 
     #target array indices
-    jW=(1:N,N+1:N+sa[2]);
-    jE=(N+1+sa[1]:2N+sa[1],N+1:N+sa[2]);
-    jS=(N+1:N+sa[1],1:N);
-    jN=(N+1:N+sa[1],N+1+sa[2]:2N+sa[2]);
+    jW=(1:N,N+1:N+sa[2])
+    jE=(N+1+sa[1]:2N+sa[1],N+1:N+sa[2])
+    jS=(N+1:N+sa[1],1:N)
+    jN=(N+1:N+sa[1],N+1+sa[2]:2N+sa[2])
 
     return jW, jE, jS, jN
 
@@ -156,28 +156,28 @@ end
 function exch_cs_sources(a::Integer,s::Array{Tuple{Int64,Int64},1},N::Integer)
 
 #source array IDs
-aW=0; aE=0; aS=0; aN=0;
-if a==1;     aW=5; aE=2; aS=6; aN=3;
-elseif a==2; aW=1; aE=4; aS=6; aN=3;
-elseif a==3; aW=1; aE=4; aS=2; aN=5;
-elseif a==4; aW=3; aE=6; aS=2; aN=5;
-elseif a==5; aW=3; aE=6; aS=4; aN=1;
-elseif a==6; aW=5; aE=2; aS=4; aN=1;
-else; error("Array index is out of bounds.");
-end;
+aW=0; aE=0; aS=0; aN=0
+if a==1;     aW=5; aE=2; aS=6; aN=3
+elseif a==2; aW=1; aE=4; aS=6; aN=3
+elseif a==3; aW=1; aE=4; aS=2; aN=5
+elseif a==4; aW=3; aE=6; aS=2; aN=5
+elseif a==5; aW=3; aE=6; aS=4; aN=1
+elseif a==6; aW=5; aE=2; aS=4; aN=1
+else; error("Array index is out of bounds.")
+end
 
 if !iseven(a)
     #source array indices
-    iW=(1:s[aW][1],s[aW][2]-N+1:s[aW][2]);
-    iE=(1:N,1:s[aE][2]);
-    iS=(1:s[aS][1],s[aS][2]-N+1:s[aS][2]);
-    iN=(1:N,1:s[aN][2]);
+    iW=(1:s[aW][1],s[aW][2]-N+1:s[aW][2])
+    iE=(1:N,1:s[aE][2])
+    iS=(1:s[aS][1],s[aS][2]-N+1:s[aS][2])
+    iN=(1:N,1:s[aN][2])
 else
     #source array indices
-    iW=(s[aW][1]-N+1:s[aW][1],1:s[aW][2]);
-    iE=(1:s[aE][1],1:N);
-    iS=(s[aS][1]-N+1:s[aS][1],1:s[aS][2]);
-    iN=(1:s[aN][1],1:N);
+    iW=(s[aW][1]-N+1:s[aW][1],1:s[aW][2])
+    iE=(1:s[aE][1],1:N)
+    iS=(s[aS][1]-N+1:s[aS][1],1:s[aS][2])
+    iN=(1:s[aN][1],1:N)
 end
 
 return aW,aE,aS,aN,iW,iE,iS,iN

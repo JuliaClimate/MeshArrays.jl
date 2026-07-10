@@ -121,10 +121,10 @@ function read_one!(xx::Array,x::AbstractMeshArray; verbose=false)
   facesSize=x.grid.fSize
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
-  i0=1; i1=0;
-  j0=1; j1=0;
+  i0=1; i1=0
+  j0=1; j1=0
   for iFace=1:nFaces
-    nn=facesSize[iFace][1]; mm=facesSize[iFace][2];
+    nn=facesSize[iFace][1]; mm=facesSize[iFace][2]
     if format==:compact
       i0=i1+1
       i1=i1+nn*mm
@@ -170,11 +170,11 @@ function write(x::AbstractMeshArray; verbose=false)
     y = Array{eltype(x),4}(undef,(n1,n2,n3,n4))
   end
 
-  i0=1; i1=0;
-  j0=1; j1=0;
-  for iFace=1:nFaces;
-    nn=facesSize[iFace][1];
-    mm=facesSize[iFace][2];
+  i0=1; i1=0
+  j0=1; j1=0
+  for iFace=1:nFaces
+    nn=facesSize[iFace][1]
+    mm=facesSize[iFace][2]
     if format==:compact
       i0=i1+1
       i1=i1+nn*mm
