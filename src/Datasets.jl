@@ -66,6 +66,8 @@ function mydatafile(nam="countries_shp1")
         "Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"
     elseif nam=="interp_halfdeg"
         "interp_coeffs_halfdeg.jld2"
+    elseif nam=="interp_quarterdeg"
+        "interp_coeffs_quarterdeg.jld2"
     elseif nam=="oceans_geojson1"
         "ocean_basins_res1000_20251109_GF.json"
     else
