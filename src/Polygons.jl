@@ -24,7 +24,8 @@ function treat_180lon!(x::Matrix{Float64}; level=2)
 end
 
 function to_LineStrings3D(pol)
-	arr2=Array{Any}(undef,32,32)
+	n1,n2=size(pol)
+	arr2=Array{Any}(undef,n1,n2)
 	b0=Array{Any}(undef,5)
 	for ij in eachindex(pol)
 		geom=GI.getgeom(pol[ij])
@@ -42,10 +43,11 @@ function to_LineStrings3D(pol)
 end
 
 function to_Polygons(XG,YG,ff=1)
-	arr2=Array{Any}(undef,32,32)
-	IJ=1:32
-	for i in IJ
-		for j in IJ
+	n1,n2=size(XG[ff]).-1
+	arr2=Array{Any}(undef,n1,n2)
+	IJ1=1:n1; IJ2=1:n2
+	for i in IJ1
+		for j in IJ2
 			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]]
 			treat_180lon!(x)
 			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  
@@ -57,10 +59,11 @@ function to_Polygons(XG,YG,ff=1)
 end
 
 function to_LineStrings2D(XG,YG,ff=1;do_sphere=true)
-	arr2=Array{Any}(undef,32,32)
-	IJ=1:32
-	for i in IJ
-		for j in IJ
+	n1,n2=size(XG[ff]).-1
+	arr2=Array{Any}(undef,n1,n2)
+	IJ1=1:n1; IJ2=1:n2
+	for i in IJ1
+		for j in IJ2
 			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]] 
 			treat_180lon!(x)
 			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  

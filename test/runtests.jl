@@ -5,6 +5,7 @@ include("setup.jl")
 const _RUN = split(get(ENV, "JULIA_TESTSETS", "all"), ",")
 include_maybe(name) = ("all" in _RUN || name in _RUN) && include("testsets/$name.jl")
 
+include_maybe("datasets")
 include_maybe("mesharray_basic")
 include_maybe("vertical_dim")
 include_maybe("regional_integration")
