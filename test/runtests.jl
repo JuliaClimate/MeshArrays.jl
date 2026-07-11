@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 include("setup.jl")
 
 # Select testsets via env var, e.g.: JULIA_TESTSETS=transport,gcmfaces julia runtests.jl
@@ -12,6 +11,7 @@ include_maybe("regional_integration")
 include_maybe("transport")
 include_maybe("gcmfaces")
 include_maybe("unitgrid")
+include_maybe("interpolation")
 include_maybe("nemo_grid")
 include_maybe("gridspec")
 include_maybe("plotting_makie")
