@@ -105,10 +105,10 @@ thisversion=Pkg.TOML.parsefile(thistoml)["version"]
 
 OuterArray{T,N}=Array{T,N} where {T,N}
 InnerArray{T,N}=Array{T,N} where {T,N}
-include("gcmfaces.jl");
-include("gcmarray.jl");
-include("gcmvector.jl");
-include("polygons.jl");
+include("gcmfaces.jl")
+include("gcmarray.jl")
+include("gcmvector.jl")
+include("polygons.jl")
 
 """
     MeshArray
@@ -124,7 +124,7 @@ import Base: maximum, minimum, extrema, sum, fill, fill!
 extrema(a::AbstractMeshArray) = [minimum(a) maximum(a)]
 
 function maximum(a::AbstractMeshArray)
-  c=-Inf;
+  c=-Inf
   for I in eachindex(a)
     c = max(c,maximum(a[I]))
   end
@@ -132,7 +132,7 @@ function maximum(a::AbstractMeshArray)
 end
 
 function minimum(a::AbstractMeshArray)
-  c=Inf;
+  c=Inf
   for I in eachindex(a)
     c = min(c,minimum(a[I]))
   end

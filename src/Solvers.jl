@@ -20,14 +20,14 @@ function MaskWetPoints(TrspCon)
     tmp1=fill(1.0,mskWet)
     tmp2=exchange(tmp1).MA
     for I=1:size(tmp1.f,1)
-        tmp3=mskWet[I]; tmp4=tmp2[I];
-        tmp4=tmp4[2:end-1,1:end-2]+tmp4[2:end-1,3:end]+tmp4[1:end-2,2:end-1]+tmp4[3:end,2:end-1];
+        tmp3=mskWet[I]; tmp4=tmp2[I]
+        tmp4=tmp4[2:end-1,1:end-2]+tmp4[2:end-1,3:end]+tmp4[1:end-2,2:end-1]+tmp4[3:end,2:end-1]
         !isempty(findall(isnan.(tmp4) .& (!isnan).(tmp3))) ? println("warning: modified mask") : nothing
         tmp3[findall(isnan.(tmp4))] .= NaN
         mskWet[I]=tmp3
     end
     #
-    TrspCon=mask(TrspCon,0.0)*mskWet;
+    TrspCon=mask(TrspCon,0.0)*mskWet
     return TrspCon, mskWet, mskDry
 end
 
@@ -42,7 +42,7 @@ Mapping from global array to global ocean vector.
 function MapWetPoints(mskWet)
     tmp1=write(mskWet)[:]
     kk=findall((!isnan).(tmp1))
-    nn=length(kk); s0=size(tmp1); s1=mskWet.grid.ioSize;
+    nn=length(kk); s0=size(tmp1); s1=mskWet.grid.ioSize
     Kvec=fill(0.0,s0...); Kvec[kk]=kk; Kmap=read(reshape(Kvec,s1...),mskWet) #global array indices
     Lvec=fill(0.0,s0...); Lvec[kk]=1:nn; Lmap=read(reshape(Lvec,s1...),mskWet) #global vector indices
     return Kvec,Lvec,Kmap,Lmap
@@ -100,28 +100,28 @@ function MatrixForPoisson(TrspCon,mskWet,mskDry,Kvec,Lvec,Kmap,Lmap)
     J=Array{Int}(undef,0)
     V=Array{Float64}(undef,0)
 
-    for aa=1:TrspCon.grid.nFaces;
-        for ii=1:3; for jj=1:3;
+    for aa=1:TrspCon.grid.nFaces
+        for ii=1:3; for jj=1:3
             #1) compute effect of each point on neighboring target point:
-            (FLDones,FLDkkFROM)=SeedWetPoints(TrspCon,Kmap,Lmap,aa,ii,jj);
+            (FLDones,FLDkkFROM)=SeedWetPoints(TrspCon,Kmap,Lmap,aa,ii,jj)
             (tmpU,tmpV)=gradient(FLDones,(;),false)
-            dFLDdt=convergence(tmpU,tmpV);
+            dFLDdt=convergence(tmpU,tmpV)
             #2) mask `dFLDdt` since we use a **Neumann** boundary condition.
             #Extrapolation uses a **Dirichlet** boundary condition, so mskFreeze should not be applied then.
-            isa(FLDkkFROM,MeshArray) ? FLDkkFROM=write(FLDkkFROM)[:] : nothing;
+            isa(FLDkkFROM,MeshArray) ? FLDkkFROM=write(FLDkkFROM)[:] : nothing
             #3.1) For wet points -- add contributions in matrix:
-            dFLDdtWet=write(dFLDdt.*mskWet)[:];
-            tmp1=findall( (dFLDdtWet .!= 0.0) .* (!isnan).(dFLDdtWet));
-            tmpV=dFLDdtWet[tmp1]; tmpJ=FLDkkFROM[tmp1]; tmpI=Kvec[tmp1];
-            I=[I;Lvec[Int.(tmpI)]]; J=[J;Lvec[Int.(tmpJ)]]; V=[V;tmpV];
+            dFLDdtWet=write(dFLDdt.*mskWet)[:]
+            tmp1=findall( (dFLDdtWet .!= 0.0) .* (!isnan).(dFLDdtWet))
+            tmpV=dFLDdtWet[tmp1]; tmpJ=FLDkkFROM[tmp1]; tmpI=Kvec[tmp1]
+            I=[I;Lvec[Int.(tmpI)]]; J=[J;Lvec[Int.(tmpJ)]]; V=[V;tmpV]
             size(tmpV)
             #3.2) For dry points -- This part reflects the `Neumann` boundary condition:
-            dFLDdtDry=write(dFLDdt.*mskDry)[:];
-            tmp1=findall( (dFLDdtDry .!= 0.0) .* (!isnan).(dFLDdtDry));
-            tmpV=dFLDdtDry[tmp1]; tmpIJ=FLDkkFROM[tmp1];
-            I=[I;Lvec[Int.(tmpIJ)]]; J=[J;Lvec[Int.(tmpIJ)]]; V=[V;tmpV];
-        end; end;
-    end;
+            dFLDdtDry=write(dFLDdt.*mskDry)[:]
+            tmp1=findall( (dFLDdtDry .!= 0.0) .* (!isnan).(dFLDdtDry))
+            tmpV=dFLDdtDry[tmp1]; tmpIJ=FLDkkFROM[tmp1]
+            I=[I;Lvec[Int.(tmpIJ)]]; J=[J;Lvec[Int.(tmpIJ)]]; V=[V;tmpV]
+        end; end
+    end
 
     nn=sum((!isnan).(mskWet))
     A=sparse(I,J,V,nn,nn)
@@ -165,8 +165,8 @@ function VectorPotential(TrspX::AbstractMeshArray,TrspY::AbstractMeshArray,Γ::N
 
     # 1)  streamfunction face by face:
 
-    (fldU,fldV)=exch_UV(TrspX,TrspY);
-    fldU=mask(fldU,0.0); fldV=mask(fldV,0.0);
+    (fldU,fldV)=exch_UV(TrspX,TrspY)
+    fldU=mask(fldU,0.0); fldV=mask(fldV,0.0)
 
     psi=similar(fldV)
     for I in eachindex(fldV)
@@ -187,7 +187,7 @@ function VectorPotential(TrspX::AbstractMeshArray,TrspY::AbstractMeshArray,Γ::N
             tmp3b=[tmp2;ones(1,size(tmp2,2))]
             tmpB=tmp3a.*tmp3b
             #
-            tmpA=psi[iF];
+            tmpA=psi[iF]
             I=findall(tmpB.==0)
             ii=I[1][1]; jj=I[1][2]
             tmpA[:,jj]=tmpA[:,jj] .- tmpB[ii,jj]
@@ -204,7 +204,7 @@ function VectorPotential(TrspX::AbstractMeshArray,TrspY::AbstractMeshArray,Γ::N
                 tmpE+=fldU[iF][:,kk-1]
                 tmpE=median(tmpE[findall((!isnan).(tmpE))])
                 tmpA[:,kk]=tmpA[:,kk] .- tmpE
-            end;
+            end
             #
             psi[iF]=tmpA
         end
@@ -264,7 +264,7 @@ function VectorPotential(TrspX::AbstractMeshArray,TrspY::AbstractMeshArray,Γ::N
     tmp2=tmp2[findall(tmp_dis .== minimum(tmp_dis))]
 
     #set that point to zero
-    psi=psi .- tmp1[tmp2[1]];
+    psi=psi .- tmp1[tmp2[1]]
 
     return psi
 end

@@ -40,9 +40,9 @@ function gcmarray(A::Array{T,N};
   ios=[s[1] s[2]]
   γ=gcmgrid("","PeriodicDomain",1, fs, ios, T, read, write)
   if N==2
-    B=γ.read(A,gcmarray(γ,T;meta=meta));
+    B=γ.read(A,gcmarray(γ,T;meta=meta))
   else
-    B=γ.read(A,gcmarray(γ,T,size(A)[3];meta=meta));
+    B=γ.read(A,gcmarray(γ,T,size(A)[3];meta=meta))
   end
   B
 end
@@ -56,7 +56,7 @@ function gcmarray(grid::gcmgrid,f::OuterArray{InnerArray{T,N},1};
                   meta::varmeta=defaultmeta) where {T, N}
   nFaces=grid.nFaces
   if N>2
-    n3=size(f[1],3); n4=size(f[1],4);
+    n3=size(f[1],3); n4=size(f[1],4)
     g=OuterArray{InnerArray{T,2},3}(undef,nFaces,n3,n4)
     for I in eachindex(view(g,1:nFaces,1:n3,1:n4))
       g[I]=view(f[I[1]],:,:,I[2],I[3])
@@ -90,9 +90,9 @@ function gcmarray(grid::gcmgrid,::Type{T},
   f=OuterArray{InnerArray{T,2},2}(undef,nFaces,n3)
   isa(fSize,NTuple) ? fSize=[fSize] : nothing
   isa(fIndex,Int) ? fIndex=[fIndex] : nothing
-  for a=1:nFaces; for i3=1:n3;
+  for a=1:nFaces; for i3=1:n3
     f[a,i3]=InnerArray{T,2}(undef,fSize[a]...)
-  end; end;
+  end; end
   gcmarray{T,2,InnerArray{T,2}}(grid,meta,f,fSize,fIndex,thisversion)
 end
 
@@ -104,9 +104,9 @@ function gcmarray(grid::gcmgrid,::Type{T},
   f=OuterArray{InnerArray{T,2},3}(undef,nFaces,n3,n4)
   isa(fSize,NTuple) ? fSize=[fSize] : nothing
   isa(fIndex,Int) ? fIndex=[fIndex] : nothing
-  for a=1:nFaces; for i4=1:n4; for i3=1:n3;
+  for a=1:nFaces; for i4=1:n4; for i3=1:n3
     f[a,i3,i4]=InnerArray{T,2}(undef,fSize[a]...)
-  end; end; end;
+  end; end; end
   gcmarray{T,3,InnerArray{T,2}}(grid,meta,f,fSize,fIndex,thisversion)
 end
 

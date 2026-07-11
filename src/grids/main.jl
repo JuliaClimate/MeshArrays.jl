@@ -14,7 +14,7 @@ using MeshArrays
 γ=GridSpec()
 ```
 """
-function GridSpec(category="default", path=tempname(); 
+function GridSpec(category="default", path=tempname();
     np=nothing, ID=:unknown, ioPrec=Float64, verbose=false)
     if category=="default"&&in(ID,[:unknown, :OISST, :Oscar, :IAP])
         verbose ? println("branch 1") : nothing
@@ -47,7 +47,7 @@ b = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST(),tile=(1440,10
 c = MeshArrays.GridSpec_default(MeshArrays.Grids_simple.xy_OISST(),tile=(720,510))
 ```
 """
-function GridSpec_default(xy=NamedTuple(); 
+function GridSpec_default(xy=NamedTuple();
         ID=:unknown, ioPrec=Float64, tile=[])
     if !isempty(xy)
         GridSpec_default_xy(xy,ioPrec=ioPrec,tile=tile)
@@ -146,7 +146,7 @@ function GridLoad_main(γ=GridSpec(); option=:minimal)
     if op=="full"
         list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth")
         if (!isempty(filter(x -> occursin("AngleCS",x), readdir(γ.path))))
-            list_n=(list_n...,"AngleCS","AngleSN");
+            list_n=(list_n...,"AngleCS","AngleSN")
         end
         list_n=(list_n...,"DRC","DRF","RC","RF")
         list_n=(list_n...,"hFacC","hFacS","hFacW")
@@ -196,12 +196,12 @@ true
 ```
 """
 function GridLoadVar(nam::String,γ::gcmgrid)
-    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.];
+    pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.]
     list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","AngleCS","AngleSN")
     list_u=(u"°",u"°",u"°",u"°",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0)
     list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,pc,pc)
     #
-    list3d_n=("hFacC","hFacS","hFacW");
+    list3d_n=("hFacC","hFacS","hFacW")
     list3d_u=(1.0,1.0,1.0)
     list3d_p=(fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
     #
@@ -226,7 +226,7 @@ function GridLoadVar(nam::String,γ::gcmgrid)
         n3=Int64(stat(fil).size/reclen)
 
         ii=findall(nam.==list3d_n)[1]
-        m=varmeta(list3d_u[ii],list3d_p[ii],missing,list3d_n[ii],list3d_n[ii]);
+        m=varmeta(list3d_u[ii],list3d_p[ii],missing,list3d_n[ii],list3d_n[ii])
         tmp1=γ.read(joinpath(γ.path,list3d_n[ii]*".data"),MeshArray(γ,γ.ioPrec,n3;meta=m))
     else
         tmp1=missing
@@ -269,7 +269,7 @@ function GridAddWS!(Γ::Dict)
        #
         tmp1=YC[ff][1:end-2,2:end-1]
         tmp2=YC[ff][2:end-1,2:end-1]
-        YW[ff]=(tmp1.+tmp2)./2;
+        YW[ff]=(tmp1.+tmp2)./2
        #
         tmp1=YC[ff][2:end-1,1:end-2]
         tmp2=YC[ff][2:end-1,2:end-1]

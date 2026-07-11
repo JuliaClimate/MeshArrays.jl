@@ -175,7 +175,7 @@ begin
   @everywhere rd(F,var,tim,tmp)=read(read_mdsio(F,var),tmp)
   @everywhere G,M,files=Integration.example()
     #,regions=(30,10),depths=Integration.DEPTHS)
-end;
+end
 
 H=Integration.loops(M,files=files,rd=rd)
 # Hbis=Integration.streamlined_loop(M,files=files,rd=rd)

@@ -64,9 +64,9 @@ function shorter_paths!(xyz,xyz0,msk_in)
 	theta[2]=atan(y0[2],x0[2])
 
     γ=msk_in[1].grid
-	tmpx=γ.write(x); tmpy=γ.write(y); tmpz=γ.write(z);
+	tmpx=γ.write(x); tmpy=γ.write(y); tmpz=γ.write(z)
 	tmptheta=atan.(tmpy,tmpx)
-	if theta[2]<0;
+	if theta[2]<0
 		tmp00=findall(tmptheta.<=theta[2])
 		tmptheta[tmp00].=tmptheta[tmp00].+2*pi
 		theta[2]=theta[2]+2*pi
@@ -83,7 +83,7 @@ function shorter_paths!(xyz,xyz0,msk_in)
         else
             tmpm[findall( (tmptheta.<=theta[2]).&(tmptheta.>=theta[1]) )].=0.0
         end
-        mm=γ.read(tmpm,mm);
+        mm=γ.read(tmpm,mm)
         #store result:
 		push!(msk_out,mm)
     end

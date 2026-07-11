@@ -7,9 +7,9 @@ using Glob
 ## functions to derive polygons from XG,YG read from native grid 
 
 function to_sphere(XC,YC)
-	x=sin.(pi/2 .-YC*pi/180).*cos.(XC*pi/180);
-	y=sin.(pi/2 .-YC*pi/180).*sin.(XC*pi/180);
-	z=cos.(pi/2 .-YC*pi/180);
+	x=sin.(pi/2 .-YC*pi/180).*cos.(XC*pi/180)
+	y=sin.(pi/2 .-YC*pi/180).*sin.(XC*pi/180)
+	z=cos.(pi/2 .-YC*pi/180)
 	(x,y,z)
 end
 
