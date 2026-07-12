@@ -13,45 +13,33 @@ function nFacesEtc(a::AbstractMeshArray)
   return nFaces, n3, n4
 end
 
+function _load_binary(fil::String, y::AbstractMeshArray)
+  (n1,n2) = y.grid.ioSize
+  (_,n3,n4) = nFacesEtc(y)
+  fid = open(fil)
+  xx = Array{eltype(y),1}(undef, n1*n2*n3*n4)
+  read!(fid, xx)
+  xx = reshape(hton.(xx), (n1,n2,n3,n4))
+  close(fid)
+  xx
+end
+
 """
     read(fil::String,x::AbstractMeshArray)
 
-Read array from file and return as a MeshArray. 
+Read array from file and return as a MeshArray.
 
 _The second argument (MeshArray or gcmgrid) provides the grid specifications (x.grid.ioSize)._
 ```
 """
-function read(fil::String,x::AbstractMeshArray)
-
-  (n1,n2)=x.grid.ioSize
-  (nFaces,n3,n4)=nFacesEtc(x)
-
-  fid = open(fil)
-  xx = Array{eltype(x),1}(undef,n1*n2*n3*n4)
-  read!(fid,xx)
-  xx = reshape(hton.(xx),(n1,n2,n3,n4))
-  close(fid)
-
-  return x.grid.read(xx,x)
-end
+read(fil::String, x::AbstractMeshArray) = x.grid.read(_load_binary(fil, x), x)
 
 """
     read!(fil::String, y::AbstractMeshArray)
 
 Read binary file `fil` into pre-allocated MeshArray `y` (in-place, no allocation).
 """
-function read!(fil::String, y::AbstractMeshArray)
-  (n1,n2)=y.grid.ioSize
-  (nFaces,n3,n4)=nFacesEtc(y)
-
-  fid = open(fil)
-  xx = Array{eltype(y),1}(undef,n1*n2*n3*n4)
-  read!(fid,xx)
-  xx = reshape(hton.(xx),(n1,n2,n3,n4))
-  close(fid)
-
-  read!(xx,y)
-end
+read!(fil::String, y::AbstractMeshArray) = read!(_load_binary(fil, y), y)
 
 """
     read(xx::Array,γ::gcmgrid)
@@ -113,7 +101,7 @@ function read!(xx::Array,x::AbstractMeshArray)
   tmp=zeros(x.grid)
   for i3 in 1:n3
     for i4 in 1:n4
-      read_one!(xx[:,:,i3,i4],tmp)
+      _read_one!(xx[:,:,i3,i4],tmp)
       for f in 1:nFaces
         if (n3>1)&&(n4>1)
           x[f,i3,i4].=tmp[f]
@@ -128,11 +116,11 @@ function read!(xx::Array,x::AbstractMeshArray)
 end
 
 """
-    read!(xx::Array,x::AbstractMeshArray)
+    _read_one!(xx::Array,x::AbstractMeshArray)
 
-Reformat one array of size x.grid.ioSize, and write **in-place** into MeshArray `x``.
+Reformat one array of size x.grid.ioSize, and write **in-place** into MeshArray `x`.
 """
-function read_one!(xx::Array,x::AbstractMeshArray; verbose=false)
+function _read_one!(xx::Array,x::AbstractMeshArray; verbose=false)
   test1=in(x.grid.class,["PeriodicChannel","PeriodicDomain"])
   format=(test1 ? :simple : :compact)
 
