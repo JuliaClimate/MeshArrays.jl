@@ -20,6 +20,13 @@ MeshArrays.gcmvector
 MeshArrays.gcmfaces
 ```
 
+### Internals
+
+```@docs
+MeshArrays.InnerArray
+MeshArrays.OuterArray
+```
+
 ## 2. Grids And I/O
 
 Grid definitions :
@@ -49,8 +56,6 @@ exchange
 MeshArrays.read
 MeshArrays.read!
 MeshArrays.write
-MeshArrays.InnerArray
-MeshArrays.OuterArray
 ```
 
 ## 3. Interpolation
@@ -59,8 +64,8 @@ MeshArrays.OuterArray
 interpolation_setup
 Interpolate
 InterpolationFactors
-StereographicProjection
 knn
+StereographicProjection
 ```
 
 ## 4. Vector Fields
@@ -74,39 +79,67 @@ VectorPotential
 ThroughFlow
 UVtoTransport
 UVtoUEVN
+MeshArrays.EkmanTrsp
+MeshArrays.calc_bolus
+```
+
+### Integration Paths
+
+```@docs
+LatitudeCircles
+MeshArrays.LatitudeCircle
+Transect
+edge_path
+MeshArrays.edge_mask
 ```
 
 ## 5. Integration
 
 ```@docs
 Integration.loops
+Integration.streamlined_loop
+Integration.define_regions
+Integration.define_sums
 ```
 
 ## 6. Grid Data Sets
 
 ```@docs
 MeshArrays.Dataset
+```
+
+### Internals
+
+```@docs
 MeshArrays.mydatadep
 ```
 
 ## 7. Polygons
 
 ```@docs
+MeshArrays.within_pol
+MeshArrays.read_json
+MeshArrays.read_shp
 MeshArrays.NamedPolygon
 MeshArrays.polyarray
 MeshArrays.to_Polygon
 MeshArrays.to_polyarray
-MeshArrays.within_pol
-MeshArrays.read_json
-MeshArrays.read_shp
 ```
 
 ## 8. Other
 
 ```@docs
-LatitudeCircles
-Transect
+land_mask
 demo.ocean_basins
 demo.extended_basin
 isosurface
+```
+
+## 9. Masked Array Utilities
+
+```@docs
+nansum
+nanmean
+nanmax
+nanmin
 ```
