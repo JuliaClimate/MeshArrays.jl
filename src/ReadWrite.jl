@@ -21,7 +21,7 @@ Read array from file and return as a MeshArray.
 _The second argument (MeshArray or gcmgrid) provides the grid specifications (x.grid.ioSize)._
 ```
 """
-function read(fil::String,x::AbstractMeshArray)
+function read(fil::String,x::AbstractMeshArray; y=similar(x; m=x.meta))
 
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
@@ -32,7 +32,7 @@ function read(fil::String,x::AbstractMeshArray)
   xx = reshape(hton.(xx),(n1,n2,n3,n4))
   close(fid)
 
-  return x.grid.read(xx,x)
+  return x.grid.read(xx,x; y=y)
 end
 
 """
@@ -76,8 +76,7 @@ end
 
 Reformat Array data into a MeshArray similar to `x`. 
 """
-function read(xx::Array,x::AbstractMeshArray)
-  y=similar(x; m=x.meta)
+function read(xx::Array,x::AbstractMeshArray; y=similar(x; m=x.meta))
   read!(xx,y)
   return y
 end
@@ -128,12 +127,16 @@ function read_one!(xx::Array,x::AbstractMeshArray; verbose=false)
     if format==:compact
       i0=i1+1
       i1=i1+nn*mm
-      x.f[iFace]=reshape(xx[:][i0:i1,:],(nn,mm))
+      for jj in 1:mm, ii in 1:nn
+        x.f[iFace][ii,jj] = xx[i0 + (ii-1) + (jj-1)*nn]
+      end
     else
       i0=(mod(i1,n1)==0 ? 1 : i1+1)
       j0=(mod(i1,n1)==0&&iFace!==1 ? j0+mm : j0)
       i1=i0+nn-1; j1=j0+mm-1
-      x.f[iFace]=reshape(xx[i0:i1,j0:j1],(nn,mm))
+      for jj in 1:mm, ii in 1:nn
+        x.f[iFace][ii,jj] = xx[i0+ii-1, j0+jj-1]
+      end
     end
 end
 

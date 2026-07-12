@@ -210,7 +210,8 @@ function GridLoadVar(nam::String,γ::gcmgrid)
     if sum(nam.==list_n)==1
         ii=findall(nam.==list_n)[1]
         m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii])
-        tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),MeshArray(γ,γ.ioPrec;meta=m))
+        y=MeshArray(γ,γ.ioPrec;meta=m)
+        tmp1=γ.read(joinpath(γ.path,list_n[ii]*".data"),y; y=y)
     elseif sum(nam.==list1d_n)==1
         fil=joinpath(γ.path,nam*".data")
         γ.ioPrec==Float64 ? reclen=8 : reclen=4
@@ -227,7 +228,8 @@ function GridLoadVar(nam::String,γ::gcmgrid)
 
         ii=findall(nam.==list3d_n)[1]
         m=varmeta(list3d_u[ii],list3d_p[ii],missing,list3d_n[ii],list3d_n[ii])
-        tmp1=γ.read(joinpath(γ.path,list3d_n[ii]*".data"),MeshArray(γ,γ.ioPrec,n3;meta=m))
+        y=MeshArray(γ,γ.ioPrec,n3;meta=m)
+        tmp1=γ.read(joinpath(γ.path,list3d_n[ii]*".data"),y; y=y)
     else
         tmp1=missing
     end
