@@ -49,6 +49,8 @@ exchange
 MeshArrays.read
 MeshArrays.read!
 MeshArrays.write
+MeshArrays.InnerArray
+MeshArrays.OuterArray
 ```
 
 ## 3. Interpolation
