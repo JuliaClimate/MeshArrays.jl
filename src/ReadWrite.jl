@@ -21,7 +21,7 @@ Read array from file and return as a MeshArray.
 _The second argument (MeshArray or gcmgrid) provides the grid specifications (x.grid.ioSize)._
 ```
 """
-function read(fil::String,x::AbstractMeshArray; y=similar(x; m=x.meta))
+function read(fil::String,x::AbstractMeshArray)
 
   (n1,n2)=x.grid.ioSize
   (nFaces,n3,n4)=nFacesEtc(x)
@@ -32,7 +32,25 @@ function read(fil::String,x::AbstractMeshArray; y=similar(x; m=x.meta))
   xx = reshape(hton.(xx),(n1,n2,n3,n4))
   close(fid)
 
-  return x.grid.read(xx,x; y=y)
+  return x.grid.read(xx,x)
+end
+
+"""
+    read!(fil::String, y::AbstractMeshArray)
+
+Read binary file `fil` into pre-allocated MeshArray `y` (in-place, no allocation).
+"""
+function read!(fil::String, y::AbstractMeshArray)
+  (n1,n2)=y.grid.ioSize
+  (nFaces,n3,n4)=nFacesEtc(y)
+
+  fid = open(fil)
+  xx = Array{eltype(y),1}(undef,n1*n2*n3*n4)
+  read!(fid,xx)
+  xx = reshape(hton.(xx),(n1,n2,n3,n4))
+  close(fid)
+
+  read!(xx,y)
 end
 
 """
@@ -76,7 +94,8 @@ end
 
 Reformat Array data into a MeshArray similar to `x`. 
 """
-function read(xx::Array,x::AbstractMeshArray; y=similar(x; m=x.meta))
+function read(xx::Array,x::AbstractMeshArray)
+  y=similar(x; m=x.meta)
   read!(xx,y)
   return y
 end
