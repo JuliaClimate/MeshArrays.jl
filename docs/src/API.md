@@ -13,18 +13,18 @@ gridpath
 gridmask
 ```
 
-### More
-
-```@docs
-MeshArrays.gcmvector
-MeshArrays.gcmfaces
-```
-
 ### Internals
 
 ```@docs
 MeshArrays.InnerArray
 MeshArrays.OuterArray
+```
+
+### More
+
+```@docs
+MeshArrays.gcmvector
+MeshArrays.gcmfaces
 ```
 
 ## 2. Grids And I/O
@@ -36,6 +36,14 @@ GridSpec
 MeshArrays.GridSpec_default
 MeshArrays.GridSpec_MITgcm
 MeshArrays.GridSpec_ones
+```
+
+Read / write methods :
+
+```@docs
+MeshArrays.read
+MeshArrays.read!
+MeshArrays.write
 ```
 
 Loading grids :
@@ -53,9 +61,6 @@ GridLoadVar
 Tiles
 Tiles!
 exchange
-MeshArrays.read
-MeshArrays.read!
-MeshArrays.write
 ```
 
 ## 3. Interpolation
@@ -93,7 +98,7 @@ edge_path
 MeshArrays.edge_mask
 ```
 
-## 5. Integration
+## 5. Integration Loop
 
 ```@docs
 Integration.loops
@@ -129,13 +134,13 @@ MeshArrays.to_polyarray
 ## 8. Other
 
 ```@docs
+isosurface
 land_mask
 demo.ocean_basins
 demo.extended_basin
-isosurface
 ```
 
-## 9. Masked Array Utilities
+### Masked Array Utilities
 
 ```@docs
 nansum
