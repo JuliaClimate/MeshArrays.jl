@@ -31,9 +31,9 @@ The underlying, `MeshArray`, data structure is:
 struct gcmarray{T, N} <: AbstractMeshArray{T, N}
    grid::gcmgrid
    meta::varmeta
-   f::Array{Array{T,2},N}
-   fSize::Array{NTuple{2, Int}}
-   fIndex::Array{Int,1}
+   f::OuterArray{InnerArray{T,2},N}
+   fSize::OuterArray{NTuple{2, Int}}
+   fIndex::OuterArray{Int,1}
    version::String
 end
 ```

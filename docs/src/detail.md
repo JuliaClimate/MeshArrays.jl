@@ -8,6 +8,20 @@ Within a `MeshArray`, a whole Earth System Model grid is represented as an array
 
 The [basics tutorial](@ref id_Basics) illustrates how standard operations apply to `MeshArray` like as they do to common `Array`. More specialized functions and distinctive features, such as domain decomposition or plotting maps, are demo'ed in the [geography tutorial](@ref id_Geography) and [vector tutorial](@ref id_Vectors).
 
+## Exchange Methods
+
+Two families of methods connect grid cells across subdomain boundaries:
+
+**Finding neighbors** — given a position `(i, j, face)`, locate the corresponding cell in an adjacent subdomain. The top-level entry point is `update_location!`, which dispatches to grid-specific implementations:
+- `update_location_cs!` — cubed-sphere and LLC grids, via `RelocationFunctions_cs`
+- `update_location_PeriodicDomain!` — periodic tiled grids, via `NeighborTileIndices_PeriodicDomain`
+
+**Adding halo rows/columns** — `exchange` (public API) calls `exchange_main`, which wraps each face with extra rows/columns copied from neighboring subdomains, returning a `MeshArray_wh` (with halo). The per-topology implementations are:
+- `exch_T_N_cs` — cubed-sphere / LLC, using `exch_cs_target` and `exch_cs_sources` to compute source/target index ranges for each face
+- `exch_T_N_PeriodicChannel`, `exch_T_N_PeriodicDomain` — periodic topologies
+
+The [Finding and Adding Neighbors](dev/exchange_methods.html) developer notebook demonstrates these methods interactively across several grid configurations.
+
 # Background
 
 The origin of `MeshArrays.jl` is rooted in a [Matlab / Octave package](https://gcmfaces.readthedocs.io/en/latest/) called `gcmfaces`, which was introduced in [Forget et al., 2015](http://www.geosci-model-dev.net/8/3071/2015/) (`doi:10.5194/gmd-8-3071-2015`). `GCM` is an acronym for [General Circulation Model](https://en.wikipedia.org/wiki/General_circulation_model), or Global Climate Model, and `faces` can be equivalent to meshes, arrays, facets, or subdomains (these are the elements of `x.f` in a `MeshArray ` instance `x`).
