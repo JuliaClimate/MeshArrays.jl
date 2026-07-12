@@ -29,10 +29,11 @@ makedocs(;
     authors="gaelforget <gforget@mit.edu>",
 )
 
-lst=("basics.jl","geography.jl","vectors.jl",
-	"dev/MeshArrays_to_Polygons.jl","dev/GeometryOps_exploration.jl")
-pth=("tutorials","tutorials","tutorials",
-	"dev","dev")
+lst=("basics.jl","geography.jl","vectors.jl","dev/exchange_methods.jl",
+	"dev/MeshArrays_to_Polygons.jl","dev/GeometryOps_exploration.jl",
+	"dev/grid_layouts.jl","dev/ocean_polygons.jl",
+    "dev/NEMO_MeridionalTransports.jl")
+pth=("tutorials","tutorials","tutorials","dev","dev","dev","dev","dev","dev")
 
 for ii in 1:length(lst)
     i=lst[ii]

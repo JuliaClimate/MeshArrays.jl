@@ -97,7 +97,7 @@ function neighbor_locations(Γ; verbose=false, format=:default)
     if format==:wh
         MeshArray_wh(MeshArrays.gcmarray(γ,fld),4)
     else
-        ( 	c=MeshArrays.gcmarray(γ,[t[2:end-1,2:end-1] for t in fld]),
+        (c=MeshArrays.gcmarray(γ,[t[2:end-1,2:end-1] for t in fld]),
         w=MeshArrays.gcmarray(γ,[t[1:end-2,2:end-1] for t in fld]),
         e=MeshArrays.gcmarray(γ,[t[3:end,2:end-1] for t in fld]),
         s=MeshArrays.gcmarray(γ,[t[2:end-1,1:end-2] for t in fld]),

@@ -103,7 +103,20 @@ thisversion=Pkg.TOML.parsefile(thistoml)["version"]
 
 ## concrete types and MeshArray alias:
 
+"""
+    OuterArray{T,N}
+
+Array that organises mesh faces across dimensions: `[face]`, `[face, k]`, or
+`[face, k, l]`. Each element is an `InnerArray` holding data for one face.
+"""
 OuterArray{T,N}=Array{T,N} where {T,N}
+
+"""
+    InnerArray{T,N}
+
+2D array holding data for a single mesh face (tile). Stored as elements of an
+`OuterArray`.
+"""
 InnerArray{T,N}=Array{T,N} where {T,N}
 include("gcmfaces.jl")
 include("gcmarray.jl")

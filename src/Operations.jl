@@ -1,12 +1,19 @@
 
 ## basic handling of NaNs that are commonly used in masks
 
+"Sum of non-NaN elements; `nansum(x,dim)` reduces along dimension `dim`."
 nansum(x) = sum(filter(!isnan,x))
 nansum(x,y) = mapslices(nansum,x,dims=y)
+
+"Mean of non-NaN elements; `nanmean(x,dim)` reduces along dimension `dim`. Two-argument scalar form returns the mean of the two values, treating NaN as missing."
 nanmean(x) = mean(filter(!isnan,x))
 nanmean(x,y) = mapslices(nanmean,x,dims=y)
+
+"Maximum of non-NaN elements; `nanmax(x,dim)` reduces along dimension `dim`."
 nanmax(x) = maximum(filter(!isnan,x))
 nanmax(x,y) = mapslices(nanmax,x,dims=y)
+
+"Minimum of non-NaN elements; `nanmin(x,dim)` reduces along dimension `dim`."
 nanmin(x) = minimum(filter(!isnan,x))
 nanmin(x,y) = mapslices(nanmin,x,dims=y)
 
@@ -472,6 +479,13 @@ function LatitudeCircles(LatValues,Γ::NamedTuple;
     (length(LatValues)==1 ? LatitudeCircles[1] : LatitudeCircles)
 end
 
+"""
+    LatitudeCircle(lat,Γ::NamedTuple; format=:gridpath, range=(0.0,360.0))
+
+Compute the integration path along a single latitude circle at `lat` degrees.
+Returns a `gridpath` by default, or a `NamedTuple` with fields `lat`, `name`,
+`grid`, `C`, `W`, `S` when `format=:NamedTuple`.
+"""
 function LatitudeCircle(lat,Γ::NamedTuple;
   format=:gridpath, range=(0.0,360.0))
       mskCint=1*(Γ.YC .>= lat)

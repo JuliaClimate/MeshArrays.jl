@@ -13,6 +13,13 @@ gridpath
 gridmask
 ```
 
+### Internals
+
+```@docs
+MeshArrays.InnerArray
+MeshArrays.OuterArray
+```
+
 ### More
 
 ```@docs
@@ -31,6 +38,14 @@ MeshArrays.GridSpec_MITgcm
 MeshArrays.GridSpec_ones
 ```
 
+Read / write methods :
+
+```@docs
+MeshArrays.read
+MeshArrays.read!
+MeshArrays.write
+```
+
 Loading grids :
 
 ```@docs
@@ -46,9 +61,6 @@ GridLoadVar
 Tiles
 Tiles!
 exchange
-MeshArrays.read
-MeshArrays.read!
-MeshArrays.write
 ```
 
 ## 3. Interpolation
@@ -57,8 +69,8 @@ MeshArrays.write
 interpolation_setup
 Interpolate
 InterpolationFactors
-StereographicProjection
 knn
+StereographicProjection
 ```
 
 ## 4. Vector Fields
@@ -72,39 +84,67 @@ VectorPotential
 ThroughFlow
 UVtoTransport
 UVtoUEVN
+MeshArrays.EkmanTrsp
+MeshArrays.calc_bolus
 ```
 
-## 5. Integration
+### Integration Paths
+
+```@docs
+LatitudeCircles
+MeshArrays.LatitudeCircle
+Transect
+edge_path
+MeshArrays.edge_mask
+```
+
+## 5. Integration Loop
 
 ```@docs
 Integration.loops
+Integration.streamlined_loop
+Integration.define_regions
+Integration.define_sums
 ```
 
 ## 6. Grid Data Sets
 
 ```@docs
 MeshArrays.Dataset
+```
+
+### Internals
+
+```@docs
 MeshArrays.mydatadep
 ```
 
 ## 7. Polygons
 
 ```@docs
+MeshArrays.within_pol
+MeshArrays.read_json
+MeshArrays.read_shp
 MeshArrays.NamedPolygon
 MeshArrays.polyarray
 MeshArrays.to_Polygon
 MeshArrays.to_polyarray
-MeshArrays.within_pol
-MeshArrays.read_json
-MeshArrays.read_shp
 ```
 
 ## 8. Other
 
 ```@docs
-LatitudeCircles
-Transect
+isosurface
+land_mask
 demo.ocean_basins
 demo.extended_basin
-isosurface
+```
+
+### Masked Array Utilities
+
+```@docs
+nansum
+nanmean
+nanmax
+nanmin
 ```
