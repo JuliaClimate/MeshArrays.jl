@@ -6,8 +6,8 @@
     @suppress show(Γ.XC)
 
     path=MeshArrays.Dataset("GRID_LLC90")
-    Tx=γ.read(joinpath(path,"TrspX.bin"),MeshArray(γ,Float32))
-    Ty=γ.read(joinpath(path,"TrspY.bin"),MeshArray(γ,Float32))
+    Tx=MeshArray(γ,Float32); read!(joinpath(path,"TrspX.bin"),Tx)
+    Ty=MeshArray(γ,Float32); read!(joinpath(path,"TrspY.bin"),Ty)
     plot(Γ.XC)
 
     hFacC=GridLoadVar("hFacC",γ)
@@ -56,8 +56,13 @@
     ones(y)
     zeros(y)
 
-    GM_PsiX=read(randn(90,1170,50),Γ.hFacW)
-    GM_PsiY=read(randn(90,1170,50),Γ.hFacS)
+    m=varmeta(1.0, [0.0, 0.5, 0.5], missing, "GM_PsiX", "GM_PsiX")
+    GM_PsiX=MeshArray(γ,γ.ioPrec,50, meta=m)
+    read!(randn(γ.ioSize...,50),GM_PsiX)
+    m=varmeta(1.0, [0.5, 0.0, 0.5], missing, "GM_PsiY", "GM_PsiY")
+    GM_PsiY=MeshArray(γ,γ.ioPrec,50, meta=m)
+    read!(randn(γ.ioSize...,50),GM_PsiY)
+
     bolusU, bolusV, bolusW=MeshArrays.calc_bolus(GM_PsiX,GM_PsiY, Γ)
 
     read(rand(90*1170),γ)
