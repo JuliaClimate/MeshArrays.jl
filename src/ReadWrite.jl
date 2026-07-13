@@ -69,12 +69,14 @@ function read(xx::Array,γ::gcmgrid; verbose=false)
   verbose ? println(size(yy)) : nothing
 
   if n3==1&&n4==1
-    read(yy,MeshArray(γ,γ.ioPrec))
+    y = MeshArray(γ,γ.ioPrec)
   elseif n4==1
-    read(yy,MeshArray(γ,γ.ioPrec,n3))
+    y = MeshArray(γ,γ.ioPrec,n3)
   else
-    read(yy,MeshArray(γ,γ.ioPrec,n3,n4))
+    y = MeshArray(γ,γ.ioPrec,n3,n4)
   end
+  read!(yy,y)
+  return y
 end
 
 """
