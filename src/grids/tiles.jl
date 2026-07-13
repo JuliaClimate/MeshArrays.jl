@@ -43,8 +43,12 @@ Return an `Array` of tiles which cover `x` according to tile partition `τ`.
 
 ```jldoctest; output = false
 using MeshArrays
-γ=GridSpec("LatLonCap",MeshArrays.Dataset("GRID_LLC90"))
-d=γ.read(γ.path*"Depth.data",MeshArray(γ,γ.ioPrec))
+
+γ=GridSpec(ID=:LLC90)
+d=MeshArray(γ,γ.ioPrec)
+f=joinpath(γ.path,"Depth.data")
+read!(f,d)
+
 τ=Tiles(γ,30,30)
 td=Tiles(τ,d)
 

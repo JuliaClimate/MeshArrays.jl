@@ -47,7 +47,7 @@ function rotate_XCYC(Γ,R)
 
 	tmpx2=tmp3[1,:]; tmpy2=tmp3[2,:]; tmpz2=tmp3[3,:]
 	tmpx[tmp1]=tmpx2; tmpy[tmp1]=tmpy2; tmpz[tmp1]=tmpz2
-	x=γ.read(tmpx,Γ.XC); y=γ.read(tmpy,Γ.XC); z=γ.read(tmpz,Γ.XC)
+	read!(tmpx,x); read!(tmpy,y); read!(tmpz,z)
 	
 	x,y,z
 end
@@ -75,15 +75,15 @@ function shorter_paths!(xyz,xyz0,msk_in)
 	msk_out=[]
 	for kk in 1:3
 		#select field to treat:
-		mm=msk_in[kk]
+		mm=similar(msk_in[kk])
 		#select the shorther segment:
-		tmpm=γ.write(mm)
+		tmpm=γ.write(msk_in[kk])
        if theta[2]-theta[1]<=pi
             tmpm[findall( (tmptheta.>theta[2]).|(tmptheta.<theta[1]) )].=0.0
         else
             tmpm[findall( (tmptheta.<=theta[2]).&(tmptheta.>=theta[1]) )].=0.0
         end
-        mm=γ.read(tmpm,mm)
+        read!(tmpm,mm)
         #store result:
 		push!(msk_out,mm)
     end

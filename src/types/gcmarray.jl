@@ -40,10 +40,11 @@ function gcmarray(A::Array{T,N};
   ios=[s[1] s[2]]
   γ=gcmgrid("","PeriodicDomain",1, fs, ios, T, read, write)
   if N==2
-    B=γ.read(A,gcmarray(γ,T;meta=meta))
+    B=gcmarray(γ,T;meta=meta)
   else
-    B=γ.read(A,gcmarray(γ,T,size(A)[3];meta=meta))
+    B=gcmarray(γ,T,size(A)[3];meta=meta)
   end
+  read!(A,B)
   B
 end
 

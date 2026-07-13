@@ -67,7 +67,7 @@ function GridLoad_ones(γ::gcmgrid;option="minimal")
 
     pc=fill(0.5,2); pg=fill(0.0,2); pu=[0.,0.5]; pv=[0.5,0.]
     if option=="full"
-        list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacS","hFacW")
+        list_n=("XC","XG","YC","YG","RAC","RAW","RAS","RAZ","DXC","DXG","DYC","DYG","Depth","hFacC","hFacW","hFacS")
         list_u=(u"m",u"m",u"m",u"m",u"m^2",u"m^2",u"m^2",u"m^2",u"m",u"m",u"m",u"m",u"m",1.0,1.0,1.0)
         list_p=(pc,pg,pc,pg,pc,pu,pv,pg,pu,pv,pv,pu,pc,fill(0.5,3),[0.,0.5,0.5],[0.5,0.,0.5])
     elseif option=="light"
@@ -79,12 +79,13 @@ function GridLoad_ones(γ::gcmgrid;option="minimal")
         list_u=(u"°",u"°")
         list_p=(pc,pc)
     end
-
+    
+    tmp1=fill(1.,(ioSize[:]))
     for ii=1:length(list_n)
-        tmp1=fill(1.,(ioSize[:]))
         m=varmeta(list_u[ii],list_p[ii],missing,list_n[ii],list_n[ii])
-        tmp1=γ.read(tmp1,MeshArray(γ,Float64;meta=m))
-        Γ[list_n[ii]]=tmp1
+        tmp2=MeshArray(γ,Float64;meta=m)
+        read!(tmp1,tmp2)
+        Γ[list_n[ii]]=tmp2
     end
 
     XC=[i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]]
@@ -94,7 +95,7 @@ function GridLoad_ones(γ::gcmgrid;option="minimal")
         YG=[j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]]
     end
 
-    (mp,mq)=Int.(γ.ioSize[:]./γ.fSize[1][:])
+    (mp,mq)=Int.(γ.ioSize[:]./γ.fSize[1][:]) #wont work with LLC grid
     for i in 1:nFaces
         (np,nq)=γ.fSize[i]
         ip=(1:np) .+ (mod1(i,mp)-1).*np
@@ -104,7 +105,7 @@ function GridLoad_ones(γ::gcmgrid;option="minimal")
         Γ["YC"][i]=YC[ip,iq]
         option=="full" ? Γ["YG"][i]=YG[ip,iq] : nothing
     end
-    
+
     Dict_to_NamedTuple(Γ)
 end
 
@@ -121,17 +122,8 @@ etc accordingly with global `XC,YC` etc .
 function UnitGrid(ioSize::NTuple{2, Int},tileSize::NTuple{2, Int}; option="minimal")
     nF=div(prod(ioSize),prod(tileSize))
     fSize=fill(tileSize,nF)
-
     γ=gcmgrid("","PeriodicDomain",nF,fSize, ioSize, Float32, read_tiles, write_tiles)
     Γ=GridLoad_ones(γ;option=option)
-
-    Γ.XC[:]=γ.read([i-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
-    Γ.YC[:]=γ.read([j-0.5 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
-    if option=="full"
-        Γ.XG[:]=γ.read([i-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
-        Γ.YG[:]=γ.read([j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]],γ)
-    end
-
     return Γ,γ
 end
 
