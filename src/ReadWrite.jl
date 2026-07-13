@@ -32,7 +32,11 @@ Read array from file and return as a MeshArray.
 _The second argument (MeshArray or gcmgrid) provides the grid specifications (x.grid.ioSize)._
 ```
 """
-read(fil::String, x::AbstractMeshArray) = x.grid.read(_load_binary(fil, x), x)
+function read(fil::String, x::AbstractMeshArray)
+  y = similar(x; m=x.meta)
+  read!(fil, y)
+  return y
+end
 
 """
     read!(fil::String, y::AbstractMeshArray)
