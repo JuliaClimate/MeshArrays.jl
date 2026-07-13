@@ -95,7 +95,7 @@ function GridLoad_ones(γ::gcmgrid;option="minimal")
         YG=[j-1.0 for i in 1:ioSize[1], j in 1:ioSize[2]]
     end
 
-    (mp,mq)=Int.(γ.ioSize[:]./γ.fSize[1][:])
+    (mp,mq)=Int.(γ.ioSize[:]./γ.fSize[1][:]) #wont work with LLC grid
     for i in 1:nFaces
         (np,nq)=γ.fSize[i]
         ip=(1:np) .+ (mod1(i,mp)-1).*np
