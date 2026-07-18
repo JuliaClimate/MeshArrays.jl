@@ -241,7 +241,7 @@ function read_tiles(fil::String,x::AbstractMeshArray)
   xx = reshape(xx,(n1,n2,n3))
   close(fid)
 
-  return x.grid.read(xx,x)
+  return read_tiles(xx,x)
 
 end
 
