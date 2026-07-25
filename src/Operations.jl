@@ -277,8 +277,8 @@ function land_mask(m::AbstractMeshArray)
     for I in eachindex(m.f)
         μ.f[I]=copy(m.f[I])
     end
-    μ[findall(μ.>0.0)].=1.0
-    μ[findall(μ.==0.0)].=NaN
+    μ[findall(μ.>0.0)]=1.0
+    μ[findall(μ.==0.0)]=NaN
     μ
 end
 
