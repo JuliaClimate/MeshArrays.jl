@@ -276,20 +276,28 @@ find_gcmarray(::Any, rest) = find_gcmarray(rest)
 
 import Base: copyto!
 
-# Specialize this method if all you want to do is specialize on typeof(dest)
+# Rewrite a Broadcasted tree: replace AbstractMeshArray args with their face-I inner arrays.
+# Scalars and plain arrays pass through unchanged.
+function _bc_face(bc::Broadcast.Broadcasted, I)
+    new_args = map(a -> _bc_face(a, I), bc.args)
+    Broadcast.Broadcasted(bc.f, new_args)  # axes=nothing → recomputed from face arrays
+end
+_bc_face(a::AbstractMeshArray, I) = ndims(a.f) == 1 ? a.f[I[1]] : a.f[I]
+_bc_face(a, I) = a  # scalar, plain array, etc.
+
 @inline function copyto!(dest::AbstractMeshArray, bc::Broadcast.Broadcasted{Nothing})
     axes(dest) == axes(bc) || throwdm(axes(dest), axes(bc))
-    # Performance optimization: broadcast!(identity, dest, A) is equivalent to copyto!(dest, A) if indices match
-    if bc.f === identity && bc.args isa Tuple{AbstractArray} # only a single input argument to broadcast!
-        A = bc.args[1]
-        if axes(dest) == axes(A)
-            return copyto!(dest, A)
+    for I in CartesianIndices(dest.f)
+        face_args = map(a -> _bc_face(a, I), bc.args)
+        array_args = filter(a -> isa(a, AbstractArray), face_args)
+        if !isempty(array_args)
+            result_axes = Base.Broadcast.combine_axes(array_args...)
+            result_size = map(length, result_axes)
+            if size(dest.f[I]) != result_size
+                dest.f[I] = similar(dest.f[I], result_size)
+            end
         end
-    end
-    bc′ = Broadcast.preprocess(dest, bc)
-    @simd for I in eachindex(bc′)
-        #@inbounds dest[I] = bc′[I]
-        @inbounds dest[I] = gcmarray_getindex_evalf(bc′,I)
+        broadcast!(bc.f, dest.f[I], face_args...)
     end
     return dest
 end

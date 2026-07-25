@@ -48,7 +48,7 @@ function define_regions(;option=:global,grid::NamedTuple)
   lats=[-90 ; -75:10:75 ; 90]
   nl=length(lats)-1
   name=[Symbol("lat_$(lats[l])_to_$(lats[l+1])") for l in 1:nl]
-  [mask[findall((mask.>0)*(la.>=lats[l])*(la.<lats[l+1]))].=l for l in 1:nl]
+  [mask[findall((mask.>0)*(la.>=lats[l])*(la.<lats[l+1]))]=l for l in 1:nl]
   (mask=mask,name=name)
  elseif isa(option,Tuple)
   dlo=option[1]; dla=option[2]
@@ -70,7 +70,7 @@ function define_regions(;option=:global,grid::NamedTuple)
     t_o="$(lons[i_o])Eto$(lons[i_o+1])E"
     push!(name,Symbol(t_a*"_"*t_o))
     mask[findall((mask.>0)*(la.>=lats[i_a])*(la.<lats[i_a+1])
-	 *(lo.>=lons[i_o])*(lo.<lons[i_o+1]))].=length(name)
+	 *(lo.>=lons[i_o])*(lo.<lons[i_o+1]))]=length(name)
     end
    end
   end
