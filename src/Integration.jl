@@ -108,8 +108,14 @@ function define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[
   tmp2d=MeshArray(grid.XC.grid,Float32)
 
   zmsk(d0,d1,k) = layer_mask(grid.RF,d0,d1)[k] 
-  func(X,b,d0,d1)=sum([sum(xymsk(b)*zmsk(d0,d1,k)*X[:,k]*
-         grid.DRF[k]*grid.hFacC[:,k]*grid.RAC) for k in 1:nr])
+  func(X,b,d0,d1)=begin
+    s=0.0
+    msk=xymsk(b)
+    for k in 1:nr
+      s+=sum(msk*zmsk(d0,d1,k)*X[:,k]*grid.DRF[k]*grid.hFacC[:,k]*grid.RAC)
+    end
+    s
+  end
   tmp3d=MeshArray(grid.XC.grid,Float32,nr)
 
   function func_v(X,d0,d1)
