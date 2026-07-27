@@ -167,17 +167,31 @@ function define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[
   # pre-compute layer masks once per depth range — avoids re-allocation in hot loop
   lmsk_cache = [layer_mask(grid.RF, d0, d1) for (d0,d1) in dep]
 
-  zmsk(d0,d1,k) = layer_mask(grid.RF,d0,d1)[k]  # kept for func_v only
-
   tmp2d = MeshArray(grid.XC.grid, Float32)
 
-  function func_v(X, d0, d1)                      # not yet optimized
-    tmp2d .= 0.0
-    for k in 1:nr
-      tmp2d .+= zmsk(d0,d1,k)*X[:,k]*grid.DRF[k]*grid.hFacC[:,k]*grid.RAC
+  function func_v_inner!(out::AbstractMeshArray, X::AbstractMeshArray,
+                       lmsk_d, grid::NamedTuple, nr::Int)
+    for f in 1:length(out.fIndex)
+        of = out.f[f]
+        @inbounds for j in axes(of,2), i in axes(of,1)
+            of[i,j] = 0.0
+        end
     end
-    tmp2d
-  end
+    for k in 1:nr
+        zf = lmsk_d[k] * grid.DRF[k]
+        iszero(zf) && continue
+        for f in 1:length(out.fIndex)
+            of = out.f[f]
+            Xf = X.f[f,k]
+            hf = grid.hFacC.f[f,k]
+            Rf = grid.RAC.f[f]
+            @inbounds for j in axes(Xf,2), i in axes(Xf,1)
+                of[i,j] += zf * Xf[i,j] * hf[i,j] * Rf[i,j]
+            end
+        end
+    end
+    out
+end
 
   tmp3d = MeshArray(grid.XC.grid, Float32, nr)
 
@@ -210,11 +224,12 @@ function define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[
 
   BXv = (name=String[], vint=Function[], tmp2d=tmp2d, tmp3d=tmp3d)
   for d in 1:nd
-    (d0,d1) = dep[d]
-    n = "$(d0)-$(d1)m"
-    @inline f = X -> func_v(X, d0, d1)
-    push!(BXv.name, n)
-    push!(BXv.vint, f)
+      (d0,d1) = dep[d]
+      lmsk_d = lmsk_cache[d]          # already computed above
+      n = "$(d0)-$(d1)m"
+      @inline f = X -> func_v_inner!(tmp2d, X, lmsk_d, grid, nr)
+      push!(BXv.name, n)
+      push!(BXv.vint, f)
   end
 
   if option==:loops
