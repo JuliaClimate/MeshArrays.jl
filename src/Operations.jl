@@ -488,8 +488,16 @@ Returns a `gridpath` by default, or a `NamedTuple` with fields `lat`, `name`,
 """
 function LatitudeCircle(lat,Γ::NamedTuple;
   format=:gridpath, range=(0.0,360.0))
-      mskCint=1*(Γ.YC .>= lat)
-      mskC,mskW,mskS=edge_mask(mskCint)
+
+  mskCint = similar(Γ.YC)
+  for f in 1:mskCint.grid.nFaces
+      yf = Γ.YC.f[f]; mf = mskCint.f[f]
+      @inbounds for j in axes(mf,2), i in axes(mf,1)
+          mf[i,j] = Float64(yf[i,j] >= lat)
+      end
+  end
+
+  mskC,mskW,mskS=edge_mask(mskCint)
       restrict_longitudes!(mskC,Γ.XC,range=range)
       restrict_longitudes!(mskS,Γ.XS,range=range)
       restrict_longitudes!(mskW,Γ.XW,range=range)
@@ -505,22 +513,40 @@ end
 is_in_lon_range(x,range)=(range[2].-range[1]>=360)||
   (mod(x-range[1],360).<mod(range[2].-range[1],360))
 
-function restrict_longitudes!(x::AbstractMeshArray,lon::AbstractMeshArray;range=(0.0,360.0))
+function restrict_longitudes!(x::AbstractMeshArray, lon::AbstractMeshArray;
+                               range=(0.0,360.0))
   for f in 1:x.grid.nFaces
-    x[f].=x[f].*is_in_lon_range.(lon[f],Ref(range))
+      xf = x.f[f]; lf = lon.f[f]
+      @inbounds for j in axes(xf,2), i in axes(xf,1)
+          xf[i,j] *= is_in_lon_range(lf[i,j], range)
+      end
   end
 end
 
 function MskToTab(msk::AbstractMeshArray)
-  n=Int(sum(msk .!= 0)); k=0
-  tab=Array{Int,2}(undef,n,4)
-  for i in eachindex(msk)
-    a=msk[i]
-    b=findall( a .!= 0)
-    for ii in eachindex(b)
-      k += 1
-      tab[k,:]=[i,b[ii][1],b[ii][2],a[b[ii]]]
-    end
+  # count without allocating
+  n = 0
+  for f in 1:length(msk.fIndex)
+      mf = msk.f[f]
+      @inbounds for j in axes(mf,2), i in axes(mf,1)
+          n += (mf[i,j] != 0)
+      end
+  end
+
+  k = 0
+  tab = Array{Int,2}(undef, n, 4)
+  for f in 1:length(msk.fIndex)
+      mf = msk.f[f]
+      @inbounds for j in axes(mf,2), i in axes(mf,1)
+          v = mf[i,j]
+          if v != 0
+              k += 1
+              tab[k,1] = f
+              tab[k,2] = i
+              tab[k,3] = j
+              tab[k,4] = Int(v)
+          end
+      end
   end
   return tab
 end
@@ -532,34 +558,29 @@ Compute edge mask (mskC,mskW,mskS) from domain interior mask (mskCint).
 This is used in `LatitudeCircles` and `Transect`.
 """
 function edge_mask(mskCint::AbstractMeshArray)
-  mskCint=1.0*mskCint
+  mskC = similar(mskCint)
+  mskW = similar(mskCint)
+  mskS = similar(mskCint)
 
-  #treat the case of blank tiles:
-  #mskCint[findall(RAC.==0)].=NaN
-  
-  mskC=similar(mskCint)
-  mskW=similar(mskCint)
-  mskS=similar(mskCint)
+  exFLD = exchange(mskCint).MA   # still needed for halo
 
-  mskCint=exchange(mskCint).MA
-
-  for i in eachindex(mskCint)
-      tmp1=mskCint[i]
-      # tracer mask:
-      tmp2=tmp1[2:end-1,1:end-2]+tmp1[2:end-1,3:end]+
-      tmp1[1:end-2,2:end-1]+tmp1[3:end,2:end-1]
-      mskC[i]=1((tmp2.>0).&(tmp1[2:end-1,2:end-1].==0))
-      # velocity masks:
-      mskW[i]=tmp1[2:end-1,2:end-1] - tmp1[1:end-2,2:end-1]
-      mskS[i]=tmp1[2:end-1,2:end-1] - tmp1[2:end-1,1:end-2]
+  for i in eachindex(mskC.fIndex)
+      tmp1 = exFLD.f[i]          # halo array, size (s1+2, s2+2)
+      mCf  = mskC.f[i]
+      mWf  = mskW.f[i]
+      mSf  = mskS.f[i]
+      s1, s2 = size(mCf)
+      @inbounds for j in 1:s2, ii in 1:s1
+          c     = tmp1[ii+1, j+1]
+          neigh = tmp1[ii+1, j  ] + tmp1[ii+1, j+2] +
+                  tmp1[ii,   j+1] + tmp1[ii+2, j+1]
+          mCf[ii,j] = Float64((neigh > 0) & (c == 0))
+          mWf[ii,j] = c - tmp1[ii,   j+1]
+          mSf[ii,j] = c - tmp1[ii+1, j  ]
+      end
   end
 
-  #treat the case of blank tiles:
-  #mskC[findall(isnan.(mskC))].=0.0
-  #mskW[findall(isnan.(mskW))].=0.0
-  #mskS[findall(isnan.(mskS))].=0.0
-
-  return mskC,mskW,mskS
+  return mskC, mskW, mskS
 end
 
 ##

@@ -241,11 +241,11 @@ end
 
 import Base: display; display(X::AbstractMeshArray)=show(X)
 
-function Base.similar(A::gcmarray;m::varmeta=defaultmeta)
+function Base.similar(A::gcmarray; m::varmeta=defaultmeta)
     if ndims(A)==1
-        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
+        B = gcmarray(A.grid, eltype(A), A.fSize, A.fIndex; meta=m)
     else
-        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex),size(A)[2:end]...; meta=m)
+        B = gcmarray(A.grid, eltype(A), A.fSize, A.fIndex, size(A)[2:end]...; meta=m)
     end
     return B
 end
@@ -255,15 +255,13 @@ end
 Base.BroadcastStyle(::Type{<:AbstractMeshArray}) = Broadcast.ArrayStyle{AbstractMeshArray}()
 
 function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractMeshArray}}, ::Type{ElType}) where ElType
-  # Scan the inputs for the gcmarray:
-  A = find_gcmarray(bc)
-  # Create the gcmarray output:
-  if ndims(A)==1
-        B=gcmarray(similar(A.grid),ElType,copy(A.fSize),copy(A.fIndex))
-  else
-        B=gcmarray(similar(A.grid),ElType,copy(A.fSize),copy(A.fIndex),size(A)[2:end]...)
-  end
-  return B
+    A = find_gcmarray(bc)
+    if ndims(A)==1
+        B = gcmarray(A.grid, ElType, A.fSize, A.fIndex)
+    else
+        B = gcmarray(A.grid, ElType, A.fSize, A.fIndex, size(A)[2:end]...)
+    end
+    return B
 end
 
 find_gcmarray(bc::Base.Broadcast.Broadcasted) = find_gcmarray(bc.args)
