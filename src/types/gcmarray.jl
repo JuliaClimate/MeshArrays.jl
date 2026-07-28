@@ -279,22 +279,31 @@ function Base.similar(A::gcmarray; m::varmeta=defaultmeta)
     ElType = eltype(A)
     nFaces = length(A.fIndex)
     
+    full_init=true
     if ndims(A) == 1
+      if full_init
         # 1D case: (nFaces,)
         f = OuterArray{InnerArray{ElType,2},1}(undef, nFaces)
         for a in 1:nFaces
             f[a] = InnerArray{ElType}(undef, A.fSize[a]...)
         end
-        B = gcmarray{ElType, 1, InnerArray{ElType,2}}(
-            A.grid, m, f, A.fSize, A.fIndex, thisversion)
+      else
+        f = fill(InnerArray{ElType}(undef, 0,0),nFaces)
+      end
+      B = gcmarray{ElType, 1, InnerArray{ElType,2}}(
+          A.grid, m, f, A.fSize, A.fIndex, thisversion)
     elseif ndims(A) == 2
         # 2D case: (nFaces, n3)
         n3 = size(A, 2)
+        if full_init
         f = OuterArray{InnerArray{ElType,2}, 2}(undef, nFaces, n3)
         for a in 1:nFaces
             for i3 in 1:n3
                 f[a, i3] = InnerArray{ElType}(undef, A.fSize[a]...)
             end
+        end
+        else
+        f = fill(InnerArray{ElType}(undef, 0,0),nFaces,n3)
         end
         B = gcmarray{ElType, 2, InnerArray{ElType,2}}(
             A.grid, m, f, A.fSize, A.fIndex, thisversion)
@@ -302,6 +311,7 @@ function Base.similar(A::gcmarray; m::varmeta=defaultmeta)
         # 3D case: (nFaces, n3, n4)
         n3 = size(A, 2)
         n4 = size(A, 3)
+        if full_init
         f = OuterArray{InnerArray{ElType,2}, 3}(undef, nFaces, n3, n4)
         for a in 1:nFaces
             for i4 in 1:n4
@@ -310,8 +320,12 @@ function Base.similar(A::gcmarray; m::varmeta=defaultmeta)
                 end
             end
         end
+        else
+        f = fill(InnerArray{ElType}(undef, 0,0),nFaces,n3,n4)
+        end
         B = gcmarray{ElType, 3, InnerArray{ElType,2}}(
             A.grid, m, f, A.fSize, A.fIndex, thisversion)
+
     end
     return B
 end
