@@ -48,7 +48,19 @@ function define_regions(;option=:global,grid::NamedTuple)
   lats=[-90 ; -75:10:75 ; 90]
   nl=length(lats)-1
   name=[Symbol("lat_$(lats[l])_to_$(lats[l+1])") for l in 1:nl]
-  [mask[findall((mask.>0)*(la.>=lats[l])*(la.<lats[l+1]))].=l for l in 1:nl]
+
+  for l in 1:nl
+    for f in eachindex(mask.fIndex)
+        mf = mask.f[f]
+        laf = la.f[f]
+        for j in axes(mf,2), i in axes(mf,1)
+            if mf[i,j] > 0 && laf[i,j] >= lats[l] && laf[i,j] < lats[l+1]
+                mf[i,j] = Float64(l)
+            end
+        end
+    end
+  end
+
   (mask=mask,name=name)
  elseif isa(option,Tuple)
   dlo=option[1]; dla=option[2]
@@ -70,7 +82,7 @@ function define_regions(;option=:global,grid::NamedTuple)
     t_o="$(lons[i_o])Eto$(lons[i_o+1])E"
     push!(name,Symbol(t_a*"_"*t_o))
     mask[findall((mask.>0)*(la.>=lats[i_a])*(la.<lats[i_a+1])
-	 *(lo.>=lons[i_o])*(lo.<lons[i_o+1]))].=length(name)
+	 *(lo.>=lons[i_o])*(lo.<lons[i_o+1]))]=length(name)
     end
    end
   end
@@ -91,74 +103,139 @@ layer_mask(dF,d0,d1)=begin
 end
 
 """
+    func_h_inner(X, msk)
+
+Zero-allocation horizontal sum: replaces sum(xymsk(b)*X).
+msk is pre-computed once per basin in define_sums.
+"""
+function func_h_inner(X::AbstractMeshArray, msk::AbstractMeshArray)
+    s = 0.0
+    nf = length(X.fIndex)
+    for f in 1:nf
+        Xf = X.f[f]
+        mf = msk.f[f]
+        @inbounds for j in axes(Xf,2), i in axes(Xf,1)
+            s += mf[i,j] * Xf[i,j]
+        end
+    end
+    s
+end
+
+"""
+    func_inner(X, msk, lmsk_d, grid, nr)
+
+Zero-allocation depth-integrated sum.
+- msk:    pre-computed horizontal mask, once per basin
+- lmsk_d: pre-computed layer_mask vector for one depth range (length nr)
+Replaces the loop over k with X[:,k] and hFacC[:,k] gcmarray slicing.
+"""
+function func_inner(X::AbstractMeshArray, msk::AbstractMeshArray,
+                    lmsk_d, grid::NamedTuple, nr::Int)
+    s = 0.0
+    nf = length(X.fIndex)
+    for k in 1:nr
+        zf = lmsk_d[k] * grid.DRF[k]
+        iszero(zf) && continue
+        for f in 1:nf
+            Xf = X.f[f, k]
+            hf = grid.hFacC.f[f, k]
+            mf = msk.f[f]
+            Rf = grid.RAC.f[f]
+            @inbounds for j in axes(Xf,2), i in axes(Xf,1)
+                s += zf * mf[i,j] * Xf[i,j] * hf[i,j] * Rf[i,j]
+            end
+        end
+    end
+    s
+end
+
+"""
     define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[(0,7000)])
 
 Define regional integration function for each basin and depth range.
 """
 function define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[(0,7000)])
-  dep=(isa(depths,Tuple) ? [depths] : depths)
-  nd=length(dep)
-  rgns=define_regions(option=regions,grid=grid) 
-  nb=length(rgns.name)
-  allones=1.0 .+0*grid.hFacC
-  nr=length(grid.RC)
+  dep = (isa(depths,Tuple) ? [depths] : depths)
+  nd = length(dep)
+  rgns = define_regions(option=regions, grid=grid)
+  nb = length(rgns.name)
+  allones = 1.0 .+ 0*grid.hFacC
+  nr = length(grid.RC)
 
   xymsk(b) = 1.0*(rgns.mask.==b)
-  func_h(X,b)=sum(xymsk(b)*X)
-  tmp2d=MeshArray(grid.XC.grid,Float32)
 
-  zmsk(d0,d1,k) = layer_mask(grid.RF,d0,d1)[k] 
-  func(X,b,d0,d1)=sum([sum(xymsk(b)*zmsk(d0,d1,k)*X[:,k]*
-         grid.DRF[k]*grid.hFacC[:,k]*grid.RAC) for k in 1:nr])
-  tmp3d=MeshArray(grid.XC.grid,Float32,nr)
+  # pre-compute layer masks once per depth range — avoids re-allocation in hot loop
+  lmsk_cache = [layer_mask(grid.RF, d0, d1) for (d0,d1) in dep]
 
-  function func_v(X,d0,d1)
-    tmp2d.=0.0
-    for k in 1:nr
-      tmp2d.+=zmsk(d0,d1,k)*X[:,k]*grid.DRF[k]*grid.hFacC[:,k]*grid.RAC
+  tmp2d = MeshArray(grid.XC.grid, Float32)
+
+  function func_v_inner!(out::AbstractMeshArray, X::AbstractMeshArray,
+                       lmsk_d, grid::NamedTuple, nr::Int)
+    for f in 1:length(out.fIndex)
+        of = out.f[f]
+        @inbounds for j in axes(of,2), i in axes(of,1)
+            of[i,j] = 0.0
+        end
     end
-    tmp2d
-  end
+    for k in 1:nr
+        zf = lmsk_d[k] * grid.DRF[k]
+        iszero(zf) && continue
+        for f in 1:length(out.fIndex)
+            of = out.f[f]
+            Xf = X.f[f,k]
+            hf = grid.hFacC.f[f,k]
+            Rf = grid.RAC.f[f]
+            @inbounds for j in axes(Xf,2), i in axes(Xf,1)
+                of[i,j] += zf * Xf[i,j] * hf[i,j] * Rf[i,j]
+            end
+        end
+    end
+    out
+end
+
+  tmp3d = MeshArray(grid.XC.grid, Float32, nr)
 
   if option==:streamlined_loop
-  #ocn_surf=[sum(xymsk(b)*(grid.hFacC[:,1].>0)*grid.RAC) for b in 1:nb]
-  BX=(name=String[],volsum=Function[],volume=Float64[],
-       ocn_surf=Float64[],tmp2d=tmp2d,tmp3d=tmp3d)
-  for b in 1:nb
-   for d in 1:nd
-    (d0,d1)=dep[d]
-    n=string(rgns.name[b])*"_dep_$(d0)_to_$(d1)"
-    @inline f=X->func(X,b,d0,d1)
-    v=f(allones)
-    push!(BX.name,n)
-    push!(BX.volsum,f)
-    push!(BX.volume,v)
-    #push!(BX.ocn_surf,ocn_surf[b])
-   end
-  end
-  end
-
-  BXh=(name=String[],hsum=Function[],tmp2d=tmp2d,tmp3d=tmp3d)
-  for b in 1:nb
-    n=string(rgns.name[b])
-    @inline f=X->func_h(X,b)
-    push!(BXh.name,n)
-    push!(BXh.hsum,f)
+    BX = (name=String[], volsum=Function[], volume=Float64[],
+          ocn_surf=Float64[], tmp2d=tmp2d, tmp3d=tmp3d)
+    for b in 1:nb
+      msk_b = xymsk(b)                    # once per basin
+      for d in 1:nd
+        (d0,d1) = dep[d]
+        lmsk_d = lmsk_cache[d]
+        n = string(rgns.name[b])*"_dep_$(d0)_to_$(d1)"
+        @inline f = X -> func_inner(X, msk_b, lmsk_d, grid, nr)
+        v = f(allones)
+        push!(BX.name, n)
+        push!(BX.volsum, f)
+        push!(BX.volume, v)
+      end
+    end
   end
 
-  BXv=(name=String[],vint=Function[],tmp2d=tmp2d,tmp3d=tmp3d)
+  BXh = (name=String[], hsum=Function[], tmp2d=tmp2d, tmp3d=tmp3d)
+  for b in 1:nb
+    msk_b = xymsk(b)                      # once per basin
+    n = string(rgns.name[b])
+    @inline f = X -> func_h_inner(X, msk_b)
+    push!(BXh.name, n)
+    push!(BXh.hsum, f)
+  end
+
+  BXv = (name=String[], vint=Function[], tmp2d=tmp2d, tmp3d=tmp3d)
   for d in 1:nd
-    (d0,d1)=dep[d]
-    n="$(d0)-$(d1)m"
-    @inline f=X->func_v(X,d0,d1)
-    push!(BXv.name,n)
-    push!(BXv.vint,f)
+      (d0,d1) = dep[d]
+      lmsk_d = lmsk_cache[d]          # already computed above
+      n = "$(d0)-$(d1)m"
+      @inline f = X -> func_v_inner!(tmp2d, X, lmsk_d, grid, nr)
+      push!(BXv.name, n)
+      push!(BXv.vint, f)
   end
 
   if option==:loops
-    gridmask(rgns.mask,BXh.name,depths,BXh.hsum,BXv.vint,tmp2d,tmp3d)
+    gridmask(rgns.mask, BXh.name, depths, BXh.hsum, BXv.vint, tmp2d, tmp3d)
   elseif option==:streamlined_loop
-    gridmask(rgns.mask,BX.name,depths,BX.volsum,[],tmp2d,tmp3d)
+    gridmask(rgns.mask, BX.name, depths, BX.volsum, [], tmp2d, tmp3d)
   else
     error("unknown option")
   end

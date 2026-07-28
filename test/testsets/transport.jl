@@ -36,7 +36,7 @@
     uv=Dict("U"=>Tx,"V"=>Ty,"dimensions"=>["x","y"])
     L=-85.0:5.0:85.0; LC=LatitudeCircles(L,Γ,format=:gridpath)
     T=Array{Float64,1}(undef,length(LC))
-    [T[i]=1e-6*ThroughFlow(uv,LC[i],Γ) for i=1:length(LC)]
+    for i=1:length(LC); T[i]=1e-6*ThroughFlow(uv,LC[i],Γ); end
     plot(LC)
     plot(LC[1])
 

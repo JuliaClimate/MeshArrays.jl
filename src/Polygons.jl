@@ -48,9 +48,9 @@ function to_Polygons(XG,YG,ff=1)
 	IJ1=1:n1; IJ2=1:n2
 	for i in IJ1
 		for j in IJ2
-			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]]
+			x=Float64[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]]
 			treat_180lon!(x)
-			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  
+			y=Float64[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]
 			arr2[i,j]=GI.Polygon([ GI.LinearRing(GI.Point.(zip(vec(x),vec(y)))) ])
 #			arr2[i,j]=GI.LineString(GI.Point.(zip(vec(x),vec(y))))
 		end
@@ -64,9 +64,9 @@ function to_LineStrings2D(XG,YG,ff=1;do_sphere=true)
 	IJ1=1:n1; IJ2=1:n2
 	for i in IJ1
 		for j in IJ2
-			x=[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]] 
+			x=Float64[XG[ff][i,j] XG[ff][i+1,j] XG[ff][i+1,j+1] XG[ff][i,j+1] XG[ff][i,j]]
 			treat_180lon!(x)
-			y=[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]  
+			y=Float64[YG[ff][i,j] YG[ff][i+1,j] YG[ff][i+1,j+1] YG[ff][i,j+1] YG[ff][i,j]]
 			arr2[i,j]=GI.LineString(GI.Point.(zip(vec(x),vec(y))))
 		end
 	end

@@ -62,10 +62,12 @@ end
 Base.BroadcastStyle(::Type{<:gcmvector}) = Broadcast.ArrayStyle{gcmvector}()
 
 function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{gcmvector}}, ::Type{ElType}) where ElType
-  # Scan the inputs for the gcmarray:
   A = find_gcmvector(bc)
-  # Create the gcmvector output:
-  return gcmvector{ElType,ndims(A)}(A.grid,similar(A.f),copy(A.fSize),copy(A.fIndex))
+  f = similar(A.f, Array{ElType,1})
+  for I in eachindex(A.f)
+    f[I] = similar(A.f[I], ElType)
+  end
+  return gcmvector{ElType,ndims(A)}(A.grid,f,copy(A.fSize),copy(A.fIndex))
 end
 
 find_gcmvector(bc::Base.Broadcast.Broadcasted) = find_gcmvector(bc.args)
@@ -77,17 +79,17 @@ find_gcmvector(::Any, rest) = find_gcmvector(rest)
 # Specialize this method if all you want to do is specialize on typeof(dest)
 @inline function copyto!(dest::gcmvector, bc::Broadcast.Broadcasted{Nothing})
     axes(dest) == axes(bc) || throwdm(axes(dest), axes(bc))
-    # Performance optimization: broadcast!(identity, dest, A) is equivalent to copyto!(dest, A) if indices match
-    if bc.f === identity && bc.args isa Tuple{AbstractArray} # only a single input argument to broadcast!
-        A = bc.args[1]
-        if axes(dest) == axes(A)
-            return copyto!(dest, A)
+    for I in CartesianIndices(dest.f)
+        face_args = map(a -> _bc_face(a, I), bc.args)
+        array_args = filter(a -> isa(a, AbstractArray), face_args)
+        if !isempty(array_args)
+            result_axes = Base.Broadcast.combine_axes(array_args...)
+            result_size = map(length, result_axes)
+            if size(dest.f[I]) != result_size
+                dest.f[I] = similar(dest.f[I], result_size)
+            end
         end
-    end
-    bc′ = Broadcast.preprocess(dest, bc)
-    @simd for I in eachindex(bc′)
-        #@inbounds dest[I] = bc′[I]
-        @inbounds dest[I] = gcmarray_getindex_evalf(bc′,I)
+        broadcast!(bc.f, dest.f[I], face_args...)
     end
     return dest
 end
@@ -126,11 +128,8 @@ function Base.getindex(A::gcmarray{T,N}, B::gcmvector{CartesianIndex{2},N}) wher
 end
 
 function Base.view(A::gcmarray{T,N}, B::gcmvector{CartesianIndex{2},N}) where {T,N}
-   tmpOut=missing
-   for a in eachindex(A)
-     ismissing(tmpOut) ? tmpOut=view(A[a],B[a]) : tmpOut=CatView(tmpOut,view(A[a],B[a]))
-   end
-   return tmpOut
+   views = [view(A[a], B[a]) for a in eachindex(A)]
+   return CatView(views...)
 end
 
 function Base.setindex!(A::gcmarray{T,N}, B::gcmvector{T,N}, C::gcmvector{CartesianIndex{2},N}) where {T,N}
