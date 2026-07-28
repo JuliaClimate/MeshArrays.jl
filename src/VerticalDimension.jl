@@ -7,6 +7,7 @@ function isosurface(θ,T,Γ)
     d=NaN*similar(θ[:,1])
     nr=size(θ,2)
     for j=1:size(d,1)
+        !isempty(d[j]) ? nothing : (d[j]=NaN*zeros(d.fSize[j][1],d.fSize[j][2]))
         for k=1:nr-1
             i=findall(isnan.(d[j]).&(θ[j,k].>T).&(θ[j,k+1].<=T))
             a=(θ[j,k][i] .- T)./(θ[j,k][i] .- θ[j,k+1][i])

@@ -489,7 +489,7 @@ Returns a `gridpath` by default, or a `NamedTuple` with fields `lat`, `name`,
 function LatitudeCircle(lat,Γ::NamedTuple;
   format=:gridpath, range=(0.0,360.0))
 
-  mskCint = similar(Γ.YC)
+  mskCint = similar(Γ.YC,full_init=true)
   for f in 1:mskCint.grid.nFaces
       yf = Γ.YC.f[f]; mf = mskCint.f[f]
       @inbounds for j in axes(mf,2), i in axes(mf,1)
@@ -558,9 +558,11 @@ Compute edge mask (mskC,mskW,mskS) from domain interior mask (mskCint).
 This is used in `LatitudeCircles` and `Transect`.
 """
 function edge_mask(mskCint::AbstractMeshArray)
-  mskC = similar(mskCint)
-  mskW = similar(mskCint)
-  mskS = similar(mskCint)
+  mskC = similar(mskCint,full_init=true)
+  mskW = similar(mskCint,full_init=true)
+  mskS = similar(mskCint,full_init=true)
+
+  #need to allocate here
 
   exFLD = exchange(mskCint).MA   # still needed for halo
 

@@ -115,6 +115,7 @@ function read!(xx::Array,x::AbstractMeshArray)
         elseif n3>1
           x[f,i3].=tmp[f]
         else
+          !isempty(x[f]) ? nothing : (x[f]=zeros(facesSize[f][1],facesSize[f][2]))
           x[f].=tmp[f]
         end
       end

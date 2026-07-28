@@ -275,11 +275,10 @@ end
 
 import Base: display; display(X::AbstractMeshArray)=show(X)
 
-function Base.similar(A::gcmarray; m::varmeta=defaultmeta)
+function Base.similar(A::gcmarray; m::varmeta=defaultmeta,full_init=false)
     ElType = eltype(A)
     nFaces = length(A.fIndex)
     
-    full_init=true
     if ndims(A) == 1
       if full_init
         # 1D case: (nFaces,)
