@@ -336,38 +336,23 @@ Base.BroadcastStyle(::Type{<:AbstractMeshArray}) = Broadcast.ArrayStyle{Abstract
 function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractMeshArray}}, ::Type{ElType}) where ElType
     A = find_gcmarray(bc)
     nFaces = length(A.fIndex)
-    
+
     if ndims(A) == 1
-        # 1D case
-        f = OuterArray{InnerArray{ElType,2},1}(undef, nFaces)
-        for a in 1:nFaces
-            f[a] = InnerArray{ElType}(undef, A.fSize[a]...)
-        end
+        # 1D case: lazy init — copyto! will allocate on first write
+        f = fill(InnerArray{ElType}(undef, 0,0), nFaces)
         B = gcmarray{ElType, 1, InnerArray{ElType,2}}(
             A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
     elseif ndims(A) == 2
-        # 2D case: (nFaces, n3)
+        # 2D case: lazy init — copyto! will allocate on first write
         n3 = size(A, 2)
-        f = OuterArray{InnerArray{ElType,2}, 2}(undef, nFaces, n3)
-        for a in 1:nFaces
-            for i3 in 1:n3
-                f[a, i3] = InnerArray{ElType}(undef, A.fSize[a]...)
-            end
-        end
+        f = fill(InnerArray{ElType}(undef, 0,0), nFaces, n3)
         B = gcmarray{ElType, 2, InnerArray{ElType,2}}(
             A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
     else  # ndims(A) == 3
-        # 3D case: (nFaces, n3, n4)
+        # 3D case: lazy init — copyto! will allocate on first write
         n3 = size(A, 2)
         n4 = size(A, 3)
-        f = OuterArray{InnerArray{ElType,2}, 3}(undef, nFaces, n3, n4)
-        for a in 1:nFaces
-            for i4 in 1:n4
-                for i3 in 1:n3
-                    f[a, i3, i4] = InnerArray{ElType}(undef, A.fSize[a]...)
-                end
-            end
-        end
+        f = fill(InnerArray{ElType}(undef, 0,0), nFaces, n3, n4)
         B = gcmarray{ElType, 3, InnerArray{ElType,2}}(
             A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
     end
