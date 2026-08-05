@@ -52,7 +52,7 @@ read!(f,d)
 τ=Tiles(γ,30,30)
 td=Tiles(τ,d)
 
-D=similar(d)
+D=similar(d,allocate=true)
 Tiles!(τ,td,D)
 
 isa(td[1],Array)

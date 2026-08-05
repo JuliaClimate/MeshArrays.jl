@@ -153,22 +153,40 @@ end
 Base.dataids(A::gcmarray) = (Base.dataids(A.f)..., Base.dataids(A.fSize)..., Base.dataids(A.fIndex)...)
 
 # +
+
 function Base.getindex(A::AbstractMeshArray{T, N}, I::Vararg{Union{Int,Array{Int},AbstractUnitRange,Colon}, N}) where {T,N}
-  J=1:length(A.fIndex)
-  !isa(I[1],Colon) ? J=J[I[1]] : nothing
-  nFaces=length(J)
-
-  tmpf=A.f[I...]
-  if isa(tmpf,Array{eltype(A),2})
-    tmp=tmpf
-  else
-    n3=Int(length(tmpf)/nFaces)
-    K=(A.grid,eltype(A),A.fSize[J],A.fIndex[J])
-    n3>1 ? tmp=gcmarray(K...,n3) : tmp=gcmarray(K...)
-    for I in eachindex(tmpf); tmp.f[I] = view(tmpf[I],:,:); end
-  end
-
-  return tmp
+    J = 1:length(A.fIndex)
+    !isa(I[1], Colon) ? J = J[I[1]] : nothing
+    nFaces = length(J)
+    
+    tmpf = A.f[I...]
+    
+    if isa(tmpf, Array{eltype(A), 2})
+        return tmpf  # Scalar index → single face
+    else
+        fSize_sub = A.fSize[J]
+        fIndex_sub = A.fIndex[J]
+        n3 = Int(length(tmpf) / nFaces)
+        
+        if n3 == 1
+            # 1D result
+            f_new = OuterArray{InnerArray{T,2},1}(undef, nFaces)
+            for I_iter in eachindex(tmpf)
+                f_new[I_iter] = view(tmpf[I_iter], :, :)
+            end
+            B = gcmarray{T, 1, InnerArray{T,2}}(
+                A.grid, A.meta, f_new, fSize_sub, fIndex_sub, thisversion)
+        else
+            # 2D result
+            f_new = OuterArray{InnerArray{T,2}, 2}(undef, nFaces, n3)
+            for I_iter in eachindex(tmpf)
+                f_new[I_iter] = view(tmpf[I_iter], :, :)
+            end
+            B = gcmarray{T, 2, InnerArray{T,2}}(
+                A.grid, A.meta, f_new, fSize_sub, fIndex_sub, thisversion)
+        end
+        return B
+    end
 end
 
 """
@@ -189,18 +207,34 @@ function Base.setindex!(A::AbstractMeshArray{T, N}, v, I::Vararg{Int, N}) where 
 end
 
 function Base.view(A::AbstractMeshArray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
-  J=1:length(A.fIndex)
-  !isa(I[1],Colon) ? J=J[I[1]] : nothing
-  nFaces=length(J)
-
-  tmpf=view(A.f,I...)
-  n3=Int(length(tmpf)/nFaces) #length(tmpf)>nFaces ? n3=Int(length(tmpf)/nFaces) : n3=1
-
-  K=(A.grid,eltype(A),A.fSize[J],A.fIndex[J])
-  n3>1 ? tmp=gcmarray(K...,n3) : tmp=gcmarray(K...)
-  for I in eachindex(tmpf); tmp.f[I] = view(tmpf[I],:,:); end
-
-  return tmp
+    J = 1:length(A.fIndex)
+    !isa(I[1], Colon) ? J = J[I[1]] : nothing
+    nFaces = length(J)
+    
+    tmpf = view(A.f, I...)
+    n3 = Int(length(tmpf) / nFaces)
+    
+    fSize_sub = A.fSize[J]
+    fIndex_sub = A.fIndex[J]
+    
+    if n3 == 1
+        # 1D result
+        f_new = OuterArray{InnerArray{T,2},1}(undef, nFaces)
+        for I_iter in eachindex(tmpf)
+            f_new[I_iter] = view(tmpf[I_iter], :, :)
+        end
+        B = gcmarray{T, 1, InnerArray{T,2}}(
+            A.grid, A.meta, f_new, fSize_sub, fIndex_sub, thisversion)
+    else
+        # 2D result
+        f_new = OuterArray{InnerArray{T,2}, 2}(undef, nFaces, n3)
+        for I_iter in eachindex(tmpf)
+            f_new[I_iter] = view(tmpf[I_iter], :, :)
+        end
+        B = gcmarray{T, 2, InnerArray{T,2}}(
+            A.grid, A.meta, f_new, fSize_sub, fIndex_sub, thisversion)
+    end
+    return B
 end
 
 # ### Custom pretty-printing, similar, and broadcast
@@ -241,11 +275,65 @@ end
 
 import Base: display; display(X::AbstractMeshArray)=show(X)
 
-function Base.similar(A::gcmarray; m::varmeta=defaultmeta)
-    if ndims(A)==1
-        B = gcmarray(A.grid, eltype(A), A.fSize, A.fIndex; meta=m)
-    else
-        B = gcmarray(A.grid, eltype(A), A.fSize, A.fIndex, size(A)[2:end]...; meta=m)
+"""
+    similar(A::gcmarray; m::varmeta=defaultmeta, allocate=false)
+
+Create a gcmarray with the same structure and type as `A`.
+
+If `allocate=true`, eagerly allocates all face arrays sized according to `A.fSize`.
+If `allocate=false` (default), creates lazy empty placeholders; use when the array
+will be filled in-place (e.g., `read!`, `readtiles`).
+"""
+function Base.similar(A::gcmarray; m::varmeta=defaultmeta,allocate=false)
+    ElType = eltype(A)
+    nFaces = length(A.fIndex)
+
+    if ndims(A) == 1
+      if allocate
+        # 1D case: (nFaces,)
+        f = OuterArray{InnerArray{ElType,2},1}(undef, nFaces)
+        for a in 1:nFaces
+            f[a] = InnerArray{ElType}(undef, A.fSize[a]...)
+        end
+      else
+        f = fill(InnerArray{ElType}(undef, 0,0),nFaces)
+      end
+      B = gcmarray{ElType, 1, InnerArray{ElType,2}}(
+          A.grid, m, f, A.fSize, A.fIndex, thisversion)
+    elseif ndims(A) == 2
+        # 2D case: (nFaces, n3)
+        n3 = size(A, 2)
+        if allocate
+        f = OuterArray{InnerArray{ElType,2}, 2}(undef, nFaces, n3)
+        for a in 1:nFaces
+            for i3 in 1:n3
+                f[a, i3] = InnerArray{ElType}(undef, A.fSize[a]...)
+            end
+        end
+        else
+        f = fill(InnerArray{ElType}(undef, 0,0),nFaces,n3)
+        end
+        B = gcmarray{ElType, 2, InnerArray{ElType,2}}(
+            A.grid, m, f, A.fSize, A.fIndex, thisversion)
+    else  # ndims(A) == 3
+        # 3D case: (nFaces, n3, n4)
+        n3 = size(A, 2)
+        n4 = size(A, 3)
+        if allocate
+        f = OuterArray{InnerArray{ElType,2}, 3}(undef, nFaces, n3, n4)
+        for a in 1:nFaces
+            for i4 in 1:n4
+                for i3 in 1:n3
+                    f[a, i3, i4] = InnerArray{ElType}(undef, A.fSize[a]...)
+                end
+            end
+        end
+        else
+        f = fill(InnerArray{ElType}(undef, 0,0),nFaces,n3,n4)
+        end
+        B = gcmarray{ElType, 3, InnerArray{ElType,2}}(
+            A.grid, m, f, A.fSize, A.fIndex, thisversion)
+
     end
     return B
 end
@@ -256,10 +344,26 @@ Base.BroadcastStyle(::Type{<:AbstractMeshArray}) = Broadcast.ArrayStyle{Abstract
 
 function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractMeshArray}}, ::Type{ElType}) where ElType
     A = find_gcmarray(bc)
-    if ndims(A)==1
-        B = gcmarray(A.grid, ElType, A.fSize, A.fIndex)
-    else
-        B = gcmarray(A.grid, ElType, A.fSize, A.fIndex, size(A)[2:end]...)
+    nFaces = length(A.fIndex)
+
+    if ndims(A) == 1
+        # 1D case: lazy init — copyto! will allocate on first write
+        f = fill(InnerArray{ElType}(undef, 0,0), nFaces)
+        B = gcmarray{ElType, 1, InnerArray{ElType,2}}(
+            A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
+    elseif ndims(A) == 2
+        # 2D case: lazy init — copyto! will allocate on first write
+        n3 = size(A, 2)
+        f = fill(InnerArray{ElType}(undef, 0,0), nFaces, n3)
+        B = gcmarray{ElType, 2, InnerArray{ElType,2}}(
+            A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
+    else  # ndims(A) == 3
+        # 3D case: lazy init — copyto! will allocate on first write
+        n3 = size(A, 2)
+        n4 = size(A, 3)
+        f = fill(InnerArray{ElType}(undef, 0,0), nFaces, n3, n4)
+        B = gcmarray{ElType, 3, InnerArray{ElType,2}}(
+            A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
     end
     return B
 end
