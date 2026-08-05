@@ -34,7 +34,7 @@ _The second argument (MeshArray or gcmgrid) provides the grid specifications (x.
 ```
 """
 function read(fil::String, x::AbstractMeshArray)
-  y = similar(x; m=x.meta)
+  y = similar(x;m=x.meta,full_init=true)
   read!(fil, y)
   return y
 end
@@ -90,7 +90,7 @@ end
 Reformat Array data into a MeshArray similar to `x`. 
 """
 function read(xx::Array,x::AbstractMeshArray)
-  y=similar(x; m=x.meta)
+  y=similar(x;m=x.meta,full_init=true)
   read!(xx,y)
   return y
 end
@@ -252,7 +252,7 @@ function read_tiles(xx::Array,γ::gcmgrid)
 end
 
 function read_tiles(xx::Array,x::AbstractMeshArray)
-	tmp=similar(x)
+	tmp=similar(x,full_init=true)
 	s=x.grid.ioSize
 	(n1,n2)=x.grid.fSize[1]
 	ni=Int(s[1]/n1)
