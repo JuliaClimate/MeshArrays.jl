@@ -26,15 +26,15 @@ function _load_binary(fil::String, y::AbstractMeshArray)
 end
 
 """
-    read(fil::String,x::AbstractMeshArray)
+    read(fil::String, x::AbstractMeshArray)
 
-Read array from file and return as a MeshArray.
+Read binary file into a new MeshArray with the same structure as `x`.
 
-_The second argument (MeshArray or gcmgrid) provides the grid specifications (x.grid.ioSize)._
-```
+Creates a new MeshArray (allocating all face arrays) and populates it from `fil`.
+The template `x` provides grid specifications via `x.grid.ioSize`.
 """
 function read(fil::String, x::AbstractMeshArray)
-  y = similar(x;m=x.meta,full_init=true)
+  y = similar(x;m=x.meta,allocate=true)
   read!(fil, y)
   return y
 end
@@ -85,12 +85,14 @@ function read(xx::Array,γ::gcmgrid; verbose=false)
 end
 
 """
-    read(xx::Array,x::AbstractMeshArray)
+    read(xx::Array, x::AbstractMeshArray)
 
-Reformat Array data into a MeshArray similar to `x`. 
+Reformat Array data into a new MeshArray with the same structure as `x`.
+
+Creates a new MeshArray (allocating all face arrays) and populates it from the Array `xx`.
 """
 function read(xx::Array,x::AbstractMeshArray)
-  y=similar(x;m=x.meta,full_init=true)
+  y=similar(x;m=x.meta,allocate=true)
   read!(xx,y)
   return y
 end
@@ -252,7 +254,7 @@ function read_tiles(xx::Array,γ::gcmgrid)
 end
 
 function read_tiles(xx::Array,x::AbstractMeshArray)
-	tmp=similar(x,full_init=true)
+	tmp=similar(x,allocate=true)
 	s=x.grid.ioSize
 	(n1,n2)=x.grid.fSize[1]
 	ni=Int(s[1]/n1)

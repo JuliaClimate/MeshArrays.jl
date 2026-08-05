@@ -45,7 +45,7 @@
     @test size(C) == size(C_template)
     @test size(C, 2) == 2
 
-    # Test read(fil::String, x::AbstractMeshArray) with full_init=true
+    # Test read(fil::String, x::AbstractMeshArray) with allocate=true
     tmp_file = tempname()
     write(tmp_file, Γ.XC)
     A_template2 = MeshArray(γ, Float64)
@@ -54,22 +54,22 @@
     @test size(D) == size(A_template2)
     @test eltype(D) == Float64
 
-    # Test similar(x, full_init=true) pathway
+    # Test similar(x, allocate=true) pathway
     A_1d = MeshArray(γ)
-    A_1d_full = similar(A_1d; full_init=true)
+    A_1d_full = similar(A_1d; allocate=true)
     @test isa(A_1d_full, MeshArray)
     @test size(A_1d_full) == size(A_1d)
     # Verify faces are allocated (not 0×0)
     @test size(A_1d_full.f[1]) == size(A_1d.f[1])
 
     A_2d = MeshArray(γ, Float64, 3)
-    A_2d_full = similar(A_2d; full_init=true)
+    A_2d_full = similar(A_2d; allocate=true)
     @test isa(A_2d_full, MeshArray)
     @test size(A_2d_full) == size(A_2d)
     @test size(A_2d_full.f[1]) == size(A_2d.f[1])
 
     A_3d = MeshArray(γ, Float64, 3, 4)
-    A_3d_full = similar(A_3d; full_init=true)
+    A_3d_full = similar(A_3d; allocate=true)
     @test isa(A_3d_full, MeshArray)
     @test size(A_3d_full) == size(A_3d)
     @test size(A_3d_full.f[1]) == size(A_3d.f[1])

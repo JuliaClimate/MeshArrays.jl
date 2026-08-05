@@ -275,12 +275,21 @@ end
 
 import Base: display; display(X::AbstractMeshArray)=show(X)
 
-function Base.similar(A::gcmarray; m::varmeta=defaultmeta,full_init=false)
+"""
+    similar(A::gcmarray; m::varmeta=defaultmeta, allocate=false)
+
+Create a gcmarray with the same structure and type as `A`.
+
+If `allocate=true`, eagerly allocates all face arrays sized according to `A.fSize`.
+If `allocate=false` (default), creates lazy empty placeholders; use when the array
+will be filled in-place (e.g., `read!`, `readtiles`).
+"""
+function Base.similar(A::gcmarray; m::varmeta=defaultmeta,allocate=false)
     ElType = eltype(A)
     nFaces = length(A.fIndex)
-    
+
     if ndims(A) == 1
-      if full_init
+      if allocate
         # 1D case: (nFaces,)
         f = OuterArray{InnerArray{ElType,2},1}(undef, nFaces)
         for a in 1:nFaces
@@ -294,7 +303,7 @@ function Base.similar(A::gcmarray; m::varmeta=defaultmeta,full_init=false)
     elseif ndims(A) == 2
         # 2D case: (nFaces, n3)
         n3 = size(A, 2)
-        if full_init
+        if allocate
         f = OuterArray{InnerArray{ElType,2}, 2}(undef, nFaces, n3)
         for a in 1:nFaces
             for i3 in 1:n3
@@ -310,7 +319,7 @@ function Base.similar(A::gcmarray; m::varmeta=defaultmeta,full_init=false)
         # 3D case: (nFaces, n3, n4)
         n3 = size(A, 2)
         n4 = size(A, 3)
-        if full_init
+        if allocate
         f = OuterArray{InnerArray{ElType,2}, 3}(undef, nFaces, n3, n4)
         for a in 1:nFaces
             for i4 in 1:n4
