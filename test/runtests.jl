@@ -7,6 +7,7 @@ include_maybe(name) = ("all" in _RUN || name in _RUN) && include("testsets/$name
 
 include_maybe("datasets")
 include_maybe("mesharray_basic")
+include_maybe("broadcast")
 include_maybe("vertical_dim")
 include_maybe("regional_integration")
 include_maybe("transport")

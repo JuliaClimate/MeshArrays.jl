@@ -342,30 +342,25 @@ end
 
 Base.BroadcastStyle(::Type{<:AbstractMeshArray}) = Broadcast.ArrayStyle{AbstractMeshArray}()
 
-function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractMeshArray}}, ::Type{ElType}) where ElType
+function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractMeshArray}},
+                      ::Type{ElType}) where ElType
     A = find_gcmarray(bc)
     nFaces = length(A.fIndex)
-
     if ndims(A) == 1
-        # 1D case: lazy init — copyto! will allocate on first write
-        f = fill(InnerArray{ElType}(undef, 0,0), nFaces)
-        B = gcmarray{ElType, 1, InnerArray{ElType,2}}(
+        f = fill(InnerArray{ElType}(undef, 0, 0), nFaces)
+        return gcmarray{ElType, 1, InnerArray{ElType,2}}(
             A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
     elseif ndims(A) == 2
-        # 2D case: lazy init — copyto! will allocate on first write
         n3 = size(A, 2)
-        f = fill(InnerArray{ElType}(undef, 0,0), nFaces, n3)
-        B = gcmarray{ElType, 2, InnerArray{ElType,2}}(
+        f = fill(InnerArray{ElType}(undef, 0, 0), nFaces, n3)
+        return gcmarray{ElType, 2, InnerArray{ElType,2}}(
             A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
-    else  # ndims(A) == 3
-        # 3D case: lazy init — copyto! will allocate on first write
-        n3 = size(A, 2)
-        n4 = size(A, 3)
-        f = fill(InnerArray{ElType}(undef, 0,0), nFaces, n3, n4)
-        B = gcmarray{ElType, 3, InnerArray{ElType,2}}(
+    else
+        n3, n4 = size(A, 2), size(A, 3)
+        f = fill(InnerArray{ElType}(undef, 0, 0), nFaces, n3, n4)
+        return gcmarray{ElType, 3, InnerArray{ElType,2}}(
             A.grid, defaultmeta, f, A.fSize, A.fIndex, thisversion)
     end
-    return B
 end
 
 find_gcmarray(bc::Base.Broadcast.Broadcasted) = find_gcmarray(bc.args)
@@ -374,39 +369,27 @@ find_gcmarray(x) = x
 find_gcmarray(a::AbstractMeshArray, rest) = a
 find_gcmarray(::Any, rest) = find_gcmarray(rest)
 
-####
+# Recursively rewrite a Broadcasted tree for face I:
+# replace each AbstractMeshArray leaf with its per-face InnerArray;
+# scalars and plain Arrays pass through unchanged.
+function _bc_face(bc::Broadcast.Broadcasted, I)
+    new_args = map(a -> _bc_face(a, I), bc.args)
+    Broadcast.Broadcasted(bc.f, new_args)
+end
+_bc_face(a::AbstractMeshArray, I) = ndims(a.f) == 1 ? a.f[I[1]] : a.f[I]
+_bc_face(a, I) = a
 
 import Base: copyto!
 
-# Rewrite a Broadcasted tree: replace AbstractMeshArray args with their face-I inner arrays.
-# Scalars and plain arrays pass through unchanged.
-function _bc_face(bc::Broadcast.Broadcasted, I)
-    new_args = map(a -> _bc_face(a, I), bc.args)
-    Broadcast.Broadcasted(bc.f, new_args)  # axes=nothing → recomputed from face arrays
-end
-_bc_face(a::AbstractMeshArray, I) = ndims(a.f) == 1 ? a.f[I[1]] : a.f[I]
-_bc_face(a, I) = a  # scalar, plain array, etc.
-
-@inline function copyto!(dest::AbstractMeshArray, bc::Broadcast.Broadcasted{Nothing})
-    axes(dest) == axes(bc) || throwdm(axes(dest), axes(bc))
+@inline function Base.copyto!(dest::AbstractMeshArray,
+                               bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractMeshArray}})
     for I in CartesianIndices(dest.f)
-        face_args = map(a -> _bc_face(a, I), bc.args)
-        array_args = filter(a -> isa(a, AbstractArray), face_args)
-        if !isempty(array_args)
-            result_axes = Base.Broadcast.combine_axes(array_args...)
-            result_size = map(length, result_axes)
-            if size(dest.f[I]) != result_size
-                dest.f[I] = similar(dest.f[I], result_size)
-            end
+        face_bc = _bc_face(bc, I)
+        if size(dest.f[I]) == (0, 0)
+            dest.f[I] = Base.Broadcast.materialize(face_bc)
+        else
+            Base.Broadcast.materialize!(dest.f[I], face_bc)
         end
-        broadcast!(bc.f, dest.f[I], face_args...)
     end
     return dest
 end
-
-function gcmarray_getindex_evalf(bc,I)
-  @boundscheck checkbounds(bc, I)
-  args = Broadcast._getindex(bc.args, I)
-  return bc.f.(args...)
-end
-

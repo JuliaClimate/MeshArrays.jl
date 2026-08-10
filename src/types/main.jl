@@ -161,7 +161,7 @@ function sum(a::AbstractMeshArray)
 end
 
 function fill(val::Any,a::AbstractMeshArray)
-  c=similar(a)
+  c=similar(a, allocate=true)
   for I in eachindex(a.f)
     c.f[I] = fill(val,size(a.f[I]))
   end
@@ -236,13 +236,13 @@ function ones(a::gcmgrid,args...)
 end
 
 function zeros(a::AbstractMeshArray)
-  b=similar(a)
+  b=similar(a, allocate=true)
   [b.f[c].=0.0 for c in eachindex(b.f)]
   b
 end
 
 function ones(a::AbstractMeshArray)
-  b=similar(a)
+  b=similar(a, allocate=true)
   [b.f[c].=1.0 for c in eachindex(b.f)]
   b
 end
