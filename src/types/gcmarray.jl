@@ -208,33 +208,33 @@ end
 
 function Base.view(A::AbstractMeshArray{T, N}, I::Vararg{Union{Int,AbstractUnitRange,Colon}, N}) where {T,N}
     J = 1:length(A.fIndex)
-    !isa(I[1], Colon) ? J = J[I[1]] : nothing
+    if !isa(I[1], Colon)
+        idx = J[I[1]]
+        J = isa(idx, Int) ? (idx:idx) : idx
+    end
     nFaces = length(J)
-    
+
     tmpf = view(A.f, I...)
     n3 = Int(length(tmpf) / nFaces)
-    
-    fSize_sub = A.fSize[J]
+
+    fSize_sub  = A.fSize[J]
     fIndex_sub = A.fIndex[J]
-    
+
     if n3 == 1
-        # 1D result
         f_new = OuterArray{InnerArray{T,2},1}(undef, nFaces)
         for I_iter in eachindex(tmpf)
-            f_new[I_iter] = view(tmpf[I_iter], :, :)
+            f_new[I_iter] = tmpf[I_iter]
         end
-        B = gcmarray{T, 1, InnerArray{T,2}}(
+        return gcmarray{T, 1, InnerArray{T,2}}(
             A.grid, A.meta, f_new, fSize_sub, fIndex_sub, thisversion)
     else
-        # 2D result
-        f_new = OuterArray{InnerArray{T,2}, 2}(undef, nFaces, n3)
+        f_new = OuterArray{InnerArray{T,2},2}(undef, nFaces, n3)
         for I_iter in eachindex(tmpf)
-            f_new[I_iter] = view(tmpf[I_iter], :, :)
+            f_new[I_iter] = tmpf[I_iter]
         end
-        B = gcmarray{T, 2, InnerArray{T,2}}(
+        return gcmarray{T, 2, InnerArray{T,2}}(
             A.grid, A.meta, f_new, fSize_sub, fIndex_sub, thisversion)
     end
-    return B
 end
 
 # ### Custom pretty-printing, similar, and broadcast
