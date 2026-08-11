@@ -1,6 +1,6 @@
 name = "MeshArrays"
 uuid = "cb8c808f-1acf-59a3-9d2b-6e38d009f683"
-version = "0.5.12"
+version = "0.5.13"
 authors = ["gaelforget <gforget@mit.edu>"]
 
 [deps]
@@ -38,7 +38,7 @@ MeshArraysShapefileExt = ["Shapefile"]
 
 [compat]
 CatViews = "1.0"
-DataDeps = "0.7"
+DataDeps = "0.7, 1"
 GeoInterface = "1.4, 1.5, 1.6"
 GeoJSON = "0.6, 0.7, 0.8"
 GeometryOps = "0.1"

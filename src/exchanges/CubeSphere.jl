@@ -85,99 +85,18 @@ end
 #note: the "CubeSphere" implementation covers both cs and llc
 
 function exch_T_N_cs(fld::AbstractMeshArray,N::Integer)
-
-fillval=0.0
-
-#step 1
-
-s=size.(fld.f)
-nf=fld.grid.nFaces
-nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fld.grid.class
-FLD=similar(fld;m=fld.meta)
-
-for i=1:nf; FLD.f[i]=fill(fillval,s[i].+2N); end
-#code below yields strange, seemingly incorrect results:
-#for i=1:nf; FLD.f[i]=Array{eltype(fld.f[i])}(undef,s[i].+2N); end
-
-#all versions below yield same @time and memory (despite diff in allocs)
-for i=1:nf
-# FLD.f[i][N+1:end-N,N+1:end-N]=fld.f[i]
- @views FLD.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fld.f[i]
-end
-
-#step 2
-
-for a=1:nf
-(jW, jE, jS, jN)=exch_cs_target(s[a],N)
-(aW,aE,aS,aN,iW,iE,iS,iN)=exch_cs_sources(a,s,N)
-if !iseven(a)
- aW <= nf ? FLD.f[a][jW[1],jW[2]]=ovfW(fld.f[aW],iW[1],iW[2]) : nothing
- aE <= nf ? FLD.f[a][jE[1],jE[2]]=ovfE(fld.f[aE],iE[1],iE[2]) : nothing
- aS <= nf ? FLD.f[a][jS[1],jS[2]]=ovfS(fld.f[aS],iS[1],iS[2]) : nothing
- aN <= nf ? FLD.f[a][jN[1],jN[2]]=ovfN(fld.f[aN],iN[1],iN[2]) : nothing
-else
- aW <= nf ? FLD.f[a][jW[1],jW[2]]=evfW(fld.f[aW],iW[1],iW[2]) : nothing
- aE <= nf ? FLD.f[a][jE[1],jE[2]]=evfE(fld.f[aE],iE[1],iE[2]) : nothing
- aS <= nf ? FLD.f[a][jS[1],jS[2]]=evfS(fld.f[aS],iS[1],iS[2]) : nothing
- aN <= nf ? FLD.f[a][jN[1],jN[2]]=evfN(fld.f[aN],iN[1],iN[2]) : nothing
-end
-end
-
-return FLD
-
+  fld_wh=MeshArrays.exchange_alloc(fld, N)
+  exch_T_N_cs!(fld_wh, fld, N)
+  fld_wh.MA
 end
 
 ##
 
 function exch_UV_N_cs(fldU::AbstractMeshArray,fldV::AbstractMeshArray,N::Integer)
-
-fillval=0.0
-
-#step 1
-
-s=size.(fldU.f)
-nf=fldU.grid.nFaces
-nf==5 ? s=vcat(s,s[3]) : nothing
-tp=fldU.grid.class
-FLDU=similar(fldU;m=fldU.meta)
-FLDV=similar(fldV;m=fldV.meta)
-
-for i=1:nf
- FLDU.f[i]=fill(fillval,s[i].+2N)
- FLDV.f[i]=fill(fillval,s[i].+2N)
- @views FLDU.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fldU.f[i]
- @views FLDV.f[i][N+1:N+s[i][1],N+1:N+s[i][2]]=fldV.f[i]
-end
-
-#step 2
-
-for a=1:nf
-(jW, jE, jS, jN)=exch_cs_target(s[a],N)
-(aW,aE,aS,aN,iW,iE,iS,iN)=exch_cs_sources(a,s,N)
-if !iseven(a)
- aW <= nf ? FLDU.f[a][jW[1],jW[2]]=ovfW(fldV.f[aW],iW[1],iW[2]) : nothing
- aE <= nf ? FLDU.f[a][jE[1],jE[2]]=ovfE(fldU.f[aE],iE[1],iE[2]) : nothing
- aS <= nf ? FLDU.f[a][jS[1],jS[2]]=ovfS(fldU.f[aS],iS[1],iS[2]) : nothing
- aN <= nf ? FLDU.f[a][jN[1].+1,jN[2]]=-ovfN(fldV.f[aN],iN[1],iN[2]) : nothing
- aW <= nf ? FLDV.f[a][jW[1],jW[2].+1]=-ovfW(fldU.f[aW],iW[1],iW[2]) : nothing
- aE <= nf ? FLDV.f[a][jE[1],jE[2]]=ovfE(fldV.f[aE],iE[1],iE[2]) : nothing
- aS <= nf ? FLDV.f[a][jS[1],jS[2]]=ovfS(fldV.f[aS],iS[1],iS[2]) : nothing
- aN <= nf ? FLDV.f[a][jN[1],jN[2]]=ovfN(fldU.f[aN],iN[1],iN[2]) : nothing
-else
- aW <= nf ? FLDU.f[a][jW[1],jW[2]]=evfW(fldU.f[aW],iW[1],iW[2]) : nothing
- aE <= nf ? FLDU.f[a][jE[1],jE[2]]=evfE(fldV.f[aE],iE[1],iE[2]) : nothing
- aS <= nf ? FLDU.f[a][jS[1].+1,jS[2]]=-evfS(fldV.f[aS],iS[1],iS[2]) : nothing
- aN <= nf ? FLDU.f[a][jN[1],jN[2]]=evfN(fldU.f[aN],iN[1],iN[2]) : nothing
- aW <= nf ? FLDV.f[a][jW[1],jW[2]]=evfW(fldV.f[aW],iW[1],iW[2]) : nothing
- aE <= nf ? FLDV.f[a][jE[1],jE[2].+1]=-evfE(fldU.f[aE],iE[1],iE[2]) : nothing
- aS <= nf ? FLDV.f[a][jS[1],jS[2]]=evfS(fldU.f[aS],iS[1],iS[2]) : nothing
- aN <= nf ? FLDV.f[a][jN[1],jN[2]]=evfN(fldV.f[aN],iN[1],iN[2]) : nothing
-end
-end
-
-return FLDU,FLDV
-
+  fldU_wh=MeshArrays.exchange_alloc(fldU, N)
+  fldV_wh=MeshArrays.exchange_alloc(fldV, N)
+  exch_UV_N_cs!(fldU_wh, fldV_wh, fldU, fldV, N)
+  fldU_wh.MA,fldV_wh.MA
 end
 
 ##
