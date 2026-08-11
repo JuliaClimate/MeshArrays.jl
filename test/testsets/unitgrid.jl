@@ -73,4 +73,9 @@
     @test isa(A_3d_full, MeshArray)
     @test size(A_3d_full) == size(A_3d)
     @test size(A_3d_full.f[1]) == size(A_3d.f[1])
+
+    tmp1 = MeshArray(γ)
+    tmp1.=NaN
+    replace!(tmp1, NaN=>0.0)
+    @test sum(tmp1)==0
 end

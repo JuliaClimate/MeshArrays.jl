@@ -246,8 +246,16 @@ function ones(a::AbstractMeshArray)
   [b.f[c].=1.0 for c in eachindex(b.f)]
   b
 end
+
 Base.size(A::AbstractMeshArray) = size(A.f)
 Base.size(A::AbstractMeshArray, dim::Integer) = size(A)[dim]
+
+function Base.replace!(A::AbstractMeshArray, old_new::Pair)
+  for face in A.f
+    replace!(face, old_new)
+  end
+  return A
+end
 
 ## derivative types
 
