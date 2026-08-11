@@ -17,8 +17,14 @@ Allocate a `MeshArray_wh` output buffer compatible with `exchange!(buf, fld)`.
 """
 function exchange_alloc(fld::AbstractMeshArray, N::Integer=1)
     nf = fld.grid.nFaces
-    # fld.fSize is always a 1D array of (nx,ny) tuples, one per face
-    fs = fld.fSize
+    # Use actual face sizes (fld.fSize reflects canonical grid sizes and is wrong
+    # when fld was built from an already-exchanged/halo-expanded array).
+    # For multi-level fields fld.f is a matrix; read only the first column.
+    if length(size(fld)) == 1
+        fs = size.(fld.f)
+    else
+        fs = [size(fld.f[i, 1]) for i in 1:nf]
+    end
     nf == 5 ? fs = vcat(fs, fs[3]) : nothing
     out = MeshArray_wh(similar(fld; m=fld.meta), N)
     if length(size(fld)) == 1
