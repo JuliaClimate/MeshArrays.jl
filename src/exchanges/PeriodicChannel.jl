@@ -32,38 +32,18 @@ end
 ##
 
 function exch_T_N_PeriodicChannel(fld::AbstractMeshArray,N::Integer)
-
-fillval=0.0
-
-#step 1
-
-s=size.(fld.f)
-FLD=similar(fld;m=fld.meta)
-FLD.f[1]=fill(fillval,s[1].+2N)
-@views FLD.f[1][N+1:N+s[1][1],N+1:N+s[1][2]]=fld.f[1]
-
-#step 2
-
-iW=(s[1][1]-N+1:s[1][1],1:s[1][2])
-iE=(1:N,1:s[1][2])
-jW=(1:N,N+1:N+s[1][2])
-jE=(N+1+s[1][1]:2N+s[1][1],N+1:N+s[1][2])
-FLD.f[1][jW[1],jW[2]]=view(fld.f[1],iW[1],iW[2])
-FLD.f[1][jE[1],jE[2]]=view(fld.f[1],iE[1],iE[2])
-
-return FLD
-
+  fld_wh=MeshArrays.exchange_alloc(fld, N)
+  exch_T_N_PeriodicChannel!(fld_wh, fld, N)
+  fld_wh.MA
 end
 
 ##
 
 function exch_UV_N_PeriodicChannel(fldU,fldV,N)
-
-FLDU=exch_T_N_PeriodicChannel(fldU,N)
-FLDV=exch_T_N_PeriodicChannel(fldV,N)
-
-return FLDU,FLDV
-
+  fldU_wh=MeshArrays.exchange_alloc(fldU, N)
+  fldV_wh=MeshArrays.exchange_alloc(fldV, N)
+  exch_UV_N_PeriodicChannel!(fldU_wh, fldV_wh, fldU, fldV, N)
+  fldU_wh.MA,fldV_wh.MA
 end
 
 ##
