@@ -27,7 +27,7 @@ include("Polygons.jl")
 export AbstractMeshArray, MeshArray, MeshArray_wh
 export gcmgrid, varmeta, gridpath, gridmask
 export GridSpec, GridLoad, GridLoadVar
-export exchange, Tiles, Tiles!
+export exchange, exchange!, exchange_alloc, Tiles, Tiles!
 export Interpolate, InterpolationFactors, knn, interpolation_setup
 #The following exch_UV differs from normal exchange; incl. exch_UV_N
 export exch_UV

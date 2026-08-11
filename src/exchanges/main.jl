@@ -3,6 +3,112 @@
 # along with grid-specific methods (exch_T_N.jl, etc.)
 
 ## User Front Ends
+#
+# exchange!  — in-place variants; caller pre-allocates output MeshArray_wh
+#
+# Allocate a suitable output buffer with:
+#   buf = exchange_alloc(x)          # for scalar field x
+#   buf_u, buf_v = exchange_alloc(u, v)  # for vector field u, v
+
+"""
+    exchange_alloc(fld::AbstractMeshArray, N=1)
+
+Allocate a `MeshArray_wh` output buffer compatible with `exchange!(buf, fld)`.
+"""
+function exchange_alloc(fld::AbstractMeshArray, N::Integer=1)
+    nf = fld.grid.nFaces
+    # fld.fSize is always a 1D array of (nx,ny) tuples, one per face
+    fs = fld.fSize
+    nf == 5 ? fs = vcat(fs, fs[3]) : nothing
+    out = MeshArray_wh(similar(fld; m=fld.meta), N)
+    if length(size(fld)) == 1
+        for i in 1:nf; out.MA.f[i] = fill(0.0, fs[i] .+ 2N); end
+    else
+        for k in 1:size(fld)[2], i in 1:nf
+            out.MA.f[i, k] = fill(0.0, fs[i] .+ 2N)
+        end
+    end
+    out
+end
+
+"""
+    exchange_alloc(u::AbstractMeshArray, v::AbstractMeshArray, N=1)
+
+Allocate two `MeshArray_wh` output buffers compatible with `exchange!(bu, bv, u, v)`.
+"""
+function exchange_alloc(u::AbstractMeshArray, v::AbstractMeshArray, N::Integer=1)
+    exchange_alloc(u, N), exchange_alloc(v, N)
+end
+
+"""
+    exchange!(y::MeshArray_wh, x::AbstractMeshArray)
+
+In-place exchange: fill pre-allocated `y` from `x` without allocating new arrays.
+`y` must have been created with `exchange_alloc(x)` (or equivalent).
+"""
+function exchange!(y::MeshArray_wh, x::AbstractMeshArray)
+    N = y.HS
+    if length(size(x)) == 1
+        exchange_main!(y, x, N)
+    else
+        for k in 1:size(x)[2]
+            exchange_main!(MeshArray_wh(y.MA[:, k], N), x[:, k], N)
+        end
+    end
+    y
+end
+
+"""
+    exchange!(yu::MeshArray_wh, yv::MeshArray_wh, u::AbstractMeshArray, v::AbstractMeshArray)
+
+In-place exchange for a vector field pair.
+`yu`, `yv` must have been created with `exchange_alloc(u, v)`.
+"""
+function exchange!(yu::MeshArray_wh, yv::MeshArray_wh,
+                   u::AbstractMeshArray, v::AbstractMeshArray)
+    N = yu.HS
+    if length(size(u)) == 1
+        exchange_main!(yu, yv, u, v, N)
+    else
+        for k in 1:size(u)[2]
+            exchange_main!(MeshArray_wh(yu.MA[:, k], N),
+                           MeshArray_wh(yv.MA[:, k], N),
+                           u[:, k], v[:, k], N)
+        end
+    end
+    yu, yv
+end
+
+## in-place exchange_main! — dispatch over grid types
+
+function exchange_main!(y::MeshArray_wh, x::AbstractMeshArray, N::Integer)
+    if x.grid.class == "LatLonCap" || x.grid.class == "CubeSphere"
+        exch_T_N_cs!(y, x, N)
+    elseif x.grid.class == "PeriodicChannel"
+        exch_T_N_PeriodicChannel!(y, x, N)
+    elseif x.grid.class == "PeriodicDomain"
+        exch_T_N_PeriodicDomain!(y, x, N)
+    else
+        error("unknown grid.class case")
+    end
+    y
+end
+
+function exchange_main!(yu::MeshArray_wh, yv::MeshArray_wh,
+                        u::AbstractMeshArray, v::AbstractMeshArray, N::Integer)
+    if u.grid.class == "LatLonCap" || u.grid.class == "CubeSphere"
+        exch_UV_N_cs!(yu, yv, u, v, N)
+    elseif u.grid.class == "PeriodicChannel"
+        exch_UV_N_PeriodicChannel!(yu, yv, u, v, N)
+    elseif u.grid.class == "PeriodicDomain"
+        exch_UV_N_PeriodicDomain!(yu, yv, u, v, N)
+    else
+        error("unknown grid.class case")
+    end
+    yu, yv
+end
+
+##
 
 """
     exchange(fld::AbstractMeshArray)

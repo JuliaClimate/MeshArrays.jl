@@ -1,4 +1,35 @@
 ## Grid-specific implementations: PeriodicChannel case
+#
+# In-place variants: FLD / FLDU / FLDV must be pre-allocated MeshArray_wh
+# with face arrays already sized to s[1].+2N.
+
+function exch_T_N_PeriodicChannel!(FLD::MeshArray_wh, fld::AbstractMeshArray, N::Integer)
+
+s=size.(fld.f)
+fill!(FLD.MA.f[1], 0.0)
+@views FLD.MA.f[1][N+1:N+s[1][1],N+1:N+s[1][2]] .= fld.f[1]
+
+iW=(s[1][1]-N+1:s[1][1],1:s[1][2])
+iE=(1:N,1:s[1][2])
+jW=(1:N,N+1:N+s[1][2])
+jE=(N+1+s[1][1]:2N+s[1][1],N+1:N+s[1][2])
+FLD.MA.f[1][jW[1],jW[2]] .= view(fld.f[1],iW[1],iW[2])
+FLD.MA.f[1][jE[1],jE[2]] .= view(fld.f[1],iE[1],iE[2])
+
+return FLD
+
+end
+
+##
+
+function exch_UV_N_PeriodicChannel!(FLDU::MeshArray_wh, FLDV::MeshArray_wh,
+                                     fldU::AbstractMeshArray, fldV::AbstractMeshArray, N::Integer)
+  exch_T_N_PeriodicChannel!(FLDU, fldU, N)
+  exch_T_N_PeriodicChannel!(FLDV, fldV, N)
+  return FLDU, FLDV
+end
+
+##
 
 function exch_T_N_PeriodicChannel(fld::AbstractMeshArray,N::Integer)
 

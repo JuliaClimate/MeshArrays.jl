@@ -1,5 +1,86 @@
 
 ## Grid-specific implementations: CubeSphere & LatLonCap case
+#
+# In-place variants: FLD / FLDU / FLDV must be pre-allocated MeshArray_wh
+# with face arrays already sized to s[i].+2N.  The caller supplies them so
+# no per-call allocation is needed.
+
+function exch_T_N_cs!(FLD::MeshArray_wh, fld::AbstractMeshArray, N::Integer)
+
+s=size.(fld.f)
+nf=fld.grid.nFaces
+nf==5 ? s=vcat(s,s[3]) : nothing
+
+for i=1:nf
+  fill!(FLD.MA.f[i], 0.0)
+  @views FLD.MA.f[i][N+1:N+s[i][1],N+1:N+s[i][2]] .= fld.f[i]
+end
+
+for a=1:nf
+(jW, jE, jS, jN)=exch_cs_target(s[a],N)
+(aW,aE,aS,aN,iW,iE,iS,iN)=exch_cs_sources(a,s,N)
+if !iseven(a)
+ aW <= nf ? FLD.MA.f[a][jW[1],jW[2]] .= ovfW(fld.f[aW],iW[1],iW[2]) : nothing
+ aE <= nf ? FLD.MA.f[a][jE[1],jE[2]] .= ovfE(fld.f[aE],iE[1],iE[2]) : nothing
+ aS <= nf ? FLD.MA.f[a][jS[1],jS[2]] .= ovfS(fld.f[aS],iS[1],iS[2]) : nothing
+ aN <= nf ? FLD.MA.f[a][jN[1],jN[2]] .= ovfN(fld.f[aN],iN[1],iN[2]) : nothing
+else
+ aW <= nf ? FLD.MA.f[a][jW[1],jW[2]] .= evfW(fld.f[aW],iW[1],iW[2]) : nothing
+ aE <= nf ? FLD.MA.f[a][jE[1],jE[2]] .= evfE(fld.f[aE],iE[1],iE[2]) : nothing
+ aS <= nf ? FLD.MA.f[a][jS[1],jS[2]] .= evfS(fld.f[aS],iS[1],iS[2]) : nothing
+ aN <= nf ? FLD.MA.f[a][jN[1],jN[2]] .= evfN(fld.f[aN],iN[1],iN[2]) : nothing
+end
+end
+
+return FLD
+
+end
+
+##
+
+function exch_UV_N_cs!(FLDU::MeshArray_wh, FLDV::MeshArray_wh,
+                        fldU::AbstractMeshArray, fldV::AbstractMeshArray, N::Integer)
+
+s=size.(fldU.f)
+nf=fldU.grid.nFaces
+nf==5 ? s=vcat(s,s[3]) : nothing
+
+for i=1:nf
+  fill!(FLDU.MA.f[i], 0.0)
+  fill!(FLDV.MA.f[i], 0.0)
+  @views FLDU.MA.f[i][N+1:N+s[i][1],N+1:N+s[i][2]] .= fldU.f[i]
+  @views FLDV.MA.f[i][N+1:N+s[i][1],N+1:N+s[i][2]] .= fldV.f[i]
+end
+
+for a=1:nf
+(jW, jE, jS, jN)=exch_cs_target(s[a],N)
+(aW,aE,aS,aN,iW,iE,iS,iN)=exch_cs_sources(a,s,N)
+if !iseven(a)
+ aW <= nf ? FLDU.MA.f[a][jW[1],jW[2]] .= ovfW(fldV.f[aW],iW[1],iW[2]) : nothing
+ aE <= nf ? FLDU.MA.f[a][jE[1],jE[2]] .= ovfE(fldU.f[aE],iE[1],iE[2]) : nothing
+ aS <= nf ? FLDU.MA.f[a][jS[1],jS[2]] .= ovfS(fldU.f[aS],iS[1],iS[2]) : nothing
+ aN <= nf ? FLDU.MA.f[a][jN[1].+1,jN[2]] .= -ovfN(fldV.f[aN],iN[1],iN[2]) : nothing
+ aW <= nf ? FLDV.MA.f[a][jW[1],jW[2].+1] .= -ovfW(fldU.f[aW],iW[1],iW[2]) : nothing
+ aE <= nf ? FLDV.MA.f[a][jE[1],jE[2]] .= ovfE(fldV.f[aE],iE[1],iE[2]) : nothing
+ aS <= nf ? FLDV.MA.f[a][jS[1],jS[2]] .= ovfS(fldV.f[aS],iS[1],iS[2]) : nothing
+ aN <= nf ? FLDV.MA.f[a][jN[1],jN[2]] .= ovfN(fldU.f[aN],iN[1],iN[2]) : nothing
+else
+ aW <= nf ? FLDU.MA.f[a][jW[1],jW[2]] .= evfW(fldU.f[aW],iW[1],iW[2]) : nothing
+ aE <= nf ? FLDU.MA.f[a][jE[1],jE[2]] .= evfE(fldV.f[aE],iE[1],iE[2]) : nothing
+ aS <= nf ? FLDU.MA.f[a][jS[1].+1,jS[2]] .= -evfS(fldV.f[aS],iS[1],iS[2]) : nothing
+ aN <= nf ? FLDU.MA.f[a][jN[1],jN[2]] .= evfN(fldU.f[aN],iN[1],iN[2]) : nothing
+ aW <= nf ? FLDV.MA.f[a][jW[1],jW[2]] .= evfW(fldV.f[aW],iW[1],iW[2]) : nothing
+ aE <= nf ? FLDV.MA.f[a][jE[1],jE[2].+1] .= -evfE(fldU.f[aE],iE[1],iE[2]) : nothing
+ aS <= nf ? FLDV.MA.f[a][jS[1],jS[2]] .= evfS(fldU.f[aS],iS[1],iS[2]) : nothing
+ aN <= nf ? FLDV.MA.f[a][jN[1],jN[2]] .= evfN(fldV.f[aN],iN[1],iN[2]) : nothing
+end
+end
+
+return FLDU,FLDV
+
+end
+
+##
 
 #note: the "CubeSphere" implementation covers both cs and llc
 
