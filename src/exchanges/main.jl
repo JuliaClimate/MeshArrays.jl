@@ -57,8 +57,10 @@ function exchange!(y::MeshArray_wh, x::AbstractMeshArray)
     if length(size(x)) == 1
         exchange_main!(y, x, N)
     else
+        tmp=MeshArray_wh(y.MA[:, 1], N)
         for k in 1:size(x)[2]
-            exchange_main!(MeshArray_wh(y.MA[:, k], N), x[:, k], N)
+            exchange_main!(tmp, x[:, k], N)
+            y.MA[:, k].=tmp.MA
         end
     end
     y
@@ -76,10 +78,12 @@ function exchange!(yu::MeshArray_wh, yv::MeshArray_wh,
     if length(size(u)) == 1
         exchange_main!(yu, yv, u, v, N)
     else
+        tmpu=MeshArray_wh(yu.MA[:, 1], N)
+        tmpv=MeshArray_wh(yv.MA[:, 1], N)
         for k in 1:size(u)[2]
-            exchange_main!(MeshArray_wh(yu.MA[:, k], N),
-                           MeshArray_wh(yv.MA[:, k], N),
-                           u[:, k], v[:, k], N)
+            exchange_main!(tmpu,tmpv,u[:, k], v[:, k], N)
+            yu.MA[:, k].=tmpu.MA
+            yv.MA[:, k].=tmpv.MA
         end
     end
     yu, yv
