@@ -100,7 +100,10 @@ end
 
 # ╔═╡ cf99ec64-d142-42ff-9767-3d851229024e
 begin
-	Climatology.get_ecco_velocity_if_needed()
+    #use this environment variable to bypass downloads / API calls that require server access
+    _SKIP_DOWNLOADS = parse(Bool,get(ENV, "SKIP_DOWNLOADS", "false"))
+    _SKIP_DOWNLOADS ? nothing : Climatology.get_ecco_velocity_if_needed()
+
 	✓uv1=true
 
 	"""
@@ -305,11 +308,11 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CairoMakie = "~0.15.13"
-Climatology = "~0.5.19"
+Climatology = "~0.5.20"
 DataDeps = "~0.7.14"
 JLD2 = "~0.6.5"
-MITgcm = "~0.5.15"
-MeshArrays = "~0.5.7"
+MITgcm = "~0.5.16"
+MeshArrays = "~0.5.14"
 NetCDF = "~0.12.2"
 PlutoUI = "~0.7.83"
 """
@@ -320,7 +323,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "54c5365d22e4f42a0cb7e19231c69b73f35abda1"
+project_hash = "d17dc8b52aa3e98de6776abfa729ae05af81bd32"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
