@@ -202,8 +202,8 @@ end
 
 # ╔═╡ aebc7ac0-b7b9-4a73-a015-44bc64530d9e
 begin
-	uT_m=zeros(Γ.XC)
-	vT_m=zeros(Γ.XC)
+	uT_m=zeros(Γ.XC.grid) #allocate keyword missing in nemoarray implementation
+	vT_m=zeros(Γ.XC.grid)
 	for m in 1:12
 		_uT,_vT=read_uTvT("data/NEMO_sample/monthly/",Γ,m)
 		uT_m.+=_uT/12; vT_m.+=_vT/12;
@@ -256,7 +256,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 [compat]
 CairoMakie = "~0.15.13"
 JLD2 = "~0.6.5"
-MeshArrays = "~0.5.7"
+MeshArrays = "~0.5.14"
 NCDatasets = "~0.14.15"
 PlutoUI = "~0.7.83"
 """
@@ -267,7 +267,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "6507200512712c3e771a4a6f3cfdd51235a94a7a"
+project_hash = "f6df44a62fde3d8ef5c7c6eef2f8a9b3c78841c8"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]

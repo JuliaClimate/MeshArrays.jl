@@ -28,7 +28,8 @@ nemorarray_to_gcmarray(A::nemoarray) =
 	gcmarray{eltype(A),ndims(A),InnerArray{eltype(A),2}}(A.grid,defaultmeta,copy(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
 
 #this approach works in 3D	
-function Base.similar(A::nemoarray;m::varmeta=defaultmeta)
+function Base.similar(A::nemoarray;m::varmeta=defaultmeta,allocate=false)
+	allocate ? nothing : error("non-allocating option not implemented for nemoarray")
     if ndims(A)==1
         B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
     else
