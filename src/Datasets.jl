@@ -66,7 +66,7 @@ function mydatafile(nam="countries_shp1")
     elseif nam=="countries_geojson1"
         "countries.geojson"
     elseif nam=="basemap_jpg1"
-        "Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg"
+        "Blue_Marble_Next_Generation_+_topography_+_bathymetry.jpg"
     elseif nam=="interp_halfdeg"
         "interp_coeffs_halfdeg.jld2"
     elseif nam=="interp_quarterdeg"

@@ -27,14 +27,9 @@ gcmarray_to_nemorarray(A::gcmarray) =
 nemorarray_to_gcmarray(A::nemoarray) = 
 	gcmarray{eltype(A),ndims(A),InnerArray{eltype(A),2}}(A.grid,defaultmeta,copy(A.f),copy(A.fSize),copy(A.fIndex),thisversion)
 
-#this approach works in 3D	
-function Base.similar(A::nemoarray;m::varmeta=defaultmeta)
-    if ndims(A)==1
-        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex); meta=m)
-    else
-        B=gcmarray(similar(A.grid),eltype(A),copy(A.fSize),copy(A.fIndex),size(A)[2:end]...; meta=m)
-    end
-    return gcmarray_to_nemorarray(B)
+function Base.similar(A::nemoarray;m::varmeta=defaultmeta,allocate=false)
+    B=similar(nemorarray_to_gcmarray(A); m=m, allocate=allocate)
+	return gcmarray_to_nemorarray(B)
 end
 
 #Base.getindex(A::nemoarray,args...;kwargs...)=

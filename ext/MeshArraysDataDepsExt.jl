@@ -4,7 +4,6 @@ module MeshArraysDataDepsExt
    using DataDeps, MeshArrays
    import MeshArrays: mydatadep
   
-
    __init__() = begin
       register(DataDep("countries_shp1",
          "Shapefile countries example, from https://www.naturalearthdata.com",
