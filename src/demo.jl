@@ -206,4 +206,55 @@ module demo
     end
    
 
+    ##
+
+    import MeshArrays: Transect, gridpath
+
+    function sections_set2()
+        lonPairs = []
+        latPairs = []
+        namPairs = []
+
+        # single-segment sections: just two endpoints
+        push!(lonPairs, [-170.5, -166.0]);   push!(latPairs, [65.99,  65.75]);   push!(namPairs, "Bering")
+        push!(lonPairs, [-20.7,   12.0]);    push!(latPairs, [78.82,  78.836]);  push!(namPairs, "Fram")
+        push!(lonPairs, [-61.8,  -52.5]);    push!(latPairs, [66.65,  67.31]);   push!(namPairs, "Davis")
+        push!(lonPairs, [ 18.0,   19.8]);    push!(latPairs, [78.0,   69.2]);    push!(namPairs, "Barents")
+        push!(lonPairs, [-81.0,  -13.5]);    push!(latPairs, [26.5, 26.5]);      push!(namPairs, "RAPID")
+        push!(lonPairs, [-54.0,   20.0]);    push!(latPairs, [-34.5, -34.5]);    push!(namPairs, "SAMBA")
+        push!(lonPairs, [116.0,  119.0]);    push!(latPairs, [-2.87,  -2.87]);   push!(namPairs, "Makassar")
+    #    push!(lonPairs, [-82.833, -82.591]); push!(latPairs, [69.664, 69.890]);  push!(namPairs, "Hudson")
+    #    push!(lonPairs, [-84.501, -84.318]); push!(latPairs, [69.850, 70.001]);  push!(namPairs, "Hudson_NW")
+    #    push!(lonPairs, [-6.125,  -6.125]);  push!(latPairs, [62.5,   63.875]);  push!(namPairs, "Färöer")
+        push!(lonPairs, [-5.59,   -5.59]);   push!(latPairs, [34.5,   37.5]);    push!(namPairs, "Gibraltar")
+        push!(lonPairs, [-30.821, -23.245]); push!(latPairs, [68.532, 66.005]);  push!(namPairs, "NIIC")
+        push!(lonPairs, [-15.068,  -6.870]); push!(latPairs, [64.412, 62.067]);  push!(namPairs, "IF")
+    #    push!(lonPairs, [-6.870,   -1.170]); push!(latPairs, [62.067, 60.278]);  push!(namPairs, "FS")
+
+        # multi-segment sections: waypoints, one pair per segment vertex
+        push!(lonPairs, [-57.0, -44.6, -5.5]); push!(latPairs, [52.0, 60.189, 56.5]); push!(namPairs, "OSNAP")
+        push!(lonPairs, [-30.821, -23.245, -15.068, -6.870, -1.170, 6.105]);
+        push!(latPairs, [68.532, 66.005, 64.412, 62.067, 60.278, 59.470]);
+        push!(namPairs, "GSR")
+
+        (name=namPairs, lon=lonPairs, lat=latPairs)
+    end
+
+    function multi_segment_transect(name::String, lons::Vector, lats::Vector, Γ)
+        segments = [Transect("$(name)_$k", lons[k:k+1], lats[k:k+1], Γ) for k in 1:length(lons)-1]
+        C = vcat([s.C for s in segments]...)
+        W = vcat([s.W for s in segments]...)
+        S = vcat([s.S for s in segments]...)
+        gridpath(name=name, grid=Γ, C=C, W=W, S=S)
+    end
+
+    function gridpaths_set2(Γ)
+        sec = sections_set2()
+        [if length(sec.lon[i]) == 2
+            Transect(sec.name[i], Float64.(sec.lon[i]), Float64.(sec.lat[i]), Γ)
+        else
+            multi_segment_transect(sec.name[i], Float64.(sec.lon[i]), Float64.(sec.lat[i]), Γ)
+        end for i in 1:length(sec.name)]
+    end
+
 end
