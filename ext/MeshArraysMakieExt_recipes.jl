@@ -38,7 +38,7 @@ fig
 ```
 """	
 function scatter!(ax,XC::AbstractMeshArray,YC::AbstractMeshArray;
-	color=:black,colorrange=[],colorbar=true,colormap=:veridis,kwargs...)
+	color=:black,colorrange=[],colorbar=true,colormap=:viridis,kwargs...)
 
 	if isa(color,MeshArray)&&isempty(colorrange)
 		γ=color.grid
@@ -257,21 +257,42 @@ plot(x::AbstractMeshArray; kwargs...) = begin
 	end
 end
 
-function plot(x::Union{gridpath,Vector{gridpath}}; kwargs...)
-	fig=Figure()
+function plot(x::Union{gridpath,Vector{gridpath}}; Γ=missing, kwargs...)
+	cm=:hawaii10
 	if isa(x,gridpath)
+		fs=(size(x.C,1)>10 ? 4 : 10)
+		fig=Figure(fontsize=fs,colormap=cm)
 		lon=[x.grid.XC[x.C[p,1]][x.C[p,2],x.C[p,3]] for p in 1:size(x.C,1)]
 		lat=[x.grid.YC[x.C[p,1]][x.C[p,2],x.C[p,3]] for p in 1:size(x.C,1)]
 		pad=0.1*max(maximum(lon)-minimum(lon),maximum(lat)-minimum(lat),1.0)
+		pad=max.(pad,5)
 		lims=(minimum(lon)-pad,maximum(lon)+pad,minimum(lat)-pad,maximum(lat)+pad)
 		ax=Axis(fig[1,1],limits=lims)
+		ismissing(Γ) ? nothing : add_background(ax,Γ)
 		plot!(x; kwargs...)
 	else
+		fig=Figure(fontsize=8,colormap=cm)
 		ax=Axis(fig[1,1],limits=(-180.0,180.0,-90.0,90.0))
+		ismissing(Γ) ? nothing : add_background(ax,Γ)
 		[plot!(y; kwargs...) for y in x]
 	end
 	fig
 end
+
+function add_background(ax,Γ)
+r = ax.finallimits[]
+lims = (r.origin[1], r.origin[1]+r.widths[1],
+        r.origin[2], r.origin[2]+r.widths[2])
+idx=findall( 	(Γ.XC.>=lims[1]) .&& (Γ.XC.<=lims[2]) .&&
+			(Γ.YC.>=lims[3]) .&& (Γ.YC.<=lims[4]))
+XC=get_points(Γ.XC,idx); YC=get_points(Γ.YC,idx)
+DL=get_points(log10.(Γ.Depth),idx)
+sc=scatter!(XC,YC,color=DL,colorrange=[0,2])
+fig=current_figure()
+Colorbar(fig[1, 2], sc)
+end
+
+get_points(b,idx)=vcat(collect(b[idx].f)...)
 
 """
     plot!(x::gridpath; points=:C, kwargs...)
