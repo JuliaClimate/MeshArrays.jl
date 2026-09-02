@@ -258,25 +258,82 @@ plot(x::AbstractMeshArray; kwargs...) = begin
 end
 
 function plot(x::Union{gridpath,Vector{gridpath}}; kwargs...)
-	fig=Figure(); ax=Axis(fig[1,1],limits=(-180.0,180.0,-90.0,90.0))
+	fig=Figure()
 	if isa(x,gridpath)
+		lon=[x.grid.XC[x.C[p,1]][x.C[p,2],x.C[p,3]] for p in 1:size(x.C,1)]
+		lat=[x.grid.YC[x.C[p,1]][x.C[p,2],x.C[p,3]] for p in 1:size(x.C,1)]
+		pad=0.1*max(maximum(lon)-minimum(lon),maximum(lat)-minimum(lat),1.0)
+		lims=(minimum(lon)-pad,maximum(lon)+pad,minimum(lat)-pad,maximum(lat)+pad)
+		ax=Axis(fig[1,1],limits=lims)
 		plot!(x; kwargs...)
 	else
+		ax=Axis(fig[1,1],limits=(-180.0,180.0,-90.0,90.0))
 		[plot!(y; kwargs...) for y in x]
 	end
 	fig
 end
 
-function plot!(x::gridpath; kwargs...)
-	np=size(x.C,1)
-	lon=zeros(np)
-	lat=zeros(np)
-	for p in 1:np
-		f=x.C[p,1]; i=x.C[p,2]; j=x.C[p,3]; q=x.C[p,4]
-		lon[p]=x.grid.XC[f][i,j]
-		lat[p]=x.grid.YC[f][i,j]
+"""
+    plot!(x::gridpath; points=:C, kwargs...)
+
+Plot a `gridpath` on the current axis: grid cell edges as segments
+(`W` edges in blue, `S` edges in black), and the corresponding point
+indices (position of each point in `x.C`, `x.W`, or `x.S`) as text
+labels. With `points=:C` (default), label the tracer points `x.C`.
+With `points=:UV`, label the velocity points `x.W` and `x.S` instead,
+appending `+` or `-` depending on the sign in column 4.
+
+```
+plot(SF[1])
+plot(SF[1],points=:UV)
+```
+"""
+function plot!(x::gridpath; points=:C, kwargs...)
+	XG=exchange(x.grid.XG).MA; YG=exchange(x.grid.YG).MA
+
+	segW=Vector{Point2f}(undef,2*size(x.W,1))
+	for p in 1:size(x.W,1)
+		f=x.W[p,1]; i=x.W[p,2]+1; j=x.W[p,3]+1
+		segW[2p-1]=Point2f(XG[f][i,j],YG[f][i,j])
+		segW[2p]=Point2f(XG[f][i,j+1],YG[f][i,j+1])
 	end
-	scatter!(lon,lat; kwargs...)
+	linesegments!(segW; merge((;color=:blue),NamedTuple(kwargs))...)
+
+	segS=Vector{Point2f}(undef,2*size(x.S,1))
+	for p in 1:size(x.S,1)
+		f=x.S[p,1]; i=x.S[p,2]+1; j=x.S[p,3]+1
+		segS[2p-1]=Point2f(XG[f][i,j],YG[f][i,j])
+		segS[2p]=Point2f(XG[f][i+1,j],YG[f][i+1,j])
+	end
+	linesegments!(segS; merge((;color=:black),NamedTuple(kwargs))...)
+
+	if points==:C
+		np=size(x.C,1)
+		lon=zeros(np); lat=zeros(np); lab=Vector{String}(undef,np)
+		for p in 1:np
+			f=x.C[p,1]; i=x.C[p,2]; j=x.C[p,3]
+			lon[p]=x.grid.XC[f][i,j]
+			lat[p]=x.grid.YC[f][i,j]
+			lab[p]="$p"
+		end
+		text!(lon,lat; text=lab, kwargs...)
+	elseif points==:UV
+		npW=size(x.W,1); npS=size(x.S,1)
+		lon=zeros(npW+npS); lat=zeros(npW+npS); lab=Vector{String}(undef,npW+npS)
+		for p in 1:npW
+			f=x.W[p,1]; i=x.W[p,2]; j=x.W[p,3]; q=x.W[p,4]
+			lon[p]=x.grid.XW[f][i,j]
+			lat[p]=x.grid.YW[f][i,j]
+			lab[p]="$p"*(q>0 ? "+" : "-")
+		end
+		for p in 1:npS
+			f=x.S[p,1]; i=x.S[p,2]; j=x.S[p,3]; q=x.S[p,4]
+			lon[npW+p]=x.grid.XS[f][i,j]
+			lat[npW+p]=x.grid.YS[f][i,j]
+			lab[npW+p]="$p"*(q>0 ? "+" : "-")
+		end
+		text!(lon,lat; text=lab, kwargs...)
+	end
 end
 
 """
