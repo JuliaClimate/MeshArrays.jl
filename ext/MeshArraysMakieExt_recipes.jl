@@ -279,7 +279,12 @@ function plot(x::Union{gridpath,Vector{gridpath}}; Γ=missing, kwargs...)
 	fig
 end
 
-function add_background(ax,Γ)
+"""
+    add_background(ax,Γ; colorrange=[0,2])
+
+Show grid points with `log10.(Γ.Depth)` as color within `ax.finallimits[]`. 
+"""
+function add_background(ax,Γ; colorrange=[0,2])
 r = ax.finallimits[]
 lims = (r.origin[1], r.origin[1]+r.widths[1],
         r.origin[2], r.origin[2]+r.widths[2])
@@ -287,7 +292,7 @@ idx=findall( 	(Γ.XC.>=lims[1]) .&& (Γ.XC.<=lims[2]) .&&
 			(Γ.YC.>=lims[3]) .&& (Γ.YC.<=lims[4]))
 XC=get_points(Γ.XC,idx); YC=get_points(Γ.YC,idx)
 DL=get_points(log10.(Γ.Depth),idx)
-sc=scatter!(XC,YC,color=DL,colorrange=[0,2])
+sc=scatter!(XC,YC,color=DL,colorrange=colorrange)
 fig=current_figure()
 Colorbar(fig[1, 2], sc)
 end
