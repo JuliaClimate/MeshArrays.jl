@@ -150,14 +150,16 @@ function func_inner(X::AbstractMeshArray, msk::AbstractMeshArray,
 end
 
 """
-    define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[(0,7000)])
+    define_sums(;option=:loops, grid::NamedTuple, regions=:global, 
+                  depths=[(0,7000)], re_define_regions=true)
 
 Define regional integration function for each basin and depth range.
 """
-function define_sums(;option=:loops, grid::NamedTuple, regions=:global, depths=[(0,7000)])
+function define_sums(;option=:loops, grid::NamedTuple, regions=:global,
+                    depths=[(0,7000)], re_define_regions=true)
   dep = (isa(depths,Tuple) ? [depths] : depths)
   nd = length(dep)
-  rgns = define_regions(option=regions, grid=grid)
+  rgns = !re_define_regions ? regions : define_regions(option=regions, grid=grid)
   nb = length(rgns.name)
   allones = 1.0 .+ 0*grid.hFacC
   nr = length(grid.RC)
