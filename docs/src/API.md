@@ -135,6 +135,9 @@ MeshArrays.to_polyarray
 
 ```@docs
 isosurface
+layerfraction
+hotlayer
+coldlayer
 land_mask
 demo.ocean_basins
 demo.extended_basin
