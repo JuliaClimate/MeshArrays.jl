@@ -42,7 +42,8 @@ export ScalarPotential, VectorPotential
 export UVtoUEVN, UVtoTransport, UVtoTransport!
 export gradient, curl, convergence
 export LatitudeCircles, Transect, ThroughFlow
-export StereographicProjection, isosurface
+export StereographicProjection
+export isosurface, hotlayer, coldlayer, layerfraction
 
 #export location_is_out, NeighborTileIndices_dpdo, NeighborTileIndices_cs, RelocationFunctions_cs
 #export update_location_cs!, update_location_llc!, update_location_dpdo!
